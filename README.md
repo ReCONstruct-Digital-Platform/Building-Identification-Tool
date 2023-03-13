@@ -58,3 +58,10 @@ Note that every access to the "Classify" section of the app will incur a Google 
 python manage.py runserver
 ```
 
+
+
+## Database Model
+
+![image](assets\imgtool-db-model2023-02-09-1547.png)
+
+Arrows indicate a foreign key relationship.
