@@ -1,0 +1,114 @@
+<div id="building-search-target">
+    <table class="table table-all-buildings">
+        <thead class="thead-light">
+        <tr>
+            <th scope="col">
+                {% if order_by == "id" and dir == "desc" %}
+                    <a href="?order_by=id&dir=asc{{current_search_query}}" class="row-link">
+                {% else %}
+                    <a href="?order_by=id&dir=desc{{current_search_query}}" class="row-link">
+                {% endif %}
+                    <div class="th-buildings"> ID
+                        {% include "buildings/utils/sort_icons.html" with field="id" dir=dir %}
+                    </div>
+                </a>
+            </th>
+            <th scope="col">
+                {% if order_by == "address" and dir == "desc" %}
+                    <a href="?order_by=address&dir=asc&{{current_search_query}}" class="row-link">
+                {% else %}
+                    <a href="?order_by=address&dir=desc&{{current_search_query}}" class="row-link">
+                {% endif %}
+                <div class="th-buildings">
+                    Address
+                    {% include "buildings/utils/sort_icons.html" with field="address" dir=dir %}
+                </div>
+                </a>
+            </th>
+            <th scope="col">
+                {% if order_by == "region" and dir == "desc" %}
+                    <a href="?order_by=region&dir=asc&{{current_search_query}}" class="row-link">
+                {% else %}
+                    <a href="?order_by=region&dir=desc&{{current_search_query}}" class="row-link">
+                {% endif %}
+                <div class="th-buildings">
+                    Region
+                    {% include "buildings/utils/sort_icons.html" with field="region" dir=dir %}
+                </div>
+            </th>
+            <th scope="col">
+                {% if order_by == "cubf" and dir == "desc" %}
+                    <a href="?order_by=cubf&dir=asc&{{current_search_query}}" class="row-link">
+                {% else %}
+                    <a href="?order_by=cubf&dir=desc&{{current_search_query}}" class="row-link">
+                {% endif %}
+                <div class="th-buildings">
+                    CUBF
+                    {% include "buildings/utils/sort_icons.html" with field="cubf" dir=dir %}
+                </div>
+            </th>
+            <th scope="col">
+                {% if order_by == "date_added" and dir == "desc" %}
+                    <a href="?order_by=date_added&dir=asc&{{current_search_query}}" class="row-link">
+                {% else %}
+                    <a href="?order_by=date_added&dir=desc&{{current_search_query}}" class="row-link">
+                {% endif %}
+                <div class="th-buildings">
+                    Date Added
+                    {% include "buildings/utils/sort_icons.html" with field="date_added" dir=dir %}
+                </div>
+            </th>
+            <th scope="col">
+                {% if order_by == "num_votes" and dir == "desc" %}
+                    <a href="?order_by=num_votes&dir=asc&{{current_search_query}}" class="row-link">
+                {% else %}
+                    <a href="?order_by=num_votes&dir=desc&{{current_search_query}}" class="row-link">
+                {% endif %}
+                <div class="th-buildings">
+                    Votes
+                    {% include "buildings/utils/sort_icons.html" with field="num_votes" dir=dir %}
+                </div>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for building in page_obj %}
+            <tr class="mb-2">
+                <th scope="row"><a href="{% url 'buildings:classify' building.id %}" class="row-link">{{ building.id }}</a></th>
+                <td><a href="{% url 'buildings:classify' building.id %}" tabindex="-1" class="row-link">{{ building.formatted_address }}</a></td>
+                <td><a href="{% url 'buildings:classify' building.id %}" tabindex="-1" class="row-link">{{ building.region }}</a></td>
+                <td><a href="{% url 'buildings:classify' building.id %}" tabindex="-1" class="row-link">{{ building.cubf }}</a></td>
+                <td><a href="{% url 'buildings:classify' building.id %}" tabindex="-1" class="row-link">{{ building.date_added }}</a></td>
+                <td><a href="{% url 'buildings:classify' building.id %}" tabindex="-1" class="row-link">{{ building.vote_set.all | length }}</a></td>
+            </tr>
+            {% empty %}
+            <tr class="mb-2">
+                <th scope="row"><a href="#" class="row-link">-</a></th>
+                <td><a href="#" tabindex="-1" class="row-link">-</a></td>
+                <td><a href="#" tabindex="-1" class="row-link">-</a></td>
+                <td><a href="#" tabindex="-1" class="row-link">-</a></td>
+                <td><a href="#" tabindex="-1" class="row-link">-</a></td>
+                <td><a href="#" tabindex="-1" class="row-link">-</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+    <div class="pagination mb-3">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a class="mr-2" href="?order_by={{ order_by }}&dir={{ dir }}{{current_search_query}}&page=1">&laquo; first</a>
+                <a class="mr-2" href="?order_by={{ order_by }}&dir={{ dir }}{{current_search_query}}&page={{ page_obj.previous_page_number }}"> &lt; previous</a>
+            {% endif %}
+
+            <span class="current ml-2 mr-2">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+                <a class="mr-2" href="?order_by={{ order_by }}&dir={{ dir }}{{current_search_query}}&page={{ page_obj.next_page_number }}">next &gt;</a>
+                <a class="mr-2" href="?order_by={{ order_by }}&dir={{ dir }}{{current_search_query}}&page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>

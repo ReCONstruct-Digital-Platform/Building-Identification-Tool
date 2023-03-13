@@ -1,0 +1,73 @@
+
+{% extends "buildings/base.html" %}
+
+
+{% block content %}
+
+<form action="{% url 'buildings:all_buildings' %}" class="building-search-query" method="GET">
+    <p>Search</p>
+    <div class="building-search-filters">
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Address</span>
+            </div>
+        <input type="text" name="q_address" class="q_address" value="{{ request.GET.q_address }}" 
+            hx-get="{% url 'buildings:all_buildings' %}" 
+            hx-trigger="keyup changed delay:200ms"
+            hx-include=".buildings-search-query"
+            hx-target="#building-search-target"
+            />
+        </div>
+        
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Region</span>
+            </div>
+            <input type="text" name="q_region" class="q_region" value="{{ request.GET.q_region }}" 
+            hx-get="{% url 'buildings:all_buildings' %}" 
+            hx-trigger="keyup changed delay:200ms"
+            hx-include=".buildings-search-query"
+            hx-target="#building-search-target"
+            />
+        </div>
+        
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Votes</span>
+            </div>
+            <select name="q_num_votes_op">
+                <option value="gte" {% if request.GET.q_num_votes_op == 'gte' %}selected{% endif %}>&ge;</option>
+                <option value="lte" {% if request.GET.q_num_votes_op == 'lte' %}selected{% endif %}>&le;</option>
+                <option value="gt" {% if request.GET.q_num_votes_op == 'gt' %}selected{% endif %}>&gt;</option>
+                <option value="lt" {% if request.GET.q_num_votes_op == 'lt' %}selected{% endif %}>&lt;</option>
+                <option value="eq" {% if request.GET.q_num_votes_op == 'eq' %}selected{% endif %}>=</option>
+        </select>
+        <input type="number" name="q_num_votes"
+            min="0"
+            hx-get="{% url 'buildings:all_buildings' %}" 
+            hx-trigger="keyup changed delay:200ms"
+            hx-include=".buildings-search-query"
+            hx-target="#building-search-target"
+            />
+        </div>
+    </div>
+        <input type="submit" value="Search"/>
+</form>
+
+<div>
+    {% if request.GET.q %}
+        Search results for {{ request.GET.q }} under {{ request.GET.type }}
+    {% endif %}
+</div>
+
+
+{% include 'buildings/partials/all_buildings.html' %}
+
+</div>
+
+
+
+
+
+{% endblock content %}
