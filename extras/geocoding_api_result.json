@@ -1,0 +1,89 @@
+[
+    {
+        "address_components": [
+            {
+                "long_name": "1303",
+                "short_name": "1303",
+                "types": [
+                    "street_number"
+                ]
+            },
+            {
+                "long_name": "Rue Principale",
+                "short_name": "Rue Principale",
+                "types": [
+                    "route"
+                ]
+            },
+            {
+                "long_name": "Fabre",
+                "short_name": "Fabre",
+                "types": [
+                    "locality",
+                    "political"
+                ]
+            },
+            {
+                "long_name": "Témiscamingue",
+                "short_name": "Témiscamingue",
+                "types": [
+                    "administrative_area_level_3",
+                    "political"
+                ]
+            },
+            {
+                "long_name": "Abitibi-Témiscamingue",
+                "short_name": "Abitibi-Témiscamingue",
+                "types": [
+                    "administrative_area_level_2",
+                    "political"
+                ]
+            },
+            {
+                "long_name": "Québec",
+                "short_name": "QC",
+                "types": [
+                    "administrative_area_level_1",
+                    "political"
+                ]
+            },
+            {
+                "long_name": "Canada",
+                "short_name": "CA",
+                "types": [
+                    "country",
+                    "political"
+                ]
+            },
+            {
+                "long_name": "J0Z 1Z0",
+                "short_name": "J0Z 1Z0",
+                "types": [
+                    "postal_code"
+                ]
+            }
+        ],
+        "formatted_address": "1303 Rue Principale, Fabre, QC J0Z 1Z0, Canada",
+        "geometry": {
+            "location": {
+                "lat": 47.197699,
+                "lng": -79.367365
+            },
+            "location_type": "RANGE_INTERPOLATED",
+            "viewport": {
+                "northeast": {
+                    "lat": 47.1990479802915,
+                    "lng": -79.36601601970851
+                },
+                "southwest": {
+                    "lat": 47.1963500197085,
+                    "lng": -79.36871398029152
+                }
+            }
+        },
+        "place_id": "Ei4xMzAzIFJ1ZSBQcmluY2lwYWxlLCBGYWJyZSwgUUMgSjBaIDFaMCwgQ2FuYWRhIjESLwoUChIJEVbPN4w5Jk0RykduiO59PwwQlwoqFAoSCbULLPmNOSZNESjWXW8lrPEx",
+        "types": [
+            "street_address"
+        ]
+    }
+]

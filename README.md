@@ -67,3 +67,8 @@ python manage.py runserver
 ![image](assets/imgtool-db-model2023-02-09-1547.png)
 
 Arrows indicate a foreign key relationship.
+
+
+## Learning resources
+
+To understand the codebase, see the links in `extras/learning_resources.txt`.
