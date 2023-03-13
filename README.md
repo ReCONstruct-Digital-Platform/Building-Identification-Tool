@@ -12,7 +12,7 @@ The goal of this tool is to provide a convenient tool to rate the retrofit poten
 This project makes use of the google maps API. To run it locally, you will need to obtain an authorization key.
 Ask us for one from ReCONstruct, or set up your own by following the instructions [here](https://developers.google.com/maps/documentation/javascript/cloud-setup). (You will need to input a credit card, but local development and testing should come out at less than $5-10).
 
-Once you have a key, set the `GOOGLE_API_KEY` variable to it in the file `config\settings.py`.
+Once you have a key, set the `GOOGLE_API_KEY` variable to it in the file `config/settings.py`.
 
 ### 1. (Optional) Create a virtual environment for the project
 Virtual environments (venv for short) hold all dependencies for your project, and allow avoiding package version conflicts at the system level.
@@ -39,7 +39,7 @@ python manage.py migrate       # Will create a db.sqlite3 file in the root direc
 ### 4. Fill the database with buildings
 
 The newly created database does not contain any buildings to classify yet, so we need to add some.
-`data\buildings.csv` contains a few of them to get you started. 
+`data/buildings.csv` contains a few of them to get you started. 
 
 These buildings have addresses, which must be converted to latitude/longitude coordinates in order to be used by the tool. This conversion process is called [geocoding](https://developers.google.com/maps/documentation/javascript/geocoding).
 
@@ -47,7 +47,7 @@ Run the following to geocode `n` buildings - each building will incur a call to 
 ```
 python manage.py geocode -n <n>
 ```
-`geocode` is implemented as a Django management command, and is defined in `buildings\management\commands\geocode.py`.
+`geocode` is implemented as a Django management command, and is defined in `buildings/management/commands/geocode.py`.
 
 ### 5. Start the local server
 
@@ -62,6 +62,6 @@ python manage.py runserver
 
 ## Database Model
 
-![image](assets\imgtool-db-model2023-02-09-1547.png)
+![image](assets/imgtool-db-model2023-02-09-1547.png)
 
 Arrows indicate a foreign key relationship.

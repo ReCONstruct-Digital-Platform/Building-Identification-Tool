@@ -4,7 +4,7 @@
 
 {% block content %}
 
-<form action="{% url 'buildings:all_buildings' %}" class="building-search-query" method="GET">
+<form action="{% url 'buildings:all_buildings' %}" class="buildings-search-query" method="GET">
     <p>Search</p>
     <div class="building-search-filters">
 
@@ -36,14 +36,14 @@
             <div class="input-group-prepend">
                 <span class="input-group-text">Votes</span>
             </div>
-            <select name="q_num_votes_op">
-                <option value="gte" {% if request.GET.q_num_votes_op == 'gte' %}selected{% endif %}>&ge;</option>
+            <select name="q_num_votes_op" hx-include=".buildings-search-query">
+                <option value="gte" {% if request.GET.q_num_votes_op == 'gte' or request.GET.q_num_votes_op is None %}selected{% endif %}>&ge;</option>
                 <option value="lte" {% if request.GET.q_num_votes_op == 'lte' %}selected{% endif %}>&le;</option>
                 <option value="gt" {% if request.GET.q_num_votes_op == 'gt' %}selected{% endif %}>&gt;</option>
                 <option value="lt" {% if request.GET.q_num_votes_op == 'lt' %}selected{% endif %}>&lt;</option>
                 <option value="eq" {% if request.GET.q_num_votes_op == 'eq' %}selected{% endif %}>=</option>
         </select>
-        <input type="number" name="q_num_votes"
+        <input type="number" name="q_num_votes" value="{{ request.GET.q_num_votes }}"
             min="0"
             hx-get="{% url 'buildings:all_buildings' %}" 
             hx-trigger="keyup changed delay:200ms"

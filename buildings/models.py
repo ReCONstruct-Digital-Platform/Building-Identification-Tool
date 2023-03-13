@@ -117,26 +117,37 @@ class Building(models.Model):
     # objects = BuildingQuerySet.as_manager()
     objects = BuildingManager.from_queryset(BuildingQuerySet)()
 
+
+
     def num_votes(self):
         return len(self.vote_set)
 
     def __str__(self):
         return f'{self.formatted_address} {self.region} ({self.lat}, {self.lon})'
+    
+    @classmethod
+    def get_field_names(self):
+        return [f.name for f in Building._meta.get_fields()]
 
     @classmethod
     def _get_proper_field_name(self, field):
+        field = field.lower()
         if field == "address":
             return "formatted_address"
-        return field
+        elif field in self.get_field_names():
+            return field
+        else:
+            # If the field is not valid, default to id
+            return "id"
 
     @classmethod
     def get_ordering(cls, order_by, direction):
-        if order_by is None:
+        if order_by in [None, 'None']:
             ordering = "id"
         else:
             ordering = cls._get_proper_field_name(order_by)
 
-        if direction is None:
+        if direction in [None, 'None']:
             direction = "desc"
 
         if direction != 'desc':

@@ -76,7 +76,7 @@ def all_buildings(request):
     dir = request.GET.get('dir')
 
     ordering, direction = Building.get_ordering(order_by, dir)
-
+    print(f'Ordering: {ordering} {direction}')
     qs = Building.objects.search(query=query, ordering=ordering)
 
     paginator = Paginator(qs, 25) # Show 25 contacts per page.
