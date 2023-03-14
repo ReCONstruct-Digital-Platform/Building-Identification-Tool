@@ -44,15 +44,16 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         gmaps = googlemaps.Client(key=GOOGLE_API_KEY)
         num_entries = options['num']
+        num_buildings_in_db = len(Building.objects.all())
 
-        print(f'Currently {len(Building.objects.all())} buildings in the database')
+        print(f'Currently {num_buildings_in_db} buildings in the database')
 
         with open('data/buildings.csv', 'r', encoding='utf-8') as infile:
             # Skip the header
             infile.readline()
 
             num_geocoded = 0
-            for i, row in enumerate(infile):
+            for i, row in enumerate(infile[num_buildings_in_db:]):
                 # Rate limit because we pay for Maps API usage
                 if num_geocoded >= num_entries:
                     break
