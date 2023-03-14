@@ -75,7 +75,7 @@ class Command(BaseCommand):
                 address_components = _parse_address_components(res['address_components'])
                 
                 # Often the original address is not similar enough to detect duplicates before geocoding
-                lookup_results = Building.objects.filter(formatted_address__icontains=address_components['formatted_address'])
+                lookup_results = Building.objects.filter(formatted_address__icontains=res['formatted_address'])
                 if len(lookup_results) > 0:
                     print(f'Already have geocoded row: {row}')
                     continue
