@@ -54,6 +54,11 @@ class Command(BaseCommand):
 
             num_geocoded = 0
             for i, row in enumerate(infile[num_buildings_in_db:]):
+                
+                # Skip the first num_buildings_in_db lines to avoid duplicates
+                if i > num_buildings_in_db:
+                    continue
+
                 # Rate limit because we pay for Maps API usage
                 if num_geocoded >= num_entries:
                     break
