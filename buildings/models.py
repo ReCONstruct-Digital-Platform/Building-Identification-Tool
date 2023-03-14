@@ -6,6 +6,9 @@ from django.conf import settings
 from django.utils import timezone
 from django.db.models import Q, Count
 from django.utils.translation import gettext_lazy as _
+import logging
+
+log = logging.getLogger(__name__)
 
 
 STRING_QUERIES_TO_FILTER = {
@@ -52,7 +55,7 @@ class BuildingQuerySet(models.QuerySet):
             else:
                 lookups[f"num_votes__{op}"] = query["q_num_votes"]
 
-        print(lookups)
+        log.info(lookups)
         lookups = Q(**lookups) 
 
         # Can split up the query into multiple steps too and merge the results
@@ -134,6 +137,8 @@ class Building(models.Model):
         field = field.lower()
         if field == "address":
             return "formatted_address"
+        if field == "num_votes":
+            return field
         elif field in self.get_field_names():
             return field
         else:

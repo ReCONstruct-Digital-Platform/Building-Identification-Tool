@@ -12,6 +12,10 @@ from .models import Building, Material, Vote, BuildingNote, MaterialScore, Profi
 from .forms import CreateUserForm
 from django.core.paginator import Paginator
 
+import logging
+
+log = logging.getLogger(__name__)
+
 @login_required(login_url='buildings:login')
 def index(request):
 
@@ -68,11 +72,13 @@ def all_buildings(request):
     # Get all the query elements and assemble them in a query dictionary
     query = _populate_query(request)
     query = _validate_query(query)
+    log.info(f'Query: {query}')
 
     order_by = request.GET.get('order_by')
     dir = request.GET.get('dir')
 
     ordering, direction = Building.get_ordering(order_by, dir)
+    log.debug(f'Ordering: {ordering}, direction: {direction}')
     qs = Building.objects.search(query=query, ordering=ordering)
 
     paginator = Paginator(qs, 25) # Show 25 contacts per page.

@@ -32,7 +32,22 @@ ALLOWED_HOSTS = []
 
 GOOGLE_API_KEY = env('GOOGLE_API_KEY')
 
-# Application definition
+
+LOGGING = {
+    'version': 1,                       # the dictConfig format version
+    'disable_existing_loggers': False,  # retain the default loggers
+    'handlers': {
+        'stdout': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        '': {
+            'level': 'DEBUG',
+            'handlers': ['stdout'],
+        },
+    },
+}
 
 INSTALLED_APPS = [
     "buildings.apps.BuildingsConfig",
