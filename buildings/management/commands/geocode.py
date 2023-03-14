@@ -68,7 +68,6 @@ class Command(BaseCommand):
                 address = f'{data[0]}'.replace('-', ' ')
                 print(address)
                 lookup_results = Building.objects.filter(formatted_address__icontains=address)
-                print(lookup_results)
 
                 if len(lookup_results) > 0:
                     print(f'Already have geocoded row: {row}')
@@ -79,6 +78,12 @@ class Command(BaseCommand):
                 # Only expecting a single returned address
                 res = res[0]
                 address_components = _parse_address_components(res['address_components'])
+                
+                # Often the original address is not similar enough to detect duplicates before geocoding
+                lookup_results = Building.objects.filter(formatted_address__icontains=address_components['formatted_address'])
+                if len(lookup_results) > 0:
+                    print(f'Already have geocoded row: {row}')
+                    continue
 
                 try:
                     b = Building(
