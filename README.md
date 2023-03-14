@@ -51,6 +51,12 @@ python manage.py geocode -n <n>
 ```
 `geocode` is implemented as a Django management command, and is defined in `buildings/management/commands/geocode.py`.
 
+Note: we attempt to detect duplicate buildings when geocoding the next time. You might still end up with duplicates in the DB.
+If that's the case, you can run the following command to get rid of them. 
+```
+python manage.py dedup_buildings       # this command will identify duplicates, running again with option '-d' will actually delete them
+```
+
 ### 5. Start the local server
 
 The final step is to run the development server. This will make the application run at `http://127.0.0.1:8000/`.
