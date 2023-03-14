@@ -53,7 +53,7 @@ class Command(BaseCommand):
             infile.readline()
 
             num_geocoded = 0
-            for i, row in enumerate(infile[num_buildings_in_db:]):
+            for i, row in enumerate(infile):
                 
                 # Skip the first num_buildings_in_db lines to avoid duplicates
                 if i > num_buildings_in_db:
