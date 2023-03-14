@@ -54,10 +54,6 @@ class Command(BaseCommand):
 
             num_geocoded = 0
             for i, row in enumerate(infile):
-                
-                # Skip the first num_buildings_in_db lines to avoid duplicates
-                if i > num_buildings_in_db:
-                    continue
 
                 # Rate limit because we pay for Maps API usage
                 if num_geocoded >= num_entries:
@@ -66,7 +62,6 @@ class Command(BaseCommand):
                 data = row.rstrip().split(",")
 
                 address = f'{data[0]}'.replace('-', ' ')
-                print(address)
                 lookup_results = Building.objects.filter(formatted_address__icontains=address)
 
                 if len(lookup_results) > 0:
@@ -85,6 +80,7 @@ class Command(BaseCommand):
                     print(f'Already have geocoded row: {row}')
                     continue
 
+                print(address)
                 try:
                     b = Building(
                         street_number = address_components['street_number'],
