@@ -3,3 +3,5 @@ notes/
 
 **/__pycache__/
 *db.sqlite*
+
+**/.env

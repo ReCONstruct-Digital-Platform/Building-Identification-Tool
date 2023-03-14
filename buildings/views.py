@@ -66,17 +66,13 @@ def _validate_query(query):
 @login_required(login_url='buildings:login')
 def all_buildings(request):
     # Get all the query elements and assemble them in a query dictionary
-    print(f"Request: {request.GET}")
-
     query = _populate_query(request)
     query = _validate_query(query)
-    print(f"Query: {query}")
 
     order_by = request.GET.get('order_by')
     dir = request.GET.get('dir')
 
     ordering, direction = Building.get_ordering(order_by, dir)
-    print(f'Ordering: {ordering} {direction}')
     qs = Building.objects.search(query=query, ordering=ordering)
 
     paginator = Paginator(qs, 25) # Show 25 contacts per page.
@@ -85,7 +81,6 @@ def all_buildings(request):
     page_obj = paginator.get_page(page_number)
 
     current_search_query = _get_current_html_query_str(query)
-    print(current_search_query)
 
     context = {
         "page_obj": page_obj,
@@ -127,12 +122,9 @@ def classify(request, building_id):
             new_vote = Vote(building = building, user = request.user)
             new_vote.save()
 
-            print(request.POST)
-
             for key in request.POST:
                 if "material" in key:
                     value = request.POST.getlist(key)
-                    print(value)
                     material_name = value[0]
                     score = value[1]
                     # Get a reference to the material
@@ -152,7 +144,6 @@ def classify(request, building_id):
                     value = request.POST.getlist(key)
                     note = BuildingNote(vote=new_vote, note=value[0])
                     note.save()
-                    print(f"Saved building note {note}")
 
             # Finally, we can save our vote
             new_vote.save()
