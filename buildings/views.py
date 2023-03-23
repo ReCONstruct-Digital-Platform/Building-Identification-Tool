@@ -162,7 +162,7 @@ def classify(request, building_id):
 
                     typology = Typology.objects.filter(name__icontains=typology_name).first()
                     if typology is None:
-                        typology = Material(name=typology_name)
+                        typology = Typology(name=typology_name)
                         typology.save()
                     
                     # Create a new MaterialScore linking this vote, the material and the score
