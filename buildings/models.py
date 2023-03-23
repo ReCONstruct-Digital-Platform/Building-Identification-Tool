@@ -17,6 +17,71 @@ STRING_QUERIES_TO_FILTER = {
     "q_cubf": "cubf_str__icontains",
 }
 
+CUBF_TO_NAME_MAP = {
+    6811:	"École maternelle",
+    6812:	"École élémentaire",
+    6813:	"École secondaire",
+    6814:	"École à caractère familial",
+    6815:	"École élémentaire et secondaire",
+    6816:	"Commission scolaire",
+    7219:	"Autres lieux d'assemblée pour les loisirs",
+    7221:	"Stade",
+    7222:	"Centre sportif multidisciplinaire (couvert)",
+    7223:	"Piste de course",
+    7224:	"Piste de luge, de bobsleigh et de sauts à ski",
+    7225:	"Hippodrome",
+    7229:	"Autres installations pour les sports",
+    7233:	"Salle de réunions, centre de conférences et congrès",
+    7239:	"Autres aménagements publics pour différentes activités",
+    7290:	"Autres aménagements d'assemblées publiques",
+    7311:	"Parc d'exposition (extérieur)",
+    7312:	"Parc d'amusement (extérieur)",
+    7313:	"Parc d'exposition (intérieur)",
+    7314:	"Parc d'amusement (intérieur)",
+    7392:	"Golf miniature",
+    7393:	"Terrain de golf pour exercice seulement",
+    7394:	"Piste de karting",
+    7395:	"Salle de jeux automatiques (service récréatif)",
+    7396:	"Salle de billard",
+    7397:	"Salle de danse, discothèque (sans boissons alcoolisées)",
+    7399:	"Autres lieux d'amusement",
+    7411:	"Terrain de golf (sans chalet et autres aménagements sportifs)",
+    7412:	"Terrain de golf (avec chalet et autres aménagements sportifs)",
+    7413:	"Salle et terrain de squash, de raquetball et de tennis",
+    7414:	"Centre de tir pour armes à feu",
+    7415:	"Patinage à roulettes",
+    7416:	"Équitation",
+    7417:	"Salle ou salon de quilles",
+    7418:	"Toboggan",
+    7419:	"Autres activités sportives",
+    7421:	"Terrain d'amusement",
+    7422:	"Terrain de jeux",
+    7423:	"Terrain de sport",
+    7424:	"Centre récréatif en général",
+    7425:	"Gymnase et formation athlétique",
+    7429:	"Autres terrains de jeux et pistes athlétiques",
+    7431:	"Plage",
+    7432:	"Piscine intérieure et activités connexes",
+    7433:	"Piscine extérieure et activités connexes",
+    7441:	"Marina, port de plaisance et quai d'embarquement pour croisière (excluant les traversiers)",
+    7442:	"Rampe d'accès et stationnement",
+    7443:	"Station-service pour le nautisme",
+    7444:	"Club et écoles d'activités et de sécurité nautiques",
+    7445:	"Service d'entretien, de réparation et d'hivernage d'embarcations",
+    7446:	"Service de levage d'embarcations (monte-charges, « boat lift »)",
+    7447:	"Service de sécurité et d'intervention nautique",
+    7448:	"Site de spectacles nautiques",
+    7449:	"Autres activités nautiques",
+    7451:	"Aréna et activités connexes (patinage sur glace)",
+    7452:	"Salle de curling",
+    7459:	"Autres activités sur glace",
+    7491:	"Camping (excluant le caravaning)",
+    7492:	"Camping sauvage et pique-nique",
+    7493:	"Camping et caravaning",
+    7499:	"Autres activités récréatives",
+    7611:	"Parc pour la récréation en général",
+}
+
 
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)
@@ -120,10 +185,14 @@ class Building(models.Model):
     # objects = BuildingQuerySet.as_manager()
     objects = BuildingManager.from_queryset(BuildingQuerySet)()
 
-
-
     def num_votes(self):
         return len(self.vote_set)
+    
+    def cubf_name(self):
+        if self.cubf in CUBF_TO_NAME_MAP:
+            return CUBF_TO_NAME_MAP[self.cubf]
+        else:
+            return ''
 
     def __str__(self):
         return f'{self.formatted_address} {self.region} ({self.lat}, {self.lon})'
@@ -205,4 +274,15 @@ class BuildingNote(models.Model):
     def __str__(self):
         return f'{self.id} {self.vote.user} said on building {self.vote.building.id}: {self.note}'
     
+
+class Typology(models.Model):
+    name = models.CharField(max_length=150)
+    date_added = models.DateTimeField('date added', default=timezone.now)
+
+    def __str__(self):
+        return f'{self.name}'
+    
+class BuildingTypology(models.Model):
+    vote = models.ForeignKey(Vote, on_delete=models.CASCADE)
+    typology = models.ForeignKey(Typology, on_delete=models.CASCADE)
 

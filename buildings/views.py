@@ -128,15 +128,18 @@ def classify(request, building_id):
             new_vote = Vote(building = building, user = request.user)
             new_vote.save()
 
+            logging.debug(request.POST)
+
             for key in request.POST:
                 if "material" in key:
+                    # Expect the value to be an array with 2 values, material name and 1-5 score
                     value = request.POST.getlist(key)
                     material_name = value[0]
                     score = value[1]
                     # Get a reference to the material
                     material = Material.objects.filter(name__icontains=material_name).first()
 
-                    print(f"Found material {material}")
+                    logging.debug(f"Found material {material}")
                     # If it doesn't exist, create a new material
                     if material is None:
                         material = Material(name=material_name)
@@ -145,11 +148,18 @@ def classify(request, building_id):
                     # Create a new MaterialScore linking this vote, the material and the score
                     material_score = MaterialScore(vote=new_vote, material=material, score=score)
                     material_score.save()
-                
+
                 elif "note" in key:
                     value = request.POST.getlist(key)
                     note = BuildingNote(vote=new_vote, note=value[0])
                     note.save()
+
+                elif "typology" in key:
+                    # Expect the value to be an array with 2 values, typology name and 1-5 score
+                    value = request.POST.getlist(key)
+                    typology_name = value[0]
+                    score = value[1]
+                    pass
 
             # Finally, we can save our vote
             new_vote.save()

@@ -136,7 +136,8 @@ label {
     width: 100%;
 }
 
-.building-address {
+.building-address,
+.building-cubf {
   font-size: large;
 }
 
@@ -345,12 +346,13 @@ tr:hover .delete-row-icon {
   justify-content: space-between;
   align-items: center;
 }
+
 .building-info {
   display: flex;
   flex-direction: column;
 }
 
-.skip-building {
+.classify-building-nav {
   font-size: large;
 }
 

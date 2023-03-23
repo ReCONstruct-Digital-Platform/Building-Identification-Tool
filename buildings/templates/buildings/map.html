@@ -20,6 +20,7 @@
             },
           }
       );
+      console.log("instantiating steet view");
     }
   window.initMap = initMap;
 </script>
@@ -27,6 +28,7 @@
 
 <div class="pageholder">
   <div class="classify-top-row">
+
     <div class="building-info">
       <div class="building-id-and-report">
         <div class="building-id">
@@ -41,17 +43,26 @@
           Report bad data
         </div> -->
       </div>
+      <div class="building-cubf">
+        CUBF {{ building.cubf }}: {{ building.cubf_name }}
+      </div>
       <div class="building-address">
         <p>
-          {{ building.formatted_address }} (CUBF: {{ building.cubf }})
+          {{ building.formatted_address }}
         </p> 
       </div>
     </div>
-    <div class="skip-building">
-      <a id="next" href="{% url 'buildings:classify' next_building %}">Next Building &raquo;&raquo;</a>
+
+  </div>
+  <div class="classify-top-row">
+    <div class="classify-building-nav prev-building">
+      <a id="prev-building-link">&laquo;&laquo; Prev</a>
+    </div>
+    <div class="classify-building-nav skip-building">
+      <a id="next" href="{% url 'buildings:classify' next_building %}">Next &raquo;&raquo;</a>
     </div>
   </div>
-  <div class="mapholder">
+  <div class="mapholder mt-3">
     <div id="map"></div>
     <!-- Uncomment to activate streetview container - will incur API cost -->
     <script src="https://maps.googleapis.com/maps/api/js?key={{key}}&callback=initMap&v=weekly" defer></script>
@@ -61,7 +72,7 @@
       {% csrf_token %}
       <legend>
         <p>
-          What materials make up the building facade?
+          How confident are you that this is a prefab metal “Butler barn” community centre?
         </p>
       </legend>
         <table id="vote-table" class="table vote-table">
@@ -77,6 +88,25 @@
           </thead>
           <tbody>
             <tr id="row-1">
+              <th scope="row">
+                <input type="hidden" name = "typology" value="prefab_metal_barn"/>
+              </th>
+              <td class="td-vote">
+                <input type="radio" name="typology" value="1" required/></td>
+              <td class="td-vote">
+                <input type="radio" name="typology" value="2"/></td>
+              <td class="td-vote">
+                <input type="radio" name="typology" value="3"/></td>
+              <td class="td-vote">
+                <input type="radio"name="typology" value="4"/></td>
+              <td class="td-vote">
+                <div class="td-vote-last-cell">
+                  <input type="radio" name="typology" value="5"/>
+                </div>
+              </td>
+            </tr>
+            <!-- Material vote row -->
+            <!-- <tr id="row-1">
               <th class="material-name ml-2" scope="row">
                 <select id="material-select-1" class="material-select" name="material-1">
                   {% for material in existing_materials %}
@@ -85,6 +115,7 @@
                   <option value="new-material">New material</option>
                 </select>
               </th>
+              <th scope="Row"></th>
               <td class="td-vote">
                 <input type="radio" name="material-1" value="1" required/></td>
               <td class="td-vote">
@@ -98,16 +129,16 @@
                   <input type="radio" name="material-1" value="5"/>
                 </div>
               </td>
-            </tr>
+            </tr> -->
           </tbody>
         </table>
         <div id="note-container" class="note-container"></div>
         <div class="btn-row">
-          <button id="btn-add-row"  type="button" class="btn">Add Material</button>
+          <!-- <button id="btn-add-row"  type="button" class="btn">Add Material</button> -->
+          <input id="btn-submit-vote" class="btn btn-vote mr-1" type="submit" value="Submit">
           <button id="btn-add-note" type="button" class="btn">Add Note</button>
         </div>
         <div class="classify-button-container mt-3">
-          <input id="btn-submit-vote" class="btn btn-vote" type="submit" value="Submit">
         </div>
     </form>
   </div>

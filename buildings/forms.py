@@ -21,7 +21,3 @@ class CreateUserForm(UserCreationForm):
         self.fields['password1'].widget = PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter Password...'})
         self.fields['password2'].widget = PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirm password...'})
 
-
-class MaterialSelectForm(forms.Form):
-    CHOICES = (('1', 'First',), ('2', 'Second',))
-    certainty = forms.ChoiceField(widget=forms.RadioSelect, choices=CHOICES)
