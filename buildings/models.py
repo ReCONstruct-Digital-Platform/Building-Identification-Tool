@@ -169,7 +169,7 @@ class BuildingManager(models.Manager):
 class Building(models.Model):
     street_number = models.TextField()
     street_name = models.TextField()
-    locality = models.TextField()
+    locality = models.TextField(blank=True, null=True)
     region = models.TextField()
     province = models.TextField()
     country = models.TextField()

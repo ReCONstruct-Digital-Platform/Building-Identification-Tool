@@ -22,6 +22,8 @@ def _parse_address_components(address_components):
             ret['street_name'] = entry['long_name']
         elif 'locality' in types:
             ret['locality'] = entry['long_name']
+        elif 'administrative_area_level_3' in types:
+            ret['admin_area_3'] = entry['long_name']
         elif 'administrative_area_level_2' in types:
             ret['region'] = entry['long_name']
         elif 'administrative_area_level_1' in types:
@@ -60,6 +62,9 @@ class Command(BaseCommand):
         if not (data_file.exists() and data_file.is_file()):
             self.stderr.write(self.style.ERROR(f'Invalid data file given: {data_file}'))
             return
+        
+        # import code 
+        # code.interact(local=locals())
 
         with open(data_file, 'r', encoding='utf-8') as infile, open(logfile, 'w', encoding='utf-8') as logfile:
             # Skip the header
@@ -95,10 +100,17 @@ class Command(BaseCommand):
 
                 print(address)
                 try:
+
+                    locality = None
+                    if 'locality' in address_components:
+                        locality = address_components['locality']
+                    elif 'admin_area_3' in address_components:
+                        locality = address_components['admin_area_3']
+                    
                     b = Building(
                         street_number = address_components['street_number'],
                         street_name = address_components['street_name'],
-                        locality = address_components['locality'],
+                        locality = locality,
                         region = address_components['region'],
                         province = address_components['province'],
                         country = address_components['country'],
