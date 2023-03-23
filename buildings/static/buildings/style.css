@@ -101,20 +101,11 @@ a.article-title:hover {
 }
 
 
-/* visited link */
-a:visited {
-  color: black;
-}
-
 /* mouse over link */
 a:hover {
   color: lightblue;
 }
 
-/* selected link */
-a:active {
-  color: green;
-}
 
 label {
     float:left;
