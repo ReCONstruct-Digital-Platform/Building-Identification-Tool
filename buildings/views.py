@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
 
-from .models import Building, BuildingTypology, Material, Vote, BuildingNote, MaterialScore, Profile
+from .models import Building, BuildingTypology, Material, Typology, Vote, BuildingNote, MaterialScore, Profile
 from .forms import CreateUserForm
 from django.core.paginator import Paginator
 
@@ -160,8 +160,8 @@ def classify(request, building_id):
                     typology_name = value[0]
                     score = value[1]
 
-                    typology = Material.objects.filter(name__icontains=typology_name).first()
-                    if material is None:
+                    typology = Typology.objects.filter(name__icontains=typology_name).first()
+                    if typology is None:
                         typology = Material(name=typology_name)
                         typology.save()
                     
