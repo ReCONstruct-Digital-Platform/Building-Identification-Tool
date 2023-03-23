@@ -1,5 +1,6 @@
 import traceback
 import googlemaps
+from pathlib import Path
 
 from django.utils import timezone
 from buildings.models import Building
@@ -45,11 +46,16 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         gmaps = googlemaps.Client(key=GOOGLE_API_KEY)
         num_entries = options['num']
+        data_file = Path(options['file'])
         num_buildings_in_db = len(Building.objects.all())
 
         print(f'Currently {num_buildings_in_db} buildings in the database')
 
-        with open('data/buildings.csv', 'r', encoding='utf-8') as infile:
+        if not (data_file.exists() and data_file.is_file()):
+            self.stderr.write(self.style.ERROR(f'Invalid data file given: {data_file}'))
+            return
+
+        with open(data_file, 'r', encoding='utf-8') as infile:
             # Skip the header
             infile.readline()
 
