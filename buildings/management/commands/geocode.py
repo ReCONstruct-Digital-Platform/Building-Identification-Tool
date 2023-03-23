@@ -40,6 +40,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('-n', '--num', default=0, type=int)
+        parser.add_argument('-f', '--file', default="data/buildings.csv", type=str, help="CSV file of buildings to create.")
 
     def handle(self, *args, **options):
         gmaps = googlemaps.Client(key=GOOGLE_API_KEY)
