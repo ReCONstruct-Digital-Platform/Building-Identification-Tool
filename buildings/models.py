@@ -285,4 +285,5 @@ class Typology(models.Model):
 class BuildingTypology(models.Model):
     vote = models.ForeignKey(Vote, on_delete=models.CASCADE)
     typology = models.ForeignKey(Typology, on_delete=models.CASCADE)
+    score = models.IntegerField(default=0)
 
