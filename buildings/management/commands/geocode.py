@@ -8,6 +8,7 @@ from config.settings import GOOGLE_API_KEY
   
 from django.core.management.base import BaseCommand
 
+from datetime import datetime
 
 def _parse_address_components(address_components):
 
@@ -47,15 +48,20 @@ class Command(BaseCommand):
         gmaps = googlemaps.Client(key=GOOGLE_API_KEY)
         num_entries = options['num']
         data_file = Path(options['file'])
+
+        logdir = Path('log')
+        logdir.mkdir(exist_ok=True)
+        logfile = logdir / "geocode.log"
+
         num_buildings_in_db = len(Building.objects.all())
 
-        print(f'Currently {num_buildings_in_db} buildings in the database')
+        print(f'{datetime.now()} Currently {num_buildings_in_db} buildings in the database')
 
         if not (data_file.exists() and data_file.is_file()):
             self.stderr.write(self.style.ERROR(f'Invalid data file given: {data_file}'))
             return
 
-        with open(data_file, 'r', encoding='utf-8') as infile:
+        with open(data_file, 'r', encoding='utf-8') as infile, open(logfile, 'w', encoding='utf-8') as logfile:
             # Skip the header
             infile.readline()
 
@@ -84,7 +90,7 @@ class Command(BaseCommand):
                 # Often the original address is not similar enough to detect duplicates before geocoding
                 lookup_results = Building.objects.filter(formatted_address__icontains=res['formatted_address'])
                 if len(lookup_results) > 0:
-                    print(f'Already have geocoded row: {row}')
+                    print(f'{datetime.now()} Already have geocoded row: {row}')
                     continue
 
                 print(address)
@@ -105,10 +111,14 @@ class Command(BaseCommand):
                     )
                     b.save()
                     num_geocoded += 1
-                    print(f'Successfully geocoded Building {b}')
+                    print(f'{datetime.now()} Successfully geocoded Building {b}')
+                    logfile.write(f'{datetime.now()} Successfully geocoded Building {b}\n')
 
                 except Exception as e:
-                    traceback.print_exc()
-                    print(f'Could not geocode row {row}.')
+                    stacktrace = traceback.format_exc()
+                    print(f'Could not geocode row:\n\t{row}.')
+                    print(stacktrace)
+                    logfile.write(f'{datetime.now()} Could not geocode row:\n\t{row}.\n')
+                    logfile.write(stacktrace)
 
-            self.stdout.write(self.style.SUCCESS(f'Successfully geocoded {num_geocoded} addresses'))
+            self.stdout.write(self.style.SUCCESS(f'{datetime.now()} Successfully geocoded {num_geocoded} addresses'))
