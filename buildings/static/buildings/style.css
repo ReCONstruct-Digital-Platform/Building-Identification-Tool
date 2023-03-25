@@ -128,6 +128,8 @@ label {
 }
 
 .building-address,
+.building-serial,
+.building-construction-year,
 .building-cubf {
   font-size: large;
 }

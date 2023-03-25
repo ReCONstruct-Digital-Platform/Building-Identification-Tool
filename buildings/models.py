@@ -179,7 +179,19 @@ class Building(models.Model):
     lat = models.FloatField()
     lon = models.FloatField()
     date_added = models.DateTimeField('date added', default=timezone.now)
-    
+
+    csv_address = models.TextField(blank=True, null=True)
+
+    serial_number = models.BigIntegerField(blank=True, null=True, unique=True)
+    max_num_floor = models.IntegerField(blank=True, null=True)
+    construction_year = models.IntegerField(blank=True, null=True)
+    year_real_esti = models.CharField(max_length=1, blank=True, null=True)
+    floor_area = models.FloatField(blank=True, null=True)
+    type_const = models.IntegerField(blank=True, null=True)
+    num_non_res = models.IntegerField(blank=True, null=True)
+    value_prop = models.IntegerField(blank=True, null=True)
+
+
     # Override the objects attribute of the model
     # in order to implement custom search functionality
     # objects = BuildingQuerySet.as_manager()
@@ -287,3 +299,5 @@ class BuildingTypology(models.Model):
     typology = models.ForeignKey(Typology, on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
 
+    def __str__(self):
+        return f'{self.vote}'

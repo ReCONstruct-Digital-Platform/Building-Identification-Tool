@@ -32,7 +32,7 @@
       <div class="building-id-and-report">
         <div class="building-id">
           <h2>
-            Building #{{ building.id }} 
+            Building #{{ building.id }}
           </h2>
         </div>
         <!-- <div class="report-building">
@@ -44,6 +44,20 @@
       </div>
       <div class="building-cubf">
         CUBF {{ building.cubf }}: {{ building.cubf_name }}
+      </div>
+      <div class="building-serial">
+        Serial number: {{ building.serial_number }}
+      </div>
+      <div class="building-construction-year">
+        {% if building.construction_year %} 
+        Construction year:  {{ building.construction_year }} 
+        {% if building.year_real_esti == 'R' %}
+        (Real)
+        {% else %}
+        (Estimated)
+        {% endif %}
+        {% else %}
+        {% endif %}
       </div>
       <div class="building-address">
         <p>

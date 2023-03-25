@@ -79,26 +79,33 @@ class Command(BaseCommand):
 
                 data = row.rstrip().split(",")
 
-                address = f'{data[0]}'.replace('-', ' ')
-                lookup_results = Building.objects.filter(formatted_address__icontains=address)
+                csv_address = f'{data[0]} {data[3]} QC Canada'
 
-                if len(lookup_results) > 0:
-                    print(f'Already have geocoded row: {row}')
-                    continue
+                serial_number = int(data[5].replace(' ', ''))
 
-                address = f'{data[0]} {data[3]} QC Canada'
-                res = gmaps.geocode(address)
-                # Only expecting a single returned address
-                res = res[0]
-                address_components = _parse_address_components(res['address_components'])
-                
+                # These fields can be '9999' indicating a null value
+                max_num_floor = int(data[8]) if data[8] != '9999' else None
+                construction_year = int(data[9]) if data[9] != '9999' else None
+                year_real_esti = data[10] if data[10] != '9999' else None
+                floor_area = float(data[11]) if data[11] != '9999' else None
+                type_const = int(data[13]) if data[13] != '9999' else None
+                num_non_res = int(data[16]) if data[16] != '9999' else None
+                value_prop = int(data[17]) if data[17] != '9999' else None
+
+                # import code 
+                # code.interact(local=locals())
+
                 # Often the original address is not similar enough to detect duplicates before geocoding
-                lookup_results = Building.objects.filter(formatted_address__icontains=res['formatted_address'])
-                if len(lookup_results) > 0:
+                if Building.objects.filter(serial_number=serial_number).exists():
                     print(f'{datetime.now()} Already have geocoded row: {row}')
                     continue
 
-                print(address)
+                res = gmaps.geocode(csv_address)
+                # Only expecting a single returned address
+                res = res[0]
+                address_components = _parse_address_components(res['address_components'])
+
+                print(csv_address)
                 try:
 
                     locality = None
@@ -119,6 +126,15 @@ class Command(BaseCommand):
                         formatted_address = res['formatted_address'],
                         lat = res['geometry']['location']['lat'],
                         lon = res['geometry']['location']['lng'],
+                        serial_number = serial_number,
+                        max_num_floor = max_num_floor,
+                        construction_year = construction_year,
+                        year_real_esti = year_real_esti,
+                        floor_area = floor_area,
+                        type_const = type_const,
+                        num_non_res = num_non_res,
+                        value_prop = value_prop,
+                        csv_address = csv_address,
                         date_added = timezone.now()
                     )
                     b.save()
