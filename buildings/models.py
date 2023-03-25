@@ -91,7 +91,6 @@ class Profile(models.Model):
         return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
     
 
-
 class BuildingQuerySet(models.QuerySet):
     # We implement this ourselves, not an override of a QuerySet method
     def search(self, query=None, ordering=None):
@@ -159,6 +158,8 @@ class BuildingQuerySet(models.QuerySet):
         if b is None:
             b = self.get_random_least_voted(exclude_id=exclude_id)
         return b
+    
+
 
     
 class BuildingManager(models.Manager):
@@ -205,6 +206,22 @@ class Building(models.Model):
             return CUBF_TO_NAME_MAP[self.cubf]
         else:
             return ''
+        
+    def get_average_score(self):
+        """
+        Only the building typology vote score for now
+        """
+        if self.vote_set.filter(buildingtypology__isnull=False).count() == 0:
+            return 0
+        
+        acc = 0
+        n = 0
+        for vote in self.vote_set.filter(buildingtypology__isnull=False):
+            acc += vote.buildingtypology.score
+            n += 1
+
+        return round(acc/n, 2)
+        
 
     def __str__(self):
         return f'{self.formatted_address} {self.region} ({self.lat}, {self.lon})'
@@ -295,7 +312,7 @@ class Typology(models.Model):
         return f'{self.name}'
     
 class BuildingTypology(models.Model):
-    vote = models.ForeignKey(Vote, on_delete=models.CASCADE)
+    vote = models.OneToOneField(Vote, on_delete=models.CASCADE)
     typology = models.ForeignKey(Typology, on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
 

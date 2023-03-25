@@ -5,101 +5,23 @@
 <script src="{% static 'scripts/map.js' %}"></script>
 <script> 
     let map;
-    // function initMap() {
-
-    //   const lat = parseFloat("{{ building.lat }}");
-    //   const lon = parseFloat("{{ building.lon }}");
-
-    //   building_coord = { lat: lat, lng: lon };
-
-    //   const map = new google.maps.StreetViewPanorama(
-    //     document.getElementById("street-view"),
-    //     {
-    //       position: building_coord,
-    //       center: building_coord,
-    //       zoom: 0,
-    //       pov: {
-    //         heading: 0,
-    //         pitch: 0,
-    //       },
-    //     }
-    //   );
-    //   const buildingMarker = new google.maps.Marker({
-    //           position: building_coord,
-    //           map,
-    //           title: "Building",
-    //         });
-    // }
-    // let streetview;
-    // let buildingMarker;
-
     function initMap() {
+        const lat = parseFloat("{{ building.lat }}");
+        const lon = parseFloat("{{ building.lon }}");
 
-      const lat = parseFloat("{{ building.lat }}");
-      const lon = parseFloat("{{ building.lon }}");
-
-      const building_coord = { lat: lat, lng: lon };
-
-      const svService = new google.maps.StreetViewService();
-
-      const panoRequest = {
-        location: building_coord,
-        preference: google.maps.StreetViewPreference.BEST,
-        radius: 50,
-        source: google.maps.StreetViewSource.OUTDOOR
-      };
-
-      const findPanorama = function(radius) {
-        panoRequest.radius = radius;
-        svService.getPanorama(panoRequest, function(panoData, status) {
-
-          if (status === google.maps.StreetViewStatus.OK) {
-            // Calculate the correct direction the camera must face
-            // based on the panorama default location and the building location
-            const heading = google.maps.geometry.spherical.computeHeading(panoData.location.latLng, building_coord);
-
-            const streetview = new google.maps.StreetViewPanorama(
-              document.getElementById('street-view'),
-              {
-                  position: building_coord,
-                  center: building_coord,
-                  zoom: 0,
-                  pov: {
-                    heading: heading,
-                    pitch: 0,
-                  },
-              });
-            
-              const buildingMarker = new google.maps.Marker({
-                position: building_coord,
-                map: streetview,
-                title: "Buildingdsvsd",
-              });
-              
-              // Setting the panorama after the marker has been defined,
-              // otherwise the marker does not show for some reason!
-              // https://stackoverflow.com/questions/23498921/google-street-view-with-custom-panorama-and-markers
-              streetview.setPano(panoData.location.pano);
-          } 
-          else {
-            //Handle other statuses here
-            if (radius > 200) {
-              console.log("Could not find a street view within 200m of building!");
-              return False;
-            } 
-            else {
-              console.log(`Could not find street view within ${radius}m, trying again within ${radius+50}m.`)
-              findPanorama(radius + 50);
-            }
+        const map = new google.maps.StreetViewPanorama(
+          document.getElementById("map"),
+          {
+            position: { lat: lat, lng: lon },
+            zoom: 0,
+            pov: {
+              heading: 0,
+              pitch: 0,
+            },
           }
-        });
-      };
-      // Call the function with 50m radius by default
-      findPanorama(50);
+      );
     }
-
-    window.initMap = initMap;
-
+  window.initMap = initMap;
 </script>
 
 
@@ -154,9 +76,9 @@
     </div>
   </div>
   <div class="mapholder mt-3">
-    <div id="street-view"></div>
+    <div id="map"></div>
     <!-- Uncomment to activate streetview container - will incur API cost -->
-    <script src="https://maps.googleapis.com/maps/api/js?key={{key}}&libraries=geometry&callback=initMap&v=weekly" defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{key}}&callback=initMap&v=weekly" defer></script>
   </div>
   <div class="building-selection mt-3">
     <form action="{% url 'buildings:classify' building.id %}" method="post">
