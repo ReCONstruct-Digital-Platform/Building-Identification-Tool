@@ -195,8 +195,9 @@ class Building(models.Model):
 
     # Original address in the CSV
     csv_address = models.TextField(blank=True, null=True)
-
-    serial_number = models.BigIntegerField(blank=True, null=True, unique=True)
+    
+    # Set as text field as some were bigger than the maximum integer allowed by SQLite!
+    serial_number = models.TextField(blank=True, null=True, unique=True)
 
     # Linear dimension of the land facing the public right of way
     lin_dim = models.FloatField(blank=True, null=True)

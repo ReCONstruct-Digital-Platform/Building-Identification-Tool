@@ -81,7 +81,7 @@ class Command(BaseCommand):
 
                 csv_address = f'{data[0]} {data[3]} QC Canada'
 
-                serial_number = int(data[5].replace(' ', ''))
+                serial_number = data[5].replace(' ', '').strip()
 
                 # These fields can be '9999' indicating a null value
                 lin_dim = float(data[6]) if data[6] != '9999.0' else None
