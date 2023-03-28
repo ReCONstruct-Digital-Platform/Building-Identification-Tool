@@ -22,8 +22,9 @@ class Command(BaseCommand):
             total_duplicates += num_duplicates
 
             if options['delete']:
-                duplicated_buildings.delete()
-                num_deleted += num_duplicates
+                for duplicate in duplicated_buildings:
+                    duplicate.delete()
+                    num_deleted += 1
             else:
                 duplicate_ids = duplicated_buildings.values('id')
                 self.stdout.write(f"Building at \'{dup['formatted_address']}\' has {num_duplicates} duplicates:\n\t{duplicate_ids}")
