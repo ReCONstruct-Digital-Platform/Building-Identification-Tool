@@ -1,64 +1,67 @@
 {% extends "buildings/base.html" %}
 {% block content %}
 
-<div class="row">
-    <div>
-        <h1>Hello {{ request.user }},</h1>
-        <h1>Welcome to the Image Selection Tool</h1>
-    </div>
-</div>
-    
-<div class="row">
-
-    <div class="spread-apart-container">
-        <div class="user-stats-container mt-4">
-            You've voted on {{ request.user.vote_set.all | length }} buildings!
+<div class="container">
+    <div class="row ">
+        <div>
+            <h1>Hello {{ request.user }},</h1>
+            <h1>Welcome to the Image Selection Tool</h1>
         </div>
-        <div class="col-md-5">
-            <div class="content-section">
-                <h3>Latest Activity</h3>
-                <ul class="list-group">
-                    {% for vote in latest_votes %}
-                    
-                    <li class="list-group-item list-group-item-light card mb-2">
+    </div>
+        
+    <div class="row">
 
-                        <div class="activity-top-row mb-2">
-                            <img class="profile-pic" src="{{ vote.user.profile.get_avatar_url }}">
-                            {{ vote.user.username }} - {{ vote.date_added }}
-                            <br>
-                        </div>
-                        <div class="activity-building-info mt-2">
-                            <a href="{% url 'buildings:classify' vote.building.id %}">
-                                {{vote.building.street_number}} {{vote.building.street_name}}, {{vote.building.locality}}
-                            </a>
-                        </div>
+        <div class="spread-apart-container">
+            <div class="user-stats-container mt-4">
+                You've voted on {{ request.user.vote_set.all | length }} buildings!
+            </div>
+            <div class="col-md-5">
+                <div class="content-section">
+                    <h3>Latest Activity</h3>
+                    <ul class="list-group">
+                        {% for vote in latest_votes %}
                         
-                        <div class="material-scores-activity">
-                            Voted:
-                            <ul class="activity-material-scores">
-                                {% for matscore in vote.materialscore_set.all %}
-                                <li class="matscore">
-                                    {{ matscore.material }}: {{ matscore.score }}/5
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    {% if vote.buildingnote %}
-                        <div class="note-added-activity mt-2">
-                            With note:
-                            <div class="activity-note">
-                                {{ vote.buildingnote.note }}
+                        <li class="list-group-item list-group-item-light card mb-2">
+
+                            <div class="activity-top-row mb-2">
+                                <img class="profile-pic" src="{{ vote.user.profile.get_avatar_url }}">
+                                {{ vote.user.username }} - {{ vote.date_added }}
+                                <br>
                             </div>
-                        </div>
-                    {% endif %}
-                    </li>
-                        
-                    {% empty %}
-                        <li class="list-group-item list-group-item-light">No activity</li>
-                    {% endfor %}
-                </ul>
+                            <div class="activity-building-info mt-2">
+                                <a href="{% url 'buildings:classify' vote.building.id %}">
+                                    {{vote.building.street_number}} {{vote.building.street_name}}, {{vote.building.locality}}
+                                </a>
+                            </div>
+                            
+                            <div class="material-scores-activity">
+                                Voted:
+                                <ul class="activity-material-scores">
+                                    {% for matscore in vote.materialscore_set.all %}
+                                    <li class="matscore">
+                                        {{ matscore.material }}: {{ matscore.score }}/5
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% if vote.buildingnote %}
+                            <div class="note-added-activity mt-2">
+                                With note:
+                                <div class="activity-note">
+                                    {{ vote.buildingnote.note }}
+                                </div>
+                            </div>
+                        {% endif %}
+                        </li>
+                            
+                        {% empty %}
+                            <li class="list-group-item list-group-item-light">No activity</li>
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
 {% endblock %}

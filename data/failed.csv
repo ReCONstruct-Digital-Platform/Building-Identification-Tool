@@ -1,2 +1,2 @@
-3 rue PRINCIPALE OUEST,9999,10030,Saint-Anaclet-de-Lessard,7424,3671 62 6061,65.8,1343.6,2,1981,R,747.2,1,9999,9999,9999,3,774000,9999,9999
-26 route de NEIGETTE,9999,10030,Saint-Anaclet-de-Lessard,7423,3671 41 9859,113.09,9970.0,1,2013,R,39.1,1,9999,9999,9999,1,419100,9999,9999
+address,duplicate_address,code geographique,nom du territoire,CUBF,serial_number,lin_dim,area,max_num_floor,construction year,year_real_esti,floor_area,code_phys_conn,type_const,num_dwell,num_rental,num_non_res,value_prop,code_arrondissement,nom_arrondissement
+100 rue SAINT-ALPHONSE Nord,1475 rue PRINCIPALE Est,45072,Magog,7451,1214 36 8765,96.49,146174.8,1,9999,9999,9999.0,9999,9999,9999,9999,1,3305000,9999,9999

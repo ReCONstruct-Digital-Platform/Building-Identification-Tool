@@ -10,7 +10,7 @@ class Command(BaseCommand):
         parser.add_argument('-d', '--delete', action="store_true", default=False)
 
     def handle(self, *args, **options):
-        # returns 
+        # Groups by unique formatted address, counts the unique IDs for each. 
         dupes = Building.objects.values('formatted_address').annotate(Count('id')).order_by().filter(id__count__gt=1)
         num_deleted = 0
         total_duplicates = 0
@@ -22,7 +22,7 @@ class Command(BaseCommand):
             total_duplicates += num_duplicates
 
             if options['delete']:
-                Building.objects.filter(formatted_address__exact=dup['formatted_address']).delete()
+                duplicated_buildings.delete()
                 num_deleted += num_duplicates
             else:
                 duplicate_ids = duplicated_buildings.values('id')

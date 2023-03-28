@@ -15,9 +15,19 @@ body {
   }
 }
 
+.building-id {
+  display: flex;
+  align-items: center;
+}
+
+.serial-cubf {
+  font-size: large;
+}
+
 .building-id-and-report {
   display: flex;
   flex-direction: row;
+  align-items: center;
 }
 
 .logo-img {
@@ -112,27 +122,63 @@ label {
     margin: 0px 0px;
 }
 
+input[type='number']{
+  width: 80px;
+} 
 
 .clear {
     clear: both;
 }
 
-#container1{
-    margin-left: 100px 68px;
+
+.container-wide {
+  width: 100%;
+  overflow: hidden;
 }
-  
-/* Adapt the size of the map with screen size */
+
+.maps-container {
+  height: 70%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+/* 
+.classify-top-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+} */
+
+.streetview-container {
+  height: 100%;
+  width: 100%;
+}
+/* Adapt the size of the map with screen size
 .mapholder{
     height: 70%;
     width: 100%;
+} */
+
+.info-and-satellite-view {
+  height: 100%;
+  width: 35%;
+  display: flex;
+  flex-direction: column;
+}
+
+.info-and-satellite-view #info,
+.info-and-satellite-view #map {
+  height: 50%;
 }
 
 .building-address,
+.building-serial,
+.building-construction-year,
 .building-cubf {
   font-size: large;
 }
 
-#map {
+#street-view {
     height: 100%;
 }
 
@@ -271,8 +317,14 @@ td > a:first-child {
 
 .building-search-filters {
   display: flex;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
 }
 
+.input-group {
+  width:auto !important;
+  /* margin-right: 15px; */
+}
 
 .vote-table td {
   vertical-align: middle;
@@ -339,12 +391,20 @@ tr:hover .delete-row-icon {
 }
 
 .building-info {
+  width: 70%;
   display: flex;
   flex-direction: column;
 }
 
-.classify-building-nav {
+.building-nav {
   font-size: large;
+  justify-content: space-between;
+}
+.building-nav-left {
+  margin-left: 4rem;
+}
+.building-nav-right {
+  margin-right: 4rem;
 }
 
 .profile-pic {
@@ -361,3 +421,5 @@ tr:hover .delete-row-icon {
 .user-stats-container {
   font-size: large;
 }
+
+
