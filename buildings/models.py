@@ -4,7 +4,8 @@ import random
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Avg, TextField
+from django.db.models.functions import Cast, Coalesce
 from django.utils.translation import gettext_lazy as _
 import logging
 
@@ -13,6 +14,7 @@ log = logging.getLogger(__name__)
 
 STRING_QUERIES_TO_FILTER = {
     "q_address": "formatted_address__icontains",
+    "q_locality": "locality__icontains",
     "q_region": "region__icontains",
     "q_cubf": "cubf_str__icontains",
 }
@@ -119,11 +121,21 @@ class BuildingQuerySet(models.QuerySet):
             else:
                 lookups[f"num_votes__{op}"] = query["q_num_votes"]
 
+        if "q_score" in query:
+            op = query["q_score_op"]
+            if op == 'eq':
+                lookups["avg_score"] = query["q_score"]
+            else:
+                lookups[f"avg_score__{op}"] = query["q_score"]
+
         log.info(lookups)
         lookups = Q(**lookups) 
 
         # Can split up the query into multiple steps too and merge the results
-        result = self.annotate(num_votes=Count('vote')).filter(lookups)
+        result = self.annotate(num_votes=Count('vote')) \
+                    .annotate(avg_score=Coalesce(Avg('vote__buildingtypology__score'), 0.0)) \
+                    .annotate(cubf_str=Cast('cubf', output_field=TextField())) \
+                    .filter(lookups)
         if ordering:
             result = result.order_by(ordering)
 
@@ -164,7 +176,7 @@ class BuildingQuerySet(models.QuerySet):
     
 class BuildingManager(models.Manager):
     def get_queryset(self):
-        return BuildingQuerySet(self.model, using=self._db).annotate(num_votes=Count('vote'))
+        return BuildingQuerySet(self.model, using=self._db).annotate(num_votes=Count('vote')).annotate(avg_score=Avg('vote__buildingtypology__score'))
 
 
 class Building(models.Model):
@@ -181,17 +193,67 @@ class Building(models.Model):
     lon = models.FloatField()
     date_added = models.DateTimeField('date added', default=timezone.now)
 
+    # Original address in the CSV
     csv_address = models.TextField(blank=True, null=True)
 
     serial_number = models.BigIntegerField(blank=True, null=True, unique=True)
+
+    # Linear dimension of the land facing the public right of way
+    lin_dim = models.FloatField(blank=True, null=True)
+
+    # Area of the land entered in the roll
+    area = models.FloatField(blank=True, null=True)
+
+    # Maximum number of floors in the buildings of the assessment unit
     max_num_floor = models.IntegerField(blank=True, null=True)
+
+    # Year of the original construction of the main building, if there is only one
     construction_year = models.IntegerField(blank=True, null=True)
+
+    # Indication of whether the original year of construction indicated is real or estimated
     year_real_esti = models.CharField(max_length=1, blank=True, null=True)
+
+    # Floor area of the main building, if there is only one
     floor_area = models.FloatField(blank=True, null=True)
+
+    """
+    Type of construction defition:
+
+    1 (On the same level):  A single-storey house on the ground floor with direct access or through a 
+                            tiered entrance. This type of house usually, but not necessarily, has a basement. 
+
+    2 (Staggered levels):   A house with several staggered ground floors connected by short stairways. 
+                            This type of house often, but not necessarily, has a basement that may be smaller 
+                            than the ground floor.
+
+    3 (Unimodular):         A factory-built, single-storey house designed and constructed to be transported in 
+                            one piece to the location where it will be installed for use. This type of house is 
+                            usually built on wood, metal or concrete supports and, less frequently, on a masonry 
+                            foundation (floor, wall, etc.). 
+
+    4 (Attic floor):        A house with several superimposed levels, the upper level of which is formed by rooms that 
+                            can be converted into living space in the attic, with sloping ceilings. The attic floor is 
+                            generally, but not necessarily, smaller than the floor below. This attic floor is also called 
+                            "attic". 
+
+    5 (Full floors):        A multi-storey house with no sloping ceiling on the upper floor, unless it is a cathedral ceiling.
+    """
     type_const = models.IntegerField(blank=True, null=True)
+
+    # Total number of dwellings in the assessment unit
+    num_dwell = models.IntegerField(blank=True, null=True)
+
+    # Total number of rental rooms in the assessment unit
+    num_rental = models.IntegerField(blank=True, null=True)
+
+    # Total number of non-residential premises in the assessment unit
     num_non_res = models.IntegerField(blank=True, null=True)
+
+    # Value of the property entered on the current roll
     value_prop = models.IntegerField(blank=True, null=True)
 
+    # Used in the google places API to retrieve photos, etc.
+    place_id = models.TextField(blank=True, null=True)
 
     # Override the objects attribute of the model
     # in order to implement custom search functionality
@@ -207,11 +269,15 @@ class Building(models.Model):
         else:
             return ''
         
-    def get_average_score(self):
+    def avg_score(self):
         """
         Only the building typology vote score for now
+
+        b.vote_set.aggregate(Avg('buildingtypology__score'))
+        Building.objects.filter(vote__buildingtypology__score__gt=4).aggregate(django.db.models.Avg('vote__buildingtypology__score')
+
         """
-        if self.vote_set.filter(buildingtypology__isnull=False).count() == 0:
+        if self.vote_set is None or self.vote_set.filter(buildingtypology__isnull=False).count() == 0:
             return 0
         
         acc = 0
@@ -239,6 +305,8 @@ class Building(models.Model):
             return field
         elif field in self.get_field_names():
             return field
+        elif field == 'score':
+            return 'avg_score'
         else:
             # If the field is not valid, default to id
             return "id"

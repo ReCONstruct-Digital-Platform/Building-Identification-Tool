@@ -26,6 +26,17 @@
                 </a>
             </th>
             <th scope="col">
+                {% if order_by == "locality" and dir == "desc" %}
+                    <a href="?order_by=locality&dir=asc&{{current_search_query}}" class="row-link">
+                {% else %}
+                    <a href="?order_by=locality&dir=desc&{{current_search_query}}" class="row-link">
+                {% endif %}
+                <div class="th-buildings">
+                    Locality
+                    {% include "buildings/utils/sort_icons.html" with field="locality" dir=dir %}
+                </div>
+            </th>
+            <th scope="col">
                 {% if order_by == "region" and dir == "desc" %}
                     <a href="?order_by=region&dir=asc&{{current_search_query}}" class="row-link">
                 {% else %}
@@ -69,6 +80,17 @@
                     {% include "buildings/utils/sort_icons.html" with field="num_votes" dir=dir %}
                 </div>
             </th>
+            <th scope="col">
+                {% if order_by == "score" and dir == "desc" %}
+                    <a href="?order_by=score&dir=asc&{{current_search_query}}" class="row-link">
+                {% else %}
+                    <a href="?order_by=score&dir=desc&{{current_search_query}}" class="row-link">
+                {% endif %}
+                <div class="th-buildings">
+                    Score
+                    {% include "buildings/utils/sort_icons.html" with field="score" dir=dir %}
+                </div>
+            </th>
         </tr>
         </thead>
         <tbody>
@@ -76,14 +98,17 @@
             <tr class="mb-2">
                 <th scope="row"><a href="{% url 'buildings:classify' building.id %}" class="row-link">{{ building.id }}</a></th>
                 <td><a href="{% url 'buildings:classify' building.id %}" tabindex="-1" class="row-link">{{ building.formatted_address }}</a></td>
+                <td><a href="{% url 'buildings:classify' building.id %}" tabindex="-1" class="row-link">{{ building.locality }}</a></td>
                 <td><a href="{% url 'buildings:classify' building.id %}" tabindex="-1" class="row-link">{{ building.region }}</a></td>
                 <td><a href="{% url 'buildings:classify' building.id %}" tabindex="-1" class="row-link">{{ building.cubf }}</a></td>
                 <td><a href="{% url 'buildings:classify' building.id %}" tabindex="-1" class="row-link">{{ building.date_added }}</a></td>
                 <td><a href="{% url 'buildings:classify' building.id %}" tabindex="-1" class="row-link">{{ building.vote_set.all | length }}</a></td>
+                <td><a href="{% url 'buildings:classify' building.id %}" tabindex="-1" class="row-link">{{ building.avg_score|default_if_none:0 }}</a></td>
             </tr>
             {% empty %}
             <tr class="mb-2">
                 <th scope="row"><a href="#" class="row-link">-</a></th>
+                <td><a href="#" tabindex="-1" class="row-link">-</a></td>
                 <td><a href="#" tabindex="-1" class="row-link">-</a></td>
                 <td><a href="#" tabindex="-1" class="row-link">-</a></td>
                 <td><a href="#" tabindex="-1" class="row-link">-</a></td>

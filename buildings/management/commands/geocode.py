@@ -84,11 +84,15 @@ class Command(BaseCommand):
                 serial_number = int(data[5].replace(' ', ''))
 
                 # These fields can be '9999' indicating a null value
+                lin_dim = float(data[6]) if data[6] != '9999.0' else None
+                area = float(data[7]) if data[7] != '9999.0' else None
                 max_num_floor = int(data[8]) if data[8] != '9999' else None
                 construction_year = int(data[9]) if data[9] != '9999' else None
                 year_real_esti = data[10] if data[10] != '9999' else None
-                floor_area = float(data[11]) if data[11] != '9999' else None
+                floor_area = float(data[11]) if data[11] != '9999.0' else None
                 type_const = int(data[13]) if data[13] != '9999' else None
+                num_dwell = int(data[14]) if data[14] != '9999' else None
+                num_rental = int(data[15]) if data[15] != '9999' else None
                 num_non_res = int(data[16]) if data[16] != '9999' else None
                 value_prop = int(data[17]) if data[17] != '9999' else None
 
@@ -97,7 +101,7 @@ class Command(BaseCommand):
 
                 # Often the original address is not similar enough to detect duplicates before geocoding
                 if Building.objects.filter(serial_number=serial_number).exists():
-                    print(f'{datetime.now()} Already have geocoded row: {row}')
+                    print(f'{datetime.now()} Already have geocoded row: {row.rstrip()}')
                     continue
 
                 res = gmaps.geocode(csv_address)
@@ -105,9 +109,7 @@ class Command(BaseCommand):
                 res = res[0]
                 address_components = _parse_address_components(res['address_components'])
 
-                print(csv_address)
                 try:
-
                     locality = None
                     if 'locality' in address_components:
                         locality = address_components['locality']
@@ -127,26 +129,33 @@ class Command(BaseCommand):
                         lat = res['geometry']['location']['lat'],
                         lon = res['geometry']['location']['lng'],
                         serial_number = serial_number,
+                        lin_dim = lin_dim,
+                        area = area,
                         max_num_floor = max_num_floor,
                         construction_year = construction_year,
                         year_real_esti = year_real_esti,
                         floor_area = floor_area,
                         type_const = type_const,
+                        num_dwell = num_dwell,
+                        num_rental = num_rental,
                         num_non_res = num_non_res,
                         value_prop = value_prop,
                         csv_address = csv_address,
-                        date_added = timezone.now()
+                        place_id = res['place_id'],
+                        date_added = timezone.now(),
                     )
                     b.save()
                     num_geocoded += 1
-                    print(f'{datetime.now()} Successfully geocoded Building {b}')
+                    self.stdout.write(self.style.SUCCESS(f'{datetime.now()} Successfully geocoded Building {b}'))
                     logfile.write(f'{datetime.now()} Successfully geocoded Building {b}\n')
 
-                except Exception as e:
+                except:
                     stacktrace = traceback.format_exc()
-                    print(f'Could not geocode row:\n\t{row}.')
-                    print(stacktrace)
-                    logfile.write(f'{datetime.now()} Could not geocode row:\n\t{row}.\n')
+
+                    self.stdout.write(self.style.WARNING(f'Could not geocode row:\n\t{row}.'))
+                    self.stdout.write(self.style.WARNING(stacktrace))
+
+                    logfile.write(f'{datetime.now()} Could not geocode row:\n\t{row.rstrip()}.\n')
                     logfile.write(stacktrace)
 
             self.stdout.write(self.style.SUCCESS(f'{datetime.now()} Successfully geocoded {num_geocoded} addresses'))

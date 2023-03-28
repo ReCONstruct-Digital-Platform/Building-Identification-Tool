@@ -1,40 +1,12 @@
 {% extends 'buildings/base.html' %}
 
 {% block content %}
+{% load humanize %}
 
 <script src="{% static 'scripts/map.js' %}"></script>
 <script> 
-    let map;
-    // function initMap() {
-
-    //   const lat = parseFloat("{{ building.lat }}");
-    //   const lon = parseFloat("{{ building.lon }}");
-
-    //   building_coord = { lat: lat, lng: lon };
-
-    //   const map = new google.maps.StreetViewPanorama(
-    //     document.getElementById("street-view"),
-    //     {
-    //       position: building_coord,
-    //       center: building_coord,
-    //       zoom: 0,
-    //       pov: {
-    //         heading: 0,
-    //         pitch: 0,
-    //       },
-    //     }
-    //   );
-    //   const buildingMarker = new google.maps.Marker({
-    //           position: building_coord,
-    //           map,
-    //           title: "Building",
-    //         });
-    // }
-    // let streetview;
-    // let buildingMarker;
-
-    function initMap() {
-
+    function initMaps() {
+      // Get the values from django
       const lat = parseFloat("{{ building.lat }}");
       const lon = parseFloat("{{ building.lon }}");
 
@@ -73,7 +45,7 @@
               const buildingMarker = new google.maps.Marker({
                 position: building_coord,
                 map: streetview,
-                title: "Buildingdsvsd",
+                title: "Building",
               });
               
               // Setting the panorama after the marker has been defined,
@@ -84,7 +56,7 @@
           else {
             //Handle other statuses here
             if (radius > 200) {
-              console.log("Could not find a street view within 200m of building!");
+              console.log(`Could not find a street view within ${radius}m of building! Giving up.`);
               return False;
             } 
             else {
@@ -96,22 +68,36 @@
       };
       // Call the function with 50m radius by default
       findPanorama(50);
+
+      const map = new google.maps.Map(document.getElementById("map"), {
+        center: building_coord,
+        mapTypeId: 'satellite',
+        zoom: 18,
+      });
+
+      const marker = new google.maps.Marker({
+        position: building_coord,
+        map: map,
+      });
+
     }
-
-    window.initMap = initMap;
-
+    window.initMaps = initMaps;
 </script>
 
-
-<div class="pageholder">
+<section class="container-wide">
   <div class="classify-top-row">
-
+    <div class="building-nav building-nav-left">
+      <a id="prev-building-link">&laquo;&laquo; Prev</a>
+    </div>
     <div class="building-info">
       <div class="building-id-and-report">
         <div class="building-id">
-          <h2>
+          <h3>
             Building #{{ building.id }}
-          </h2>
+          </h3>
+          <span class="serial-cubf ml-2">
+            ({{ building.serial_number }})
+          </span>
         </div>
         <!-- <div class="report-building">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
@@ -119,23 +105,9 @@
           </svg>
           Report bad data
         </div> -->
-      </div>
-      <div class="building-cubf">
-        CUBF {{ building.cubf }}: {{ building.cubf_name }}
-      </div>
-      <div class="building-serial">
-        Serial number: {{ building.serial_number }}
-      </div>
-      <div class="building-construction-year">
-        {% if building.construction_year %} 
-        Construction year:  {{ building.construction_year }} 
-        {% if building.year_real_esti == 'R' %}
-        (Real)
-        {% else %}
-        (Estimated)
-        {% endif %}
-        {% else %}
-        {% endif %}
+        <div class="building-cubf ml-2">
+          CUBF {{ building.cubf }}: {{ building.cubf_name }} 
+        </div>
       </div>
       <div class="building-address">
         <p>
@@ -143,27 +115,74 @@
         </p> 
       </div>
     </div>
+    <div class="building-nav building-nav-right">
+      <!-- <div>
+        <a id="prev-building-link">&laquo;&laquo; Prev</a>
+      </div> -->
+        <a id="next" href="{% url 'buildings:classify' next_building %}">Next &raquo;&raquo;</a>
+    </div>
+  </div>
+</section>
 
-  </div>
-  <div class="classify-top-row">
-    <div class="classify-building-nav prev-building">
-      <a id="prev-building-link">&laquo;&laquo; Prev</a>
+<section class="container-wide">
+  <div class="maps-container">
+    <div class="streetview-container ml-3 mr-1">
+      <div id="street-view"></div>
     </div>
-    <div class="classify-building-nav skip-building">
-      <a id="next" href="{% url 'buildings:classify' next_building %}">Next &raquo;&raquo;</a>
+    <div class="info-and-satellite-view mt-3 mr-3">
+      <div id="info">
+        Additional Info:
+        <ul>
+          {% if building.construction_year %} 
+          <li>
+            Construction year:  {{ building.construction_year }} 
+            {% if building.year_real_esti == 'E' %}
+            (Est.)
+            {% endif %}
+            {% else %}
+            {% endif %}
+          </li>
+          {% if building.max_num_floor %}
+          <li>
+            Max floors: {{ building.max_num_floor }}
+          </li>
+          {% endif %}
+          {% if building.floor_area and building.floor_area != 9999.0 %}
+          <li>
+            Floor area: {{ building.floor_area }} m<sup>2</sup>
+          </li>
+          {% endif %}
+          {% if building.type_const %}
+          <li>
+            Type const.: {{ building.type_const }}
+          </li>
+          {% endif %}
+          {% if building.num_non_res %}
+          <li>
+            Non-residential premises: {{ building.num_non_res }}
+          </li>
+          {% endif %}
+          {% if building.value_prop %}
+          <li>
+            Property value: ${{ building.value_prop|intcomma }}
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+      <div id="map"></div>
     </div>
-  </div>
-  <div class="mapholder mt-3">
-    <div id="street-view"></div>
     <!-- Uncomment to activate streetview container - will incur API cost -->
-    <script src="https://maps.googleapis.com/maps/api/js?key={{key}}&libraries=geometry&callback=initMap&v=weekly" defer></script>
-  </div>
+  </div>  
+  <script src="https://maps.googleapis.com/maps/api/js?key={{key}}&libraries=geometry&callback=initMaps&v=weekly" defer></script>
+</section>
+
+<section class="container bottom-section">
   <div class="building-selection mt-3">
     <form action="{% url 'buildings:classify' building.id %}" method="post">
       {% csrf_token %}
       <legend>
         <p>
-          How confident are you that this is a prefab metal “Butler barn” community centre?
+          Is this a prefab metal building?
         </p>
       </legend>
         <table id="vote-table" class="table vote-table">
@@ -233,7 +252,13 @@
         </div>
     </form>
   </div>
-</div>
+</section>
+
+<!-- <div class="pageholder">
+
+  
+
+</div> -->
 
 {{ existing_materials | json_script:"existing_materials" }}
 
