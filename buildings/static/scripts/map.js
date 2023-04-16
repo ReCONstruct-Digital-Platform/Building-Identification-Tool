@@ -121,99 +121,6 @@ $(document).ready(function() {
         return false;
     }
 
-    // addEventListeners(document.getElementById('material-select-1'));
-
-    // const existing_materials = JSON.parse(document.getElementById('existing_materials').textContent);
-
-    // function createMaterialSelectElement(num) {
-    //     var selectList = document.createElement("select");
-    //     selectList.setAttribute("id", `material-select-${num}`);
-    //     selectList.setAttribute("class", `material-select`);
-    //     selectList.setAttribute("name", `material-${num}`);
-    
-    //     const already_selected_materials = getSelectedMaterials();
-        
-    //     const materials_left = existing_materials.filter(x => !already_selected_materials.includes(x));
-    //     console.log(materials_left);
-      
-    //     //Create and append the options
-    //     for (var i = 0; i < materials_left.length; i++) {
-    //         var option = document.createElement("option");
-    //         option.setAttribute("value", materials_left[i]);
-    //         option.innerText = materials_left[i];
-    //         if (i === 0) {
-    //             option.setAttribute("selected", "");
-    //         }
-    //         selectList.appendChild(option);
-    //     }
-    //     var option = document.createElement("option");
-    //     option.value = "new-material";
-    //     option.text = "New Material";
-    //     selectList.appendChild(option);
-    
-    //     return selectList;
-    // }
-    
-    // const table = document.getElementById('vote-table');
-    
-    // Add a new material row when user clicks the 'Add Material' button.
-    // Register event listeners on this new row, in case user picks 'New Material'
-    // in which case make a text input field appear to eneter the new material name. 
-    // $('#btn-add-row').click(function() {
-        
-    //     // const num_rows = table.rows.length
-    //     const current_id = NEXT_ROW_ID;
-    //     NEXT_ROW_ID++;
-    //     const row = table.insertRow(-1);
-    //     row.setAttribute("id", `row-${current_id}`)
-        
-    //     const th = document.createElement('th');
-    //     th.setAttribute("class", "material-name ml-2");
-    //     th.setAttribute("scope", "row");
-    //     row.appendChild(th);
-
-    //     selectList = createMaterialSelectElement(current_id);
-    //     th.appendChild(selectList);
-    //     addEventListeners(selectList);
-        
-    //     // Create first 4 cells
-    //     for (var i = 1; i < 5; i++) {
-    //         const td = document.createElement('td');
-    //         const radio = document.createElement('input');
-
-    //         td.setAttribute("class", "td-vote");
-    //         radio.setAttribute("type", "radio");
-    //         radio.setAttribute("required", "");
-    //         radio.setAttribute("name", `material-${current_id}`);
-    //         radio.setAttribute("value", i);
-
-    //         td.appendChild(radio)
-    //         row.appendChild(td);
-    //     }
-
-    //     // Last cell is special, needs the delete button
-    //     const td = document.createElement('td');
-    //     td.setAttribute("class", "td-vote");
-    //     row.appendChild(td);
-
-    //     const td_last = document.createElement('div');
-    //     td_last.setAttribute("class", "td-vote-last-cell")
-    //     td.appendChild(td_last);
-        
-    //     const radio = document.createElement('input');
-    //     radio.setAttribute("type", "radio");
-    //     radio.setAttribute("name", `material-${current_id}`);
-    //     radio.setAttribute("value", i);
-    //     td_last.appendChild(radio);
-        
-    //     const delete_row_icon = document.createElement('div');
-    //     delete_row_icon.setAttribute("class", "delete-row-icon");
-    //     delete_row_icon.innerHTML = getDeleteRowIconInnerHTML();
-    //     addDeleteRowListener(delete_row_icon, `row-${current_id}`); 
-    //     td_last.appendChild(delete_row_icon);
-    // });
-    
-
     // Add a text input when user clicks the 'Add Note' button
     // Only add if one doesn't already exist, to avoid duplicates.
     $('#btn-add-note').click(function() {
@@ -256,4 +163,26 @@ $(document).ready(function() {
             input_container.appendChild(delete_note);
         }
     });
+
+
+    var dragging = false;
+
+    $('#dragbar').mousedown(function(e) {
+        e.preventDefault();
+        dragging = true;
+        var side = $('.streetview-container');
+        $(document).mousemove(function(ex) {
+            side.css("width", ex.pageX +2);
+        });
+    });
+
+    $(document).mouseup(function(e){
+    if (dragging) 
+    {
+        $(document).unbind('mousemove');
+        dragging = false;
+    }
+    });
+
+
 });

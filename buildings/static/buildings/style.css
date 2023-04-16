@@ -15,20 +15,7 @@ body {
   }
 }
 
-.building-id {
-  display: flex;
-  align-items: center;
-}
 
-.serial-cubf {
-  font-size: large;
-}
-
-.building-id-and-report {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
 
 .logo-img {
   height: 40px;
@@ -131,56 +118,6 @@ input[type='number']{
 }
 
 
-.container-wide {
-  width: 100%;
-  overflow: hidden;
-}
-
-.maps-container {
-  height: 70%;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-}
-/* 
-.classify-top-row {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-} */
-
-.streetview-container {
-  height: 100%;
-  width: 100%;
-}
-/* Adapt the size of the map with screen size
-.mapholder{
-    height: 70%;
-    width: 100%;
-} */
-
-.info-and-satellite-view {
-  height: 100%;
-  width: 35%;
-  display: flex;
-  flex-direction: column;
-}
-
-.info-and-satellite-view #info,
-.info-and-satellite-view #map {
-  height: 50%;
-}
-
-.building-address,
-.building-serial,
-.building-construction-year,
-.building-cubf {
-  font-size: large;
-}
-
-#street-view {
-    height: 100%;
-}
 
 .user_card {
   width: 350px;
@@ -383,23 +320,91 @@ tr:hover .delete-row-icon {
   display: flex;
 }
 
+
+.building-info {
+  width: 70%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.building-info-col {
+  display: flex;
+  flex-direction: column;
+}
+
 .classify-top-row {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  font-size: medium;
 }
 
-.building-info {
-  width: 70%;
+.container-wide {
+  width: 100%;
+  overflow: hidden;
+}
+
+.streetview-and-map-container {
+  height: 70%;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.streetview-container {
+  height: 100%;
+  width: 50%;
+}
+
+.info-and-satellite-view {
+  height: 100%;
+  width: 35%;
   display: flex;
   flex-direction: column;
+  flex-grow: 1;
 }
 
-.building-nav {
-  font-size: large;
-  justify-content: space-between;
+.info-and-satellite-view #info,
+.info-and-satellite-view #map {
+  height: 50%;
 }
+
+.map-container  {
+  height: 100%;
+  width: 50%;
+
+}
+
+#dragbar{
+  height:100%;
+  width: 5px;
+  cursor: col-resize;
+}
+
+
+#streetview {
+  height: 100%;
+}
+#satmap {
+  height: 100%;
+}
+
+.building-id {
+  display: flex;
+  align-items: center;
+}
+
+.building-id-and-report {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+
+
+
 .building-nav-left {
   margin-left: 4rem;
 }
@@ -421,5 +426,7 @@ tr:hover .delete-row-icon {
 .user-stats-container {
   font-size: large;
 }
+
+
 
 
