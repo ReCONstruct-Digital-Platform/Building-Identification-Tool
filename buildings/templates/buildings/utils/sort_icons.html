@@ -7,7 +7,7 @@
     {% endif %}
 {% else %}
     <!-- By default we want the ID field sorted descendingly -->
-    {% if order_by is None and field == "id" and dir == "desc" %}
+    {% if order_by is None and field == "score" and dir == "desc" %}
     <i class="fas fa-sort-up"></i>
     {% else %}
     <i class="fas fa-sort"></i>

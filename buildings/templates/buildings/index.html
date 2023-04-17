@@ -33,17 +33,13 @@
                                     {{vote.building.street_number}} {{vote.building.street_name}}, {{vote.building.locality}}
                                 </a>
                             </div>
-                            
+
+                            {% if vote.buildingtypology %}
                             <div class="material-scores-activity">
-                                Voted:
-                                <ul class="activity-material-scores">
-                                    {% for matscore in vote.materialscore_set.all %}
-                                    <li class="matscore">
-                                        {{ matscore.material }}: {{ matscore.score }}/5
-                                    </li>
-                                    {% endfor %}
-                                </ul>
+                                Voted: {{ vote.buildingtypology.score }}
                             </div>
+                            {% endif %}
+                            
                         {% if vote.buildingnote %}
                             <div class="note-added-activity mt-2">
                                 With note:

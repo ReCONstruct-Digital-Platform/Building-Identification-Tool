@@ -279,6 +279,9 @@ class Building(models.Model):
 
     @classmethod
     def _get_proper_field_name(self, field):
+        if field in [None, 'None']:
+            return "avg_score"
+        
         field = field.lower()
         if field == "address":
             return "formatted_address"
@@ -290,19 +293,17 @@ class Building(models.Model):
             return 'avg_score'
         else:
             # If the field is not valid, default to id
-            return "id"
+            return "avg_score"
 
     @classmethod
     def get_ordering(cls, order_by, direction):
-        if order_by in [None, 'None']:
-            ordering = "id"
-        else:
-            ordering = cls._get_proper_field_name(order_by)
+
+        ordering = cls._get_proper_field_name(order_by)
 
         if direction in [None, 'None']:
             direction = "desc"
 
-        if direction != 'desc':
+        if direction == 'desc':
             ordering = f'-{ordering}'
 
         return ordering, direction
