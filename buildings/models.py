@@ -383,9 +383,11 @@ class MaterialScore(models.Model):
     
 
 class NoBuildingFlag(models.Model):
-    vote = models.ForeignKey(Vote, on_delete=models.CASCADE)
+    vote = models.OneToOneField(Vote, on_delete=models.CASCADE)
 
-
+    def __str__(self):
+        return f'No building at {self.vote.building.formatted_address}'
+    
 class BuildingNote(models.Model):
     vote = models.OneToOneField(Vote, null=True, on_delete=models.CASCADE)
     note = models.TextField(default=None, blank=True, null=True)

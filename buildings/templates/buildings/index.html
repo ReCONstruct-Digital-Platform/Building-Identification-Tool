@@ -39,7 +39,13 @@
                                 Voted: {{ vote.buildingtypology.score }}
                             </div>
                             {% endif %}
-                            
+
+                            {% if vote.nobuildingflag %}
+                            <div class="material-scores-activity">
+                                Voted: No Building!
+                            </div>
+                            {% endif %}
+
                         {% if vote.buildingnote %}
                             <div class="note-added-activity mt-2">
                                 With note:
