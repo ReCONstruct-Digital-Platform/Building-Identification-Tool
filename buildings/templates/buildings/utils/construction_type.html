@@ -1,0 +1,36 @@
+<!-- 
+    Type of construction defition:
+
+    1 (On the same level):  A single-storey house on the ground floor with direct access or through a 
+                            tiered entrance. This type of house usually, but not necessarily, has a basement. 
+
+    2 (Staggered levels):   A house with several staggered ground floors connected by short stairways. 
+                            This type of house often, but not necessarily, has a basement that may be smaller 
+                            than the ground floor.
+
+    3 (Unimodular):         A factory-built, single-storey house designed and constructed to be transported in 
+                            one piece to the location where it will be installed for use. This type of house is 
+                            usually built on wood, metal or concrete supports and, less frequently, on a masonry 
+                            foundation (floor, wall, etc.). 
+
+    4 (Attic floor):        A house with several superimposed levels, the upper level of which is formed by rooms that 
+                            can be converted into living space in the attic, with sloping ceilings. The attic floor is 
+                            generally, but not necessarily, smaller than the floor below. This attic floor is also called 
+                            "attic". 
+
+    5 (Full floors):        A multi-storey house with no sloping ceiling on the upper floor, unless it is a cathedral ceiling.
+ -->
+
+{% if type_const == 1 %}
+Same Level
+{% elif type_const == 2 %}
+Staggered Levels
+{% elif type_const == 3 %}
+Unimodular
+{% elif type_const == 4 %}
+Attic floor
+{% elif type_const == 5 %}
+Full floors
+{% else %}
+Unkwown
+{% endif %}

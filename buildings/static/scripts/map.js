@@ -98,6 +98,23 @@ function getSelectedMaterials() {
 }
 
 
+function getLatestViewData() {
+    sv_pano = sv.getPano();
+    sv_pov = sv.getPov();
+    m_marker_pos = m_marker.getPosition();
+    
+    var latest_view_data = {}
+    // Add extra data to the form
+    latest_view_data['sv_pano'] = sv_pano;
+    latest_view_data['sv_heading'] = sv_pov.heading;
+    latest_view_data['sv_pitch'] = sv_pov.pitch;
+    latest_view_data['sv_zoom'] = sv_pov.zoom;
+    latest_view_data['marker_lat'] = m_marker_pos.lat();
+    latest_view_data['marker_lng'] = m_marker_pos.lng();
+
+    return latest_view_data;
+}
+
 
 
 
@@ -121,58 +138,111 @@ $(document).ready(function() {
         return false;
     }
 
-    // Add a text input when user clicks the 'Add Note' button
-    // Only add if one doesn't already exist, to avoid duplicates.
-    $('#btn-add-note').click(function() {
-        const note_container = document.getElementById('note-container');
+    // // Add a text input when user clicks the 'Add Note' button
+    // // Only add if one doesn't already exist, to avoid duplicates.
+    // $('#btn-add-note').click(function() {
+    //     const note_container = document.getElementById('note-container');
 
-        if (!note_container.hasChildNodes()) {
+    //     if (!note_container.hasChildNodes()) {
             
-            // Create this inner container to be deleted, instead of the overall element
-            const inner_container = document.createElement('div');
-            inner_container.setAttribute("class", "note-inner-container")
-            inner_container.setAttribute("id", "note-inner-container")
-            note_container.appendChild(inner_container);
+    //         // Create this inner container to be deleted, instead of the overall element
+    //         const inner_container = document.createElement('div');
+    //         inner_container.setAttribute("class", "note-inner-container")
+    //         inner_container.setAttribute("id", "note-inner-container")
+    //         note_container.appendChild(inner_container);
 
-            const p = document.createElement('p');
-            p.innerText = "Additonal notes about this building:"
-            inner_container.appendChild(p);
+    //         const p = document.createElement('p');
+    //         p.innerText = "Additonal notes about this building:"
+    //         inner_container.appendChild(p);
             
-            const input_container = document.createElement('div');
-            input_container.setAttribute("class", "note-input-container")
-            inner_container.appendChild(input_container);
+    //         const input_container = document.createElement('div');
+    //         input_container.setAttribute("class", "note-input-container")
+    //         inner_container.appendChild(input_container);
             
 
-            const text_input = document.createElement('textarea');
-            // text_input.setAttribute("type", "text");
-            text_input.setAttribute("name", "note") ;
-            text_input.setAttribute("placeholder", "Enter note...");
-            text_input.setAttribute("class", "mb-3");
-            text_input.setAttribute("required", "");
-            text_input.setAttribute("resize", "both");
-            input_container.appendChild(text_input);
+    //         const text_input = document.createElement('textarea');
+    //         // text_input.setAttribute("type", "text");
+    //         text_input.setAttribute("name", "note") ;
+    //         text_input.setAttribute("placeholder", "Enter note...");
+    //         text_input.setAttribute("class", "mb-3");
+    //         text_input.setAttribute("required", "");
+    //         text_input.setAttribute("resize", "both");
+    //         input_container.appendChild(text_input);
             
-            const delete_note = document.createElement('div');
-            delete_note.setAttribute("class", "delete-note-icon");
-            delete_note.innerHTML = getDeleteRowIconInnerHTML();
+    //         const delete_note = document.createElement('div');
+    //         delete_note.setAttribute("class", "delete-note-icon");
+    //         delete_note.innerHTML = getDeleteRowIconInnerHTML();
             
-            delete_note.addEventListener("click", function() {
-                inner_container.remove();
-            });
+    //         delete_note.addEventListener("click", function() {
+    //             inner_container.remove();
+    //         });
 
-            input_container.appendChild(delete_note);
+    //         input_container.appendChild(delete_note);
+    //     }
+    // });
+
+    $('#btn-no-building').click((e) => {
+        e.preventDefault();
+        
+        const form = document.getElementById('building-submition-form');
+
+        const no_building_input = document.createElement("input");
+        no_building_input.setAttribute("type", "hidden");
+        no_building_input.setAttribute("name", "no_building");
+        no_building_input.setAttribute("value", "no_building");
+        form.appendChild(no_building_input);
+        try {
+            const latest_view_data = getLatestViewData();
+            document.querySelector('#latest_view_data').value = JSON.stringify(latest_view_data);
         }
-    });
+        catch (error) {
+            console.error(error);
+        } 
+        finally {
+            form.submit();
+        }
 
+    })
+
+    $('#building-submition-form').one('submit', (e) => {
+        e.preventDefault();
+        try {
+            const latest_view_data = getLatestViewData();
+            document.querySelector('#latest_view_data').value = JSON.stringify(latest_view_data);
+        } 
+        catch (error) {
+            console.error(error);
+        } 
+        finally {
+            // Go on to the normal processing
+            $('#building-submition-form').submit();
+        }
+
+    })
+
+    // Check if streetview container was resized previously
+    // If not set its size to 50%, if yes use the saved settings
+    const sv_container = $('.streetview-container');
+
+    var sv_saved_width = localStorage.getItem("sv_saved_width");
+
+    if (sv_saved_width == null){
+        console.log('sv_saved_width not saved');
+        sv_container.css("width", '50%');
+    } else {
+        console.log(`sv_saved_width set to ${sv_saved_width}`);
+        sv_container.css("width", sv_saved_width);
+    }
 
     var dragging = false;
 
     $('#dragbar').mousedown(function(e) {
         e.preventDefault();
         dragging = true;
-        var side = $('.streetview-container');
+        
         $(document).mousemove(function(ex) {
-            side.css("width", ex.pageX +2);
+            sv_container.css("width", ex.pageX +2);
+            localStorage.setItem("sv_saved_width", ex.pageX +2);
         });
     });
 

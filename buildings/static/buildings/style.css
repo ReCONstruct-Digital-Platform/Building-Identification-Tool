@@ -312,14 +312,24 @@ tr:hover .delete-row-icon {
 }
 .note-inner-container textarea {
   width: 75%;
-  height: 100%;
   resize: both;
+}
+
+.table {
+  margin-bottom: 0%;
+}
+
+.note-input {
+  width: 98%;
 }
 
 .note-input-container {
   display: flex;
 }
 
+.btn-no-building {
+  align-self: center;
+}
 
 .building-info {
   width: 70%;
@@ -345,8 +355,13 @@ tr:hover .delete-row-icon {
   overflow: hidden;
 }
 
+.btn-row {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
 .streetview-and-map-container {
-  height: 70%;
+  height: 85%;
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -358,28 +373,24 @@ tr:hover .delete-row-icon {
   width: 50%;
 }
 
-.info-and-satellite-view {
+.map-and-submit-container {
   height: 100%;
-  width: 35%;
+  width: auto;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
 }
 
-.info-and-satellite-view #info,
-.info-and-satellite-view #map {
-  height: 50%;
-}
 
 .map-container  {
   height: 100%;
-  width: 50%;
+  width: 100%;
 
 }
 
 #dragbar{
   height:100%;
-  width: 5px;
+  width: 7px;
   cursor: col-resize;
 }
 
@@ -402,6 +413,9 @@ tr:hover .delete-row-icon {
   align-items: center;
 }
 
+.building-selection-row {
+  display: flex;
+}
 
 
 

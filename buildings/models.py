@@ -217,28 +217,6 @@ class Building(models.Model):
     # Floor area of the main building, if there is only one
     floor_area = models.FloatField(blank=True, null=True)
 
-    """
-    Type of construction defition:
-
-    1 (On the same level):  A single-storey house on the ground floor with direct access or through a 
-                            tiered entrance. This type of house usually, but not necessarily, has a basement. 
-
-    2 (Staggered levels):   A house with several staggered ground floors connected by short stairways. 
-                            This type of house often, but not necessarily, has a basement that may be smaller 
-                            than the ground floor.
-
-    3 (Unimodular):         A factory-built, single-storey house designed and constructed to be transported in 
-                            one piece to the location where it will be installed for use. This type of house is 
-                            usually built on wood, metal or concrete supports and, less frequently, on a masonry 
-                            foundation (floor, wall, etc.). 
-
-    4 (Attic floor):        A house with several superimposed levels, the upper level of which is formed by rooms that 
-                            can be converted into living space in the attic, with sloping ceilings. The attic floor is 
-                            generally, but not necessarily, smaller than the floor below. This attic floor is also called 
-                            "attic". 
-
-    5 (Full floors):        A multi-storey house with no sloping ceiling on the upper floor, unless it is a cathedral ceiling.
-    """
     type_const = models.IntegerField(blank=True, null=True)
 
     # Total number of dwellings in the assessment unit
@@ -256,10 +234,12 @@ class Building(models.Model):
     # Used in the google places API to retrieve photos, etc.
     place_id = models.TextField(blank=True, null=True)
 
+
     # Override the objects attribute of the model
     # in order to implement custom search functionality
     # objects = BuildingQuerySet.as_manager()
     objects = BuildingManager.from_queryset(BuildingQuerySet)()
+
 
     def num_votes(self):
         return len(self.vote_set)
@@ -328,6 +308,42 @@ class Building(models.Model):
         return ordering, direction
 
 
+class BuildingLatestViewDataQuerySet(models.QuerySet):
+
+    def get_latest_view_data(self, building_id, user_id):
+        print(f'Looking for past saved data for building {building_id}')
+
+        # First look if there are any previous saved data for this building
+        if self.filter(building_id = building_id).count() == 0:
+            return None
+        
+        if self.filter(building_id = building_id, user_id = user_id).count() == 0:
+            print(self.filter(building_id = building_id).all())
+            return self.filter(building_id = building_id).order_by('-date_added').first()
+        
+        else:
+            return self.filter(building_id = building_id, user_id = user_id).order_by('-date_added').first()
+
+class BuildingLatestViewData(models.Model):
+
+    # User saved data about a building
+    building = models.ForeignKey(Building, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    date_added = models.DateTimeField('date added', default=timezone.now)
+
+    sv_pano = models.TextField(blank=True, null=True)
+
+    sv_heading = models.FloatField(blank=True, null=True)
+    sv_pitch = models.FloatField(blank=True, null=True)
+    sv_zoom = models.FloatField(blank=True, null=True)
+    marker_lat = models.FloatField(blank=True, null=True)
+    marker_lng = models.FloatField(blank=True, null=True)
+
+    objects = BuildingLatestViewDataQuerySet.as_manager()
+
 
 class Material(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -364,6 +380,10 @@ class MaterialScore(models.Model):
     def __str__(self):
         return f'{self.material} score of {self.score}'
     
+
+class NoBuildingFlag(models.Model):
+    vote = models.ForeignKey(Vote, on_delete=models.CASCADE)
+
 
 class BuildingNote(models.Model):
     vote = models.OneToOneField(Vote, null=True, on_delete=models.CASCADE)

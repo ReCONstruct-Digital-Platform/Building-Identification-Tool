@@ -1,14 +1,17 @@
+import json
 from django.views import generic 
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from django.contrib import messages 
 from django.http import HttpResponse
+from django.forms.models import model_to_dict
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
 
-from .models import Building, BuildingTypology, Material, Typology, Vote, BuildingNote, MaterialScore, Profile
+
+from .models import Building, BuildingLatestViewData, BuildingTypology, Material, NoBuildingFlag, Typology, Vote, BuildingNote, MaterialScore, Profile
 from .forms import CreateUserForm
 from django.core.paginator import Paginator
 
@@ -116,10 +119,6 @@ def classify(request, building_id):
     building = get_object_or_404(Building, pk=building_id)
 
     if request.method == "POST":
-        # Create a new DB transaction which will make the following code
-        # either all happen and be committed to the database, or fully rolled back.
-        # This is called atomicity.
-        #
         # Because we'll be creating multiple DB objects with relations to each other,
         # we want either all of them to be created, or none if a problem occurs.
         with transaction.atomic():
@@ -131,60 +130,93 @@ def classify(request, building_id):
             logging.debug(request.POST)
 
             for key in request.POST:
-                if "material" in key:
-                    # Expect the value to be an array with 2 values, material name and 1-5 score
-                    value = request.POST.getlist(key)
-                    material_name = value[0]
-                    score = value[1]
-                    # Get a reference to the material
-                    material = Material.objects.filter(name__icontains=material_name).first()
-
-                    logging.debug(f"Found material {material}")
-                    # If it doesn't exist, create a new material
-                    if material is None:
-                        material = Material(name=material_name)
-                        material.save()
-                    
-                    # Create a new MaterialScore linking this vote, the material and the score
-                    material_score = MaterialScore(vote=new_vote, material=material, score=score)
-                    material_score.save()
-
-                elif "note" in key:
-                    value = request.POST.getlist(key)
-                    note = BuildingNote(vote=new_vote, note=value[0])
-                    note.save()
-
-                elif "typology" in key:
+                if "typology" in key:
                     # Expect the value to be an array with 2 values, typology name and 1-5 score
                     value = request.POST.getlist(key)
-                    typology_name = value[0]
-                    score = value[1]
+                    if len(value) > 1:
+                        typology_name = value[0]
+                        score = value[1]
 
-                    typology = Typology.objects.filter(name__icontains=typology_name).first()
-                    if typology is None:
-                        typology = Typology(name=typology_name)
-                        typology.save()
-                    
-                    # Create a new MaterialScore linking this vote, the material and the score
-                    building_typology = BuildingTypology(vote=new_vote, typology=typology, score=score)
-                    building_typology.save()
+                        typology = Typology.objects.filter(name__icontains=typology_name).first()
+                        if typology is None:
+                            typology = Typology(name=typology_name)
+                            typology.save()
+                        
+                        # Create a new MaterialScore linking this vote, the material and the score
+                        building_typology = BuildingTypology(vote=new_vote, typology=typology, score=score)
+                        building_typology.save()
+
+                elif "note" in key:
+                    value = request.POST.getlist(key)[0]
+                    # If the note value is not empty, save a note for the building
+                    if value != '':
+                        note = BuildingNote(vote=new_vote, note=value)
+                        note.save()
+
+                elif "material" in key:
+                    # Expect the value to be an array with 2 values, material name and 1-5 score
+                    value = request.POST.getlist(key)
+                    if len(value) > 1:
+                        material_name = value[0]
+                        score = value[1]
+                        # Get a reference to the material
+                        material = Material.objects.filter(name__icontains=material_name).first()
+
+                        logging.debug(f"Found material {material}")
+                        # If it doesn't exist, create a new material
+                        if material is None:
+                            material = Material(name=material_name)
+                            material.save()
+                        
+                        # Create a new MaterialScore linking this vote, the material and the score
+                        material_score = MaterialScore(vote=new_vote, material=material, score=score)
+                        material_score.save()
+
+                elif key == "latest_view_data":
+
+                    data = request.POST.getlist(key)[0]
+                    if len(data) > 0: 
+                        data = json.loads(data)
+
+                        latest_view_data = BuildingLatestViewData(
+                            building = building,
+                            user = request.user,
+                            sv_pano = data['sv_pano'],
+                            sv_heading = data['sv_heading'], 
+                            sv_pitch = data['sv_pitch'], 
+                            sv_zoom = data['sv_zoom'], 
+                            marker_lat = data['marker_lat'], 
+                            marker_lng = data['marker_lng'], 
+                        )
+                        latest_view_data.save()
+
+                elif key == 'no_building':
+                    no_building = NoBuildingFlag(vote = new_vote)
+                    no_building.save()
 
             # Finally, we can save our vote
             new_vote.save()
             # Get the new current building
             building = Building.objects.get_next_building_to_classify(exclude_id = building.id)
 
-    # Get the next building
-    next_building_id = Building.objects.get_next_building_to_classify(exclude_id = building.id)
-    # Get all unique materials defined 
-    existing_materials = [o['name'].capitalize() for o in Material.objects.all().values('name').distinct()]
+        next_building = Building.objects.get_next_building_to_classify(exclude_id = building.id)
+
+        return redirect("buildings:classify", building_id=next_building.id)
+    
+    building_latest_view_data = BuildingLatestViewData.objects.get_latest_view_data(building.id, request.user.id)
+
+    if building_latest_view_data:
+        building_latest_view_data = model_to_dict(building_latest_view_data, exclude=['id', 'user', 'date_added'])
+
+    # Get the next building 
+    next_building = Building.objects.get_next_building_to_classify(exclude_id = building.id)
 
     context = {
         # TODO: Is this the best way to pass API keys to views?
         'key': settings.GOOGLE_API_KEY,
         'building': building,
-        'existing_materials': existing_materials,
-        'next_building': next_building_id.id,
+        'building_latest_view_data': building_latest_view_data,
+        'next_building': next_building.id,
     }
     return render(request, 'buildings/map.html', context)
 
