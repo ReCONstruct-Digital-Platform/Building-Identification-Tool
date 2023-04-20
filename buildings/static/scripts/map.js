@@ -120,6 +120,8 @@ function getLatestViewData() {
 
 $(document).ready(function() {
 
+
+
     const element = document.getElementById('prev-building-link');
 
     // Provide a standard href to facilitate standard browser features such as 
@@ -227,10 +229,8 @@ $(document).ready(function() {
     var sv_saved_width = localStorage.getItem("sv_saved_width");
 
     if (sv_saved_width == null){
-        console.log('sv_saved_width not saved');
         sv_container.css("width", '50%');
     } else {
-        console.log(`sv_saved_width set to ${sv_saved_width}`);
         sv_container.css("width", sv_saved_width);
     }
 
