@@ -2,7 +2,9 @@
 
 The goal of this tool is to provide a convenient tool to rate the retrofit potential of buildings, given their address.
 
-We first geocode addresses, then provide a live streetview of them. The user is able to say which materials are present or not in the building facade, with a 1-5 certainty rating. Users can add new materials and add a note about the building, containing additional information.
+We first geocode addresses, then provide a live streetview of them. A first version had users determine the facade materials of buildings, with a 1-5 certainty rating, and could add new materials and add a note about the building, containing additional information.
+
+The latest version focuses on identifying pre-fabricated metal buildings. The set of conditions will then be extended in a future version to further refine the selection.  
 
 ![image](assets/screenshot1.JPG)
 
