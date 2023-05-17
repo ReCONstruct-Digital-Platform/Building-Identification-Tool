@@ -295,7 +295,8 @@ def redeploy_server(request):
     log.info(f'body received: {body}')
 
     x_hub_signature = request.headers.get('x-hub-signature-256')
-
+    print(x_hub_signature)
+    
     secret = os.environ['WEBHOOK_SECRET']
 
     print('before signature verif')
