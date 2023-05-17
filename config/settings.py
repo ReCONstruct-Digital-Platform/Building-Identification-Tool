@@ -20,7 +20,8 @@ env = environ.Env(
     CSRF_TRUSTED_ORIGINS=([str], ['http://localhost']),
     CSRF_COOKIE_SECURE=(bool, True),
     SESSION_COOKIE_SECURE=(bool, True),
-    STATIC_URL=(str, 'static/')
+    STATIC_URL=(str, 'static/'),
+    WEBHOOK_SECRET=(str, 'secret')
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -35,13 +36,13 @@ DEBUG = env('DEBUG')
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
 
+WEBHOOK_SECRET = env('WEBHOOK_SECRET')
+
 GOOGLE_MAPS_API_KEY = env('GOOGLE_MAPS_API_KEY')
 
 ALLOWED_HOSTS = env('ALLOWED_HOSTS')
-print(ALLOWED_HOSTS)
 
 CSRF_TRUSTED_ORIGINS = env('CSRF_TRUSTED_ORIGINS')
-print(CSRF_TRUSTED_ORIGINS)
 
 CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE')
 

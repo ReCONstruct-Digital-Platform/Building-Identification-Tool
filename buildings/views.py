@@ -289,8 +289,8 @@ def redeploy_server(request):
     """
     if request.method != 'POST':
         return HttpResponse(status=403, reason="Invalid method")
+    
     # signature is OK
-    # print(request.body)
     body = json.loads(request.body)
     log.info(f'body received: {body}')
 
@@ -304,7 +304,6 @@ def redeploy_server(request):
         log.warning(f'Wrong x-hub-signature!')
         return HttpResponse(status=403, reason="x-hub-signature-256 header is missing!")
     
-
     return HttpResponse("OK")
 
 
