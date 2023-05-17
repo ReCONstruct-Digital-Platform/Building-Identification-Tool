@@ -16,7 +16,7 @@ The latest version focuses on identifying pre-fabricated metal buildings. The se
 This project makes use of the google maps API. To run it locally, you will need to obtain an authorization key.
 Ask us for one from ReCONstruct, or set up your own by following the instructions [here](https://developers.google.com/maps/documentation/javascript/cloud-setup). (You will need to input a credit card, but local development and testing should come out at less than $5-10).
 
-Once you have a key, set the `GOOGLE_API_KEY` variable to it in the file `config/settings.py`.
+Once you have a key, set the `GOOGLE_MAPS_API_KEY` variable to it in the file `config/settings.py`.
 
 ### 1. (Optional) Create a virtual environment for the project
 Virtual environments (venv for short) hold all dependencies for your project, and allow avoiding package version conflicts at the system level.

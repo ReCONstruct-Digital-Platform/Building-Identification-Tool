@@ -217,7 +217,7 @@ def classify(request, building_id):
 
     context = {
         # TODO: Is this the best way to pass API keys to views?
-        'key': settings.GOOGLE_API_KEY,
+        'key': settings.GOOGLE_MAPS_API_KEY,
         'building': building,
         'building_latest_view_data': building_latest_view_data,
         'next_building': next_building.id,

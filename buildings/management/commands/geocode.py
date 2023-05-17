@@ -4,7 +4,7 @@ from pathlib import Path
 
 from django.utils import timezone
 from buildings.models import Building
-from config.settings import GOOGLE_API_KEY
+from config.settings import GOOGLE_MAPS_API_KEY
   
 from django.core.management.base import BaseCommand
 
@@ -47,7 +47,7 @@ class Command(BaseCommand):
         parser.add_argument('-f', '--file', default="data/buildings.csv", type=str, help="CSV file of buildings to create.")
 
     def handle(self, *args, **options):
-        gmaps = googlemaps.Client(key=GOOGLE_API_KEY)
+        gmaps = googlemaps.Client(key=GOOGLE_MAPS_API_KEY)
         num_entries = options['num']
         data_file = Path(options['file'])
 
