@@ -326,7 +326,7 @@ def redeploy_server(request):
     # We only want to redeploy when the main branch was pushed to
     ref = body['ref']
     if ref != 'refs/heads/main':
-        return HttpResponse("Not main branch")
+        return HttpResponse(f"Branch {ref} was pushed to. Ignore.")
 
     # If the main branch was pushed to, pull the newest version
     repo = git.Repo(BASE_DIR)
