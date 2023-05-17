@@ -16,8 +16,8 @@ from pathlib import Path
 # Initialise environment variables and defaults
 env = environ.Env(
     DEBUG=(bool, False),
-    ALLOWED_HOSTS=(str, '127.0.0.1'),
-    CSRF_TRUSTED_ORIGINS=(str, 'http://localhost'),
+    ALLOWED_HOSTS=([str], ['127.0.0.1']),
+    CSRF_TRUSTED_ORIGINS=([str], ['http://localhost']),
     CSRF_COOKIE_SECURE=(bool, True),
     SESSION_COOKIE_SECURE=(bool, True),
     STATIC_URL=(str, 'static/')
@@ -37,9 +37,11 @@ SECRET_KEY = env('SECRET_KEY')
 
 GOOGLE_MAPS_API_KEY = env('GOOGLE_MAPS_API_KEY')
 
-ALLOWED_HOSTS = [env('ALLOWED_HOSTS')]
+ALLOWED_HOSTS = env('ALLOWED_HOSTS')
+print(ALLOWED_HOSTS)
 
-CSRF_TRUSTED_ORIGINS = [env('CSRF_TRUSTED_ORIGINS')]
+CSRF_TRUSTED_ORIGINS = env('CSRF_TRUSTED_ORIGINS')
+print(CSRF_TRUSTED_ORIGINS)
 
 CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE')
 
