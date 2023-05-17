@@ -11,18 +11,24 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os
 import environ
-# Initialise environment variables
-env = environ.Env()
-
 from pathlib import Path
+
+# Initialise environment variables and defaults
+env = environ.Env(
+    DEBUG=(bool, False),
+    ALLOWED_HOSTS=(str, '127.0.0.1'),
+    CSRF_TRUSTED_ORIGINS=(str, 'http://localhost'),
+    CSRF_COOKIE_SECURE=(bool, True),
+    SESSION_COOKIE_SECURE=(bool, True),
+    STATIC_URL=(str, 'static/')
+)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Take environment variables from .env file
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
@@ -39,6 +45,10 @@ CSRF_TRUSTED_ORIGINS = [env('CSRF_TRUSTED_ORIGINS')]
 CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE')
 
 SESSION_COOKIE_SECURE = env('SESSION_COOKIE_SECURE')
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/4.1/howto/static-files/
+STATIC_URL = env('STATIC_URL')
 
 
 LOGGING = {
@@ -144,11 +154,6 @@ TIME_ZONE = "America/Montreal"
 USE_I18N = True
 
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.1/howto/static-files/
-STATIC_URL = env('STATIC_URL')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
