@@ -30,5 +30,6 @@ jobs:
       env: 
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        DEBUG: ${{ secrets.DEBUG }}
       run: |
         python manage.py test
