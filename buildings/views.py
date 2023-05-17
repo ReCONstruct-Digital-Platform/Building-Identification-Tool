@@ -297,7 +297,7 @@ def redeploy_server(request):
     
     # signature is OK
     body = json.loads(request.body)
-    log.info('test')
+    log.info('testtttt')
     log.info(f'body received: {body}')
     return HttpResponse("OK")
 
