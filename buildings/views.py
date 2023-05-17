@@ -332,7 +332,7 @@ def redeploy_server(request):
     repo = git.Repo(BASE_DIR)
 
     # Check if there are current uncommited changes which could make the pull failed
-    # If there are, we stash the changes and pop them back after pulling
+    # If there are, we stash the changes incase they were important but do not re-apply them
     stashed = False
     if repo.is_dirty():
         log.warn(f'Repository is dirty. Stashing changes')
@@ -352,14 +352,8 @@ def redeploy_server(request):
         log.error(traceback.format_exc())
         return HttpResponse(status=500, reason=f'Caught an exception while pulling. See server logs for details.')
     
-    # If we had previously stashed some local changes, redo them here
-    # This should force merge and keep the version in the stash
     if stashed:
-        try:
-            repo.git.merge("--squash", "--strategy-option=theirs", "stash")
-        except:
-            log.error(traceback.format_exc())
-            return HttpResponse(status=500, reason=f'Caught an exception while popping the stash. See server logs for details.')
+        return HttpResponse("Updated deployed version to new main branch. Some changes were stashed!")
     
     return HttpResponse("All good!")
 
