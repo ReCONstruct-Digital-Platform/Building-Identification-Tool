@@ -3,6 +3,7 @@ import hmac
 import json
 import hashlib
 import requests
+import traceback
 from ipaddress import ip_address, ip_network
 
 from django.views import generic 
@@ -335,17 +336,18 @@ def redeploy_server(request):
         log.warn(f'Repository is dirty. The following files are untracked:\n{repo.untracked_files}')
 
     print(f'active_branch: {repo.active_branch}')
-    if repo.active_branch != 'main':
+    if repo.active_branch != repo.refs.main:
         print('active branch is NOT main')
     
     origin = repo.remotes.origin
     print(f'origin: {origin}')
 
-    print(f'repo.heads: {repo.heads}')
-    print(f'repo.refs: {repo.refs}')
-
-    origin.pull()
-
+    try:
+        origin.pull()
+    except Exception:
+        log.error(traceback.format_exc())
+        return HttpResponse(status=500, reason=f'Caught the following exception while trying to update')
+    
     return HttpResponse("OK")
 
 
