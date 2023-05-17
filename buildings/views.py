@@ -285,18 +285,20 @@ def redeploy_server(request):
     """
     Github webhook endpoint to redeploy the server on PythonAnywhere.com
     """
-    if request.method == 'POST':
-        x_hub_signature = request.headers.get('x-hub-signature-256')
+    if request.method != 'POST':
+        return HttpResponse(status=403, reason="Invalid method")
 
-        secret = os.environ['WEBHOOK_SECRET']
-        if not verify_signature(request.body, secret, x_hub_signature):
-            log.warning(f'Wrong x-hub-signature!')
-            return HttpResponse(status=403, reason="x-hub-signature-256 header is missing!")
-        
-        # signature is OK
-        body = json.loads(request.body)
-        log.info(f'body received: {body}')
-        return HttpResponse("OK")
+    x_hub_signature = request.headers.get('x-hub-signature-256')
+
+    secret = os.environ['WEBHOOK_SECRET']
+    if not verify_signature(request.body, secret, x_hub_signature):
+        log.warning(f'Wrong x-hub-signature!')
+        return HttpResponse(status=403, reason="x-hub-signature-256 header is missing!")
+    
+    # signature is OK
+    body = json.loads(request.body)
+    log.info(f'body received: {body}')
+    return HttpResponse("OK")
 
 
 def verify_signature(payload_body, secret_token, signature_header):
