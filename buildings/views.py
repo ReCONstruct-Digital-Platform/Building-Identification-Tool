@@ -286,6 +286,7 @@ def logout_page(request):
 def redeploy_server(request):
     """
     Github webhook endpoint to redeploy the server on PythonAnywhere.com
+    whyyyyy
     """
     if request.method != 'POST':
         return HttpResponse(status=403, reason="Invalid method")
