@@ -330,7 +330,6 @@ def redeploy_server(request):
 
     # If the main branch was pushed to, pull the newest version
     repo = git.Repo(BASE_DIR)
-    print(f'repo: {repo}')
 
     # Check if there are current uncommited changes which could make the pull failed
     # If there are, we stash the changes and pop them back after pulling
@@ -349,14 +348,20 @@ def redeploy_server(request):
 
     try:
         origin.pull()
-    except Exception:
+    except:
         log.error(traceback.format_exc())
-        return HttpResponse(status=500, reason=f'Caught an exception while pulling')
+        return HttpResponse(status=500, reason=f'Caught an exception while pulling. See server logs for details.')
     
+    # If we had previously stashed some local changes, redo them here
+    # This should force merge and keep the version in the stash
     if stashed:
-        repo.git.stash('pop')
+        try:
+            repo.git.merge("--squash", "--strategy-option=theirs", "stash")
+        except:
+            log.error(traceback.format_exc())
+            return HttpResponse(status=500, reason=f'Caught an exception while popping the stash. See server logs for details.')
     
-    return HttpResponse("OK")
+    return HttpResponse("All good!")
 
 
 def verify_signature(payload_body, secret_token, signature_header):
