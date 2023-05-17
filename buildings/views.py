@@ -1,4 +1,8 @@
+import os
+import hmac
 import json
+import hashlib
+
 from django.views import generic 
 from django.conf import settings
 from django.db import transaction
@@ -11,9 +15,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
 
 
-from .models import Building, BuildingLatestViewData, BuildingTypology, Material, NoBuildingFlag, Typology, Vote, BuildingNote, MaterialScore, Profile
 from .forms import CreateUserForm
 from django.core.paginator import Paginator
+from .models import Building, BuildingLatestViewData, BuildingTypology, Material, NoBuildingFlag, Typology, Vote, BuildingNote, MaterialScore, Profile
 
 import logging
 
@@ -275,3 +279,40 @@ def login_page(request):
 def logout_page(request):
     logout(request)
     return redirect('buildings:login')
+
+
+def redeploy_server(request):
+    """
+    Github webhook endpoint to redeploy the server on PythonAnywhere.com
+    """
+    if request.method == 'POST':
+        x_hub_signature = request.headers.get('x-hub-signature-256')
+
+        secret = os.environ['WEBHOOK_SECRET']
+        if not verify_signature(request.body, secret, x_hub_signature):
+            log.warning(f'Wrong x-hub-signature!')
+            return HttpResponse(status=403, reason="x-hub-signature-256 header is missing!")
+        
+        # signature is OK
+        body = json.loads(request.body)
+        log.info(f'body received: {body}')
+
+
+def verify_signature(payload_body, secret_token, signature_header):
+    """Verify that the payload was sent from GitHub by validating SHA256.
+    
+    Raise and return 403 if not authorized.
+    
+    Args:
+        payload_body: original request body to verify (request.body())
+        secret_token: GitHub app webhook token (WEBHOOK_SECRET)
+        signature_header: header received from GitHub (x-hub-signature-256)
+    """
+    if not signature_header:
+        return HttpResponse(status=403, reason="x-hub-signature-256 header is missing!")
+    
+    hash_object = hmac.new(secret_token.encode('utf-8'), msg=payload_body, digestmod=hashlib.sha256)
+    expected_signature = "sha256=" + hash_object.hexdigest()
+
+    if not hmac.compare_digest(expected_signature, signature_header):
+        return HttpResponse(status=403, reason="Request signatures didn't match!")
