@@ -52,6 +52,7 @@ SESSION_COOKIE_SECURE = env('SESSION_COOKIE_SECURE')
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 STATIC_URL = env('STATIC_URL')
 
+STATIC_ROOT = env('STATIC_ROOT')
 
 LOGGING = {
     'version': 1,                       # the dictConfig format version
