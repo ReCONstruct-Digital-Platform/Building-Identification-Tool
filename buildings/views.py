@@ -331,22 +331,30 @@ def redeploy_server(request):
     # If the main branch was pushed to, pull the newest version
     repo = git.Repo(BASE_DIR)
     print(f'repo: {repo}')
-    # Check if there are current uncommited changes which could make the pull faile
-    if repo.is_dirty():
-        log.warn(f'Repository is dirty. The following files are untracked:\n{repo.untracked_files}')
 
-    print(f'active_branch: {repo.active_branch}')
+    # Check if there are current uncommited changes which could make the pull failed
+    # If there are, we stash the changes and pop them back after pulling
+    stashed = False
+    if repo.is_dirty():
+        log.warn(f'Repository is dirty. Stashing changes')
+        repo.git.stash('save')
+        stashed = True
+
+    # If we're not on the main branch, switch to it
     if repo.active_branch != repo.refs.main:
-        print('active branch is NOT main')
+        log.warning('Repository is not on main branch')
+        repo.git.checkout('main')
     
     origin = repo.remotes.origin
-    print(f'origin: {origin}')
 
     try:
         origin.pull()
     except Exception:
         log.error(traceback.format_exc())
-        return HttpResponse(status=500, reason=f'Caught the following exception while trying to update')
+        return HttpResponse(status=500, reason=f'Caught an exception while pulling')
+    
+    if stashed:
+        repo.git.stash('pop')
     
     return HttpResponse("OK")
 
