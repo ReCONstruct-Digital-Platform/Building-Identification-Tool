@@ -296,6 +296,7 @@ def redeploy_server(request):
         # signature is OK
         body = json.loads(request.body)
         log.info(f'body received: {body}')
+        return HttpResponse("OK")
 
 
 def verify_signature(payload_body, secret_token, signature_header):
