@@ -21,6 +21,7 @@ env = environ.Env(
     CSRF_COOKIE_SECURE=(bool, True),
     SESSION_COOKIE_SECURE=(bool, True),
     STATIC_URL=(str, 'static/'),
+    STATIC_ROOT=(str, ''),
     WEBHOOK_SECRET=(str, 'secret')
 )
 
