@@ -1,6 +1,6 @@
 # ReCONstruct building identification tool
 
-The goal of this tool is to provide a convenient tool to rate the retrofit potential of buildings, given their address.
+The goal of this tool is to provide a convenient way for users to rate the retrofit potential of buildings.
 
 We first geocode addresses, then provide a live streetview of them. A first version had users determine the facade materials of buildings, with a 1-5 certainty rating, and could add new materials and add a note about the building, containing additional information.
 
