@@ -291,9 +291,9 @@ def redeploy_server(request):
         return HttpResponse(status=403, reason="Invalid method")
     # signature is OK
     print(request.body)
-    body = request.json()
+    body = json.loads(request.body)
     log.info(f'body received: {body}')
-    
+
     x_hub_signature = request.headers.get('x-hub-signature-256')
 
     secret = os.environ['WEBHOOK_SECRET']
