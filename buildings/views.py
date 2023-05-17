@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.contrib import messages 
 from django.http import HttpResponse
 from django.forms.models import model_to_dict
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
@@ -281,6 +282,7 @@ def logout_page(request):
     return redirect('buildings:login')
 
 
+@csrf_exempt
 def redeploy_server(request):
     """
     Github webhook endpoint to redeploy the server on PythonAnywhere.com
@@ -291,13 +293,15 @@ def redeploy_server(request):
     x_hub_signature = request.headers.get('x-hub-signature-256')
 
     secret = os.environ['WEBHOOK_SECRET']
+
+    print('before signature verif')
     if not verify_signature(request.body, secret, x_hub_signature):
         log.warning(f'Wrong x-hub-signature!')
         return HttpResponse(status=403, reason="x-hub-signature-256 header is missing!")
     
     # signature is OK
-    body = json.loads(request.body)
-    log.info('testtttt')
+    print(request.body)
+    body = request.json()
     log.info(f'body received: {body}')
     return HttpResponse("OK")
 
