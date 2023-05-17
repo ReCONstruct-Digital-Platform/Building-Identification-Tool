@@ -289,7 +289,11 @@ def redeploy_server(request):
     """
     if request.method != 'POST':
         return HttpResponse(status=403, reason="Invalid method")
-
+    # signature is OK
+    print(request.body)
+    body = request.json()
+    log.info(f'body received: {body}')
+    
     x_hub_signature = request.headers.get('x-hub-signature-256')
 
     secret = os.environ['WEBHOOK_SECRET']
@@ -299,10 +303,7 @@ def redeploy_server(request):
         log.warning(f'Wrong x-hub-signature!')
         return HttpResponse(status=403, reason="x-hub-signature-256 header is missing!")
     
-    # signature is OK
-    print(request.body)
-    body = request.json()
-    log.info(f'body received: {body}')
+
     return HttpResponse("OK")
 
 
