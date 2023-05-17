@@ -1,7 +1,9 @@
-import os
+import git
 import hmac
 import json
 import hashlib
+import requests
+from ipaddress import ip_address, ip_network
 
 from django.views import generic 
 from django.conf import settings
@@ -11,12 +13,13 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.forms.models import model_to_dict
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
 
-
 from .forms import CreateUserForm
+from config.settings import WEBHOOK_SECRET, BASE_DIR
 from django.core.paginator import Paginator
 from .models import Building, BuildingLatestViewData, BuildingTypology, Material, NoBuildingFlag, Typology, Vote, BuildingNote, MaterialScore, Profile
 
@@ -283,6 +286,7 @@ def logout_page(request):
 
 
 @csrf_exempt
+@require_POST
 def redeploy_server(request):
     """
     Github webhook endpoint to redeploy the server on PythonAnywhere.com
@@ -290,20 +294,58 @@ def redeploy_server(request):
     if request.method != 'POST':
         return HttpResponse(status=403, reason="Invalid method")
     
-    # signature is OK
-    body = json.loads(request.body)
-    log.info(f'body received: {body}')
+    # Verify if request came from one of GitHub's IP addresses
+    forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    client_ip_address = ip_address(forwarded_for)
+    whitelist = requests.get('https://api.github.com/meta').json()['hooks']
 
+    for valid_ip in whitelist:
+        if client_ip_address in ip_network(valid_ip):
+            break
+    else:
+        return HttpResponse(status=403, reason=f"POST to /redeploy_server came from unauthorized IP: {client_ip_address}")
+    
+    # Verify the secret
+    secret = WEBHOOK_SECRET
     x_hub_signature = request.headers.get('x-hub-signature-256')
-    print(x_hub_signature)
-
-    secret = os.environ['WEBHOOK_SECRET']
-    print(secret)
 
     if not verify_signature(request.body, secret, x_hub_signature):
         log.warning(f'Wrong x-hub-signature!')
         return HttpResponse(status=403, reason="x-hub-signature-256 header is missing!")
     
+    # Check that this is a push event as we only want those to trigger a webhook
+    # Another event would indicate misconfiguration of webhooks in GitHub
+    event = request.headers.get('X-GitHub-Event')
+    if event != 'push':
+        return HttpResponse(status=204, reason=f"Webhook event was not 'push' but {event}")
+    
+    # All is good for now, get the body and check which branch was pushed
+    body = json.loads(request.body)
+
+    # We only want to redeploy when the main branch was pushed to
+    ref = body['ref']
+    if ref != 'refs/heads/main':
+        return HttpResponse("Not main branch")
+
+    # If the main branch was pushed to, pull the newest version
+    repo = git.Repo(BASE_DIR)
+    print(f'repo: {repo}')
+    # Check if there are current uncommited changes which could make the pull faile
+    if repo.is_dirty():
+        log.warn(f'Repository is dirty. The following files are untracked:\n{repo.untracked_files}')
+
+    print(f'active_branch: {repo.active_branch}')
+    if repo.active_branch != 'main':
+        print('active branch is NOT main')
+    
+    origin = repo.remotes.origin
+    print(f'origin: {origin}')
+
+    print(f'repo.heads: {repo.heads}')
+    print(f'repo.refs: {repo.refs}')
+
+    origin.pull()
+
     return HttpResponse("OK")
 
 
