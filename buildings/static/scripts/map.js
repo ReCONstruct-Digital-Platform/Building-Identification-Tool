@@ -140,49 +140,6 @@ $(document).ready(function() {
         return false;
     }
 
-    // // Add a text input when user clicks the 'Add Note' button
-    // // Only add if one doesn't already exist, to avoid duplicates.
-    // $('#btn-add-note').click(function() {
-    //     const note_container = document.getElementById('note-container');
-
-    //     if (!note_container.hasChildNodes()) {
-            
-    //         // Create this inner container to be deleted, instead of the overall element
-    //         const inner_container = document.createElement('div');
-    //         inner_container.setAttribute("class", "note-inner-container")
-    //         inner_container.setAttribute("id", "note-inner-container")
-    //         note_container.appendChild(inner_container);
-
-    //         const p = document.createElement('p');
-    //         p.innerText = "Additonal notes about this building:"
-    //         inner_container.appendChild(p);
-            
-    //         const input_container = document.createElement('div');
-    //         input_container.setAttribute("class", "note-input-container")
-    //         inner_container.appendChild(input_container);
-            
-
-    //         const text_input = document.createElement('textarea');
-    //         // text_input.setAttribute("type", "text");
-    //         text_input.setAttribute("name", "note") ;
-    //         text_input.setAttribute("placeholder", "Enter note...");
-    //         text_input.setAttribute("class", "mb-3");
-    //         text_input.setAttribute("required", "");
-    //         text_input.setAttribute("resize", "both");
-    //         input_container.appendChild(text_input);
-            
-    //         const delete_note = document.createElement('div');
-    //         delete_note.setAttribute("class", "delete-note-icon");
-    //         delete_note.innerHTML = getDeleteRowIconInnerHTML();
-            
-    //         delete_note.addEventListener("click", function() {
-    //             inner_container.remove();
-    //         });
-
-    //         input_container.appendChild(delete_note);
-    //     }
-    // });
-
     $('#btn-no-building').click((e) => {
         e.preventDefault();
         
@@ -203,6 +160,23 @@ $(document).ready(function() {
         finally {
             form.submit();
         }
+
+    })
+
+    $('#btn-screenshot').click((e) => {
+        e.preventDefault();
+        
+        html2canvas(document.querySelector("#streetview"), {
+            windowWidth: 1600,
+            windowWHeight: 1280,
+            width: 1500,
+            height: 1000,
+            ignoreElements: (el) => {
+                return el.classList.contains("gmnoprint") || el.classList.contains("gm-style-cc");
+            },
+        }).then(canvas => {
+            document.body.appendChild(canvas)
+        });
 
     })
 

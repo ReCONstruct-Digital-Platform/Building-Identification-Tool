@@ -335,6 +335,9 @@ tr:hover .delete-row-icon {
 .btn-no-building {
   align-self: center;
 }
+.btn-screenshot {
+  align-self: center;
+}
 
 .building-info {
   width: 70%;
