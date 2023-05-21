@@ -28,7 +28,7 @@
         };
 
         building_coord = {
-          lat: building_latest_view_data['marker_lat'], 
+          lat: building_latest_view_data['marker_lat'],
           lng: building_latest_view_data['marker_lng']
         };
       }
@@ -36,7 +36,7 @@
       // we will search for best panorama
       else {
         building_coord = {
-          lat: parseFloat("{{ building.lat }}"), 
+          lat: parseFloat("{{ building.lat }}"),
           lng: parseFloat("{{ building.lon }}")
         };
 
@@ -70,13 +70,8 @@
                     heading: heading,
                     pitch: 0,
                   },
-                  linksControl: false,
-                  panControl: false,
-                  fullscreenControl: false,
-                  addressControl: false,
-                  zoomControl: false,
               });
-            
+
               sv_marker = new google.maps.Marker({
                 position: building_coord,
                 map: sv,
@@ -87,7 +82,7 @@
               sv_marker.addListener("dragend", ()=> {
                 m_marker.setPosition(sv_marker.getPosition());
               })
-              
+
               // Setting the panorama after the marker has been defined,
               // otherwise the marker does not show for some reason!
               // https://stackoverflow.com/questions/23498921/google-street-view-with-custom-panorama-and-markers
@@ -116,7 +111,7 @@
               m_marker.addListener("dragend", ()=> {
                 sv_marker.setPosition(m_marker.getPosition());
               })
-          } 
+          }
           else {
             var radius = panoRequest.radius
             //Handle other statuses here
@@ -126,10 +121,10 @@
               elem.innerText = "Could not find Panorama for location";
               document.getElementById("streetview").appendChild(elem);
               return False;
-            } 
+            }
             else {
               console.log(`Could not find street view within ${radius}m, trying again within ${radius+50}m.`)
-              panoRequest.radius = panoRequest.radius + 50; 
+              panoRequest.radius = panoRequest.radius + 50;
               findPanoramaByRadius(panoRequest, building_coord);
             }
           }
@@ -157,7 +152,7 @@
                     pitch: pitch,
                   },
               });
-            
+
               sv_marker = new google.maps.Marker({
                 position: building_coord,
                 map: sv,
@@ -168,7 +163,7 @@
               sv_marker.addListener("dragend", ()=> {
                 m_marker.setPosition(sv_marker.getPosition());
               })
-              
+
               // Setting the panorama after the marker has been defined,
               // otherwise the marker does not show for some reason!
               // https://stackoverflow.com/questions/23498921/google-street-view-with-custom-panorama-and-markers
@@ -197,7 +192,7 @@
               m_marker.addListener("dragend", ()=> {
                 sv_marker.setPosition(m_marker.getPosition());
               })
-          } 
+          }
           else {
             console.log(`Could not find panorama id ${panoRequest.pano}. Searching using radius`);
             // Making a radius search request
@@ -211,12 +206,12 @@
           }
         });
       }
-      
+
       if (building_latest_view_data)
         findPanoramaById(panoRequest, building_coord);
-        else  
+        else
         findPanoramaByRadius(panoRequest, building_coord);
-    } 
+    }
 
     window.initMaps = initMaps;
 </script>
@@ -231,19 +226,19 @@
       <div class="building-info-col">
         <div class="building-id">
           <h4>
-            Building #{{ building.id }} 
+            Building #{{ building.id }}
           </h4>
         </div>
         <div>
           {{ building.formatted_address }}
         </div>
         <div class="building-cubf">
-          CUBF {{ building.cubf }}: {{ building.cubf_name }} 
+          CUBF {{ building.cubf }}: {{ building.cubf_name }}
         </div>
       </div>
       <div class="building-info-col ml-5">
         <div>
-          Const. year: 
+          Const. year:
           {% if building.construction_year != 9999 %}
             {{ building.construction_year }}
             {% if building.year_real_esti == 'E' %}
@@ -254,7 +249,7 @@
           {% endif %}
         </div>
         <div>
-          Max floors: 
+          Max floors:
           {% if building.max_num_floor %}
           {{ building.max_num_floor }}
           {% else %}
@@ -262,7 +257,7 @@
           {% endif %}
         </div>
         <div>
-          Floor area: 
+          Floor area:
           {% if building.floor_area != 9999.0 %}
           {{ building.floor_area }} m<sup>2</sup>
           {% else %}
@@ -273,7 +268,7 @@
 
       <div class="building-info-col ml-5">
         <div>
-          Type const.: 
+          Type const.:
           {% if building.type_const %}
 
           {% include "buildings/utils/construction_type.html" with type_const=building.type_const %}
@@ -286,9 +281,9 @@
           Property value: ${{ building.value_prop|intcomma }}
         </div>
         <div>
-          Non-res premises: 
+          Non-res premises:
           {% if building.num_non_res %}
-          
+
           {{ building.num_non_res }}
           {% else %}
           &mdash;
@@ -315,66 +310,559 @@
     </div>
     <div id="dragbar"></div>
     <div class="map-and-submit-container mr-3">
-      <div class="building-selection">
-        <form id="building-submition-form" action="{% url 'buildings:classify' building.id %}" method="post">
-          {% csrf_token %}
-          <input type="hidden" name="latest_view_data" id="latest_view_data"/>
 
-          <div class="building-selection-row">
-            <table id="vote-table" class="table vote-table">
-              <thead class="thead-light">
-                <tr>
-                  <th scope="col"></th>
-                  <th scope="col">No</th>
-                  <!-- <th scope="col">Unlikely</th> -->
-                  <th scope="col">Unclear</th>
-                  <!-- <th scope="col">Likely</th> -->
-                  <th scope="col">Yes</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr id="row-1">
-                  <input type="hidden" name = "typology" value="prefab_metal_barn"/>
-                  <td scope="row">
-                    Prefab metal building?
-                  </td>
-                  <td class="td-vote">
-                    <input type="radio" name="typology" value="1" required/></td>
-                  <!-- <td class="td-vote">
-                    <input type="radio" name="typology" value="2"/></td> -->
-                  <td class="td-vote">
-                    <input type="radio" name="typology" value="3"/></td>
-                  <!-- <td class="td-vote">
-                    <input type="radio"name="typology" value="4"/></td> -->
-                  <td class="td-vote">
-                    <div class="td-vote-last-cell">
-                      <input type="radio" name="typology" value="5"/>
-                    </div>
-                  </td>
-                </tr>
-                <tr id="row-2">
-                  <td>
-                    Additonal Notes:
-                  </td>
-                  <td colspan="3">
-                    <textarea  class="note-input" name="note" placeholder="Enter notes..."></textarea>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-            <div class="btn-row">
-              <input id="btn-submit-vote" class="btn btn-vote mr-5" type="submit" value="Submit">
+      <!--bootstrap script-->
+      <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+
+      <!--navigation bar-->
+      <nav>
+        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+          <button class="nav-link" id="nav-survey-tab" data-bs-toggle="tab" data-bs-target="#nav-survey" type="button" role="tab" aria-controls="nav-survey" aria-selected="true">Survey</button>
+          <button class="nav-link" id="nav-screenshot-tab" data-bs-toggle="tab" data-bs-target="#nav-screenshot" type="button" role="tab" aria-controls="nav-screenshot" aria-selected="false">Screenshot</button>
+          <button class="nav-link" id="nav-satellite-tab" data-bs-toggle="tab" data-bs-target="#nav-satellite" type="button" role="tab" aria-controls="nav-satellite" aria-selected="false">Satellite</button>
+        </div>
+      </nav>
+
+      <!--division: division of satellite image and survey questionnaires -->
+      <div class="tab-content" id="nav-tabContent">
+        <div class="tab-pane fade show active map-container" id="nav-survey" role="tabpanel" aria-labelledby="nav-survey-tab">
+          <script>
+            //calculate the height of text bar dynamically
+            $(document).ready(function() {
+
+              $('#streetview').bind('DOMSubtreeModified', function(){
+                var dynheight = $('#streetview').height();
+                console.log('changed dynHeight: ' + dynheight);
+                var nav_tabheight = $('#nav-tab').height();
+                var textHeight = dynheight - nav_tabheight ;
+
+                window.onload = (function () {
+                    document.getElementById("scroll").style.height = textHeight + "px";})();
+              });
+            });
+          </script>
+
+          <style>
+          #scroll {
+            overflow-y: scroll;
+          }
+          </style>
+
+          <!--below is the first scrolling survey -->
+          <div id="scroll">
+            <div class="text-center">
+              <p></p>
+              <h5>
+                <strong>Section 1: Three Mandatory Questions</strong>
+              </h5>
             </div>
-    </form>
-    </form>
-        </form>
+            <hr />
+
+            <form >
+              <!--Q1_Version3-->
+              <style>
+              .survey {
+                  -webkit-column-count: 3; /* Chrome, Safari, Opera */
+                  -moz-column-count: 3; /* Firefox */
+                  column-count: 3;
+                  padding-left: 50px;
+
+              }
+
+              .horizontal {
+                  -webkit-column-count: 2; /* Chrome, Safari, Opera */
+                  -moz-column-count: 2; /* Firefox */
+                  column-count: 2;
+                  padding-left: 50px;
+                  display: flex;
+              }
+
+
+               .vertical_survey {
+                  padding-left: 50px;
+              }
+
+              </style>
+              <p class="text-center"><strong>Q1: What is the cladding material? (Select all that apply)</strong></p>
+              <div class="survey" id="Q1">
+                <span style="white-space: nowrap;"><input type="checkbox" name="Q1" value="Metal" />Metal </span><br/>
+                <span style="white-space: nowrap;"><input type="checkbox" name="Q1" value="Masonry"  />Masonry</span><br/>
+                <span style="white-space:nowrap;"><input type="checkbox" name="Q1" value="Wood"  />Wood</span><br/>
+                <span style="white-space: nowrap;"><input type="checkbox" name="Q1" value="Vinyl" />Vinyl </span><br/>
+                <span style="white-space: nowrap;"><input type="checkbox" name="Q1" value="Concrete"  />Concrete</span><br/>
+                <span style="white-space: nowrap;"><input type="checkbox" name="Q1" value="Unsure" /> Unsure</span><br/>
+                <span style="white-space: nowrap;"><input type="checkbox" name="Q1" value="Curtain_wall"  />Curtain wall</span><br/>
+                <span style="white-space: nowrap;"><input type="checkbox" name="Q1" value="Ceramic"  /> Ceramic</span><br/>
+              </div>
+              <br>
+
+              <p class="text-center"><strong>Q2: What kind of roof does the building have?</strong></p>
+              <div class="survey" id="Q2">
+                <span style="white-space: nowrap;"><input type="radio" name="Q2" value="Flat" />Flat </span><br/>
+                <span style="white-space: nowrap;"><input type="radio" name="Q2" value="Gabled"  />Gabled</span><br/>
+                <span style="white-space:nowrap;"><input type="radio" name="Q2" value="Unsure"  />Unsure </span><br/>
+                <span style="white-space: nowrap;"><input type="radio" name="Q2" value="Hipped" />Hipped </span><br/>
+                <span style="white-space: nowrap;"><input type="radio" name="Q2" value="Curved"  />Curved</span><br/>
+                <span style="white-space: nowrap;"><input type="radio" name="Q2" value="Complex" />Complex  </span><br/>
+                <span style="white-space: nowrap;"><input type="radio" name="Q2" value="Single_Pitch"  />Single Pitch</span><br/>
+              </div>
+              <br>
+
+              <p class="text-center"><strong>Q3: What is the roofing material? (Select all that apply) </strong></p>
+              <div class="survey" id="Q3">
+                <span style="white-space: nowrap;"><input type="checkbox" name="Q3" value="Asphalt_Shingle" />Asphalt Shingle</span><br/>
+                <span style="white-space: nowrap;"><input type="checkbox" name="Q3" value="Metal"  />Metal</span><br/>
+                <span style="white-space:nowrap;"><input type="checkbox" name="Q3" value="Slate"  />Slate</span><br/>
+                <span style="white-space: nowrap;"><input type="checkbox" name="Q3" value="Gravel" />Gravel</span><br/>
+                <span style="white-space: nowrap;"><input type="checkbox" name="Q3" value="Tar"  />Tar</span><br/>
+                <span style="white-space: nowrap;"><input type="checkbox" name="Q3" value="Green_Roof" />Green Roof </span><br/>
+                <span style="white-space: nowrap;"><input type="checkbox" name="Q3" value="Concrete"  />Concrete</span><br/>
+                <span style="white-space: nowrap;"><input type="checkbox" name="Q3" value="Unsure"  />Unsure</span><br/>
+                <span style="white-space: nowrap;"><input type="checkbox" name="Q3" value="Tile_(Rare)" />Tile (Rare)</span><br/>
+                <span style="white-space: nowrap;"><input type="checkbox" name="Q3" value="Wood_Shake_(Rare)"  />Wood Shake (Rare)</span><br/>
+              </div>
+
+              <br>
+              <div class="text-center">
+              <p></p>
+              <h5>
+                <strong>Section 2: Building function (Mandatory)</strong>
+              </h5>
+            </div>
+            <hr />
+
+              <script>
+                $(document).ready(function(){
+                  $("input[name$='Q4']").click(function() {
+                      var test = $(this).val();
+                      if (test[2] == '1') {
+                          // Check whether this is a top-level question, and if so,
+                          // hide all the subquestions (and uncheck responses)
+                          $('.desc').hide();
+                          $('input').not('[value='+test+']').removeAttr('checked');
+                      } else {
+                          // Find the ID of this question
+                          var parent_q = $($(this).parents('.desc')[0]).attr('id');
+                          var type = parent_q.substring(0,2); // Get the type, such as "in"
+                          var level = parent_q.substring(2);  // Get the level, such as 1
+                          $(".desc").each(function(elt_index, elt) {
+                              // Hide each question/answer with either a different type or a higher ID.
+                              var e_id = $(elt).attr('id');
+                              if(e_id.substring(0,2) != type || e_id.substring(2) > level) {
+                                  $(elt).hide();
+                                  $(elt).children('input').removeAttr('checked');
+                              }
+                          });
+                      }
+                      $("#"+test).show();
+                  });
+              });
+
+              $(document).ready(function(){
+                  $("input[name$='Q5']").click(function() {
+                      var test = $(this).val();
+                      if (test[2] == '1') {
+                          // Check whether this is a top-level question, and if so,
+                          // hide all the subquestions (and uncheck responses)
+                          $('.desc2').hide();
+                          $('input').not('[value='+test+']').removeAttr('checked');
+                      } else {
+                          // Find the ID of this question
+                          var parent_q = $($(this).parents('.desc2')[0]).attr('id');
+                          var type = parent_q.substring(0,2); // Get the type, such as "in"
+                          var level = parent_q.substring(2);  // Get the level, such as 1
+                          $(".desc2").each(function(elt_index, elt) {
+                              // Hide each question/answer with either a different type or a higher ID.
+                              var e_id = $(elt).attr('id');
+                              if(e_id.substring(0,2) != type || e_id.substring(2) > level) {
+                                  $(elt).hide();
+                                  $(elt).children('input').removeAttr('checked');
+                              }
+                          });
+                      }
+                      $("#"+test).show();
+                  });
+              });
+
+              $(document).ready(function(){
+                  $("input[name$='Q14']").click(function() {
+                      var test = $(this).val();
+                      if (test[2] == '1') {
+                          // Check whether this is a top-level question, and if so,
+                          // hide all the subquestions (and uncheck responses)
+                          $('.desc3').hide();
+                          $('input').not('[value='+test+']').removeAttr('checked');
+                      } else {
+                          // Find the ID of this question
+                          var parent_q = $($(this).parents('.desc3')[0]).attr('id');
+                          var type = parent_q.substring(0,2); // Get the type, such as "in"
+                          var level = parent_q.substring(2);  // Get the level, such as 1
+                          $(".desc3").each(function(elt_index, elt) {
+                              // Hide each question/answer with either a different type or a higher ID.
+                              var e_id = $(elt).attr('id');
+                              if(e_id.substring(0,2) != type || e_id.substring(2) > level) {
+                                  $(elt).hide();
+                                  $(elt).children('input').removeAttr('checked');
+                              }
+                          });
+                      }
+                      $("#"+test).show();
+                  });
+              });
+
+               $(document).ready(function(){
+                  $("input[name$='Q18']").click(function() {
+                      var test = $(this).val();
+                      if (test[2] == '1') {
+                          // Check whether this is a top-level question, and if so,
+                          // hide all the subquestions (and uncheck responses)
+                          $('.desc4').hide();
+                          $('input').not('[value='+test+']').removeAttr('checked');
+                      } else {
+                          // Find the ID of this question
+                          var parent_q = $($(this).parents('.desc4')[0]).attr('id');
+                          var type = parent_q.substring(0,2); // Get the type, such as "in"
+                          var level = parent_q.substring(2);  // Get the level, such as 1
+                          $(".desc4").each(function(elt_index, elt) {
+                              // Hide each question/answer with either a different type or a higher ID.
+                              var e_id = $(elt).attr('id');
+                              if(e_id.substring(0,2) != type || e_id.substring(2) > level) {
+                                  $(elt).hide();
+                                  $(elt).children('input').removeAttr('checked');
+                              }
+                          });
+                      }
+                      $("#"+test).show();
+                  });
+              });
+              </script>
+              <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.0.js"></script>
+              <script type="text/javascript" src="script.js"></script>
+              <style>
+                   .desc { display: none; }
+                   .desc2 { display: none; }
+                   .desc3 { display: none; }
+                   .desc4 { display: none; }
+              </style>
+
+              <div  class="vertical_survey"id="Q4">
+              <p class="text-center"><strong>Q4: What is the building use?</strong></p>
+                <span style="white-space: nowrap;"><input type="radio" name="Q4" value="SF1" />Single-family detached -> Next Building</span><br/>
+                <span style="white-space: nowrap;"><input type="radio" name="Q4" value="SD1"  />Semi-detached (Duplex) -> Next Building</span><br/>
+                <span style="white-space:nowrap;"><input type="radio" name="Q4" value="MU1"  />Multi-Residential building</span><br/>
+                  <div id="MU1" class="desc vertical_survey">
+                    <div><label><input type="radio" name="Q4_1" value="MU2">Rowhouse (>3 dwellings) </label></div><br>
+                    <div><label><input type="radio" name="Q4_1" value="MU3">Large multi-family: MURB (apartments/flats/condos) </label></div><br>
+                  </div>
+                <span style="white-space: normal;"><input type="radio" name="Q4" value="PU1" />Publicly owned, intended for community or collective use? <br>(Community centre, recreation centre, sports facility, cultural centre, municipal depot, etc.)</span><br/>
+                  <div id="PU1" class="desc vertical_survey">
+                    <div><label><input type="radio" name="Q4_2" value="PU2">Sports/Recreation center (Various)</label></div><br>
+                    <div><label><input type="radio" name="Q4_2" value="PU3">Hockey arena</label></div><br>
+                    <div><label><input type="radio" name="Q4_2" value="PU4">Community center</label></div><br>                    <div><label><input type="radio" name="Q4" value="PU2">Sports/Recreation center (Various)</label></div><br>
+                    <div><label><input type="radio" name="Q4_2" value="PU5">Library</label></div><br>
+                    <div><label><input type="radio" name="Q4_2" value="PU6">Unsure</label></div><br>
+                  </div>
+                <span style="white-space: nowrap;"><input type="radio" name="Q4" value="OT1"  />Other</span><br/>
+              </div>
+
+
+              <div class="btn-row">
+                  <input style="display:none;" id="submit_Q4" class="btn btn-vote mr-5" type="submit" value="Submit">
+              </div>
+
+              <script>
+                $("input[type='radio']").change(function(){
+                  if($(this).val()=="SF1")
+                  {
+                      $("#submit_Q4").show();
+                      $("#submit_Q4_1").hide();
+                  }
+
+                  else if ($(this).val()=="SD1")
+                  {
+                      $("#submit_Q4").show();
+                      $("#submit_Q4_1").hide();
+                  }
+
+                  else
+                  {
+                         $("#submit_Q4").hide();
+                         $("#submit_Q4_1").show();
+                  }
+                  });
+
+              </script>
+
+              <div id="submit_Q4_1">
+              <div class="text-center">
+              <p></p>
+              <h5>
+                <strong>Section 3: Age and Condition</strong>
+              </h5>
+            </div>
+            <hr />
+
+              <div  class="vertical_survey" id="Q5">
+              <p class="text-center"><strong>Q5: Is this an old building (built before 2000)? </strong></p>
+                <span style="white-space: nowrap;"><input type="radio" name="Q5" value="NO1" />No</span><br/>
+                <span style="white-space: nowrap;"><input type="radio" name="Q5" value="YE1"  />Yes OR Unsure</span><br/>
+                <br>
+                  <div id = "YE1" class="desc2 vertical_survey">
+                    <p><strong>What condition does the building appear to be in?</strong></p>
+                    <div><label><input type="radio" name="Q5_1" value="YE2">Great condition (shallow retrofit) -> next building</label></div><br>
+                    <div><label><input type="radio" name="Q5_1" value="YE3">Medium condition (medium retrofit)</label></div><br>
+                    <div><label><input type="radio" name="Q5_1" value="YE4">Poor condition (deep retrofit) </label></div><br>
+                    <br>
+                    <div class = "another" id = "submit_Q5_2">
+                    <p><strong>Does this building look recently renovated? </strong></p>
+                    <div><label><input type="radio" name="Q5_2" value="YE5">Yes </label></div><br>
+                    <div><label><input type="radio" name="Q5_2" value="YE6">No or Unsure </label></div><br>
+                    </div>
+
+                    <div class="btn-row">
+                      <input style="display:none;" id="submit_Q5" class="btn btn-vote mr-5" type="submit" value="Submit">
+                    </div>
+
+                    <script>
+                      $("input[type='radio']").change(function(){
+                        if($(this).val()=="YE2")
+                        {
+                            $("#submit_Q5").show();
+                            $("#submit_Q5_1").hide();
+                            $("#submit_Q5_2").hide();
+
+                        }
+                        else
+                        {
+                               $("#submit_Q5").hide();
+                               $("#submit_Q5_1").show();
+                               $("#submit_Q5_2").show();
+                        }
+                        });
+                    </script>
+                  </div>
+              </div>
+
+              <div id = "submit_Q5_1">
+              <div class="text-center">
+              <p></p>
+              <h5>
+                <strong>Section 4: Mecahnicals and Geometry</strong>
+              </h5>
+            </div>
+            <hr />
+              <p class="text-center"><strong>Q6: What is the building footprint? (don’t apply for MURBS) </strong></p>
+              <div class="vertical_survey" id="Q6">
+                <span style="white-space: nowrap;"><input type="radio" name="Q6" value="Insignificant" />Insignificant (Footprint < 300 m2) -> Next Building</span><br/>
+                <span style="white-space: nowrap;"><input type="radio" name="Q6" value="Small "  />Small (300 < Footprint < 600 m2)</span><br/>
+                <span style="white-space: nowrap;"><input type="radio" name="Q6" value="Medium" />Medium (600 < Footprint < 2000 m2) </span><br/>
+                <span style="white-space: nowrap;"><input type="radio" name="Q6" value="Large"  />Large (Footprint > 2000 m2)</span><br/>
+              </div>
+              <br>
+
+                <div class="btn-row">
+                  <input style="display:none;" id="submit_Q6" class="btn btn-vote mr-5" type="submit" value="Submit">
+              </div>
+
+              <script>
+                $("input[type='radio']").change(function(){
+                  if($(this).val()=="Insignificant")
+                  {
+                      $("#submit_Q6").show();
+                      $("#submit_Q6_1").hide();
+
+                  }
+                  else
+                  {
+                         $("#submit_Q6").hide();
+                         $("#submit_Q6_1").show();
+                  }
+                  });
+
+              </script>
+
+              <div id = "submit_Q6_1">
+              <p class="text-center"><strong>Q7: How many storeys does the building have? (don’t apply for MURBS) </strong></p>
+              <div class="survey" id="Q7">
+                <span style="white-space: nowrap;"><input type="radio" name="Q7" value="1" />1</span><br>
+                <span style="white-space: nowrap;"><input type="radio" name="Q7" value="2"  />2</span><br>
+                <span style="white-space: nowrap;"><input type="radio" name="Q7" value="3" />3</span><br>
+                <span style="white-space: nowrap;"><input type="radio" name="Q7" value="4" />4</span><br>
+                <span style="white-space: nowrap;"><input type="radio" name="Q7" value="5+" />5+</span><br>
+              </div>
+              <br>
+
+              <p class="text-center"><strong>Q8: Does the building have a rectangular footprint?</strong></p>
+              <div class="horizontal" id="Q8">
+                <span style="white-space: nowrap; margin-right: 200px;"><input type="radio" name="Q8" value="Yes" />Yes</span><br>
+                <span style="white-space: nowrap;"><input type="radio" name="Q8" value="No"  />No</span><br>
+              </div>
+              <br>
+
+              <p class="text-center"><strong>Q9: Are there significant overhangs?</strong></p>
+              <div class="horizontal" id="Q9">
+                <span style="white-space: nowrap; margin-right: 200px;"><input type="radio" name="Q9" value="Yes" />Yes</span><br>
+                <span style="white-space: nowrap;"><input type="radio" name="Q9" value="No"  />No</span><br>
+              </div>
+              <br>
+
+              <p class="text-center"><strong>Q10: Are there many balconies?</strong></p>
+              <div class="horizontal" id="Q10">
+                <span style="white-space: nowrap; margin-right: 200px;"><input type="radio" name="Q10" value="Yes" />Yes</span><br>
+                <span style="white-space: nowrap;"><input type="radio" name="Q10" value="No"  />No</span><br>
+              </div>
+              <br>
+
+              <p class="text-center"><strong>Q11: Are there large, glazed openings or irregular windows and doors?</strong></p>
+              <div class="horizontal" id="Q11">
+                <span style="white-space: nowrap; margin-right: 200px;"><input type="radio" name="Q11" value="Yes" />Yes</span><br>
+                <span style="white-space: nowrap;"><input type="radio" name="Q11" value="No"  />No</span><br>
+              </div>
+              <br>
+
+              <p class="text-center"><strong>Q12: Is there significant mechanical equipment on the roof?</strong></p>
+              <div class="horizontal" id="Q12">
+                <span style="white-space: nowrap; margin-right: 200px;"><input type="radio" name="Q12" value="Yes" />Yes</span><br>
+                <span style="white-space: nowrap; margin-right: 200px;"><input type="radio" name="Q12" value="No" />No</span><br>
+                <span style="white-space: nowrap;"><input type="radio" name="Q12" value="Unsure"  />Unsure</span><br>
+              </div>
+              <br>
+
+              <p class="text-center"><strong>Q13: How simple is the form factor of the building?
+                <br> (A simple form factor includes a elements such as a rectangular footprint,
+                <br> a lack of balconies, small or insignificant overhangs or eaves, standard windows
+                <br> and doors, a small window to wall ratio, a simple roof geometry, etc.) </strong></p>
+              <div class="vertical_survey" id="Q13">
+                <span style="white-space: nowrap; margin-right: 200px;"><input type="radio" name="Q13" value="1" />1 (Very simple form factor) </span><br>
+                <span style="white-space: nowrap; margin-right: 200px;"><input type="radio" name="Q13" value="2" />2 (Some irregularities)</span><br>
+                <span style="white-space: nowrap;"><input type="radio" name="Q13" value="3"  />3 (Complex form factor) -> Next Building</span><br>
+              </div>
+
+                <div class="btn-row">
+                  <input style="display:none;" id="submit_Q13" class="btn btn-vote mr-5" type="submit" value="Submit">
+              </div>
+
+              <script>
+                $("input[type='radio']").change(function(){
+                  if($(this).val()=="3")
+                  {
+                      $("#submit_Q13").show();
+                      $("#submit_Q13_1").hide();
+
+                  }
+                  else
+                  {
+                         $("#submit_Q13").hide();
+                         $("#submit_Q13_1").show();
+                  }
+                  });
+              </script>
+
+              <div id = "submit_Q13_1" >
+              <div class="text-center">
+              <p></p>
+              <h5>
+                <strong>Section 5: Construction</strong>
+              </h5>
+            </div>
+            <hr />
+
+            <div  class="vertical_survey" id="Q14">
+            <p class="text-center"><strong>Q14: What is the structure of the building?</strong></p>
+              <span style="white-space: nowrap;"><input type="radio" name="Q14" value="LB1" />Load bearing masonry</span><br/>
+              <span style="white-space: nowrap;"><input type="radio" name="Q14" value="IS1"  />In situ concrete</span><br/>
+              <span style="white-space: nowrap;"><input type="radio" name="Q14" value="WF1"  />Wood Frame “residential”</span><br/>
+              <span style="white-space:nowrap;"><input type="radio" name="Q14" value="MS1"  />Metal structure </span><br/>
+                <div id="MS1" class="desc3 vertical_survey">
+                  <p class="text-center"><strong>What Type of metal structure does the building have?</strong></p>
+                  <div><label><input type="radio" name="Q14_2" value="MS2">Long-Span Framing with trusses </label></div><br>
+                  <div><label><input type="radio" name="Q14_2" value="MS3">Long-Span Framing with girders </label></div><br>
+                  <div><label><input type="radio" name="Q14_2" value="MS4">Multi-story skeleton framing</label></div><br>
+                  <div><label><input type="radio" name="Q14_2" value="MS5">Unsure</label></div><br>
+                </div>
+              <span style="white-space: nowrap;"><input type="radio" name="Q14" value="UN1"  />Unsure</span><br/>
+            </div>
+              <br>
+
+              <p class="text-center"><strong>Q15: What type of foundation does the building appear to have?</strong></p>
+              <div class="survey" id="Q15">
+                <span style="white-space: nowrap;"><input type="radio" name="Q15" value="Basement_foundation" />Basement foundation </span><br>
+                <span style="white-space: nowrap;"><input type="radio" name="Q15" value="Slab-on-grade_foundation"  />Slab-on-grade foundation</span><br>
+                <span style="white-space: nowrap;"><input type="radio" name="Q15" value="Pier_foundation" />Pier foundation</span><br>
+                <span style="white-space: nowrap;"><input type="radio" name="Q15" value="Unsure" />Unsure</span><br>
+              </div>
+              <br>
+
+              <br>
+              <div class="text-center">
+              <p></p>
+              <h5>
+                <strong>Section 6: Site Context</strong>
+              </h5>
+            </div>
+            <hr />
+
+              <p class="text-center"><strong>Q16: Is the building free-standing?</strong></p>
+              <div class="horizontal" id="Q16">
+                <span style="white-space: nowrap; margin-right: 200px;"><input type="radio" name="Q16" value="Yes" />Yes</span><br>
+                <span style="white-space: nowrap;"><input type="radio" name="Q16" value="No" />No</span><br>
+              </div>
+              <br>
+
+              <p class="text-center"><strong>Q17: Does the building border a parking lot?</strong></p>
+              <div class="horizontal" id="Q17">
+                <span style="white-space: nowrap; margin-right: 200px;"><input type="radio" name="Q17" value="Yes" />Yes</span><br>
+                <span style="white-space: nowrap;"><input type="radio" name="Q17" value="No" />No</span><br>
+              </div>
+              <br>
+
+              <div  class="vertical_survey" id="Q18">
+              <p class="text-center"><strong>Q18: Are there obstructions close to the building? (<10m)</strong></p>
+                <span style="white-space: nowrap;"><input type="radio" name="Q18" value="N_1" />No obstruction</span><br/>
+                <span style="white-space: nowrap;"><input type="radio" name="Q18" value="YS1"  />Yes</span><br/>
+                  <div id = "YS1" class="desc4">
+                    <p class ="text-center"><strong>Obstructions near the building (Select all that apply)?</strong></p>
+                    <div class = "survey">
+                    <div><label><input type="checkbox" name="Q18_1" value="YS2">Important trees</label></div><br>
+                    <div><label><input type="checkbox" name="Q18_1" value="YS3">ther buildings</label></div><br>
+                    <div><label><input type="checkbox" name="Q18_1" value="YS4">Electrical wires </label></div><br>
+                    <div><label><input type="checkbox" name="Q18_1" value="YS4">Utility poles </label></div><br>
+                    <div><label><input type="checkbox" name="Q18_1" value="YS4">Other objects </label></div><br>
+                    </div>
+                    <br>
+                  </div>
+              </div>
+
+              <!--submit the button and close the form -->
+              <div class="btn-row">
+                  <input id="btn-submit-vote" class="btn btn-vote mr-5" type="submit" value="Submit">
+                </div>
+
+            <br>
+
+            </div>
+            </div>
+            </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="nav-screenshot" role="tabpanel" aria-labelledby="nav-screenshot-tab"> <p>1 </p> </div>
+
+        <!-- there is nothing in third division, but when you click the button, then satellite image
+              will show up, since the first tab completely cover the satellite image if you click it -->
+        <div class="tab-pane fade" id="nav-satellite" role="tabpanel" aria-labelledby="nav-satellite-tab"></div>
       </div>
-      <div class="map-container">
-        <div id="satmap"></div>
-      </div>
+
+        <div class="map-container">
+          <div id="satmap"></div>
+        </div>
+
     </div>
-  </div>  
+
+  </div>
   <script src="https://maps.googleapis.com/maps/api/js?key={{key}}&libraries=geometry&callback=initMaps&v=weekly" defer></script>
 </section>
 
