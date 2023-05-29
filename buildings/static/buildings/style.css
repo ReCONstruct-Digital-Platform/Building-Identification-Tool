@@ -15,6 +15,8 @@ body {
   }
 }
 
+
+
 .logo-img {
   height: 40px;
   width: auto;
@@ -25,14 +27,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .bg-steel {
-  /* blue */
-  /* background-color: #5f788a; */
-  
-  /* green */
-  background-color: #507865;
-
-  /* purple */
-  /* background-color: #6f5078; */
+  background-color: #5f788a;
 }
 
 .site-header .navbar-nav .nav-link {
@@ -386,11 +381,9 @@ tr:hover .delete-row-icon {
   flex-grow: 1;
 }
 
-
 .map-container  {
   height: 100%;
   width: 100%;
-
 }
 
 #dragbar{
@@ -399,10 +392,10 @@ tr:hover .delete-row-icon {
   cursor: col-resize;
 }
 
-
 #streetview {
   height: 100%;
 }
+
 #satmap {
   height: 100%;
 }
@@ -447,5 +440,33 @@ tr:hover .delete-row-icon {
 }
 
 
+/* Sharon's code from here */
+/* style sheet section 0 */
 
+#scroll {
+overflow-y: scroll;
+}
 
+/* style sheet section 1 */
+.survey {
+  -webkit-column-count: 3; /* Chrome, Safari, Opera */
+  -moz-column-count: 3; /* Firefox */
+  column-count: 3;
+  padding-left: 50px;
+
+}
+
+.horizontal {
+  -webkit-column-count: 2; /* Chrome, Safari, Opera */
+  -moz-column-count: 2; /* Firefox */
+  column-count: 2;
+  padding-left: 50px;
+  display: flex;
+}
+
+/* style sheet section 2 */
+.desc { display: none; }
+.desc2 { display: none; }
+.desc3 { display: none; }
+.desc4 { display: none; }
+.desc5 { display: none; }
