@@ -256,3 +256,294 @@ $(document).ready(function() {
 
 
 });
+
+//sharon's code start from here
+function TestsFunction() {
+    var T = document.getElementById("nav-survey"), displayValue = "";
+    if (T.style.display == "")
+        T.style.display = "none";
+        T.style.display = displayValue;
+};
+
+var change_width = parseFloat(screen.width) * 0.5;
+// console.log('begin: ' + nav_tabwidth);
+ //calculate the height of text bar dynamically
+
+$(document).ready(function() {
+    var nav_tabwidth = $('#nav-tab').width();
+
+    $('#streetview').bind('DOMSubtreeModified', function(){
+        var dynheight = $('#streetview').height();
+        //console.log('changed dynHeight: ' + dynheight);
+        var nav_tabheight = $('#nav-tab').height();
+        var textHeight = dynheight - nav_tabheight ;
+
+        var dynwidth =  $('#streetview').width();
+        var screenwidth = screen.width;
+        change_width = screenwidth - dynwidth ;
+        console.log(change_width);
+        //var nav_tabwidth = $('#nav-tab').width();
+        //console.log('dynwidth: ' + nav_tabwidth);
+        if (parseFloat(change_width) < 500)
+            change_width = "500px";
+
+        window.onload = (function () {
+            document.getElementById("scroll").style.height = textHeight + "px";
+            //
+        })();
+    });
+
+  $("input[name$='Q4']").click(function() {
+      var test = $(this).val();
+      if (test[2] == '1') {
+          // Check whether this is a top-level question, and if so,
+          // hide all the subquestions (and uncheck responses)
+          $('.desc').hide();
+          $('input').not('[value='+test+']').removeAttr('checked');
+      } else {
+          // Find the ID of this question
+          var parent_q = $($(this).parents('.desc')[0]).attr('id');
+          var type = parent_q.substring(0,2); // Get the type, such as "in"
+          var level = parent_q.substring(2);  // Get the level, such as 1
+          $(".desc").each(function(elt_index, elt) {
+              // Hide each question/answer with either a different type or a higher ID.
+              var e_id = $(elt).attr('id');
+              if(e_id.substring(0,2) != type || e_id.substring(2) > level) {
+                  $(elt).hide();
+                  $(elt).children('input').removeAttr('checked');
+              }
+          });
+      }
+      $("#"+test).show();
+      //document.getElementById("scroll").style.width = change_width + "px";
+  });
+});
+
+$(document).ready(function(){
+  $("input[name$='Q5']").click(function() {
+      var test = $(this).val();
+      if (test[2] == '1') {
+          // Check whether this is a top-level question, and if so,
+          // hide all the subquestions (and uncheck responses)
+          $('.desc2').hide();
+          $('input').not('[value='+test+']').removeAttr('checked');
+      } else {
+          // Find the ID of this question
+          var parent_q = $($(this).parents('.desc2')[0]).attr('id');
+          var type = parent_q.substring(0,2); // Get the type, such as "in"
+          var level = parent_q.substring(2);  // Get the level, such as 1
+          $(".desc2").each(function(elt_index, elt) {
+              // Hide each question/answer with either a different type or a higher ID.
+              var e_id = $(elt).attr('id');
+              if(e_id.substring(0,2) != type || e_id.substring(2) > level) {
+                  $(elt).hide();
+                  $(elt).children('input').removeAttr('checked');
+              }
+          });
+      }
+      $("#"+test).show();
+  });
+});
+
+$(document).ready(function(){
+  $("input[name$='Q7']").click(function() {
+      var test = $(this).val();
+      if (test[2] == '1') {
+          // Check whether this is a top-level question, and if so,
+          // hide all the subquestions (and uncheck responses)
+          $('.desc5').hide();
+          $('input').not('[value='+test+']').removeAttr('checked');
+      } else {
+          // Find the ID of this question
+          var parent_q = $($(this).parents('.desc5')[0]).attr('id');
+          var type = parent_q.substring(0,2); // Get the type, such as "in"
+          var level = parent_q.substring(2);  // Get the level, such as 1
+          $(".desc5").each(function(elt_index, elt) {
+              // Hide each question/answer with either a different type or a higher ID.
+              var e_id = $(elt).attr('id');
+              if(e_id.substring(0,2) != type || e_id.substring(2) > level) {
+                  $(elt).hide();
+                  $(elt).children('input').removeAttr('checked');
+              }
+          });
+      }
+      $("#"+test).show();
+  });
+});
+
+$(document).ready(function(){
+  $("input[name$='Q14']").click(function() {
+      var test = $(this).val();
+      if (test[2] == '1') {
+          // Check whether this is a top-level question, and if so,
+          // hide all the subquestions (and uncheck responses)
+          $('.desc3').hide();
+          $('input').not('[value='+test+']').removeAttr('checked');
+      } else {
+          // Find the ID of this question
+          var parent_q = $($(this).parents('.desc3')[0]).attr('id');
+          var type = parent_q.substring(0,2); // Get the type, such as "in"
+          var level = parent_q.substring(2);  // Get the level, such as 1
+          $(".desc3").each(function(elt_index, elt) {
+              // Hide each question/answer with either a different type or a higher ID.
+              var e_id = $(elt).attr('id');
+              if(e_id.substring(0,2) != type || e_id.substring(2) > level) {
+                  $(elt).hide();
+                  $(elt).children('input').removeAttr('checked');
+              }
+          });
+      }
+      $("#"+test).show();
+  });
+});
+
+$(document).ready(function(){
+  $("input[name$='Q18']").click(function() {
+      var test = $(this).val();
+      if (test[2] == '1') {
+          // Check whether this is a top-level question, and if so,
+          // hide all the subquestions (and uncheck responses)
+          $('.desc4').hide();
+          $('input').not('[value='+test+']').removeAttr('checked');
+      } else {
+          // Find the ID of this question
+          var parent_q = $($(this).parents('.desc4')[0]).attr('id');
+          var type = parent_q.substring(0,2); // Get the type, such as "in"
+          var level = parent_q.substring(2);  // Get the level, such as 1
+          $(".desc4").each(function(elt_index, elt) {
+              // Hide each question/answer with either a different type or a higher ID.
+              var e_id = $(elt).attr('id');
+              if(e_id.substring(0,2) != type || e_id.substring(2) > level) {
+                  $(elt).hide();
+                  $(elt).children('input').removeAttr('checked');
+              }
+          });
+      }
+      $("#"+test).show();
+  });
+});
+
+// after changing the answer of a main question, remove the checked answer from subquestion
+function removeSub(elements) {
+    for (var i = 0; i < elements.length; i++) {
+        if (elements[i].type == "radio" || elements[i].type == "checkbox") {
+            elements[i].checked = false;
+        }
+    }
+}
+
+$(document).ready(function(){
+//Q4 folding
+$("input[type='radio']").change(function(){
+    //hide
+    if($(this).val()=="SF1" || $(this).val()=="SD1")
+    {
+        $("#submit_Q4").show();
+        $("#submit_Q4_1").hide();
+        $('.submit_Q4_1').prop('checked', false);
+    }
+    //show
+    else if ($(this).val()=="MU1" )
+    {
+        $("#submit_Q4").hide();
+        $("#submit_Q4_1").show();
+        var elements = document.querySelectorAll("[name=Q4_2]");
+        removeSub(elements);
+    }
+    else if ($(this).val()=="PU1"){
+         $("#submit_Q4").hide();
+         $("#submit_Q4_1").show();
+         var elements = document.querySelectorAll("[name=Q4_1]");
+         removeSub(elements);
+    }
+    else if ($(this).val()=="SC1" ||$(this).val()=="OT1"){
+         $("#submit_Q4").hide();
+         $("#submit_Q4_1").show();
+         var elements = document.querySelectorAll("[name=Q4_1],[name=Q4_2]");
+         removeSub(elements);
+    }
+  }
+);
+
+//Q5 folding
+$("input[type='radio']").change(function(){
+    if($(this).val()=="YE2")
+    {
+        $("#submit_Q5").show();
+        $("#submit_Q5_1").hide();
+        $("#submit_Q5_2").hide();
+
+    }
+    else if ($(this).val()=="NO1"){
+        $("#submit_Q5").hide();
+        $("#submit_Q5_1").show();
+        $("#submit_Q5_2").show();
+
+        var elements = document.querySelectorAll("[name=Q5_1], [name=Q5_2]");
+        removeSub(elements);
+    }
+
+    else if ($(this).val()=="YE3" || $(this).val()=="YE4")
+    {
+           $("#submit_Q5").hide();
+           $("#submit_Q5_1").show();
+           $("#submit_Q5_2").show();
+    }
+    });
+
+//Q6 folding
+$("input[type='radio']").change(function(){
+    if($(this).val()=="Insignificant")
+    {
+      $("#submit_Q6").show();
+      $("#submit_Q6_1").hide();
+
+    }
+    else if ($(this).val()=="Small" || $(this).val()=="Medium" || $(this).val()=="Large" )
+    {
+         $("#submit_Q6").hide();
+         $("#submit_Q6_1").show();
+    }
+});
+
+//Q7 remove subquestions after changing the answer of main quesiton
+$("input[type='radio']").change(function(){
+    if($(this).val()=="AC1"){
+        var elements = document.querySelectorAll("[name=Q7_1]");
+        removeSub(elements);
+    }
+});
+
+//Q13 folding
+$("input[type='radio']").change(function(){
+    if($(this).val()=="3")
+    {
+      $("#submit_Q13").show();
+      $("#submit_Q13_1").hide();
+    }
+    else if ($(this).val()=="1" || $(this).val()=="2" || $(this).val()=="3" )
+    {
+         $("#submit_Q13").hide();
+         $("#submit_Q13_1").show();
+    }
+    });
+
+//Q14 remove subquestions after changing the answer of main quesiton
+$("input[type='radio']").change(function(){
+    const fruits = ["IS1", "LW1", "LB1", "MT1","UN1",];
+    if(fruits.includes($(this).val())){
+        var elements = document.querySelectorAll("[name=Q14_1]");
+        removeSub(elements);
+    }
+});
+
+//Q18 remove subquestions after changing the answer of main quesiton
+$("input[type='radio']").change(function(){
+    const fruits = ["N_1"];
+    if(fruits.includes($(this).val())){
+        var elements = document.querySelectorAll("[name=Q18_1]");
+        removeSub(elements);
+    }
+});
+
+});
