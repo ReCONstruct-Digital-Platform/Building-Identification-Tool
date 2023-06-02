@@ -269,7 +269,37 @@ var change_width = parseFloat(screen.width) * 0.5;
 // console.log('begin: ' + nav_tabwidth);
  //calculate the height of text bar dynamically
 
+function SubquestionOne(){
+    $("#Rowhouse").attr('required', '');
+    $("#Large-multi-family").attr('required', '');
+    var requiredCheckboxes = $('.subquestion1 :radio[required]');
+    requiredCheckboxes.change(function(){
+        if(requiredCheckboxes.is(':checked')) {
+            requiredCheckboxes.removeAttr('required');
+        } else {
+            requiredCheckboxes.attr('required', 'required');
+        }
+    });
+};
+
+function SubquestionTwo(){
+    $("#Community-center").attr('required', '');
+    $("#Hockey-arena").attr('required', '');
+    $("#Library").attr('required', '');
+    $("#Sports").attr('required', '');
+    $("#Unsure4").attr('required', '');
+    var requiredCheck= $('.subquestion2 :radio[required]');
+    requiredCheck.change(function(){
+        if(requiredCheck.is(':checked')) {
+            requiredCheck.removeAttr('required');
+        } else {
+            requiredCheck.attr('required', 'required');
+        }
+    });
+};
+
 $(document).ready(function() {
+
     var nav_tabwidth = $('#nav-tab').width();
 
     $('#streetview').bind('DOMSubtreeModified', function(){
@@ -281,7 +311,7 @@ $(document).ready(function() {
         var dynwidth =  $('#streetview').width();
         var screenwidth = screen.width;
         change_width = screenwidth - dynwidth ;
-        console.log(change_width);
+        //console.log(change_width);
         //var nav_tabwidth = $('#nav-tab').width();
         //console.log('dynwidth: ' + nav_tabwidth);
         if (parseFloat(change_width) < 500)
@@ -440,7 +470,10 @@ $("input[type='radio']").change(function(){
     {
         $("#submit_Q4").show();
         $("#submit_Q4_1").hide();
-        $('.submit_Q4_1').prop('checked', false);
+        var elements = document.querySelectorAll("[name=Q4_2]");
+        var elements2 = document.querySelectorAll("[name=Q4_1]");
+        removeSub(elements);
+        removeSub(elements2);
     }
     //show
     else if ($(this).val()=="MU1" )
@@ -544,6 +577,29 @@ $("input[type='radio']").change(function(){
         var elements = document.querySelectorAll("[name=Q18_1]");
         removeSub(elements);
     }
+});
+
+$(function(){
+    var requiredCheckboxes = $('.browsers :checkbox[required]');
+    //console.log(typeof(requiredCheckboxes));
+    requiredCheckboxes.change(function(){
+        if(requiredCheckboxes.is(':checked')) {
+            requiredCheckboxes.removeAttr('required');
+        } else {
+            requiredCheckboxes.attr('required', 'required');
+        }
+    });
+});
+
+$(function(){
+    var requiredCheckboxes = $('.browsers2 :checkbox[required]');
+    requiredCheckboxes.change(function(){
+        if(requiredCheckboxes.is(':checked')) {
+            requiredCheckboxes.removeAttr('required');
+        } else {
+            requiredCheckboxes.attr('required', 'required');
+        }
+    });
 });
 
 });
