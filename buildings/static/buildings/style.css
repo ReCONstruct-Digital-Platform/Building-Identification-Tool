@@ -444,26 +444,37 @@ tr:hover .delete-row-icon {
 /* style sheet section 0 */
 
 #scroll {
-  overflow-y: scroll;
+overflow-y: scroll;
 }
 
 /* style sheet section 1 */
 .survey {
-  -webkit-column-count: 3;
-  -moz-column-count: 3; 
+  -webkit-column-count: 3; /* Chrome, Safari, Opera */
+  -moz-column-count: 3; /* Firefox */
   column-count: 3;
   padding-left: 50px;
-
 }
+
+/*
+.horizontal {
+  -webkit-column-count: 2;
+  -moz-column-count: 2;
+  column-count: 2;
+  padding-left: 50px;
+  display: flex;
+}
+ */
 
 .q-container {
   display: flex;
   flex-direction: column;
 }
 
+
 .q-header {
   font-size: 1rem;
   display: flex;
+  margin-bottom: -0.15rem;
 }
 
 .survey-3col {
@@ -471,13 +482,11 @@ tr:hover .delete-row-icon {
   grid-template-columns: repeat(3, 1fr);
 }
 
-.horizontal {
-  -webkit-column-count: 2; /* Chrome, Safari, Opera */
-  -moz-column-count: 2; /* Firefox */
-  column-count: 2;
-  padding-left: 50px;
-  display: flex;
+.survey-2col {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
 }
+
 
 /* style sheet section 2 */
 .desc { display: none; }
