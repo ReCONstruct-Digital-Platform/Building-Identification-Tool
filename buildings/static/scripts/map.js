@@ -116,11 +116,25 @@ function getLatestViewData() {
 }
 
 
+async function screenshot(element_id) {
+    return html2canvas(document.querySelector(`#${element_id}`), {
+        useCORS: true,
+        ignoreElements: (el) => {
+            return el.classList.contains("gmnoprint") || el.classList.contains("gm-style-cc")
+            || el.id === 'gmimap1' || el.tagName === 'BUTTON' 
+            || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3_hdpi.png'
+            || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3.png'
+        },
+    }).then(canvas => {
+        // For testing - appends the images to the web page
+        // document.body.appendChild(canvas);
+        return canvas.toDataURL('image/png');
+    })
+}
+
 
 
 $(document).ready(function() {
-
-
 
     const element = document.getElementById('prev-building-link');
 
@@ -163,38 +177,8 @@ $(document).ready(function() {
 
     })
 
-    $('#btn-screenshot').click((e) => {
-        e.preventDefault();
-        
-        html2canvas(document.querySelector("#streetview"), {
-            windowWidth: 1600,
-            windowWHeight: 1280,
-            width: 1500,
-            height: 1000,
-            ignoreElements: (el) => {
-                return el.classList.contains("gmnoprint") || el.classList.contains("gm-style-cc");
-            },
-        }).then(canvas => {
-            document.body.appendChild(canvas)
-        });
 
-    })
 
-    $('#building-submition-form').one('submit', (e) => {
-        e.preventDefault();
-        try {
-            const latest_view_data = getLatestViewData();
-            document.querySelector('#latest_view_data').value = JSON.stringify(latest_view_data);
-        } 
-        catch (error) {
-            console.error(error);
-        } 
-        finally {
-            // Go on to the normal processing
-            $('#building-submition-form').submit();
-        }
-
-    })
 
     // Check if streetview container was resized previously
     // If not set its size to 50%, if yes use the saved settings
@@ -228,5 +212,101 @@ $(document).ready(function() {
     }
     });
 
+    // Screenshot functionality
+    $('#btn-screenshot').click(async (e) => {
+        e.preventDefault();
+        
+        const imgData = {
+            streetview: await screenshot('streetview'),
+        }
 
+        const url = $("#upload_url").attr("data-url");
+        console.log(imgData);
+        
+        // async call
+        fetch(url, {
+            method: "POST", // *GET, POST, PUT, DELETE, etc.
+            mode: "same-origin", // no-cors, *cors, same-origin
+            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: "same-origin", // include, *same-origin, omit
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCookie('csrftoken'),
+            },
+            body: JSON.stringify(imgData), // body data type must match "Content-Type" header
+          });
+    });
+
+    $('#building-submition-form').one('submit', (e) => {
+        e.preventDefault();
+        try {
+            const latest_view_data = getLatestViewData();
+            document.querySelector('#latest_view_data').value = JSON.stringify(latest_view_data);
+        } 
+        catch (error) {
+            console.error(error);
+        } 
+        finally {
+            // Go on to the normal processing
+            $('#building-submition-form').submit();
+        }
+
+    })
+
+    // When user submits form, upload both current streetview and sat views
+    // then continue with default behaviour
+    $('#btn-submit-vote').click(async (e) => {
+
+        e.preventDefault();
+        form = $('#building-submition-form')[0];
+        
+        if (!form.checkValidity()) {
+            // Create the temporary button, click and remove it
+            var tmpSubmit = document.createElement('button')
+            form.appendChild(tmpSubmit)
+            tmpSubmit.click()
+            form.removeChild(tmpSubmit)
+        } else {
+            const imgData = {
+                streetview: await screenshot('streetview'),
+                satellite: await screenshot('satmap'),
+            }
+        
+            const url = $("#upload_url").attr("data-url");
+            console.log(imgData);
+            
+            // async call
+            fetch(url, {
+                method: "POST", // *GET, POST, PUT, DELETE, etc.
+                mode: "same-origin", // no-cors, *cors, same-origin
+                cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+                credentials: "same-origin", // include, *same-origin, omit
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-CSRFToken": getCookie('csrftoken'),
+                },
+                body: JSON.stringify(imgData), // body data type must match "Content-Type" header
+              });
+        
+              $('#building-submition-form').submit();
+        }
+
+    })
+    
 });
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}

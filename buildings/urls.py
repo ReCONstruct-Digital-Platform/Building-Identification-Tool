@@ -27,5 +27,6 @@ urlpatterns = [
     path('register', views.register, name="register"),
     path('login', views.login_page, name="login"),
     path('logout', views.logout_page, name="logout"),
+    path('upload_imgs/<int:building_id>', views.upload_imgs, name="upload_imgs"),
     path('redeploy_server', views.redeploy_server, name="redeploy_server"),
 ]

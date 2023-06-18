@@ -410,3 +410,13 @@ class BuildingTypology(models.Model):
 
     def __str__(self):
         return f'{self.vote}'
+    
+
+class BuildingImage(models.Model):
+    building = models.ForeignKey(Building, on_delete=models.CASCADE)
+    uuid = models.TextField(null=False)
+    date_added = models.DateTimeField('date added', default=timezone.now)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )

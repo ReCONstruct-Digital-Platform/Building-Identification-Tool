@@ -22,7 +22,11 @@ env = environ.Env(
     SESSION_COOKIE_SECURE=(bool, True),
     STATIC_URL=(str, 'static/'),
     STATIC_ROOT=(str, ''),
-    WEBHOOK_SECRET=(str, 'secret')
+    WEBHOOK_SECRET=(str, 'secret'),
+    B2_KEYID_RW=(str, ''),
+    B2_APPKEY_RW=(str, ''),
+    B2_ENDPOINT=(str, ''),
+    B2_BUCKET_IMAGES=(str, '')
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -48,6 +52,12 @@ CSRF_TRUSTED_ORIGINS = env('CSRF_TRUSTED_ORIGINS')
 CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE')
 
 SESSION_COOKIE_SECURE = env('SESSION_COOKIE_SECURE')
+
+# Backblaze B2 variables
+B2_KEYID_RW = env('B2_KEYID_RW')
+B2_APPKEY_RW = env('B2_APPKEY_RW')
+B2_ENDPOINT = env('B2_ENDPOINT')
+B2_BUCKET_IMAGES = env('B2_BUCKET_IMAGES')
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
@@ -163,3 +173,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Max request size increased to 16MB to upload images
+DATA_UPLOAD_MAX_MEMORY_SIZE = 16_777_216

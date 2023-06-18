@@ -1,9 +1,15 @@
+import io
 import git
 import hmac
 import json
+import boto3
 import hashlib
 import requests
 import traceback
+
+from PIL import Image
+from w3lib.url import parse_data_uri
+from uuid_extensions import uuid7str
 from ipaddress import ip_address, ip_network
 
 from django.views import generic 
@@ -12,6 +18,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.contrib import messages 
 from django.http import HttpResponse
+from django.core.paginator import Paginator
 from django.forms.models import model_to_dict
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -19,10 +26,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
 
+from . import utils
 from .forms import CreateUserForm
-from config.settings import WEBHOOK_SECRET, BASE_DIR
-from django.core.paginator import Paginator
-from .models import Building, BuildingLatestViewData, BuildingTypology, Material, NoBuildingFlag, Typology, Vote, BuildingNote, MaterialScore, Profile
+from config.settings import B2_APPKEY_RW, B2_BUCKET_IMAGES, B2_ENDPOINT, B2_KEYID_RW, WEBHOOK_SECRET, BASE_DIR
+from .models import Building, BuildingImage, BuildingLatestViewData, BuildingTypology, Material, NoBuildingFlag, Typology, Vote, BuildingNote, MaterialScore, Profile
 
 import logging
 
@@ -200,8 +207,7 @@ def classify(request, building_id):
                         latest_view_data.save()
 
                 elif key == 'no_building':
-                    no_building = NoBuildingFlag(vote = new_vote)
-                    no_building.save()
+                    NoBuildingFlag(vote = new_vote).save()
 
             # Finally, we can save our vote
             new_vote.save()
@@ -286,6 +292,79 @@ def logout_page(request):
     return redirect('buildings:login')
 
 
+@require_POST
+def upload_imgs(request, building_id):
+    # Receive the images
+    body = json.loads(request.body)
+
+    b2 = utils.get_b2_resource(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW)
+
+    building = get_object_or_404(Building, pk=building_id)
+
+    extra_args = {'Metadata': {'user': request.user.username}}
+
+    upload_formats_and_sizes = [('large', 2400), ('medium', 1200), ('small', 400)]
+
+    for image_type in body.keys():
+        print(image_type)
+        data = parse_data_uri(body.get(image_type))
+        image = Image.open(io.BytesIO(data.data))
+        # Convert the image to RGB to save as JPG
+        image = image.convert('RGB')
+        
+        # For streetview images, we'll store multiple sizes 
+        if image_type == 'streetview':
+            # Streetview pics of all sizes will share a UUID
+            uuid = uuid7str()
+            # We'll do an all or nothing save here. 
+            # If an exception occurs during saving any of the sizes
+            # we won't save the link in the DB. On the other hand, if 
+            # we have a link in the DB, we know that all sizes exist.
+            # This could result in stranded images in B2 if only some uploads fail.
+            try:
+                for format, size in upload_formats_and_sizes: 
+                    # Resize the image, maintaining the aspect ratio
+                    image.thumbnail((size, size))
+                    print(image.size)
+                    # Create an in memory file to temporarily store the image
+                    in_mem_file = io.BytesIO()
+                    image.save(in_mem_file, format='jpeg')
+                    in_mem_file.seek(0)
+
+                    # Try to upload the image
+                    b2.Bucket(B2_BUCKET_IMAGES).upload_fileobj(
+                        in_mem_file,
+                        f"images/streetview/{format}/{uuid}.jpg",
+                        ExtraArgs=extra_args
+                    )
+
+                # Only need to save the UUID in DB once, since formats share it
+                BuildingImage(building=building, uuid=uuid, user=request.user).save()
+            except:
+                print(traceback.format_exc())
+
+        elif image_type == 'satellite':
+            uuid = uuid7str()
+            # Resize the image, maintaining the aspect ratio
+            image.thumbnail((1200, 1200))
+            # Create an in memory file to temporarily store the image
+            in_mem_file = io.BytesIO()
+            image.save(in_mem_file, format='jpeg')
+            in_mem_file.seek(0)
+            try:
+                # Try to upload the image
+                b2.Bucket(B2_BUCKET_IMAGES).upload_fileobj(
+                    in_mem_file,
+                    f"images/satellite/medium/{uuid}.jpg",
+                    ExtraArgs=extra_args
+                )
+                BuildingImage(building=building, uuid=uuid, user=request.user).save()
+            except:
+                print(traceback.format_exc())
+
+    return HttpResponse('Ok')
+
+
 @csrf_exempt
 @require_POST
 def redeploy_server(request):
@@ -360,8 +439,6 @@ def redeploy_server(request):
 
 def verify_signature(payload_body, secret_token, signature_header):
     """Verify that the payload was sent from GitHub by validating SHA256.
-    
-    Raise and return 403 if not authorized.
     
     Args:
         payload_body: original request body to verify (request.body())

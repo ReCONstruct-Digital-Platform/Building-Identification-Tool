@@ -49,8 +49,8 @@
           lng: building_latest_view_data['marker_lng']
         };
       }
-      // No preivously saved view data
-      // we will search for best panorama
+      // No previously saved view data
+      // we will search for the best panorama
       else {
         building_coord = {
           lat: parseFloat("{{ building.lat }}"), 
@@ -264,7 +264,7 @@
           {% if building.construction_year != 9999 %}
             {{ building.construction_year }}
             {% if building.year_real_esti == 'E' %}
-            (Est.)
+            (est.)
             {% endif %}
           {% else %}
           &mdash;
@@ -281,7 +281,7 @@
         <div>
           Floor area: 
           {% if building.floor_area != 9999.0 %}
-          {{ building.floor_area }} m<sup>2</sup>
+          {{ building.floor_area|intcomma }} m<sup>2</sup>
           {% else %}
           &mdash;
           {% endif %}
@@ -387,7 +387,7 @@
             </table>
           </div>
             <div class="btn-row">
-              <input id="btn-submit-vote" class="btn btn-vote mr-5" type="submit" value="Submit">
+              <input id="btn-submit-vote" class="btn btn-vote mr-5" value="Submit">
             </div>
         </form>
       </div>
@@ -399,6 +399,7 @@
   <script src="https://maps.googleapis.com/maps/api/js?key={{key}}&libraries=geometry&callback=initMaps&v=weekly" defer></script>
 </section>
 
+<input type="hidden" id="upload_url" data-url="{% url 'buildings:upload_imgs' building.id %}" />
 
 
 
