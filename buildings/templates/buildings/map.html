@@ -6,6 +6,11 @@
 {{ building_latest_view_data | json_script:"building_latest_view_data" }}
 
 <script src="{% static 'scripts/map.js' %}"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.1.0.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'buildings/style.css'%}" media = "print">
+
 <script>
     var map;
     var sv;
@@ -28,7 +33,7 @@
         };
 
         building_coord = {
-          lat: building_latest_view_data['marker_lat'], 
+          lat: building_latest_view_data['marker_lat'],
           lng: building_latest_view_data['marker_lng']
         };
       }
@@ -36,7 +41,7 @@
       // we will search for best panorama
       else {
         building_coord = {
-          lat: parseFloat("{{ building.lat }}"), 
+          lat: parseFloat("{{ building.lat }}"),
           lng: parseFloat("{{ building.lon }}")
         };
 
@@ -70,13 +75,8 @@
                     heading: heading,
                     pitch: 0,
                   },
-                  linksControl: false,
-                  panControl: false,
-                  fullscreenControl: false,
-                  addressControl: false,
-                  zoomControl: false,
               });
-            
+
               sv_marker = new google.maps.Marker({
                 position: building_coord,
                 map: sv,
@@ -87,7 +87,7 @@
               sv_marker.addListener("dragend", ()=> {
                 m_marker.setPosition(sv_marker.getPosition());
               })
-              
+
               // Setting the panorama after the marker has been defined,
               // otherwise the marker does not show for some reason!
               // https://stackoverflow.com/questions/23498921/google-street-view-with-custom-panorama-and-markers
@@ -116,7 +116,7 @@
               m_marker.addListener("dragend", ()=> {
                 sv_marker.setPosition(m_marker.getPosition());
               })
-          } 
+          }
           else {
             var radius = panoRequest.radius
             //Handle other statuses here
@@ -126,10 +126,10 @@
               elem.innerText = "Could not find Panorama for location";
               document.getElementById("streetview").appendChild(elem);
               return False;
-            } 
+            }
             else {
               console.log(`Could not find street view within ${radius}m, trying again within ${radius+50}m.`)
-              panoRequest.radius = panoRequest.radius + 50; 
+              panoRequest.radius = panoRequest.radius + 50;
               findPanoramaByRadius(panoRequest, building_coord);
             }
           }
@@ -157,7 +157,7 @@
                     pitch: pitch,
                   },
               });
-            
+
               sv_marker = new google.maps.Marker({
                 position: building_coord,
                 map: sv,
@@ -168,7 +168,7 @@
               sv_marker.addListener("dragend", ()=> {
                 m_marker.setPosition(sv_marker.getPosition());
               })
-              
+
               // Setting the panorama after the marker has been defined,
               // otherwise the marker does not show for some reason!
               // https://stackoverflow.com/questions/23498921/google-street-view-with-custom-panorama-and-markers
@@ -197,7 +197,7 @@
               m_marker.addListener("dragend", ()=> {
                 sv_marker.setPosition(m_marker.getPosition());
               })
-          } 
+          }
           else {
             console.log(`Could not find panorama id ${panoRequest.pano}. Searching using radius`);
             // Making a radius search request
@@ -211,12 +211,12 @@
           }
         });
       }
-      
+
       if (building_latest_view_data)
         findPanoramaById(panoRequest, building_coord);
-        else  
+        else
         findPanoramaByRadius(panoRequest, building_coord);
-    } 
+    }
 
     window.initMaps = initMaps;
 </script>
@@ -231,19 +231,19 @@
       <div class="building-info-col">
         <div class="building-id">
           <h4>
-            Building #{{ building.id }} 
+            Building #{{ building.id }}
           </h4>
         </div>
         <div>
           {{ building.formatted_address }}
         </div>
         <div class="building-cubf">
-          CUBF {{ building.cubf }}: {{ building.cubf_name }} 
+          CUBF {{ building.cubf }}: {{ building.cubf_name }}
         </div>
       </div>
       <div class="building-info-col ml-5">
         <div>
-          Const. year: 
+          Const. year:
           {% if building.construction_year != 9999 %}
             {{ building.construction_year }}
             {% if building.year_real_esti == 'E' %}
@@ -254,7 +254,7 @@
           {% endif %}
         </div>
         <div>
-          Max floors: 
+          Max floors:
           {% if building.max_num_floor %}
           {{ building.max_num_floor }}
           {% else %}
@@ -262,7 +262,7 @@
           {% endif %}
         </div>
         <div>
-          Floor area: 
+          Floor area:
           {% if building.floor_area != 9999.0 %}
           {{ building.floor_area }} m<sup>2</sup>
           {% else %}
@@ -273,7 +273,7 @@
 
       <div class="building-info-col ml-5">
         <div>
-          Type const.: 
+          Type const.:
           {% if building.type_const %}
 
           {% include "buildings/utils/construction_type.html" with type_const=building.type_const %}
@@ -286,9 +286,9 @@
           Property value: ${{ building.value_prop|intcomma }}
         </div>
         <div>
-          Non-res premises: 
+          Non-res premises:
           {% if building.num_non_res %}
-          
+
           {{ building.num_non_res }}
           {% else %}
           &mdash;
@@ -309,76 +309,496 @@
 </section>
 
 <section class="container-wide">
-  <div class="streetview-and-map-container">
+  <!--overall container-->
+  <div class="streetview-and-map-container" >
     <div class="streetview-container ml-3">
       <div id="streetview"></div>
     </div>
     <div id="dragbar"></div>
-    <div class="map-and-submit-container mr-3">
-      <div class="building-selection">
-        <form id="building-submition-form" action="{% url 'buildings:classify' building.id %}" method="post">
-          {% csrf_token %}
-          <input type="hidden" name="latest_view_data" id="latest_view_data"/>
 
-          <div class="building-selection-row">
-            <table id="vote-table" class="table vote-table">
-              <thead class="thead-light">
-                <tr>
-                  <th scope="col"></th>
-                  <th scope="col">No</th>
-                  <!-- <th scope="col">Unlikely</th> -->
-                  <th scope="col">Unclear</th>
-                  <!-- <th scope="col">Likely</th> -->
-                  <th scope="col">Yes</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr id="row-1">
-                  <input type="hidden" name = "typology" value="prefab_metal_barn"/>
-                  <td scope="row">
-                    Prefab metal building?
-                  </td>
-                  <td class="td-vote">
-                    <input type="radio" name="typology" value="1" required/></td>
-                  <!-- <td class="td-vote">
-                    <input type="radio" name="typology" value="2"/></td> -->
-                  <td class="td-vote">
-                    <input type="radio" name="typology" value="3"/></td>
-                  <!-- <td class="td-vote">
-                    <input type="radio"name="typology" value="4"/></td> -->
-                  <td class="td-vote">
-                    <div class="td-vote-last-cell">
-                      <input type="radio" name="typology" value="5"/>
-                    </div>
-                  </td>
-                </tr>
-                <tr id="row-2">
-                  <td>
-                    Additonal Notes:
-                  </td>
-                  <td colspan="3">
-                    <textarea  class="note-input" name="note" placeholder="Enter notes..."></textarea>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-            <div class="btn-row">
-              <input id="btn-submit-vote" class="btn btn-vote mr-5" type="submit" value="Submit">
+    <!--min width here style = 'min-width: 42%"-->
+    <div class="map-and-submit-container mr-3"  style = 'min-width: 42%' >
+
+      <!--navigation bar-->
+      <nav >
+        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+          <button class="nav-link active" id="nav-satellite-tab" data-bs-toggle="tab" data-bs-target="#nav-satellite" type="button" role="tab" aria-controls="nav-satellite" aria-selected="true" >Satellite</button>
+          <button class="nav-link" id="nav-survey-tab" data-bs-toggle="tab" data-bs-target="#nav-survey" type="button" role="tab" aria-controls="nav-survey" aria-selected="false" onclick={TestsFunction()}>Survey</button>
+        </div>
+      </nav>
+
+      <!--division: division of satellite image and survey questionnaires -->
+      <div class="tab-content" id="nav-tabContent" >
+        <!-- TestsFunction() script-->
+        <div class="tab-pane show" id="nav-survey" role="tabpanel" aria-labelledby="nav-survey-tab"  style="display: none;">
+          <!--$(document).ready(function() -->
+          <!-- style sheet section 0 -->
+
+          <!--below is the first scrolling survey -->
+          <div id="scroll">
+            <br>
+            <div class="text-center">
+              <h5>
+                <strong>Section 1: Three Mandatory Questions</strong>
+              </h5>
             </div>
-    </form>
-    </form>
-        </form>
+            <hr />
+
+            <form id="building-submission-form" action="{% url 'buildings:classify' building.id %}" method="post">
+              <!-- Necessary for security -->
+              {% csrf_token %}
+
+              <!-- Q1 -->
+              <!-- I changed this one to have a container for the header and choices, and to use <fieldset> tags around it -->
+              <fieldset class="q-container pl-5 pb-3">
+                <legend class="q-header pb-1 ">
+                  <strong>Q1: What is the cladding material? (Select all that apply)</strong>
+                </legend>
+
+                <div class="q-choices survey-3col browsers" id="Q1">
+                  <label for ="Brick"><input class="mr-1" type="checkbox" name="Q1" value="Brick" id = "Brick" required />Brick</label>
+                  <label for ="Ceramic"><input class="mr-1" type="checkbox" name="Q1" value="Ceramic" id = "Ceramic" required />Ceramic</label>
+                  <label for ="Concrete"><input class="mr-1" type="checkbox" name="Q1" value="Concrete" id = "Concrete" required />Concrete</label>
+                  <label for ="Curtain wall"><input class="mr-1" type="checkbox" name="Q1" value="Curtain_wall" id = "Curtain wall" required />Curtain wall</label>
+                  <label for ="Masonry"><input class="mr-1" type="checkbox" name="Q1" value="Masonry" id = "Masonry" required />Masonry</label>
+                  <label for ="Metal"><input class="mr-1" type="checkbox" name="Q1" value="Metal" id = "Metal" required />Metal</label>
+                  <label for ="Vinyl"><input class="mr-1" type="checkbox" name="Q1" value="Vinyl" id = "Vinyl" required />Vinyl</label>
+                  <label for ="Wood"><input class="mr-1" type="checkbox" name="Q1" value="Wood" id = "Wood" required />Wood</label>
+                  <label for ="Unsure"><input class="mr-1" type="checkbox" name="Q1" value="Unsure" id = "Unsure" required />Unsure</label>
+                </div>
+              </fieldset>
+
+              <!-- Q2 -->
+              <fieldset class="q-container pl-5 pb-3">
+                <legend class="q-header pb-1">
+                  <strong>Q2: What kind of roof does the building have?</strong>
+                </legend>
+                <div class="q-choices survey-3col" id="Q2">
+                  <label for="Butterfly"><input class="mr-1" type="radio" name="Q2" value="Butterfly" id="Butterfly" required/>Butterfly</label>
+                  <label for="Complex"><input class="mr-1" type="radio" name="Q2" value="Complex" id="Complex" required/>Complex</label>
+                  <label for="Curved"><input class="mr-1" type="radio" name="Q2" value="Curved" id="Curved" required/>Curved</label>
+                  <label for="Dormers"><input class="mr-1" type="radio" name="Q2" value="Dormers" id="Dormers" required/>Dormers</label>
+                  <label for="Flat"><input class="mr-1" type="radio" name="Q2" value="Flat" id="Flat" required/>Flat</label>
+                  <label for="Gabled"><input class="mr-1" type="radio" name="Q2" value="Gabled" id="Gabled" required/>Gabled</label>
+                  <label for="Gambrel"><input class="mr-1" type="radio" name="Q2" value="Gambrel" id="Gambrel" required/>Gambrel</label>
+                  <label for="Hipped"><input class="mr-1" type="radio" name="Q2" value="Hipped" id="Hipped" required/>Hipped</label>
+                  <label for="Mansard"><input class="mr-1" type="radio" name="Q2" value="Mansard" id="Mansard" required/>Mansard</label>
+                  <label for="Single_Pitch"><input class="mr-1" type="radio" name="Q2" value="Single_Pitch" id="Single_Pitch" required/>Single Pitch</label>
+                  <label for="Unsure2"><input class="mr-1" type="radio" name="Q2" value="Unsure" id="Unsure2" required/>Unsure</label>
+                </div>
+              </fieldset>
+
+
+              <!-- Q3 -->
+              <fieldset class="q-container pl-5 pb-3">
+                <legend class="q-header pb-1">
+                  <strong>Q3: What is the roofing material? (Select all that apply)</strong>
+                </legend>
+                <div class="q-choices survey-3col browsers2" id="Q3">
+                  <label for="Asphalt_Shingle"><input class="mr-1" type="checkbox" name="Q3" value="Asphalt_Shingle" id="Asphalt_Shingle" required/>Asphalt Shingle</label>
+                  <label for="Concrete2"><input class="mr-1" type="checkbox" name="Q3" value="Concrete" id="Concrete2" required/>Concrete</label>
+                  <label for="Gravel"><input class="mr-1" type="checkbox" name="Q3" value="Gravel" id="Gravel" required/>Gravel</label>
+                  <label for="Green_Roof"><input class="mr-1" type="checkbox" name="Q3" value="Green_Roof" id="Green_Roof" required/>Green Roof</label>
+                  <label for="Metal2"><input class="mr-1" type="checkbox" name="Q3" value="Metal" id="Metal2" required/>Metal</label>
+                  <label for="Slate"><input class="mr-1" type="checkbox" name="Q3" value="Slate" id="Slate" required />Slate</label>
+                  <label for="Tar"><input class="mr-1" type="checkbox" name="Q3" value="Tar" id="Tar" required/>Tar</label>
+                  <label for="Tile"><input class="mr-1" type="checkbox" name="Q3" value="Tile" id="Tile" required/>Tile</label>
+                  <label for="Wood_Shake"><input class="mr-1" type="checkbox" name="Q3" value="Wood_Shake" id="Wood_Shake" required/>Wood Shake</label>
+                  <label for="Unsure3"><input class="mr-1" type="checkbox" name="Q3" value="Unsure" id="Unsure3" required/>Unsure</label>
+                </div>
+              </fieldset>
+
+              <div class="text-center">
+                <p></p>
+                  <h5>
+                    <strong>Section 2: Building function (Mandatory)</strong>
+                  </h5>
+              </div>
+              <hr />
+
+              <!-- subquestions of corresponding questions script -->
+              <!--style sheet section 2-->
+
+              <!-- Q4 -->
+              <fieldset class="q-container pl-5 pb-3" id="Q4">
+                <legend class="q-header pb-1">
+                  <strong>Conditional Q4: What is the building use?</strong>
+                </legend>
+                <div id="Q4_1">
+                  <label for="Single-family"><input class="mr-1" type="radio" name="Q4" value="SF1" id="Single-family" required/>Single-family detached</label><br>
+                  <label for="Semi-detached"><input class="mr-1" type="radio" name="Q4" value="SD1" id = "Semi-detached" required/>Semi-detached (Duplex)</label><br>
+                  <label for="Multi-Residential"><input class="mr-1" type="radio" name="Q4" value="MU1" id = "Multi-Residential" onclick="SubquestionOne()" required/>Multi-Residential building</label><br>
+                    <!-- subquestion Q4.1 -->
+                    <div id="MU1" class="q-container pl-5 desc subquestion1">
+                      <label for="Rowhouse"><input class="mr-1" type="radio" name="Q4_1" value="MU2" id = "Rowhouse" />Rowhouse (>3 dwellings)</label><br>
+                      <label for="Large-multi-family"><input class="mr-1" type="radio" name="Q4_1" value="MU3" id = "Large-multi-family" />Large multi-family: MURB (apartments/flats/condos)</label><br>
+                    </div>
+                </div>
+
+                <div id = "Q4_2">
+                  <label for="Publicly-owned"><input class="mr-1" type="radio" name="Q4" value="PU1" id ="Publicly-owned" onclick="SubquestionTwo()" required/>Publicly owned, intended for community or collective use</label><br>
+                  <!-- subquestion Q4.2 -->
+                    <div id="PU1" class="q-container pl-5 pb-1 desc subquestion2">
+                      <label for="Community-center"><input class="mr-1" type="radio" name="Q4_2" value="PU4" id = "Community-center"/>Community center</label><br>
+                      <label for="Hockey-arena"><input class="mr-1" type="radio" name="Q4_2" value="PU3" id = "Hockey-arena"/>Hockey arena</label><br>
+                      <label for="Library"><input class="mr-1" type="radio" name="Q4_2" value="PU5" id = "Library"/>Library</label><br>
+                      <label for="Sports"><input class="mr-1" type="radio" name="Q4_2" value="PU2" id = "Sports"/>Sports/Recreation center (Various)</label><br>
+                      <label for="Unsure4"><input class="mr-1" type="radio" name="Q4_2" value="PU6" id="Unsure4"/>Unsure</label><br>
+                    </div>
+                  <label for="Schools"><input class="mr-1" type="radio" name="Q4" value="SC1" id = "Schools" required/>Schools</label><br>
+                  <label for="Other"><input class="mr-1" type="radio" name="Q4" value="OT1" id="Other" required/>Other</label><br>
+                </div>
+              </fieldset>
+
+              <div class="btn-row">
+                  <input style="display:none;" id="submit_Q4" class="btn btn-vote mr-5" type="submit" value="Submit">
+              </div>
+
+              <!-- Q4 folding script-->
+
+              <!-- if a murb, when cubf == 1000 -->
+              {% if building.cubf == 1000 %}
+                 <script>
+                    document.getElementById("Q4_2").style.display = "none";
+                 </script>
+              <!-- if not a murb, when cubf != 1000 -->
+              {% else %}
+                <script>
+                    document.getElementById("Q4_1").style.display = "none";
+                </script>
+              {% endif %}
+
+              <div id="submit_Q4_1">
+              <div class="text-center" id ="Section3_Title">
+                <p></p>
+                  <h5>
+                    <strong>Conditional Section 3: Age and Condition</strong>
+                  </h5>
+                <hr>
+              </div>
+
+              <!-- Q5 -->
+              <fieldset class="q-container pl-5 pb-3" id="Q5">
+                <div id = "Q5_1">
+                  <legend class="q-header pb-1">
+                    <strong> Q5: Was this building built before 2000? </strong>
+                  </legend>
+
+                  <label for="NO1"><input class="mr-1" type="radio" name="Q5" value="NO1" id="NO1" />No</label><br>
+                  <label for="YES1"><input class="mr-1" type="radio" name="Q5" value="YE1"  id = "YES1"/>Yes OR Unsure</label>
+                </div>
+
+                  <!-- subquestion -->
+                  <div id = "YE1" class="pl-5 desc2">
+                    <!-- subquestion Q5.1-->
+                    <p class="q-header" style="margin-bottom: -0.05rem; margin-top: 0.3rem;">
+                      <strong>What condition does the building appear to be in?</strong>
+                    </p>
+                    <div class = "q-container pb-3">
+                      <label for="Great"><input class="mr-1" type="radio" name="Q5_1" value="YE2" id ="Great">Great condition (shallow retrofit)</label>
+                      <label for="Medium"><input class="mr-1" type="radio" name="Q5_1" value="YE3" id = "Medium">Medium condition (medium retrofit)</label>
+                      <label for="Poor"><input class="mr-1" type="radio" name="Q5_1" value="YE4" id ="Poor">Poor condition (deep retrofit)</label>
+                    </div>
+
+                    <!-- subquestion Q5.2-->
+                    <p class="q-header" style="margin-bottom: -0.05rem; margin-top: -0.7rem;">
+                        <strong>Does this building look recently renovated? </strong>
+                    </p>
+                    <div class = "q-container">
+                      <label for="YES2"><input class="mr-1" type="radio" name="Q5_2" value="YE5" id = "YES2">Yes</label>
+                      <label for="NO2"><input class="mr-1" type="radio" name="Q5_2" value="YE6" id = "NO2">No or Unsure </label>
+                    </div>
+                  </div>
+              </fieldset>
+
+              <div class="btn-row">
+                <input style="display:none;" id="submit_Q5" class="btn btn-vote mr-5" type="submit" value="Submit">
+              </div>
+                <!-- Q5 folding script-->
+
+          <!-- if it presents .csv, hide the main question, only ask conditional questions -->
+          {% if building.construction_year != None %}
+            <!-- if it is built before 2000 -->
+            {% if building.construction_year <= 2000 %}
+              <script>
+                document.getElementById("YE1").className = "desc2";
+                document.getElementById("Q5_1").style.display = "none";
+                $('.desc2').show();
+              </script>
+            {% else %}
+              <script>
+                document.getElementById("Q5").style.display = "none";
+                document.getElementById("Section3_Title").style.display = "none";
+              </script>
+            {% endif %}
+          {% endif %}
+
+            <div id = "submit_Q5_1">
+            <div class="text-center">
+              <p></p>
+                <h5>
+                  <strong>Section 4: Mecahnicals and Geometry</strong>
+                </h5>
+            </div>
+            <hr />
+
+
+            <!-- Q6 -->
+            <fieldset class="q-container pl-5 pb-3" id = "Q6_1">
+              <legend class="q-header pb-1">
+                <strong>Conditional Q6: What is the building footprint?</strong>
+              </legend>
+              <div class="q-container" id="Q6">
+                <label for="Insignificant"><input class="mr-1" type="radio" name="Q6" value="Insignificant" id="Insignificant" />Less than 300m2</label>
+                <label for="Small"><input class="mr-1" type="radio" name="Q6" value="Small" id="Small" />300m2 to 600m2</label>
+                <label for="Medium2"><input class="mr-1" type="radio" name="Q6" value="Medium" id="Medium2" />600m2 to 2000m2</label>
+                <label for="Large"><input class="mr-1" type="radio" name="Q6" value="Large" id="Large" />More than 2000m2</label>
+              </div>
+            </fieldset>
+              <!-- if not unpresented in the .csv, hide the question -->
+              <!-- if it not presented in .csv, display the question -->
+              {% if building.floor_area  != 9999.0 %}
+                 <script>
+                    document.getElementById("Q6_1").style.display = "none";
+                 </script>
+              {% endif %}
+
+
+            <div class="btn-row">
+              <input style="display:none;" id="submit_Q6" class="btn btn-vote mr-5" type="submit" value="Submit">
+            </div>
+
+            <!-- Q6 folding script-->
+            <div id = "submit_Q6_1">
+
+            <!-- Q7 -->
+            <fieldset class="q-container pl-5 pb-3" id="Q7_1">
+              <legend class="q-header pb-1">
+                <strong>Conditional Q7: How many storeys does the building have?</strong>
+              </legend>
+              <div class="q-container" id="Q7">
+                <label for="NC2"><input class="mr-1" type="radio" name="Q7_1" value="NC2" id="NC2" />1</label>
+                <label for="NC3"><input class="mr-1" type="radio" name="Q7_1" value="NC3" id="NC3" />2</label>
+                <label for="NC4"><input class="mr-1" type="radio" name="Q7_1" value="NC4" id="NC4" />3-5</label>
+                <label for="NC5"><input class="mr-1" type="radio" name="Q7_1" value="NC5" id="NC5" />6+</label>
+              </div>
+            </fieldset>
+
+            <!-- if not unpresented in the .csv, hide the question -->
+            <!-- if it not presented in .csv, display the question -->
+            {% if building.max_num_floor %}
+               <script>
+                  document.getElementById("Q7_1").style.display = "none";
+               </script>
+            {% endif %}
+
+            <!-- Q8 -->
+            <fieldset class="q-container pl-5 pb-3">
+              <legend class="q-header pb-1">
+                <strong>Q8: Does the building have a rectangular footprint?</strong>
+              </legend>
+              <div class="q-container"  id="Q8">
+                <label for="Yes3"><input class="mr-1" type="radio" name="Q8" value="Yes" id="Yes3" />Yes</label>
+                <label for="No3"><input class="mr-1" type="radio" name="Q8" value="No" id="No3" />No</label>
+              </div>
+            </fieldset>
+
+
+            <!-- Q9 -->
+            <fieldset class="q-container pl-5 pb-3">
+              <legend class="q-header pb-1">
+                <strong>Q9: Are there significant overhangs?</strong>
+              </legend>
+              <div class="q-container" id="Q9">
+                <label for="Yes4"><input class="mr-1" type="radio" name="Q9" value="Yes" id="Yes4" />Yes</label>
+                <label for="No4"><input class="mr-1" type="radio" name="Q9" value="No" id="No4" />No</label>
+              </div>
+            </fieldset>
+
+            <!-- Q10 -->
+            <fieldset class="q-container pl-5 pb-3">
+              <legend class="q-header pb-1">
+                <strong>Q10: Are there many balconies?</strong>
+              </legend>
+              <div class="q-container" id="Q10">
+                <label for="Yes5"><input class="mr-1" type="radio" name="Q10" value="Yes" id="Yes5" />Yes</label>
+                <label for="No5"><input class="mr-1" type="radio" name="Q10" value="No" id="No5" />No</label>
+              </div>
+            </fieldset>
+
+            <!-- Q11 -->
+            <fieldset class="q-container pl-5 pb-3">
+              <legend class="q-header pb-1">
+                <strong>Q11: Are there large, glazed openings or irregular windows and doors?</strong>
+              </legend>
+              <div class="q-container" id="Q11">
+                <label for="Yes6"><input class="mr-1" type="radio" name="Q11" value="Yes" id="Yes6" />Yes</label>
+                <label for="No6"><input class="mr-1" type="radio" name="Q11" value="No" id="No6" />No</label>
+              </div>
+            </fieldset>
+
+
+            <!-- Q12 -->
+            <fieldset class="q-container pl-5 pb-3">
+              <legend class="q-header pb-1">
+                <strong>Q12: Is there significant mechanical equipment on the roof?</strong>
+              </legend>
+              <div class="q-container" id="Q12">
+                <label for="Yes7"><input class="mr-1" type="radio" name="Q12" value="Yes" id="Yes7" />Yes</label>
+                <label for="No7"><input class="mr-1" type="radio" name="Q12" value="No" id="No7" />No</label>
+                <label for="Unsure7"><input class="mr-1" type="radio" name="Q12" value="Unsure" id="Unsure7" />Unsure</label>
+              </div>
+            </fieldset>
+
+
+            <!-- Q13 -->
+            <fieldset class="q-container pl-5 pb-3">
+              <legend class="q-header pb-1">
+                <strong>Q13: How simple is the form factor of the building?
+                  <!--br> (A simple form factor includes a elements such as a rectangular footprint, a lack of balconies, small
+                  <br> or insignificant overhangs or eaves, standard windows and doors, a small
+                  <br> window to wall ratio, a simple roof geometry, etc.) </br--> </strong>
+              </legend>
+              <div class= "q-container" id="Q13">
+                <label for="1-1"><input class="mr-1" type="radio" name="Q13" value="1" id ="1-1"/>1 (Very simple form factor)</label>
+                <label for="1-2"><input class="mr-1" type="radio" name="Q13" value="2" id="1-2"/>2 (Some irregularities)</label>
+                <label for="3-1"><input class="mr-1" type="radio" name="Q13" value="3" id="3-1" />3 (Complex form factor)</label>
+              </div>
+            </fieldset>
+
+            <div class="btn-row">
+              <input style="display:none;" id="submit_Q13" class="btn btn-vote mr-5" type="submit" value="Submit">
+            </div>
+
+            <!-- Q13 folding script-->
+
+            <div id = "submit_Q13_1" >
+            <div class="text-center">
+              <p></p>
+                <h5>
+                  <strong>Section 5: Construction</strong>
+                </h5>
+            </div>
+            <hr />
+
+            <!-- Q14 -->
+            <fieldset class="q-container pl-5 pb-3">
+              <legend class="q-header pb-1">
+                <strong>Q14: What is the structure of the building?</strong>
+              </legend>
+              <label for="In_situ_concrete"><input class="mr-1" type="radio" name="Q14" value="IS1" id="In_situ_concrete" />In situ concrete</label>
+              <label for="Light_wood_frame"><input class="mr-1" type="radio" name="Q14" value="LW1" id="Light_wood_frame" />Light wood frame</label>
+              <label for="Load_bearing_masonry"><input class="mr-1" type="radio" name="Q14" value="LB1" id="Load_bearing_masonry" />Load bearing masonry</label>
+              <label for="Mass_timber_frame"><input class="mr-1" type="radio" name="Q14" value="MT1" id="Mass_timber_frame" />Mass timber frame</label>
+              <label for="Metal_structure"><input class="mr-1" type="radio" name="Q14" value="MS1" id="Metal_structure" />Metal structure</label>
+
+              <!-- subquestion -->
+                <div id="MS1" class="pl-5 desc3">
+                  <p class="q-header" style="margin-bottom: -0.05rem; margin-top:0.3rem">
+                      <strong>What Type of metal structure does the building have? </strong>
+                  </p>
+                  <label for="Long_Span_Framing_trusses"><input class="mr-1" type="radio" name="Q14_1" value="MS2" id="Long_Span_Framing_trusses" />Long-Span Framing with trusses</label><br/>
+                  <label for="Long_Span_Framing_girders"><input class="mr-1" type="radio" name="Q14_1" value="MS3" id="Long_Span_Framing_girders" />Long-Span Framing with girders</label><br/>
+                  <label for="Multi-story_skeleton_framing"><input class="mr-1" type="radio" name="Q14_1" value="MS4" id="Multi-story_skeleton_framing" />Multi-story skeleton framing</label><br/>
+                  <label for="Unsure_structure"><input class="mr-1" type="radio" name="Q14_1" value="MS5" id="Unsure_structure" />Unsure</label><br/>
+                </div>
+              <label for="Unsure6"><input class="mr-1" type="radio" name="Q14" value="UN1" id="Unsure6" />Unsure</label>
+            </fieldset>
+
+
+            <!-- Q15 -->
+            <!-- span to ban further flowing to the right when dragging the drag bar-->
+            <fieldset class="q-container pl-5 pb-3">
+              <legend class="q-header pb-1">
+                <strong>Q15: What type of foundation does the building appear to have?</strong>
+              </legend>
+              <div class="survey-2col" id="Q15">
+                <label for="Basement_foundation"><input class="mr-1" type="radio" name="Q15" value="Basement_foundation" id="Basement_foundation" />Basement foundation</label>
+                <label for="Slab-on-grade_foundation"><input class="mr-1" type="radio" name="Q15" value="Slab-on-grade_foundation" id="Slab-on-grade_foundation" />Slab-on-grade foundation</label>
+                <label for="Pier_foundation"><input class="mr-1" type="radio" name="Q15" value="Pier_foundation" id="Pier_foundation" />Pier foundation</label>
+                <label for="Unsure5"><input class="mr-1" type="radio" name="Q15" value="Unsure" id="Unsure5" />Unsure</label>
+              </div>
+            </fieldset>
+
+            <div class="text-center">
+              <p></p>
+                <h5>
+                  <strong>Section 6: Site Context</strong>
+                </h5>
+            </div>
+            <hr />
+
+            <!-- Q16 -->
+            <fieldset class="q-container pl-5 pb-3">
+              <legend class="q-header pb-1">
+                <strong>Q16: Is the building free-standing?</strong>
+              </legend>
+              <div id="Q16">
+                <label for="Yes8"><input class="mr-1" type="radio" name="Q16" value="Yes" id="Yes8" />Yes</label><br>
+                <label for="No8"><input class="mr-1" type="radio" name="Q16" value="No" id="No8" />No</label><br>
+              </div>
+            </fieldset>
+
+            <!-- Q17 -->
+            <fieldset class="q-container pl-5 pb-3">
+              <legend class="q-header pb-1">
+                <strong>Q17: Does the building border a parking lot?</strong>
+              </legend>
+              <div id="Q17">
+                <label for="Yes9"><input class="mr-1" type="radio" name="Q17" value="Yes" id="Yes9" />Yes</label><br>
+                <label for="No9"><input class="mr-1" type="radio" name="Q17" value="No" id="No9" />No</label><br>
+              </div>
+            </fieldset>
+
+            <!-- Q18 -->
+            <fieldset class="q-container pl-5 pb-3">
+              <legend class="q-header pb-1">
+                <strong>Q18: Are there obstructions close to the building? (<10m)</strong>
+              </legend>
+                <label for="No_obstruction"><input class="mr-1" type="radio" name="Q18" value="N_1" id="No_obstruction" />No obstruction</label>
+                <label for="Yes_obstruction"><input class="mr-1" type="radio" name="Q18" value="YS1" id="Yes_obstruction" />Yes</label>
+
+                <div id = "YS1" class="desc4">
+                  <p class ="text-center" style="margin-bottom: -0.05rem; margin-top:0.3rem;"><strong>Obstructions near the building (Select all that apply)?</strong></p>
+                  <div class = "survey-3col">
+                    <label for="Electrical_wires"><input class="mr-1" type="checkbox" name="Q18_1" value="YS4" id="Electrical_wires">Electrical wires</label>
+                    <label for="Important_trees"><input class="mr-1" type="checkbox" name="Q18_1" value="YS2" id="Important_trees">Important trees</label>
+                    <label for="Other_buildings"><input class="mr-1" type="checkbox" name="Q18_1" value="YS3" id="Other_buildings">Other buildings</label>
+                    <label for="Other_objects"><input class="mr-1" type="checkbox" name="Q18_1" value="YS4" id="Other_objects">Other objects</label>
+                    <label for="Utility_poles"><input class="mr-1" type="checkbox" name="Q18_1" value="YS4" id="Utility_poles">Utility poles</label>
+                  </div>
+                  <br>
+                </div>
+            </fieldset>
+
+            <!--submit the button and close the form -->
+            <div class="btn-row">
+                <input id="btn-submit-vote" class="btn btn-vote mr-5" type="submit" value="Submit">
+            </div>
+
+            <br>
+
+          </div>
+          </div>
+          </div>
+          </div>
+          </form>
+
+        </div>
       </div>
+
+        <!-- This is the satellite map -->
+        <div class="tab-pane show active" id="nav-satellite" role="tabpanel" aria-labelledby="nav-satellite-tab"></div>
+      </div>
+
       <div class="map-container">
         <div id="satmap"></div>
       </div>
+
     </div>
-  </div>  
+  </div>
+
   <script src="https://maps.googleapis.com/maps/api/js?key={{key}}&libraries=geometry&callback=initMaps&v=weekly" defer></script>
 </section>
-
-
-
 
 {% endblock content %}
