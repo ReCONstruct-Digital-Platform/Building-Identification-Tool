@@ -29,7 +29,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from . import utils
 from .forms import CreateUserForm
 from config.settings import B2_APPKEY_RW, B2_BUCKET_IMAGES, B2_ENDPOINT, B2_KEYID_RW, WEBHOOK_SECRET, BASE_DIR
-from .models import Building, BuildingImage, BuildingLatestViewData, BuildingTypology, Material, NoBuildingFlag, Typology, Vote, BuildingNote, MaterialScore, Profile
+from .models import Building, BuildingSatelliteImage, BuildingStreetViewImage, BuildingLatestViewData, BuildingTypology, Material, NoBuildingFlag, Typology, Vote, BuildingNote, MaterialScore, Profile
 
 import logging
 
@@ -339,7 +339,7 @@ def upload_imgs(request, building_id):
                     )
 
                 # Only need to save the UUID in DB once, since formats share it
-                BuildingImage(building=building, uuid=uuid, user=request.user).save()
+                BuildingStreetViewImage(building=building, uuid=uuid, user=request.user).save()
             except:
                 print(traceback.format_exc())
 
@@ -358,7 +358,7 @@ def upload_imgs(request, building_id):
                     f"images/satellite/medium/{uuid}.jpg",
                     ExtraArgs=extra_args
                 )
-                BuildingImage(building=building, uuid=uuid, user=request.user).save()
+                BuildingSatelliteImage(building=building, uuid=uuid, user=request.user).save()
             except:
                 print(traceback.format_exc())
 
