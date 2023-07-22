@@ -539,7 +539,7 @@
             <strong>Q13: Does this building look new and/or recently renovated?</strong>
           </legend>
           <div class="q-choices survey-3col">
-            <label for="Y13"><input class="mr-1" type="radio" name="Q13" value="yes" id="Y13" required/>Yes</label>
+            <label for="Y13"><input class="mr-1" type="radio" name="Q13" value="yes" id="Y13" required />Yes</label>
             <label for="N13"><input class="mr-1" type="radio" name="Q13" value="no" id="N13" required/>No</label>
             <label for="U13"><input class="mr-1" type="radio" name="Q13" value="unsure" id="U13" required/>Unsure</label>
           </div>
@@ -547,6 +547,9 @@
           {% if  building.construction_year != None %}
              <script>
                 document.getElementById("Q13").style.display = "none";
+                document.getElementById("Y13").required = false;
+                document.getElementById("N13").required = false;
+                document.getElementById("U13").required = false;
              </script>
           {% endif %}
 
