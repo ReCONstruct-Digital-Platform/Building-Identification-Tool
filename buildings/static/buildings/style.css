@@ -497,3 +497,10 @@ overflow-y: scroll;
 .desc3 { display: none; }
 .desc4 { display: none; }
 .desc5 { display: none; }
+
+.offscreen {
+  position: absolute;
+  left: -10000px;
+  z-index: -99999;
+  overflow: hidden;
+}

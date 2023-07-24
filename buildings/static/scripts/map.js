@@ -120,23 +120,68 @@ async function screenshot(element_id) {
     return html2canvas(
         document.querySelector(`#${element_id}`), {
             useCORS: true,
-            logging: true,
+            logging: false,
             ignoreElements: (el) => {
                 // The following hides unwanted controls, copyrights, pins etc. on the maps and streetview canvases
-                return el.classList.contains("gmnoprint") || el.classList.contains("gm-style-cc")
-                || el.id === 'gmimap1' || el.tagName === 'BUTTON' 
+                return el.classList.contains("gmnoprint") || el.classList.contains("gm-style-cc") 
+                || el.id === 'gmimap1' || el.tagName === 'BUTTON' || el.classList.contains("gm-iv-address")
                 || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3_hdpi.png'
                 || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3.png'
             },
         }
     ).then(canvas => {
         // For testing - appends the images to the web page
-        document.body.appendChild(canvas);
+        // document.body.appendChild(canvas);
         // Convert the image to a dataURL for uploading to the backend
         return canvas.toDataURL('image/png');
     })
 }
 
+async function screenshotEvent(event) {
+    event.preventDefault();
+        
+    // If the satellite tab is inactive, it is not rendered
+    // We need it to be rendered to take a screenshot,
+    // so we temporarily render it in an invisible element.
+    let satelliteScreenshot;
+    const activeTab = $('#nav-tab button.active'); 
+    if ( activeTab.attr('id') !== 'nav-satellite-tab') {
+        const parent = $('#satmap').parent();
+        const width = parent.width();
+        const height = parent.height();
+        
+        $('#satmap').appendTo(document.body);
+        $('#satmap').width(width).height(height);
+        $('#satmap').addClass('offscreen');
+
+        satelliteScreenshot = await screenshot('satmap');
+        $('#satmap').removeClass('offscreen');
+        $('#satmap').appendTo(parent);
+    } else {
+        satelliteScreenshot = await screenshot('satmap');
+    }
+
+    const imgData = {
+        streetview: await screenshot('streetview'),
+        satellite: satelliteScreenshot,
+    }
+
+    const url = $("#upload_url").attr("data-url");
+    console.log(imgData);
+    
+    // async call
+    fetch(url, {
+        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        mode: "same-origin", // no-cors, *cors, same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, *same-origin, omit
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie('csrftoken'),
+        },
+        body: JSON.stringify(imgData), // body data type must match "Content-Type" header
+      });
+}
 
 
 $(document).ready(function() {
@@ -179,10 +224,7 @@ $(document).ready(function() {
         finally {
             form.submit();
         }
-
     })
-
-
 
 
     // Check if streetview container was resized previously
@@ -218,30 +260,7 @@ $(document).ready(function() {
     });
 
     // Screenshot functionality
-    $('#btn-screenshot').click(async (e) => {
-        e.preventDefault();
-        
-        const imgData = {
-            streetview: await screenshot('streetview'),
-            satellite: await screenshot('satmap'),
-        }
-
-        const url = $("#upload_url").attr("data-url");
-        console.log(imgData);
-        
-        // async call
-        fetch(url, {
-            method: "POST", // *GET, POST, PUT, DELETE, etc.
-            mode: "same-origin", // no-cors, *cors, same-origin
-            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: "same-origin", // include, *same-origin, omit
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRFToken": getCookie('csrftoken'),
-            },
-            body: JSON.stringify(imgData), // body data type must match "Content-Type" header
-          });
-    });
+    $('#btn-screenshot').click(screenshotEvent);
 
     $('#building-submition-form').one('submit', (e) => {
         e.preventDefault();
@@ -253,18 +272,27 @@ $(document).ready(function() {
             console.error(error);
         } 
         finally {
+            console.log('building submission form submitting');
             // Go on to the normal processing
-            $('#building-submition-form').submit();
+            // $('building-submission-form').submit();
         }
 
     })
+
+    // $('#building-submition-form').on('submit', (e) => {
+    //     e.preventDefault();
+    //     console.log('preventing submission');
+    //     return false;
+    // })
 
     // When user submits form, upload both current streetview and sat views
     // then continue with default behaviour
     $('#btn-submit-vote').click(async (e) => {
 
+        console.log('btn-submit-vote clicked');
+
         e.preventDefault();
-        form = $('#building-submition-form')[0];
+        form = $('#building-submission-form')[0];
         
         if (!form.checkValidity()) {
             // Create the temporary button, click and remove it
@@ -272,29 +300,35 @@ $(document).ready(function() {
             form.appendChild(tmpSubmit)
             tmpSubmit.click()
             form.removeChild(tmpSubmit)
-        } else {
-            const imgData = {
-                streetview: await screenshot('streetview'),
-                satellite: await screenshot('satmap'),
-            }
+        }
+        // Form is valid
+        else {
+            console.log('btn-submit-vote clicked - screenshotting');
+            await screenshotEvent(e);
+            $('#btn-screenshot').trigger('click');
+            // const imgData = {
+            //     streetview: await screenshot('streetview'),
+            //     satellite: await screenshot('satmap'),
+            // }
         
-            const url = $("#upload_url").attr("data-url");
-            console.log(imgData);
+            // const url = $("#upload_url").attr("data-url");
+            // console.log(imgData);
             
-            // async call
-            fetch(url, {
-                method: "POST", // *GET, POST, PUT, DELETE, etc.
-                mode: "same-origin", // no-cors, *cors, same-origin
-                cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-                credentials: "same-origin", // include, *same-origin, omit
-                headers: {
-                  "Content-Type": "application/json",
-                  "X-CSRFToken": getCookie('csrftoken'),
-                },
-                body: JSON.stringify(imgData), // body data type must match "Content-Type" header
-              });
-        
-              $('#building-submition-form').submit();
+            // // async call
+            // fetch(url, {
+            //     method: "POST", // *GET, POST, PUT, DELETE, etc.
+            //     mode: "same-origin", // no-cors, *cors, same-origin
+            //     cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            //     credentials: "same-origin", // include, *same-origin, omit
+            //     headers: {
+            //       "Content-Type": "application/json",
+            //       "X-CSRFToken": getCookie('csrftoken'),
+            //     },
+            //     body: JSON.stringify(imgData), // body data type must match "Content-Type" header
+            //   });
+            console.log('btn-submit-vote clicked - form submitting');
+            // Finally submit the form
+            form.submit();
         }
 
     })

@@ -36,7 +36,7 @@ class Command(BaseCommand):
         results = cursor.fetchall()
 
         for i, res in enumerate(results):
-            if i % 1000 == 0:
+            if i % 100 == 0:
                 print(f'On building {i}')
             Building(
                 lat=res['lat'],

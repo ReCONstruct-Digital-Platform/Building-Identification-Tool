@@ -27,6 +27,7 @@
 
 <link rel="stylesheet" type="text/css" href="{% static 'buildings/style.css'%}" media = "print">
 
+
 <script>
     var map;
     var sv;
@@ -195,6 +196,7 @@
                 center: building_coord,
                 mapTypeId: 'satellite',
                 zoom: 18,
+                streetviewControl: false,
                 rotateControl: false,
                 controlSize: 25,
               });
@@ -475,7 +477,8 @@
               </fieldset>
 
               <div class="btn-row">
-                  <input style="display:none;" id="submit_Q4" class="btn btn-vote me-5" type="submit" value="Submit">
+                  <!-- <input style="display:none;" id="submit_Q4" class="btn btn-vote me-5" type="submit" value="Submit"> -->
+                  <input style="display:none" id="submit_Q4" class="btn btn-vote me-5" type="submit" value="Submit">
               </div>
 
               <!-- Q4 folding script-->
@@ -817,7 +820,6 @@
 </section>
 
 <input type="hidden" id="upload_url" data-url="{% url 'buildings:upload_imgs' building.id %}" />
-
 
 
 {% endblock content %}
