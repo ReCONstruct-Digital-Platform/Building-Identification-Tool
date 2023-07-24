@@ -4,15 +4,14 @@
 <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
     <div class="container">
         <img class='logo-img' src="{% static 'images/logo.png' %}" />
-        <a class="navbar-brand mr-4" href="{% url 'buildings:index' %}">ReCONstruct</a>
+        <a class="navbar-brand me-4" href="{% url 'buildings:index' %}">ReCONstruct</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarToggle">
             <div class="navbar-nav mr-auto">
-                <!-- <a class="nav-item nav-link" href="{% url 'buildings:index' %}">Home</a> -->
-                <a class="nav-item nav-link mr-2" href="{% url 'buildings:classify_home' %}">Classify</a>
-                <a class="nav-item nav-link mr-2" href="{% url 'buildings:all_buildings' %}">All Buildings</a>
+                <a class="nav-item nav-link me-2" href="{% url 'buildings:classify_home' %}">Classify</a>
+                <a class="nav-item nav-link me-2" href="{% url 'buildings:all_buildings' %}">All Buildings</a>
 
             </div>
         </div>
@@ -23,7 +22,7 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" id="navbarDarkDropdownMenuLink" role="button" data-toggle="dropdown" aria-expanded="false">
                             <img class="profile-pic" src="{{ request.user.profile.get_avatar_url }}">    
-                            <span class="username ml-2">
+                            <span class="username ms-2">
                                 {{request.user}}                    
                             </span>
                             </a>

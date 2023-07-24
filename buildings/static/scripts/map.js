@@ -23,7 +23,7 @@ function addNewMaterial(element) {
     const el = element.parentElement;
 
     const text_input = document.createElement("input");
-    text_input.setAttribute("class", "new-material-input ml-2");
+    text_input.setAttribute("class", "new-material-input ms-2");
     text_input.setAttribute("type", "text")
     text_input.setAttribute("name", name)
     text_input.setAttribute("required", "")
@@ -117,17 +117,22 @@ function getLatestViewData() {
 
 
 async function screenshot(element_id) {
-    return html2canvas(document.querySelector(`#${element_id}`), {
-        useCORS: true,
-        ignoreElements: (el) => {
-            return el.classList.contains("gmnoprint") || el.classList.contains("gm-style-cc")
-            || el.id === 'gmimap1' || el.tagName === 'BUTTON' 
-            || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3_hdpi.png'
-            || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3.png'
-        },
-    }).then(canvas => {
+    return html2canvas(
+        document.querySelector(`#${element_id}`), {
+            useCORS: true,
+            logging: true,
+            ignoreElements: (el) => {
+                // The following hides unwanted controls, copyrights, pins etc. on the maps and streetview canvases
+                return el.classList.contains("gmnoprint") || el.classList.contains("gm-style-cc")
+                || el.id === 'gmimap1' || el.tagName === 'BUTTON' 
+                || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3_hdpi.png'
+                || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3.png'
+            },
+        }
+    ).then(canvas => {
         // For testing - appends the images to the web page
         document.body.appendChild(canvas);
+        // Convert the image to a dataURL for uploading to the backend
         return canvas.toDataURL('image/png');
     })
 }
@@ -313,14 +318,6 @@ function getCookie(name) {
 }
 
 
-//sharon's code start from here
-function TestsFunction() {
-    var T = document.getElementById("nav-survey"), displayValue = "";
-    if (T.style.display == "")
-        T.style.display = "none";
-        T.style.display = displayValue;
-};
-
 var change_width = parseFloat(screen.width) * 0.5;
 // console.log('begin: ' + nav_tabwidth);
  //calculate the height of text bar dynamically
@@ -356,7 +353,7 @@ function SubquestionTwo(){
 
 $(document).ready(function() {
 
-    var nav_tabwidth = $('#nav-tab').width();
+    // what does this do ?
 
     $('#streetview').bind('DOMSubtreeModified', function(){
         var dynheight = $('#streetview').height();

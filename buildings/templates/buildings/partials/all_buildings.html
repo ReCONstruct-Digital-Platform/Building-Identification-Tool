@@ -123,17 +123,17 @@
     <div class="pagination mb-3">
         <span class="step-links">
             {% if page_obj.has_previous %}
-                <a class="mr-2" href="?order_by={{ order_by|default_if_none:'id' }}&dir={{ dir|default_if_none:'desc' }}{{current_search_query}}&page=1">&laquo; first</a>
-                <a class="mr-2" href="?order_by={{ order_by|default_if_none:'id' }}&dir={{ dir|default_if_none:'desc' }}{{current_search_query}}&page={{ page_obj.previous_page_number }}"> &lt; previous</a>
+                <a class="me-2" href="?order_by={{ order_by|default_if_none:'id' }}&dir={{ dir|default_if_none:'desc' }}{{current_search_query}}&page=1">&laquo; first</a>
+                <a class="me-2" href="?order_by={{ order_by|default_if_none:'id' }}&dir={{ dir|default_if_none:'desc' }}{{current_search_query}}&page={{ page_obj.previous_page_number }}"> &lt; previous</a>
             {% endif %}
 
-            <span class="current ml-2 mr-2">
+            <span class="current ms-2 me-2">
                 Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
             </span>
 
             {% if page_obj.has_next %}
-                <a class="mr-2" href="?order_by={{ order_by|default_if_none:'id' }}&dir={{ dir|default_if_none:'desc' }}{{current_search_query}}&page={{ page_obj.next_page_number }}">next &gt;</a>
-                <a class="mr-2" href="?order_by={{ order_by|default_if_none:'id' }}&dir={{ dir|default_if_none:'desc' }}{{current_search_query}}&page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                <a class="me-2" href="?order_by={{ order_by|default_if_none:'id' }}&dir={{ dir|default_if_none:'desc' }}{{current_search_query}}&page={{ page_obj.next_page_number }}">next &gt;</a>
+                <a class="me-2" href="?order_by={{ order_by|default_if_none:'id' }}&dir={{ dir|default_if_none:'desc' }}{{current_search_query}}&page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
             {% endif %}
         </span>
     </div>

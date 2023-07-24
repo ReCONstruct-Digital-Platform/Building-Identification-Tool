@@ -294,14 +294,19 @@ def logout_page(request):
 
 @require_POST
 def upload_imgs(request, building_id):
-    # Receive the images
+    # Receive the images from the frontend
     body = json.loads(request.body)
 
     b2 = utils.get_b2_resource(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW)
 
     building = get_object_or_404(Building, pk=building_id)
 
-    extra_args = {'Metadata': {'user': request.user.username}}
+    # Add any kind of metadata to be associated with the image
+    extra_args = {
+        'Metadata': {
+            'user': request.user.username,
+        }
+    }
 
     upload_formats_and_sizes = [('large', 2400), ('medium', 1200), ('small', 400)]
 
@@ -342,6 +347,8 @@ def upload_imgs(request, building_id):
                 BuildingStreetViewImage(building=building, uuid=uuid, user=request.user).save()
             except:
                 print(traceback.format_exc())
+            
+            in_mem_file.close()
 
         elif image_type == 'satellite':
             uuid = uuid7str()
@@ -361,6 +368,8 @@ def upload_imgs(request, building_id):
                 BuildingSatelliteImage(building=building, uuid=uuid, user=request.user).save()
             except:
                 print(traceback.format_exc())
+            in_mem_file.close()
+
 
     return HttpResponse('Ok')
 

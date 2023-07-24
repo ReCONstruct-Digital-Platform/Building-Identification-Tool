@@ -1,5 +1,5 @@
-import traceback
 import boto3
+import traceback
 
 from pathlib import Path
 from botocore.config import Config
