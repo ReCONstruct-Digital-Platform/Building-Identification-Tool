@@ -20,6 +20,7 @@ STRING_QUERIES_TO_FILTER = {
 }
 
 CUBF_TO_NAME_MAP = {
+    1000:   "Residential",
     6811:	"École maternelle",
     6812:	"École élémentaire",
     6813:	"École secondaire",

@@ -127,7 +127,7 @@ async function screenshot(element_id) {
         },
     }).then(canvas => {
         // For testing - appends the images to the web page
-        // document.body.appendChild(canvas);
+        document.body.appendChild(canvas);
         return canvas.toDataURL('image/png');
     })
 }
@@ -218,6 +218,7 @@ $(document).ready(function() {
         
         const imgData = {
             streetview: await screenshot('streetview'),
+            satellite: await screenshot('satmap'),
         }
 
         const url = $("#upload_url").attr("data-url");
@@ -517,9 +518,9 @@ function removeSub(elements) {
     }
 }
 
-$(document).ready(function(){
-//Q4 folding
-$("input[type='radio']").change(function(){
+$(document).ready(function() {
+    //Q4 folding
+    $("input[type='radio']").change(function(){
     //hide
     if($(this).val()=="SF1" || $(this).val()=="SD1")
     {
@@ -549,112 +550,110 @@ $("input[type='radio']").change(function(){
          $("#submit_Q4_1").show();
          var elements = document.querySelectorAll("[name=Q4_1],[name=Q4_2]");
          removeSub(elements);
-    }
-  }
-);
+    }});
 
-//Q5 folding
-$("input[type='radio']").change(function(){
-    if($(this).val()=="YE2")
-    {
-        $("#submit_Q5").show();
-        $("#submit_Q5_1").hide();
-        $("#submit_Q5_2").hide();
+    //Q5 folding
+    $("input[type='radio']").change(function(){
+        if($(this).val()=="YE2")
+        {
+            $("#submit_Q5").show();
+            $("#submit_Q5_1").hide();
+            $("#submit_Q5_2").hide();
 
-    }
-    else if ($(this).val()=="NO1"){
-        $("#submit_Q5").hide();
-        $("#submit_Q5_1").show();
-        $("#submit_Q5_2").show();
+        }
+        else if ($(this).val()=="NO1"){
+            $("#submit_Q5").hide();
+            $("#submit_Q5_1").show();
+            $("#submit_Q5_2").show();
 
-        var elements = document.querySelectorAll("[name=Q5_1], [name=Q5_2]");
-        removeSub(elements);
-    }
+            var elements = document.querySelectorAll("[name=Q5_1], [name=Q5_2]");
+            removeSub(elements);
+        }
 
-    else if ($(this).val()=="YE3" || $(this).val()=="YE4")
-    {
-           $("#submit_Q5").hide();
-           $("#submit_Q5_1").show();
-           $("#submit_Q5_2").show();
-    }
-    });
-
-//Q6 folding
-$("input[type='radio']").change(function(){
-    if($(this).val()=="Insignificant")
-    {
-      $("#submit_Q6").show();
-      $("#submit_Q6_1").hide();
-
-    }
-    else if ($(this).val()=="Small" || $(this).val()=="Medium" || $(this).val()=="Large" )
-    {
-         $("#submit_Q6").hide();
-         $("#submit_Q6_1").show();
-    }
-});
-
-//Q7 remove subquestions after changing the answer of main quesiton
-$("input[type='radio']").change(function(){
-    if($(this).val()=="AC1"){
-        var elements = document.querySelectorAll("[name=Q7_1]");
-        removeSub(elements);
-    }
-});
-
-//Q13 folding
-$("input[type='radio']").change(function(){
-    if($(this).val()=="3")
-    {
-      $("#submit_Q13").show();
-      $("#submit_Q13_1").hide();
-    }
-    else if ($(this).val()=="1" || $(this).val()=="2" || $(this).val()=="3" )
-    {
-         $("#submit_Q13").hide();
-         $("#submit_Q13_1").show();
-    }
-    });
-
-//Q14 remove subquestions after changing the answer of main quesiton
-$("input[type='radio']").change(function(){
-    const fruits = ["IS1", "LW1", "LB1", "MT1","UN1",];
-    if(fruits.includes($(this).val())){
-        var elements = document.querySelectorAll("[name=Q14_1]");
-        removeSub(elements);
-    }
-});
-
-//Q18 remove subquestions after changing the answer of main quesiton
-$("input[type='radio']").change(function(){
-    const fruits = ["N_1"];
-    if(fruits.includes($(this).val())){
-        var elements = document.querySelectorAll("[name=Q18_1]");
-        removeSub(elements);
-    }
-});
-
-$(function(){
-    var requiredCheckboxes = $('.browsers :checkbox[required]');
-    //console.log(typeof(requiredCheckboxes));
-    requiredCheckboxes.change(function(){
-        if(requiredCheckboxes.is(':checked')) {
-            requiredCheckboxes.removeAttr('required');
-        } else {
-            requiredCheckboxes.attr('required', 'required');
+        else if ($(this).val()=="YE3" || $(this).val()=="YE4")
+        {
+            $("#submit_Q5").hide();
+            $("#submit_Q5_1").show();
+            $("#submit_Q5_2").show();
         }
     });
-});
 
-$(function(){
-    var requiredCheckboxes = $('.browsers2 :checkbox[required]');
-    requiredCheckboxes.change(function(){
-        if(requiredCheckboxes.is(':checked')) {
-            requiredCheckboxes.removeAttr('required');
-        } else {
-            requiredCheckboxes.attr('required', 'required');
+    //Q6 folding
+    $("input[type='radio']").change(function(){
+        if($(this).val()=="Insignificant")
+        {
+        $("#submit_Q6").show();
+        $("#submit_Q6_1").hide();
+
+        }
+        else if ($(this).val()=="Small" || $(this).val()=="Medium" || $(this).val()=="Large" )
+        {
+            $("#submit_Q6").hide();
+            $("#submit_Q6_1").show();
         }
     });
-});
+
+    //Q7 remove subquestions after changing the answer of main quesiton
+    $("input[type='radio']").change(function(){
+        if($(this).val()=="AC1"){
+            var elements = document.querySelectorAll("[name=Q7_1]");
+            removeSub(elements);
+        }
+    });
+
+    //Q13 folding
+    $("input[type='radio']").change(function(){
+        if($(this).val()=="3")
+        {
+        $("#submit_Q13").show();
+        $("#submit_Q13_1").hide();
+        }
+        else if ($(this).val()=="1" || $(this).val()=="2" || $(this).val()=="3" )
+        {
+            $("#submit_Q13").hide();
+            $("#submit_Q13_1").show();
+        }
+    });
+
+    //Q14 remove subquestions after changing the answer of main quesiton
+    $("input[type='radio']").change(function(){
+        const fruits = ["IS1", "LW1", "LB1", "MT1","UN1",];
+        if(fruits.includes($(this).val())){
+            var elements = document.querySelectorAll("[name=Q14_1]");
+            removeSub(elements);
+        }
+    });
+
+    //Q18 remove subquestions after changing the answer of main quesiton
+    $("input[type='radio']").change(function(){
+        const fruits = ["N_1"];
+        if(fruits.includes($(this).val())){
+            var elements = document.querySelectorAll("[name=Q18_1]");
+            removeSub(elements);
+        }
+    });
+
+    $(function(){
+        var requiredCheckboxes = $('.browsers :checkbox[required]');
+        //console.log(typeof(requiredCheckboxes));
+        requiredCheckboxes.change(function(){
+            if(requiredCheckboxes.is(':checked')) {
+                requiredCheckboxes.removeAttr('required');
+            } else {
+                requiredCheckboxes.attr('required', 'required');
+            }
+        });
+    });
+
+    $(function(){
+        var requiredCheckboxes = $('.browsers2 :checkbox[required]');
+        requiredCheckboxes.change(function(){
+            if(requiredCheckboxes.is(':checked')) {
+                requiredCheckboxes.removeAttr('required');
+            } else {
+                requiredCheckboxes.attr('required', 'required');
+            }
+        });
+    });
 
 });
