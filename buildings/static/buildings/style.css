@@ -473,6 +473,10 @@ overflow-y: scroll;
   flex-direction: column;
 }
 
+.specify {
+  display: inline-block;
+  grid-column: span 2;
+}
 
 .q-header {
   font-size: 1rem;
@@ -490,6 +494,19 @@ overflow-y: scroll;
   grid-template-columns: repeat(2, 1fr);
 }
 
+.survey-1col {
+    display: grid;
+}
+
+/*
+.horizontal {
+  -webkit-column-count: 2;
+  -moz-column-count: 2;
+  column-count: 2;
+  padding-left: 50px;
+  display: flex;
+}
+ */
 
 /* style sheet section 2 */
 .desc { display: none; }
@@ -497,6 +514,7 @@ overflow-y: scroll;
 .desc3 { display: none; }
 .desc4 { display: none; }
 .desc5 { display: none; }
+
 
 .offscreen {
   position: absolute;

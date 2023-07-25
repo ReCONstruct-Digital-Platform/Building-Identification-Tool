@@ -688,3 +688,144 @@ $(document).ready(function() {
     });
 
 });
+
+//sharon's code start from here
+function TestsFunction() {
+    var T = document.getElementById("nav-survey"), displayValue = "";
+    if (T.style.display == "")
+        T.style.display = "none";
+        T.style.display = displayValue;
+};
+
+var change_width = parseFloat(screen.width) * 0.5;
+// console.log('begin: ' + nav_tabwidth);
+ //calculate the height of text bar dynamically
+
+$(function() {
+  $("[id='Q3_1']").on("click", function() {
+    if (this.id == "Q3_1") {
+      document.getElementById("I3").disabled = false;
+      document.getElementById("I3").required = true;
+    } else {
+      $('#I3').removeAttr('required');
+    }
+  });
+
+  $("[id='U3']").on("click", function() {
+    if (this.id == "U3") {
+      document.getElementById("I3").disabled = true;
+      document.getElementById("I3").value = "";
+    }
+  });
+
+  $("[id='Q5_51']").on("click", function() {
+    if (this.id == "Q5_51" && document.getElementById('Q5_51').checked) {
+      document.getElementById("Q5_5").disabled = false;
+      document.getElementById("Q5_5").required = true;
+    }
+    else {
+      document.getElementById("Q5_5").disabled = true;
+      document.getElementById("Q5_5").required = false;
+      document.getElementById("Q5_5").value = "";
+    }
+  });
+
+
+  $("[id='Q6_61']").on("click", function() {
+    if (this.id == "Q6_61" && document.getElementById('Q6_61').checked) {
+      document.getElementById("Q6_6").disabled = false;
+      document.getElementById("Q6_6").required = true;
+    }
+    else {
+      document.getElementById("Q6_6").disabled = true;
+      document.getElementById("Q6_6").required = false;
+      document.getElementById("Q6_6").value = "";
+    }
+  });
+
+  $("[id='Q7_101']").on("click", function() {
+    if (this.id == "Q7_101" && document.getElementById('Q7_101').checked) {
+      document.getElementById("Q7_10").disabled = false;
+      document.getElementById("Q7_10").required = true;
+    }
+    else {
+      document.getElementById("Q7_10").disabled = true;
+      document.getElementById("Q7_10").required = false;
+      document.getElementById("Q7_10").value = "";
+    }
+  });
+
+  $("[id='Q11_61']").on("click", function() {
+    if (this.id == "Q11_61" && document.getElementById('Q11_61').checked) {
+      document.getElementById("Q11_6").disabled = false;
+      document.getElementById("Q11_6").required = true;
+      console.log("y")
+    }
+    else {
+      document.getElementById("Q11_6").disabled = true;
+      document.getElementById("Q11_6").required = false;
+      document.getElementById("Q11_6").value = "";
+    }
+  });
+
+    $("[id='Q12_71']").on("click", function() {
+    if (this.id == "Q12_71" && document.getElementById('Q12_71').checked) {
+      document.getElementById("Q12_7").disabled = false;
+      document.getElementById("Q12_7").required = true;
+
+    }
+    else {
+      document.getElementById("Q12_7").disabled = true;
+      document.getElementById("Q12_7").required = false;
+      document.getElementById("Q12_7").value = "";
+    }
+  });
+});
+
+function deRequire(question_Num) {
+  el = document.getElementsByName(question_Num);
+
+  var atLeastOneChecked = false; //at least one cb is checked
+  for (i = 0; i < el.length; i++) {
+    if (el[i].checked === true) {
+      atLeastOneChecked = true;
+    }
+  }
+
+  if (atLeastOneChecked === true) {
+    for (i = 0; i < el.length; i++) {
+      el[i].required = false;
+    }
+
+  } else {
+    for (i = 0; i < el.length; i++) {
+      el[i].required = true;
+    }
+  }
+}
+
+
+
+$(document).ready(function() {
+    var nav_tabwidth = $('#nav-tab').width();
+    $('#streetview').bind('DOMSubtreeModified', function(){
+        var dynheight = $('#streetview').height();
+        //console.log('changed dynHeight: ' + dynheight);
+        var nav_tabheight = $('#nav-tab').height();
+        var textHeight = dynheight - nav_tabheight ;
+
+        var dynwidth =  $('#streetview').width();
+        var screenwidth = screen.width;
+        change_width = screenwidth - dynwidth ;
+        //console.log(change_width);
+        //var nav_tabwidth = $('#nav-tab').width();
+        //console.log('dynwidth: ' + nav_tabwidth);
+        if (parseFloat(change_width) < 500)
+            change_width = "500px";
+
+        window.onload = (function () {
+            document.getElementById("scroll").style.height = textHeight + "px";
+            //
+        })();
+    });
+});
