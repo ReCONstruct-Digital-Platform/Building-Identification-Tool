@@ -253,118 +253,48 @@ $(document).ready(function() {
         dragging = false;
     }
     });
-
-
 });
 
-//sharon's code start from here
+// control the selection of satellite map or survey (selection button)
 function TestsFunction() {
     var T = document.getElementById("nav-survey"), displayValue = "";
-    if (T.style.display == "")
+    if (T.style.display === "")
         T.style.display = "none";
         T.style.display = displayValue;
 };
 
 var change_width = parseFloat(screen.width) * 0.5;
 // console.log('begin: ' + nav_tabwidth);
- //calculate the height of text bar dynamically
+// calculate the height of text bar dynamically
 
+// for question 3
+// prompts user's inputs when selecting "number of storeys", disable the button when selecting "unsure",
 $(function() {
-  $("[id='Q3_1']").on("click", function() {
-    if (this.id == "Q3_1") {
+  $('#Q3_1').on("click", function() {
       document.getElementById("I3").disabled = false;
       document.getElementById("I3").required = true;
-    } else {
-      $('#I3').removeAttr('required');
-    }
   });
-
-  $("[id='U3']").on("click", function() {
-    if (this.id == "U3") {
+  $('#U3').on("click", function() {
       document.getElementById("I3").disabled = true;
       document.getElementById("I3").value = "";
-    }
-  });
-
-  $("[id='Q5_51']").on("click", function() {
-    if (this.id == "Q5_51" && document.getElementById('Q5_51').checked) {
-      document.getElementById("Q5_5").disabled = false;
-      document.getElementById("Q5_5").required = true;
-    }
-    else {
-      document.getElementById("Q5_5").disabled = true;
-      document.getElementById("Q5_5").required = false;
-      document.getElementById("Q5_5").value = "";
-    }
-  });
-
-
-  $("[id='Q6_61']").on("click", function() {
-    if (this.id == "Q6_61" && document.getElementById('Q6_61').checked) {
-      document.getElementById("Q6_6").disabled = false;
-      document.getElementById("Q6_6").required = true;
-    }
-    else {
-      document.getElementById("Q6_6").disabled = true;
-      document.getElementById("Q6_6").required = false;
-      document.getElementById("Q6_6").value = "";
-    }
-  });
-
-  $("[id='Q7_101']").on("click", function() {
-    if (this.id == "Q7_101" && document.getElementById('Q7_101').checked) {
-      document.getElementById("Q7_10").disabled = false;
-      document.getElementById("Q7_10").required = true;
-    }
-    else {
-      document.getElementById("Q7_10").disabled = true;
-      document.getElementById("Q7_10").required = false;
-      document.getElementById("Q7_10").value = "";
-    }
-  });
-
-  $("[id='Q11_61']").on("click", function() {
-    if (this.id == "Q11_61" && document.getElementById('Q11_61').checked) {
-      document.getElementById("Q11_6").disabled = false;
-      document.getElementById("Q11_6").required = true;
-      console.log("y")
-    }
-    else {
-      document.getElementById("Q11_6").disabled = true;
-      document.getElementById("Q11_6").required = false;
-      document.getElementById("Q11_6").value = "";
-    }
-  });
-
-    $("[id='Q12_71']").on("click", function() {
-    if (this.id == "Q12_71" && document.getElementById('Q12_71').checked) {
-      document.getElementById("Q12_7").disabled = false;
-      document.getElementById("Q12_7").required = true;
-
-    }
-    else {
-      document.getElementById("Q12_7").disabled = true;
-      document.getElementById("Q12_7").required = false;
-      document.getElementById("Q12_7").value = "";
-    }
   });
 });
 
-function deRequire(question_Num) {
-  el = document.getElementsByName(question_Num);
-
-  var atLeastOneChecked = false; //at least one cb is checked
+// for questions that have checkboxes as inputs, make sure at least one checkbox is selected
+// loops through the checkboxes with given name to check if at least one is checked.
+// if so, remove the required attribute from all of them
+function deRequire(questionNum) {
+  el = document.getElementsByName(questionNum);
+  var atLeastOneChecked = false;
   for (i = 0; i < el.length; i++) {
     if (el[i].checked === true) {
       atLeastOneChecked = true;
     }
   }
-
-  if (atLeastOneChecked === true) {
+  if (atLeastOneChecked) {
     for (i = 0; i < el.length; i++) {
       el[i].required = false;
     }
-
   } else {
     for (i = 0; i < el.length; i++) {
       el[i].required = true;
@@ -372,28 +302,45 @@ function deRequire(question_Num) {
   }
 }
 
+// for questions other than question 3, which require text as user's inputs
+// prompt users to enter inputs or disable/clear inputs accordingly
+function deDisabled(questionNum) {
+    var substring = questionNum.slice(0, -1)
+    if (document.getElementById(questionNum).checked) {
+      document.getElementById(substring).disabled = false;
+      document.getElementById(substring).required = true;
+    }
+    else {
+      document.getElementById(substring).disabled = true;
+      document.getElementById(substring).required = false;
+      document.getElementById(substring).value = "";
+    }
+}
 
-
+// dynamically control the scroll bar of the survey horizontally and vertically
+// use the width/height of device, minus the width/height of streetview, gives the width/height of scrolling div
+// the min width of survey is set to 500px, making sure that words wouldn't squeeze together.
+// since DOMSubtreeModified is deprecated, use MutationObserver
+// https://stackoverflow.com/questions/41971140/implementing-mutationobserver-in-place-of-domsubtreemodified
 $(document).ready(function() {
-    var nav_tabwidth = $('#nav-tab').width();
-    $('#streetview').bind('DOMSubtreeModified', function(){
-        var dynheight = $('#streetview').height();
-        //console.log('changed dynHeight: ' + dynheight);
-        var nav_tabheight = $('#nav-tab').height();
-        var textHeight = dynheight - nav_tabheight ;
+    var navTabwidth = $('#nav-tab').width();
+    $('#streetview').each(function() {
+    var sel = this;
 
-        var dynwidth =  $('#streetview').width();
-        var screenwidth = screen.width;
-        change_width = screenwidth - dynwidth ;
-        //console.log(change_width);
-        //var nav_tabwidth = $('#nav-tab').width();
-        //console.log('dynwidth: ' + nav_tabwidth);
-        if (parseFloat(change_width) < 500)
-            change_width = "500px";
+    new MutationObserver(function() {
+        var dynHeight = $('#streetview').height();
+        var navTabheight = $('#nav-tab').height();
+        var textHeight = dynHeight - navTabheight ;
+        var dynWidth =  $('#streetview').width();
+        var screenWidth = screen.width;
+        changeWidth = screenWidth - dynWidth ;
+
+        if (parseFloat(changeWidth) < 500)
+            changeWidth = "500px";
 
         window.onload = (function () {
             document.getElementById("scroll").style.height = textHeight + "px";
-            //
         })();
+        }).observe(sel, {childList: true, subtree: true});
     });
 });
