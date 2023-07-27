@@ -353,19 +353,6 @@ function getCookie(name) {
 
 
 
-
-// control the selection of satellite map or survey (selection button)
-function TestsFunction() {
-    var T = document.getElementById("nav-survey"), displayValue = "";
-    if (T.style.display === "")
-        T.style.display = "none";
-        T.style.display = displayValue;
-};
-
-var change_width = parseFloat(screen.width) * 0.5;
-// console.log('begin: ' + nav_tabwidth);
-// calculate the height of text bar dynamically
-
 // for question 3
 // prompts user's inputs when selecting "number of storeys", disable the button when selecting "unsure",
 $(function() {

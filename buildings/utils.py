@@ -1,5 +1,8 @@
 import boto3
+import logging
 import traceback
+
+logging.getLogger('botocore').setLevel(logging.CRITICAL)
 
 from pathlib import Path
 from botocore.config import Config

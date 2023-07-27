@@ -65,6 +65,7 @@ STATIC_URL = env('STATIC_URL')
 
 STATIC_ROOT = env('STATIC_ROOT')
 
+# See https://docs.djangoproject.com/en/4.2/topics/logging/#configuring-logging
 LOGGING = {
     'version': 1,                       # the dictConfig format version
     'disable_existing_loggers': False,  # retain the default loggers
@@ -78,6 +79,22 @@ LOGGING = {
             'level': 'DEBUG',
             'handlers': ['stdout'],
         },
+        'boto3': {
+            'level': 'CRITICAL',
+            'handlers': ['stdout'],
+        },
+        'botocore': {
+            'level': 'CRITICAL',
+            'handlers': ['stdout'],
+        },
+        's3transfer': {
+            'level': 'CRITICAL',
+            'handlers': ['stdout'],
+        },
+        'urllib3': {
+            'level': 'CRITICAL',
+            'handlers': ['stdout'],
+        }
     },
 }
 
