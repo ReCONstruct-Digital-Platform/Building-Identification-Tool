@@ -349,14 +349,13 @@
               {% csrf_token %}
 
               <!-- Q1 -->
-              <!-- I changed this one to have a container for the header and choices, and to use <fieldset> tags around it -->
               <fieldset class="q-container pl-5 pb-3">
                 <legend class="q-header pb-1 ">
                   <strong>Q1: Does the building have a simple footprint?</strong>
                 </legend>
-                <div class="q-choices survey-3col browsers" id="Q1">
-                  <label for ="Y1"><input class="mr-1" type="radio" name="Q1" value="yes" id = "Y1" required />Yes</label>
-                  <label for ="N1"><input class="mr-1" type="radio" name="Q1" value="no" id = "N1" required />No</label>
+                <div id="Q1" class="q-choices survey-3col browsers" >
+                  <label for ="Y1"><input id = "Y1" class="mr-1" type="radio" name="Q1" value="yes" required />Yes</label>
+                  <label for ="N1"><input id = "N1" class="mr-1" type="radio" name="Q1" value="no" required />No</label>
                  </div>
               </fieldset>
 
@@ -365,9 +364,9 @@
                 <legend class="q-header pb-1">
                   <strong>Q2: Does the building have a simple volumetric form?</strong>
                 </legend>
-                <div class="q-choices survey-3col" id="Q2">
-                  <label for="Y2"><input class="mr-1" type="radio" name="Q2" value="yes" id="Y2" required/>Yes</label>
-                  <label for="N2"><input class="mr-1" type="radio" name="Q2" value="no" id="N2" required/>No</label>
+                <div id="Q2" class="q-choices survey-3col" >
+                  <label for="Y2"><input id="Y2" class="mr-1" type="radio" name="Q2" value="yes"  required/>Yes</label>
+                  <label for="N2"><input id="N2" class="mr-1" type="radio" name="Q2" value="no"  required/>No</label>
                  </div>
               </fieldset>
 
@@ -376,12 +375,12 @@
               <legend class="q-header pb-1">
                 <strong>Q3: How many storeys above-ground does the building have?</strong>
               </legend>
-               <div class="q-choices survey-3col Q3" id="Q3">
+               <div id="Q3" class="q-choices survey-3col Q3" >
                  <div class = "specify">
-                   <label for="Q3_1" class = "mr-1"><input type="radio" name = "Q3" class = "mr-1 specify" id = "Q3_1" required>Number of storeys = </label>
-                   <input class = "mr-1" type="number" id="I3" name="Q3" min="0" disabled/>
+                   <label for="Q3_1"  class = "mr-1"><input id = "Q3_1"  type="radio" name = "Q3" class = "mr-1 specify"  required>Number of storeys = </label>
+                   <input id="I3" class = "mr-1" type="number"  name="Q3" min="0" disabled/>
                  </div>
-                 <label for="U3"><input class="mr-1" type="radio" name="Q3" value="unsure" id="U3" required/>Unsure</label>
+                 <label for="U3"><input id="U3" class="mr-1" type="radio" name="Q3" value="unsure" required/>Unsure</label>
                </div>
              </fieldset>
 
@@ -390,10 +389,10 @@
               <legend class="q-header pb-1">
                 <strong>Q4: Does the building have a basement?</strong>
               </legend>
-              <div class="q-choices survey-3col" id="Q4">
-                <label for="Y4"><input class="mr-1" type="radio" name="Q4" value="yes" id="Y4" required/>Yes</label>
-                <label for="N4"><input class="mr-1" type="radio" name="Q4" value="no" id="N4" required/>No</label>
-                <label for="U4"><input class="mr-1" type="radio" name="Q4" value="unsure" id="U4" required/>Unsure</label>
+              <div id="Q4" class="q-choices survey-3col" >
+                <label for="Y4"><input id="Y4" class="mr-1" type="radio" name="Q4" value="yes"  required/>Yes</label>
+                <label for="N4"><input id="N4" class="mr-1" type="radio" name="Q4" value="no"  required/>No</label>
+                <label for="U4"><input id="U4" class="mr-1" type="radio" name="Q4" value="unsure" required/>Unsure</label>
               </div>
              </fieldset>
 
@@ -403,13 +402,13 @@
                 <strong>Q5: Are there obstructions to machine access around the building (within 3m or less)? Select all that apply.</strong>
               </legend>
               <div id="Q5">
-              <label for="Q5_1"><input class="mr-1" type="checkbox" name="Q5" value="Important_trees_or_landscaping" id="Q5_1" onclick='deRequire("Q5")' required/>Important trees or landscaping</label><br>
-              <label for="Q5_2"><input class="mr-1" type="checkbox" name="Q5" value="Buildings" id="Q5_2" onclick='deRequire("Q5")' required/>Buildings</label><br>
-              <label for="Q5_3"><input class="mr-1" type="checkbox" name="Q5" value="Overhead_wires" id="Q5_3" onclick='deRequire("Q5")' required/>Overhead wires, including those blocking general access to site</label><br>
-              <label for="Q5_4"><input class="mr-1" type="checkbox" name="Q5" value="Overhead_wires" id="Q5_4" onclick='deRequire("Q5")' required/>No significant obstructions</label><br>
+              <label for="Q5_1"><input id="Q5_1" class="mr-1" type="checkbox" name="Q5" value="Important_trees_or_landscaping" onclick='deRequire("Q5")' required/>Important trees or landscaping</label><br>
+              <label for="Q5_2"><input id="Q5_2" class="mr-1" type="checkbox" name="Q5" value="Buildings"  onclick='deRequire("Q5")' required/>Buildings</label><br>
+              <label for="Q5_3"><input id="Q5_3" class="mr-1" type="checkbox" name="Q5" value="Overhead_wires"  onclick='deRequire("Q5")' required/>Overhead wires, including those blocking general access to site</label><br>
+              <label for="Q5_4"><input id="Q5_4" class="mr-1" type="checkbox" name="Q5" value="Overhead_wires"  onclick='deRequire("Q5")' required/>No significant obstructions</label><br>
               <div class = "specify">
-                <label for="Q5_51" class = "mr-1"><input type="checkbox" class = "mr-1" name="Q5" id = "Q5_51" onclick='deRequire("Q5")' required>Other (specify): </label>
-                <input type = "text" id="Q5_5" name="Q5_5_value" disabled />
+                <label for="Q5_51" class = "mr-1"><input id = "Q5_51" type="checkbox" class = "mr-1" name="Q5"  onclick='deRequire("Q5"); deDisabled("Q5_51")' required>Other (specify): </label>
+                <input id="Q5_5" type = "text" name="Q5_5_value" disabled />
               </div>
               </div>
             </fieldset>
@@ -420,15 +419,15 @@
                 <strong>Q6: Are there significant appendages to the building faces? Select all that apply.</strong>
               </legend>
               <div id="Q6">
-                <label for="Q6_1"><input class="mr-1" type="checkbox" name="Q6" value="Canopies" id="Q6_1" onclick='deRequire("Q6")' required/>Canopies/overhangs/eaves</label><br>
-                <label for="Q6_2"><input class="mr-1" type="checkbox" name="Q6" value="Balconies" id="Q6_2" onclick='deRequire("Q6")' required/>Balconies</label><br>
-                <label for="Q6_3"><input class="mr-1" type="checkbox" name="Q6" value="Porches/stoops" id="Q6_3" onclick='deRequire("Q6")' required/>Porches/stoops</label><br>
-                <label for="Q6_4"><input class="mr-1" type="checkbox" name="Q6" value="Vestibules" id="Q6_4" onclick='deRequire("Q6")' required/>Vestibules</label><br>
-                <label for="Q6_5"><input class="mr-1" type="checkbox" name="Q6" value="No_significant_appendages" id="Q6_5" onclick='deRequire("Q6")' required/>No significant appendages</label><br>
+                <label for="Q6_1"><input id="Q6_1" class="mr-1" type="checkbox" name="Q6" value="Canopies"  onclick='deRequire("Q6")' required/>Canopies/overhangs/eaves</label><br>
+                <label for="Q6_2"><input id="Q6_2" class="mr-1" type="checkbox" name="Q6" value="Balconies" onclick='deRequire("Q6")' required/>Balconies</label><br>
+                <label for="Q6_3"><input id="Q6_3" class="mr-1" type="checkbox" name="Q6" value="Porches/stoops"  onclick='deRequire("Q6")' required/>Porches/stoops</label><br>
+                <label for="Q6_4"><input id="Q6_4" class="mr-1" type="checkbox" name="Q6" value="Vestibules"  onclick='deRequire("Q6")' required/>Vestibules</label><br>
+                <label for="Q6_5"><input id="Q6_5" class="mr-1" type="checkbox" name="Q6" value="No_significant_appendages"  onclick='deRequire("Q6")' required/>No significant appendages</label><br>
 
               <div class = "specify">
-                <label for="Q6_61" class = "mr-1"><input type="checkbox" class = "mr-1" name="Q6" id = "Q6_61" onclick='deRequire("Q6")' required>Other (specify): </label>
-                <input type = "text" id="Q6_6" name="Q6_6_value" disabled />
+                <label for="Q6_61" class = "mr-1"><input id = "Q6_61" type="checkbox" class = "mr-1" name="Q6"  onclick='deRequire("Q6"); deDisabled("Q6_61")' required>Other (specify): </label>
+                <input id="Q6_6" type = "text" name="Q6_6_value" disabled />
               </div>
               </div>
             </fieldset>
@@ -438,20 +437,20 @@
               <legend class="q-header pb-1">
                 <strong>Q7: What type of exterior cladding does the building appear to have? Select all that apply.</strong>
               </legend>
-              <div class="q-choices survey-3col" id="Q7">
-                <label for="Q7_1"><input class="mr-1" type="checkbox" name="Q7" value="Concrete" id="Q7_1" onclick='deRequire("Q7")' required/>Concrete</label>
-                <label for="Q7_2"><input class="mr-1" type="checkbox" name="Q7" value="Plaster" id="Q7_2" onclick='deRequire("Q7")' required/>Plaster</label>
-                <label for="Q7_3"><input class="mr-1" type="checkbox" name="Q7" value="Wood" id="Q7_3" onclick='deRequire("Q7")' required/>Wood</label>
-                <label for="Q7_4"><input class="mr-1" type="checkbox" name="Q7" value="Vinyl" id="Q7_4" onclick='deRequire("Q7")' required/>Vinyl</label>
-                <label for="Q7_5"><input class="mr-1" type="checkbox" name="Q7" value="Curtain_Wall" id="Q7_5" onclick='deRequire("Q7")' required/>Curtain Wall</label>
-                <label for="Q7_6"><input class="mr-1" type="checkbox" name="Q7" value="Metal" id="Q7_6" onclick='deRequire("Q7")' required/>Metal</label>
-                <label for="Q7_7"><input class="mr-1" type="checkbox" name="Q7" value="Brick_masonry" id="Q7_7" onclick='deRequire("Q7")' required/>Brick masonry</label>
-                <label for="Q7_8"><input class="mr-1" type="checkbox" name="Q7" value="Stone_masonry" id="Q7_8" onclick='deRequire("Q7")' required/>Stone masonry</label>
-                <label for="Q7_9"><input class="mr-1" type="checkbox" name="Q7" value="Unsure" id="Q7_9" onclick='deRequire("Q7")' required/>Unsure</label>
+              <div id="Q7" class="q-choices survey-3col" >
+                <label for="Q7_1"><input id="Q7_1" class="mr-1" type="checkbox" name="Q7" value="Concrete"  onclick='deRequire("Q7")' required/>Concrete</label>
+                <label for="Q7_2"><input id="Q7_2" class="mr-1" type="checkbox" name="Q7" value="Plaster" onclick='deRequire("Q7")' required/>Plaster</label>
+                <label for="Q7_3"><input id="Q7_3" class="mr-1" type="checkbox" name="Q7" value="Wood"  onclick='deRequire("Q7")' required/>Wood</label>
+                <label for="Q7_4"><input id="Q7_4" class="mr-1" type="checkbox" name="Q7" value="Vinyl"  onclick='deRequire("Q7")' required/>Vinyl</label>
+                <label for="Q7_5"><input id="Q7_5" class="mr-1" type="checkbox" name="Q7" value="Curtain_Wall"  onclick='deRequire("Q7")' required/>Curtain Wall</label>
+                <label for="Q7_6"><input id="Q7_6" class="mr-1" type="checkbox" name="Q7" value="Metal"  onclick='deRequire("Q7")' required/>Metal</label>
+                <label for="Q7_7"><input id="Q7_7" class="mr-1" type="checkbox" name="Q7" value="Brick_masonry"  onclick='deRequire("Q7")' required/>Brick masonry</label>
+                <label for="Q7_8"><input id="Q7_8" class="mr-1" type="checkbox" name="Q7" value="Stone_masonry"  onclick='deRequire("Q7")' required/>Stone masonry</label>
+                <label for="Q7_9"><input id="Q7_9" class="mr-1" type="checkbox" name="Q7" value="Unsure"  onclick='deRequire("Q7")' required/>Unsure</label>
 
               <div class = "specify">
-                <label for="Q7_101" class = "mr-1"><input type="checkbox" class = "mr-1" name="Q7" id = "Q7_101" onclick='deRequire("Q7")' required>Other (specify): </label>
-                <input type = "text" id="Q7_10" name="Q7_10_value" disabled />
+                <label for="Q7_101" class = "mr-1"><input id = "Q7_101" type="checkbox" class = "mr-1" name="Q7"  onclick='deRequire("Q7"); deDisabled("Q7_101")' required>Other (specify): </label>
+                <input id="Q7_10" type = "text"  name="Q7_10_value" disabled />
               </div>
               </div>
             </fieldset>
@@ -461,11 +460,11 @@
             <legend class="q-header pb-1">
               <strong>Q8: How would you describe the condition of the exterior façades?</strong>
             </legend>
-            <div class="q-choices survey-2col" id="Q8">
-              <label for="G8"><input class="mr-1" type="radio" name="Q8" value="good" id="G8" required/>Good</label>
-              <label for="F8"><input class="mr-1" type="radio" name="Q8" value="fair" id="F8" required/>Fair</label>
-              <label for="P8"><input class="mr-1" type="radio" name="Q8" value="poor" id="P8" required/>Poor</label>
-              <label for="U8"><input class="mr-1" type="radio" name="Q8" value="unsure" id="U8" required/>Unsure</label>
+            <div id="Q8" class="q-choices survey-2col" >
+              <label for="G8"><input id="G8" class="mr-1" type="radio" name="Q8" value="good"  required/>Good</label>
+              <label for="F8"><input id="F8" class="mr-1" type="radio" name="Q8" value="fair"  required/>Fair</label>
+              <label for="P8"><input id="P8" class="mr-1" type="radio" name="Q8" value="poor"  required/>Poor</label>
+              <label for="U8"><input id="U8" class="mr-1" type="radio" name="Q8" value="unsure" required/>Unsure</label>
             </div>
            </fieldset>
 
@@ -474,11 +473,11 @@
             <legend class="q-header pb-1">
               <strong>Q9: Is there a large proportion of windows to overall façade area?</strong>
             </legend>
-            <div class="q-choices survey-2col" id="Q9">
-              <label for="L9"><input class="mr-1" type="radio" name="Q9" value="large" id="L9" required/>Large</label>
-              <label for="M9"><input class="mr-1" type="radio" name="Q9" value="medium" id="M9" required/>Medium</label>
-              <label for="S9"><input class="mr-1" type="radio" name="Q9" value="small" id="S9" required/>Small</label>
-              <label for="U9"><input class="mr-1" type="radio" name="Q9" value="unsure" id="U9" required/>Unsure</label>
+            <div id="Q9" class="q-choices survey-2col" >
+              <label for="L9"><input id="L9" class="mr-1" type="radio" name="Q9" value="large"  required/>Large</label>
+              <label for="M9"><input id="M9" class="mr-1" type="radio" name="Q9" value="medium"  required/>Medium</label>
+              <label for="S9"><input id="S9" class="mr-1" type="radio" name="Q9" value="small"  required/>Small</label>
+              <label for="U9"><input id="U9" class="mr-1" type="radio" name="Q9" value="unsure" required/>Unsure</label>
             </div>
             </fieldset>
 
@@ -487,10 +486,10 @@
           <legend class="q-header pb-1">
             <strong>Q10: Are there very large and/or irregularly shaped windows? </strong>
           </legend>
-          <div class="q-choices survey-3col" id="Q10">
-            <label for="Y10"><input class="mr-1" type="radio" name="Q10" value="yes" id="Y10" required/>Yes</label>
-            <label for="N10"><input class="mr-1" type="radio" name="Q10" value="no" id="N10" required/>No</label>
-            <label for="U10"><input class="mr-1" type="radio" name="Q10" value="unsure" id="U10" required/>Unsure</label>
+          <div  id="Q10" class="q-choices survey-3col">
+            <label for="Y10"><input id="Y10" class="mr-1" type="radio" name="Q10" value="yes" required/>Yes</label>
+            <label for="N10"><input id="N10" class="mr-1" type="radio" name="Q10" value="no" required/>No</label>
+            <label for="U10"><input id="U10" class="mr-1" type="radio" name="Q10" value="unsure"  required/>Unsure</label>
           </div>
           </fieldset>
 
@@ -499,16 +498,16 @@
             <legend class="q-header pb-1">
               <strong>Q11: What best describes the roof geometry?</strong>
             </legend>
-            <div class="q-choices survey-3col" id="Q11">
-              <label for="Q11_1"><input class="mr-1" type="checkbox" name="Q11" value="Flat" id="Q11_1" onclick='deRequire("Q11")' required/>Flat</label>
-              <label for="Q11_2"><input class="mr-1" type="checkbox" name="Q11" value="Pitched" id="Q11_2" onclick='deRequire("Q11")' required/>Pitched</label>
-              <label for="Q11_3"><input class="mr-1" type="checkbox" name="Q11" value="Curved" id="Q11_3" onclick='deRequire("Q11")' required/>Curved</label>
-              <label for="Q11_4"><input class="mr-1" type="checkbox" name="Q11" value="Complex" id="Q11_4" onclick='deRequire("Q11")' required/>Complex</label>
-              <label for="Q11_5"><input class="mr-1" type="checkbox" name="Q11" value="U11" id="Q11_5" onclick='deRequire("Q11")' required/>Unsure</label>
+            <div id="Q11" class="q-choices survey-3col" >
+              <label for="Q11_1"><input id="Q11_1" class="mr-1" type="checkbox" name="Q11" value="Flat"  onclick='deRequire("Q11")' required/>Flat</label>
+              <label for="Q11_2"><input id="Q11_2" class="mr-1" type="checkbox" name="Q11" value="Pitched"  onclick='deRequire("Q11")' required/>Pitched</label>
+              <label for="Q11_3"><input id="Q11_3" class="mr-1" type="checkbox" name="Q11" value="Curved" onclick='deRequire("Q11")' required/>Curved</label>
+              <label for="Q11_4"><input id="Q11_4" class="mr-1" type="checkbox" name="Q11" value="Complex"  onclick='deRequire("Q11")' required/>Complex</label>
+              <label for="Q11_5"><input id="Q11_5" class="mr-1" type="checkbox" name="Q11" value="U11"  onclick='deRequire("Q11")' required/>Unsure</label>
 
             <div class = "specify">
-              <label for="Q11_61" class = "mr-1"><input type="checkbox" class = "mr-1" name="Q11" id = "Q11_61" onclick='deRequire("Q11")' required>Other (specify): </label>
-              <input type = "text" id="Q11_6" name="Q11_6_value" disabled />
+              <label for="Q11_61" class = "mr-1"><input id = "Q11_61" type="checkbox" class = "mr-1" name="Q11" onclick='deRequire("Q11"); deDisabled("Q11_61")' required>Other (specify): </label>
+              <input id="Q11_6" type = "text"  name="Q11_6_value" disabled />
             </div>
             </div>
           </fieldset>
@@ -519,29 +518,29 @@
               <strong>Q12: What type of structure does the building appear to have?</strong>
             </legend>
             <div id="Q12">
-              <label for="Q12_1"><input class="mr-1" type="checkbox" name="Q12" value="Wood_frame_or_light_gauge_steel" id="Q12_1" onclick='deRequire("Q12")' required/>Wood frame or light gauge steel</label><br>
-              <label for="Q12_2"><input class="mr-1" type="checkbox" name="Q12" value="Load-bearing_brick_masonry" id="Q12_2" onclick='deRequire("Q12")' required/>Load-bearing brick masonry</label><br>
-              <label for="Q12_3"><input class="mr-1" type="checkbox" name="Q12" value="Load-bearing_stone_masonry" id="Q12_3" onclick='deRequire("Q12")' required/>Load-bearing stone masonry</label><br>
-              <label for="Q12_4"><input class="mr-1" type="checkbox" name="Q12" value="Concrete_frame" id="Q12_4" onclick='deRequire("Q12")' required/>Concrete frame</label><br>
-              <label for="Q12_5"><input class="mr-1" type="checkbox" name="Q12" value="Steel_frame" id="Q12_5" onclick='deRequire("Q12")' required/>Steel frame</label><br>
-              <label for="Q12_6"><input class="mr-1" type="checkbox" name="Q12" value="U12" id="Q12_6" onclick='deRequire("Q12")' required/>Unsure</label><br>
+              <label for="Q12_1"><input id="Q12_1" class="mr-1" type="checkbox" name="Q12" value="Wood_frame_or_light_gauge_steel"  onclick='deRequire("Q12")' required/>Wood frame or light gauge steel</label><br>
+              <label for="Q12_2"><input id="Q12_2" class="mr-1" type="checkbox" name="Q12" value="Load-bearing_brick_masonry"  onclick='deRequire("Q12")' required/>Load-bearing brick masonry</label><br>
+              <label for="Q12_3"><input id="Q12_3" class="mr-1" type="checkbox" name="Q12" value="Load-bearing_stone_masonry"  onclick='deRequire("Q12")' required/>Load-bearing stone masonry</label><br>
+              <label for="Q12_4"><input id="Q12_4" class="mr-1" type="checkbox" name="Q12" value="Concrete_frame"  onclick='deRequire("Q12")' required/>Concrete frame</label><br>
+              <label for="Q12_5"><input id="Q12_5" class="mr-1" type="checkbox" name="Q12" value="Steel_frame"  onclick='deRequire("Q12")' required/>Steel frame</label><br>
+              <label for="Q12_6"><input id="Q12_6" class="mr-1" type="checkbox" name="Q12" value="U12"  onclick='deRequire("Q12")' required/>Unsure</label><br>
 
             <div class = "specify">
-              <label for="Q12_71" class = "mr-1"><input type="checkbox" class = "mr-1" name="Q12" id = "Q12_71" onclick='deRequire("Q12")' required>Other (specify): </label>
-              <input type = "text" id="Q12_7" name="Q12_7_value" disabled />
+              <label for="Q12_71" class = "mr-1"><input id = "Q12_71" type="checkbox" class = "mr-1" name="Q12" onclick='deRequire("Q12"); deDisabled("Q12_71")' required>Other (specify): </label>
+              <input id="Q12_7" type = "text"  name="Q12_7_value" disabled />
             </div>
             </div>
           </fieldset>
 
           <!-- Q13 -->
-          <fieldset class="q-container pl-5 pb-3" id="Q13">
+          <fieldset id="Q13" class="q-container pl-5 pb-3" >
           <legend class="q-header pb-1">
             <strong>Q13: Does this building look new and/or recently renovated?</strong>
           </legend>
           <div class="q-choices survey-3col">
-            <label for="Y13"><input class="mr-1" type="radio" name="Q13" value="yes" id="Y13" required />Yes</label>
-            <label for="N13"><input class="mr-1" type="radio" name="Q13" value="no" id="N13" required/>No</label>
-            <label for="U13"><input class="mr-1" type="radio" name="Q13" value="unsure" id="U13" required/>Unsure</label>
+            <label for="Y13"><input id="Y13" class="mr-1" type="radio" name="Q13" value="yes" required />Yes</label>
+            <label for="N13"><input id="N13" class="mr-1" type="radio" name="Q13" value="no"  required/>No</label>
+            <label for="U13"><input id="U13" class="mr-1" type="radio" name="Q13" value="unsure"  required/>Unsure</label>
           </div>
           </fieldset>
           {% if  building.construction_year != None %}
