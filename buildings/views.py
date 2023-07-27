@@ -143,7 +143,7 @@ def classify(request, building_id):
             new_vote = Vote(building = building, user = request.user)
             new_vote.save()
 
-            logging.debug(request.POST)
+            log.debug(request.POST)
 
             for key in request.POST:
                 if "typology" in key:
@@ -178,7 +178,7 @@ def classify(request, building_id):
                         # Get a reference to the material
                         material = Material.objects.filter(name__icontains=material_name).first()
 
-                        logging.debug(f"Found material {material}")
+                        log.debug(f"Found material {material}")
                         # If it doesn't exist, create a new material
                         if material is None:
                             material = Material(name=material_name)
@@ -243,6 +243,7 @@ class DetailView(generic.DetailView):
     def get_queryset(self):
         """
         Excludes any questions that aren't published yet.
+        TODO: This is from the tutorial, remove and create a detail view
         """
         return Building.objects.filter(pub_date__lte=timezone.now())
 

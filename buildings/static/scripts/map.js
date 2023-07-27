@@ -36,7 +36,7 @@ function addNewMaterial(element) {
 // is selected. If so, make a text input field appear.
 function addEventListeners(element) {
     // In case the value right after creation is new material, create the text input directly
-    if(element.value == "new-material")
+    if(element.value === "new-material")
     {
         addNewMaterial(element);
     }
@@ -52,7 +52,7 @@ function addEventListeners(element) {
     });
 
     element.addEventListener("change", function() {
-        if(element.value == "new-material")
+        if(element.value === "new-material")
         {
             if (!element.parentElement.querySelector('input')) {
                 addNewMaterial(element);
@@ -233,7 +233,7 @@ $(document).ready(function() {
 
     var sv_saved_width = localStorage.getItem("sv_saved_width");
 
-    if (sv_saved_width == null){
+    if (sv_saved_width === null){
         sv_container.css("width", '50%');
     } else {
         sv_container.css("width", sv_saved_width);
@@ -342,7 +342,7 @@ function getCookie(name) {
         for (var i = 0; i < cookies.length; i++) {
             var cookie = jQuery.trim(cookies[i]);
             // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
             }
@@ -352,374 +352,28 @@ function getCookie(name) {
 }
 
 
-var change_width = parseFloat(screen.width) * 0.5;
-// console.log('begin: ' + nav_tabwidth);
- //calculate the height of text bar dynamically
 
-function SubquestionOne(){
-    $("#Rowhouse").attr('required', '');
-    $("#Large-multi-family").attr('required', '');
-    var requiredCheckboxes = $('.subquestion1 :radio[required]');
-    requiredCheckboxes.change(function(){
-        if(requiredCheckboxes.is(':checked')) {
-            requiredCheckboxes.removeAttr('required');
-        } else {
-            requiredCheckboxes.attr('required', 'required');
-        }
-    });
-};
 
-function SubquestionTwo(){
-    $("#Community-center").attr('required', '');
-    $("#Hockey-arena").attr('required', '');
-    $("#Library").attr('required', '');
-    $("#Sports").attr('required', '');
-    $("#Unsure4").attr('required', '');
-    var requiredCheck= $('.subquestion2 :radio[required]');
-    requiredCheck.change(function(){
-        if(requiredCheck.is(':checked')) {
-            requiredCheck.removeAttr('required');
-        } else {
-            requiredCheck.attr('required', 'required');
-        }
-    });
-};
-
-$(document).ready(function() {
-
-    // what does this do ?
-
-    $('#streetview').bind('DOMSubtreeModified', function(){
-        var dynheight = $('#streetview').height();
-        //console.log('changed dynHeight: ' + dynheight);
-        var nav_tabheight = $('#nav-tab').height();
-        var textHeight = dynheight - nav_tabheight ;
-
-        var dynwidth =  $('#streetview').width();
-        var screenwidth = screen.width;
-        change_width = screenwidth - dynwidth ;
-        //console.log(change_width);
-        //var nav_tabwidth = $('#nav-tab').width();
-        //console.log('dynwidth: ' + nav_tabwidth);
-        if (parseFloat(change_width) < 500)
-            change_width = "500px";
-
-        window.onload = (function () {
-            document.getElementById("scroll").style.height = textHeight + "px";
-            //
-        })();
-    });
-
-  $("input[name$='Q4']").click(function() {
-      var test = $(this).val();
-      if (test[2] == '1') {
-          // Check whether this is a top-level question, and if so,
-          // hide all the subquestions (and uncheck responses)
-          $('.desc').hide();
-          $('input').not('[value='+test+']').removeAttr('checked');
-      } else {
-          // Find the ID of this question
-          var parent_q = $($(this).parents('.desc')[0]).attr('id');
-          var type = parent_q.substring(0,2); // Get the type, such as "in"
-          var level = parent_q.substring(2);  // Get the level, such as 1
-          $(".desc").each(function(elt_index, elt) {
-              // Hide each question/answer with either a different type or a higher ID.
-              var e_id = $(elt).attr('id');
-              if(e_id.substring(0,2) != type || e_id.substring(2) > level) {
-                  $(elt).hide();
-                  $(elt).children('input').removeAttr('checked');
-              }
-          });
-      }
-      $("#"+test).show();
-      //document.getElementById("scroll").style.width = change_width + "px";
-  });
-});
-
-$(document).ready(function(){
-  $("input[name$='Q5']").click(function() {
-      var test = $(this).val();
-      if (test[2] == '1') {
-          // Check whether this is a top-level question, and if so,
-          // hide all the subquestions (and uncheck responses)
-          $('.desc2').hide();
-          $('input').not('[value='+test+']').removeAttr('checked');
-      } else {
-          // Find the ID of this question
-          var parent_q = $($(this).parents('.desc2')[0]).attr('id');
-          var type = parent_q.substring(0,2); // Get the type, such as "in"
-          var level = parent_q.substring(2);  // Get the level, such as 1
-          $(".desc2").each(function(elt_index, elt) {
-              // Hide each question/answer with either a different type or a higher ID.
-              var e_id = $(elt).attr('id');
-              if(e_id.substring(0,2) != type || e_id.substring(2) > level) {
-                  $(elt).hide();
-                  $(elt).children('input').removeAttr('checked');
-              }
-          });
-      }
-      $("#"+test).show();
-  });
-});
-
-$(document).ready(function(){
-  $("input[name$='Q7']").click(function() {
-      var test = $(this).val();
-      if (test[2] == '1') {
-          // Check whether this is a top-level question, and if so,
-          // hide all the subquestions (and uncheck responses)
-          $('.desc5').hide();
-          $('input').not('[value='+test+']').removeAttr('checked');
-      } else {
-          // Find the ID of this question
-          var parent_q = $($(this).parents('.desc5')[0]).attr('id');
-          var type = parent_q.substring(0,2); // Get the type, such as "in"
-          var level = parent_q.substring(2);  // Get the level, such as 1
-          $(".desc5").each(function(elt_index, elt) {
-              // Hide each question/answer with either a different type or a higher ID.
-              var e_id = $(elt).attr('id');
-              if(e_id.substring(0,2) != type || e_id.substring(2) > level) {
-                  $(elt).hide();
-                  $(elt).children('input').removeAttr('checked');
-              }
-          });
-      }
-      $("#"+test).show();
-  });
-});
-
-$(document).ready(function(){
-  $("input[name$='Q14']").click(function() {
-      var test = $(this).val();
-      if (test[2] == '1') {
-          // Check whether this is a top-level question, and if so,
-          // hide all the subquestions (and uncheck responses)
-          $('.desc3').hide();
-          $('input').not('[value='+test+']').removeAttr('checked');
-      } else {
-          // Find the ID of this question
-          var parent_q = $($(this).parents('.desc3')[0]).attr('id');
-          var type = parent_q.substring(0,2); // Get the type, such as "in"
-          var level = parent_q.substring(2);  // Get the level, such as 1
-          $(".desc3").each(function(elt_index, elt) {
-              // Hide each question/answer with either a different type or a higher ID.
-              var e_id = $(elt).attr('id');
-              if(e_id.substring(0,2) != type || e_id.substring(2) > level) {
-                  $(elt).hide();
-                  $(elt).children('input').removeAttr('checked');
-              }
-          });
-      }
-      $("#"+test).show();
-  });
-});
-
-$(document).ready(function(){
-  $("input[name$='Q18']").click(function() {
-      var test = $(this).val();
-      if (test[2] == '1') {
-          // Check whether this is a top-level question, and if so,
-          // hide all the subquestions (and uncheck responses)
-          $('.desc4').hide();
-          $('input').not('[value='+test+']').removeAttr('checked');
-      } else {
-          // Find the ID of this question
-          var parent_q = $($(this).parents('.desc4')[0]).attr('id');
-          var type = parent_q.substring(0,2); // Get the type, such as "in"
-          var level = parent_q.substring(2);  // Get the level, such as 1
-          $(".desc4").each(function(elt_index, elt) {
-              // Hide each question/answer with either a different type or a higher ID.
-              var e_id = $(elt).attr('id');
-              if(e_id.substring(0,2) != type || e_id.substring(2) > level) {
-                  $(elt).hide();
-                  $(elt).children('input').removeAttr('checked');
-              }
-          });
-      }
-      $("#"+test).show();
-  });
-});
-
-// after changing the answer of a main question, remove the checked answer from subquestion
-function removeSub(elements) {
-    for (var i = 0; i < elements.length; i++) {
-        if (elements[i].type == "radio" || elements[i].type == "checkbox") {
-            elements[i].checked = false;
-        }
-    }
-}
-
-$(document).ready(function() {
-    //Q4 folding
-    $("input[type='radio']").change(function(){
-    //hide
-    if($(this).val()=="SF1" || $(this).val()=="SD1")
-    {
-        $("#submit_Q4").show();
-        $("#submit_Q4_1").hide();
-        var elements = document.querySelectorAll("[name=Q4_2]");
-        var elements2 = document.querySelectorAll("[name=Q4_1]");
-        removeSub(elements);
-        removeSub(elements2);
-    }
-    //show
-    else if ($(this).val()=="MU1" )
-    {
-        $("#submit_Q4").hide();
-        $("#submit_Q4_1").show();
-        var elements = document.querySelectorAll("[name=Q4_2]");
-        removeSub(elements);
-    }
-    else if ($(this).val()=="PU1"){
-         $("#submit_Q4").hide();
-         $("#submit_Q4_1").show();
-         var elements = document.querySelectorAll("[name=Q4_1]");
-         removeSub(elements);
-    }
-    else if ($(this).val()=="SC1" ||$(this).val()=="OT1"){
-         $("#submit_Q4").hide();
-         $("#submit_Q4_1").show();
-         var elements = document.querySelectorAll("[name=Q4_1],[name=Q4_2]");
-         removeSub(elements);
-    }});
-
-    //Q5 folding
-    $("input[type='radio']").change(function(){
-        if($(this).val()=="YE2")
-        {
-            $("#submit_Q5").show();
-            $("#submit_Q5_1").hide();
-            $("#submit_Q5_2").hide();
-
-        }
-        else if ($(this).val()=="NO1"){
-            $("#submit_Q5").hide();
-            $("#submit_Q5_1").show();
-            $("#submit_Q5_2").show();
-
-            var elements = document.querySelectorAll("[name=Q5_1], [name=Q5_2]");
-            removeSub(elements);
-        }
-
-        else if ($(this).val()=="YE3" || $(this).val()=="YE4")
-        {
-            $("#submit_Q5").hide();
-            $("#submit_Q5_1").show();
-            $("#submit_Q5_2").show();
-        }
-    });
-
-    //Q6 folding
-    $("input[type='radio']").change(function(){
-        if($(this).val()=="Insignificant")
-        {
-        $("#submit_Q6").show();
-        $("#submit_Q6_1").hide();
-
-        }
-        else if ($(this).val()=="Small" || $(this).val()=="Medium" || $(this).val()=="Large" )
-        {
-            $("#submit_Q6").hide();
-            $("#submit_Q6_1").show();
-        }
-    });
-
-    //Q7 remove subquestions after changing the answer of main quesiton
-    $("input[type='radio']").change(function(){
-        if($(this).val()=="AC1"){
-            var elements = document.querySelectorAll("[name=Q7_1]");
-            removeSub(elements);
-        }
-    });
-
-    //Q13 folding
-    $("input[type='radio']").change(function(){
-        if($(this).val()=="3")
-        {
-        $("#submit_Q13").show();
-        $("#submit_Q13_1").hide();
-        }
-        else if ($(this).val()=="1" || $(this).val()=="2" || $(this).val()=="3" )
-        {
-            $("#submit_Q13").hide();
-            $("#submit_Q13_1").show();
-        }
-    });
-
-    //Q14 remove subquestions after changing the answer of main quesiton
-    $("input[type='radio']").change(function(){
-        const fruits = ["IS1", "LW1", "LB1", "MT1","UN1",];
-        if(fruits.includes($(this).val())){
-            var elements = document.querySelectorAll("[name=Q14_1]");
-            removeSub(elements);
-        }
-    });
-
-    //Q18 remove subquestions after changing the answer of main quesiton
-    $("input[type='radio']").change(function(){
-        const fruits = ["N_1"];
-        if(fruits.includes($(this).val())){
-            var elements = document.querySelectorAll("[name=Q18_1]");
-            removeSub(elements);
-        }
-    });
-
-    $(function(){
-        var requiredCheckboxes = $('.browsers :checkbox[required]');
-        //console.log(typeof(requiredCheckboxes));
-        requiredCheckboxes.change(function(){
-            if(requiredCheckboxes.is(':checked')) {
-                requiredCheckboxes.removeAttr('required');
-            } else {
-                requiredCheckboxes.attr('required', 'required');
-            }
-        });
-    });
-
-    $(function(){
-        var requiredCheckboxes = $('.browsers2 :checkbox[required]');
-        requiredCheckboxes.change(function(){
-            if(requiredCheckboxes.is(':checked')) {
-                requiredCheckboxes.removeAttr('required');
-            } else {
-                requiredCheckboxes.attr('required', 'required');
-            }
-        });
-    });
-
-});
-
-//sharon's code start from here
-function TestsFunction() {
-    var T = document.getElementById("nav-survey"), displayValue = "";
-    if (T.style.display == "")
-        T.style.display = "none";
-        T.style.display = displayValue;
-};
-
-var change_width = parseFloat(screen.width) * 0.5;
-// console.log('begin: ' + nav_tabwidth);
- //calculate the height of text bar dynamically
 
 $(function() {
   $("[id='Q3_1']").on("click", function() {
-    if (this.id == "Q3_1") {
+    if (this.id === "Q3_1") {
       document.getElementById("I3").disabled = false;
       document.getElementById("I3").required = true;
     } else {
-      $('#I3').removeAttr('required');
+        $('#I3').removeAttr('required');
     }
   });
 
   $("[id='U3']").on("click", function() {
-    if (this.id == "U3") {
+    if (this.id === "U3") {
       document.getElementById("I3").disabled = true;
       document.getElementById("I3").value = "";
     }
   });
 
   $("[id='Q5_51']").on("click", function() {
-    if (this.id == "Q5_51" && document.getElementById('Q5_51').checked) {
+    if (this.id === "Q5_51" && document.getElementById('Q5_51').checked) {
       document.getElementById("Q5_5").disabled = false;
       document.getElementById("Q5_5").required = true;
     }
@@ -732,7 +386,7 @@ $(function() {
 
 
   $("[id='Q6_61']").on("click", function() {
-    if (this.id == "Q6_61" && document.getElementById('Q6_61').checked) {
+    if (this.id === "Q6_61" && document.getElementById('Q6_61').checked) {
       document.getElementById("Q6_6").disabled = false;
       document.getElementById("Q6_6").required = true;
     }
@@ -744,7 +398,7 @@ $(function() {
   });
 
   $("[id='Q7_101']").on("click", function() {
-    if (this.id == "Q7_101" && document.getElementById('Q7_101').checked) {
+    if (this.id === "Q7_101" && document.getElementById('Q7_101').checked) {
       document.getElementById("Q7_10").disabled = false;
       document.getElementById("Q7_10").required = true;
     }
@@ -756,7 +410,7 @@ $(function() {
   });
 
   $("[id='Q11_61']").on("click", function() {
-    if (this.id == "Q11_61" && document.getElementById('Q11_61').checked) {
+    if (this.id === "Q11_61" && document.getElementById('Q11_61').checked) {
       document.getElementById("Q11_6").disabled = false;
       document.getElementById("Q11_6").required = true;
       console.log("y")
@@ -769,7 +423,7 @@ $(function() {
   });
 
     $("[id='Q12_71']").on("click", function() {
-    if (this.id == "Q12_71" && document.getElementById('Q12_71').checked) {
+    if (this.id === "Q12_71" && document.getElementById('Q12_71').checked) {
       document.getElementById("Q12_7").disabled = false;
       document.getElementById("Q12_7").required = true;
 
@@ -782,10 +436,12 @@ $(function() {
   });
 });
 
+
 function deRequire(question_Num) {
   el = document.getElementsByName(question_Num);
 
   var atLeastOneChecked = false; //at least one cb is checked
+
   for (i = 0; i < el.length; i++) {
     if (el[i].checked === true) {
       atLeastOneChecked = true;
@@ -807,8 +463,10 @@ function deRequire(question_Num) {
 
 
 $(document).ready(function() {
-    var nav_tabwidth = $('#nav-tab').width();
-    $('#streetview').bind('DOMSubtreeModified', function(){
+
+    var change_width = parseFloat(screen.width) * 0.5;
+
+    $('#streetview').bind('DOMSubtreeModified', function() {
         var dynheight = $('#streetview').height();
         //console.log('changed dynHeight: ' + dynheight);
         var nav_tabheight = $('#nav-tab').height();
