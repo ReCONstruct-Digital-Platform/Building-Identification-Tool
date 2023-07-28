@@ -1,0 +1,27 @@
+{% with id=widget.attrs.id %}
+<div id="{{ id }}" class="{{ widget.attrs.class }}" >
+  <div class="specify">
+    <label class="me-1">
+      <input id="{{ id }}_num_radio" type="radio" name="{{ id }}" class="me-1 specify" required>Number of storeys:
+    </label>
+    <input id="{{ id }}_num_input" class = "me-1" type="number" name="{{ id }}" min="0" max="50" disabled/>
+  </div>
+  <label>
+    <input id="{{ id }}_unsure" class="me-1" type="radio" name="{{ id }}" value="unsure" required/>Unsure
+  </label>
+</div>
+
+<script>
+  // When 'unsure' is selected, delete any previous value from the number input and disable it.
+  $(function() {
+    $('#{{ id }}_num_radio').on("click", function() {
+        document.getElementById("{{ id }}_num_input").disabled = false;
+        document.getElementById("{{ id }}_num_input").required = true;
+    });
+    $('#{{ id }}_unsure').on("click", function() {
+        document.getElementById("{{ id }}_num_input").disabled = true;
+        document.getElementById("{{ id }}_num_input").value = "";
+    });
+  });
+</script>
+{% endwith %}

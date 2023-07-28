@@ -26,10 +26,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
 
-from . import utils
+from .utils import b2_upload
 from .forms import CreateUserForm
+from .models.surveys import SurveyV1Form
 from config.settings import B2_APPKEY_RW, B2_BUCKET_IMAGES, B2_ENDPOINT, B2_KEYID_RW, WEBHOOK_SECRET, BASE_DIR
-from .models import Building, BuildingSatelliteImage, BuildingStreetViewImage, BuildingLatestViewData, BuildingTypology, Material, NoBuildingFlag, Typology, Vote, BuildingNote, MaterialScore, Profile
+from .models.models import Building, BuildingSatelliteImage, BuildingStreetViewImage, BuildingLatestViewData, BuildingTypology, Material, NoBuildingFlag, Typology, Vote, BuildingNote, MaterialScore, Profile
 
 import logging
 
@@ -135,88 +136,93 @@ def classify(request, building_id):
     building = get_object_or_404(Building, pk=building_id)
 
     if request.method == "POST":
-        # Because we'll be creating multiple DB objects with relations to each other,
-        # we want either all of them to be created, or none if a problem occurs.
-        with transaction.atomic():
-            # Form submission - need to create a new Vote object
-            # That will be references by a set of MaterialScores and an optional Note
-            new_vote = Vote(building = building, user = request.user)
-            new_vote.save()
+        # # Because we'll be creating multiple DB objects with relations to each other,
+        # # we want either all of them to be created, or none if a problem occurs.
+        # with transaction.atomic():
+        #     # Form submission - need to create a new Vote object
+        #     # That will be references by a set of MaterialScores and an optional Note
+        #     new_vote = Vote(building = building, user = request.user)
+        #     new_vote.save()
 
-            log.debug(request.POST)
+        #     log.debug(request.POST)
 
-            for key in request.POST:
-                if "typology" in key:
-                    # Expect the value to be an array with 2 values, typology name and 1-5 score
-                    value = request.POST.getlist(key)
-                    if len(value) > 1:
-                        typology_name = value[0]
-                        score = value[1]
+        #     for key in request.POST:
+        #         if "typology" in key:
+        #             # Expect the value to be an array with 2 values, typology name and 1-5 score
+        #             value = request.POST.getlist(key)
+        #             if len(value) > 1:
+        #                 typology_name = value[0]
+        #                 score = value[1]
 
-                        typology = Typology.objects.filter(name__icontains=typology_name).first()
-                        if typology is None:
-                            typology = Typology(name=typology_name)
-                            typology.save()
+        #                 typology = Typology.objects.filter(name__icontains=typology_name).first()
+        #                 if typology is None:
+        #                     typology = Typology(name=typology_name)
+        #                     typology.save()
                         
-                        # Create a new MaterialScore linking this vote, the material and the score
-                        building_typology = BuildingTypology(vote=new_vote, typology=typology, score=score)
-                        building_typology.save()
+        #                 # Create a new MaterialScore linking this vote, the material and the score
+        #                 building_typology = BuildingTypology(vote=new_vote, typology=typology, score=score)
+        #                 building_typology.save()
 
-                elif "note" in key:
-                    value = request.POST.getlist(key)[0]
-                    # If the note value is not empty, save a note for the building
-                    if value != '':
-                        note = BuildingNote(vote=new_vote, note=value)
-                        note.save()
+        #         elif "note" in key:
+        #             value = request.POST.getlist(key)[0]
+        #             # If the note value is not empty, save a note for the building
+        #             if value != '':
+        #                 note = BuildingNote(vote=new_vote, note=value)
+        #                 note.save()
 
-                elif "material" in key:
-                    # Expect the value to be an array with 2 values, material name and 1-5 score
-                    value = request.POST.getlist(key)
-                    if len(value) > 1:
-                        material_name = value[0]
-                        score = value[1]
-                        # Get a reference to the material
-                        material = Material.objects.filter(name__icontains=material_name).first()
+        #         elif "material" in key:
+        #             # Expect the value to be an array with 2 values, material name and 1-5 score
+        #             value = request.POST.getlist(key)
+        #             if len(value) > 1:
+        #                 material_name = value[0]
+        #                 score = value[1]
+        #                 # Get a reference to the material
+        #                 material = Material.objects.filter(name__icontains=material_name).first()
 
-                        log.debug(f"Found material {material}")
-                        # If it doesn't exist, create a new material
-                        if material is None:
-                            material = Material(name=material_name)
-                            material.save()
+        #                 log.debug(f"Found material {material}")
+        #                 # If it doesn't exist, create a new material
+        #                 if material is None:
+        #                     material = Material(name=material_name)
+        #                     material.save()
                         
-                        # Create a new MaterialScore linking this vote, the material and the score
-                        material_score = MaterialScore(vote=new_vote, material=material, score=score)
-                        material_score.save()
+        #                 # Create a new MaterialScore linking this vote, the material and the score
+        #                 material_score = MaterialScore(vote=new_vote, material=material, score=score)
+        #                 material_score.save()
 
-                elif key == "latest_view_data":
+        #         elif key == "latest_view_data":
 
-                    data = request.POST.getlist(key)[0]
-                    if len(data) > 0: 
-                        data = json.loads(data)
+        #             data = request.POST.getlist(key)[0]
+        #             if len(data) > 0: 
+        #                 data = json.loads(data)
 
-                        latest_view_data = BuildingLatestViewData(
-                            building = building,
-                            user = request.user,
-                            sv_pano = data['sv_pano'],
-                            sv_heading = data['sv_heading'], 
-                            sv_pitch = data['sv_pitch'], 
-                            sv_zoom = data['sv_zoom'], 
-                            marker_lat = data['marker_lat'], 
-                            marker_lng = data['marker_lng'], 
-                        )
-                        latest_view_data.save()
+        #                 latest_view_data = BuildingLatestViewData(
+        #                     building = building,
+        #                     user = request.user,
+        #                     sv_pano = data['sv_pano'],
+        #                     sv_heading = data['sv_heading'], 
+        #                     sv_pitch = data['sv_pitch'], 
+        #                     sv_zoom = data['sv_zoom'], 
+        #                     marker_lat = data['marker_lat'], 
+        #                     marker_lng = data['marker_lng'], 
+        #                 )
+        #                 latest_view_data.save()
 
-                elif key == 'no_building':
-                    NoBuildingFlag(vote = new_vote).save()
+        #         elif key == 'no_building':
+        #             NoBuildingFlag(vote = new_vote).save()
 
-            # Finally, we can save our vote
-            new_vote.save()
-            # Get the new current building
-            building = Building.objects.get_next_building_to_classify(exclude_id = building.id)
+        #     # Finally, we can save our vote
+        #     new_vote.save()
+        #     # Get the new current building
+        #     building = Building.objects.get_next_building_to_classify(exclude_id = building.id)
 
-        next_building = Building.objects.get_next_building_to_classify(exclude_id = building.id)
+        form = SurveyV1Form(request.POST)
+        from pprint import pprint
+        pprint(request.POST)
 
-        return redirect("buildings:classify", building_id=next_building.id)
+        if form.is_valid():
+            print('Valid form')
+            next_building = Building.objects.get_next_building_to_classify(exclude_id = building.id)
+            return redirect("buildings:classify", building_id=next_building.id)
     
     building_latest_view_data = BuildingLatestViewData.objects.get_latest_view_data(building.id, request.user.id)
 
@@ -226,12 +232,15 @@ def classify(request, building_id):
     # Get the next building 
     next_building = Building.objects.get_next_building_to_classify(exclude_id = building.id)
 
+    form = SurveyV1Form()
+
     context = {
         # TODO: Is this the best way to pass API keys to views?
         'key': settings.GOOGLE_MAPS_API_KEY,
         'building': building,
         'building_latest_view_data': building_latest_view_data,
         'next_building': next_building.id,
+        'form': form
     }
     return render(request, 'buildings/map.html', context)
 
@@ -298,7 +307,7 @@ def upload_imgs(request, building_id):
     # Receive the images from the frontend
     body = json.loads(request.body)
 
-    b2 = utils.get_b2_resource(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW)
+    b2 = b2_upload.get_b2_resource(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW)
 
     building = get_object_or_404(Building, pk=building_id)
 

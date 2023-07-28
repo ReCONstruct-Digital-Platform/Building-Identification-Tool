@@ -1,8 +1,8 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from buildings.models import Building, Vote, BuildingTypology, Typology
+from buildings.models.models import Building, Vote, BuildingTypology, Typology
 
-class AnimalTestCase(TestCase):
+class BuildingTestCase(TestCase):
     def setUp(self):
         self.user = User.objects.create(username='testuser')
         self.building = Building.objects.create(

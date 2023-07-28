@@ -1,4 +1,4 @@
-from buildings.models import Building
+from buildings.models.models import Building
 from django.db.models import Count
   
 from django.core.management.base import BaseCommand

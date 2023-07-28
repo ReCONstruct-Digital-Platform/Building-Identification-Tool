@@ -3,7 +3,7 @@ import googlemaps
 from pathlib import Path
 
 from django.utils import timezone
-from buildings.models import Building
+from buildings.models.models import Building
 from config.settings import GOOGLE_MAPS_API_KEY
   
 from django.core.management.base import BaseCommand

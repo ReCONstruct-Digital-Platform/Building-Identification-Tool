@@ -1,0 +1,10 @@
+{{ form.media }}
+
+{% for field in form %}
+    <fieldset class="q-container ps-5 pb-3">
+        <legend class="q-header pb-1">
+          <strong>Q{{ forloop.counter }}: {{ field.help_text }}</strong>
+        </legend>
+        {{ field }}
+      </fieldset>
+{% endfor %}

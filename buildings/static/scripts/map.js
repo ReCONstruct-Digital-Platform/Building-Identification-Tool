@@ -303,31 +303,7 @@ $(document).ready(function() {
         }
         // Form is valid
         else {
-            console.log('btn-submit-vote clicked - screenshotting');
-            await screenshotEvent(e);
-            $('#btn-screenshot').trigger('click');
-            // const imgData = {
-            //     streetview: await screenshot('streetview'),
-            //     satellite: await screenshot('satmap'),
-            // }
-        
-            // const url = $("#upload_url").attr("data-url");
-            // console.log(imgData);
-            
-            // // async call
-            // fetch(url, {
-            //     method: "POST", // *GET, POST, PUT, DELETE, etc.
-            //     mode: "same-origin", // no-cors, *cors, same-origin
-            //     cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-            //     credentials: "same-origin", // include, *same-origin, omit
-            //     headers: {
-            //       "Content-Type": "application/json",
-            //       "X-CSRFToken": getCookie('csrftoken'),
-            //     },
-            //     body: JSON.stringify(imgData), // body data type must match "Content-Type" header
-            //   });
-            console.log('btn-submit-vote clicked - form submitting');
-            // Finally submit the form
+            // await screenshotEvent(e);
             form.submit();
         }
 
@@ -352,56 +328,49 @@ function getCookie(name) {
 }
 
 
-
 // for question 3
 // prompts user's inputs when selecting "number of storeys", disable the button when selecting "unsure",
-$(function() {
-  $('#Q3_1').on("click", function() {
-      document.getElementById("I3").disabled = false;
-      document.getElementById("I3").required = true;
-  });
-  $('#U3').on("click", function() {
-      document.getElementById("I3").disabled = true;
-      document.getElementById("I3").value = "";
-  });
-});
 
 // for questions that have checkboxes as inputs, make sure at least one checkbox is selected
 // loops through the checkboxes with given name to check if at least one is checked.
 // if so, remove the required attribute from all of them
-function deRequire(questionNum) {
-  el = document.getElementsByName(questionNum);
-  var atLeastOneChecked = false;
-  for (i = 0; i < el.length; i++) {
-    if (el[i].checked === true) {
-      atLeastOneChecked = true;
-    }
-  }
-  if (atLeastOneChecked) {
-    for (i = 0; i < el.length; i++) {
-      el[i].required = false;
-    }
-  } else {
-    for (i = 0; i < el.length; i++) {
-      el[i].required = true;
-    }
-  }
-}
+// function deRequire(questionNum) {
+//   el = document.getElementsByName(questionNum);
+//   var atLeastOneChecked = false;
+//   for (i = 0; i < el.length; i++) {
+//     if (el[i].checked === true) {
+//       atLeastOneChecked = true;
+//     }
+//   }
+//   if (atLeastOneChecked) {
+//     for (i = 0; i < el.length; i++) {
+//       el[i].required = false;
+//     }
+//   } else {
+//     for (i = 0; i < el.length; i++) {
+//       el[i].required = true;
+//     }
+//   }
+// }
 
 // for questions other than question 3, which require text as user's inputs
 // prompt users to enter inputs or disable/clear inputs accordingly
-function deDisabled(questionNum) {
-    var substring = questionNum.slice(0, -1)
-    if (document.getElementById(questionNum).checked) {
-      document.getElementById(substring).disabled = false;
-      document.getElementById(substring).required = true;
-    }
-    else {
-      document.getElementById(substring).disabled = true;
-      document.getElementById(substring).required = false;
-      document.getElementById(substring).value = "";
-    }
-}
+// function deDisabled(questionNum) {
+//     var substring = questionNum.slice(0, -1) //Q5_5
+//     // If checkbox is checked, activate the associated entry field
+//     // set it to required.
+//     if (document.getElementById(questionNum).checked) {
+//       document.getElementById(substring).disabled = false;
+//       document.getElementById(substring).required = true;
+//     }
+//     // If the checkbox is not checked, disabled the associated entry 
+//     // field, set it to not required and reset its value.
+//     else {
+//       document.getElementById(substring).disabled = true;
+//       document.getElementById(substring).required = false;
+//       document.getElementById(substring).value = "";
+//     }
+// }
 
 // dynamically control the scroll bar of the survey horizontally and vertically
 // use the width/height of device, minus the width/height of streetview, gives the width/height of scrolling div
@@ -424,7 +393,8 @@ $(document).ready(function() {
             changeWidth = "500px";
 
         window.onload = (function () {
-            document.getElementById("scroll").style.height = textHeight + "px";
+            document.getElementById("scroll1").style.height = textHeight + "px";
+            document.getElementById("scroll2").style.height = textHeight + "px";
         })();
         }).observe(sel, {childList: true, subtree: true});
     });

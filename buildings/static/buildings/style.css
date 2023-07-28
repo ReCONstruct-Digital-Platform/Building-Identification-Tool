@@ -15,8 +15,6 @@ body {
   }
 }
 
-
-
 .logo-img {
   height: 40px;
   width: auto;
@@ -442,31 +440,17 @@ tr:hover .delete-row-icon {
   font-size: large;
 }
 
-
-/* Sharon's code from here */
-/* style sheet section 0 */
-
-#scroll {
-overflow-y: scroll;
+ /* TODO: remove scroll1 and 2 */
+#scroll, #scroll1, #scroll2 {
+  overflow-y: scroll;
 }
 
-/* style sheet section 1 */
 .survey {
   -webkit-column-count: 3; /* Chrome, Safari, Opera */
   -moz-column-count: 3; /* Firefox */
   column-count: 3;
   padding-left: 50px;
 }
-
-/*
-.horizontal {
-  -webkit-column-count: 2;
-  -moz-column-count: 2;
-  column-count: 2;
-  padding-left: 50px;
-  display: flex;
-}
- */
 
 .q-container {
   display: flex;
@@ -495,27 +479,18 @@ overflow-y: scroll;
 }
 
 .survey-1col {
-    display: grid;
+    display: flex;
+    flex-direction: column;
 }
 
-/*
-.horizontal {
-  -webkit-column-count: 2;
-  -moz-column-count: 2;
-  column-count: 2;
-  padding-left: 50px;
-  display: flex;
-}
- */
 
-/* style sheet section 2 */
 .desc { display: none; }
 .desc2 { display: none; }
 .desc3 { display: none; }
 .desc4 { display: none; }
 .desc5 { display: none; }
 
-
+/* Hidden element to store streetview/satellite snapshots */
 .offscreen {
   position: absolute;
   left: -10000px;

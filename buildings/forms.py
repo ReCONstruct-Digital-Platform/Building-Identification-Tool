@@ -1,16 +1,7 @@
-from django import forms
-from django.forms.utils import ErrorList
 from django.contrib.auth.models import User
+
 from django.contrib.auth.forms import UserCreationForm
-from django.forms import ModelForm, TextInput, EmailInput, PasswordInput
-
-from buildings.models.surveys import SurveyV1
-
-
-class SurveyV1Form(ModelForm):
-    class Meta:
-        model = SurveyV1
-        fields = ["q1", "q2", "q3", "q4"]
+from django.forms import TextInput, EmailInput, PasswordInput
 
 
 class CreateUserForm(UserCreationForm):
