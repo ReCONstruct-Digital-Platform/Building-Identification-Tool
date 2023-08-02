@@ -41,7 +41,10 @@
     <strong>Q5: {{ form.site_obstructions.help_text }}</strong>
     {% include 'buildings/utils/info_modal_button.html' with modal_id="site_obstructions" %}
   </legend>
-  {{ form.site_obstructions }}
+
+  {% with initial=form.site_obstructions.initial %}
+    {{ form.site_obstructions }}
+  {% endwith %}
 </fieldset>
 
 <fieldset class="q-container">

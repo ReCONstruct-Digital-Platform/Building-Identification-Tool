@@ -2,18 +2,22 @@
 <div id="{{ id }}" class="{{ widget.attrs.class }}">
   {% for _, options, _ in widget.optgroups %}
     {% for option in options %}
-      {% with widget=option %}
         <label>
-          <input id="{{ widget.attrs.id }}" class="me-1" type="{{ widget.type }}" onclick="turnOffSpecify('{{ id }}_specify_value')"
-            name="{{ widget.name }}" value="{{ widget.value|stringformat:'s' }}" required>{{ widget.label }}</label>
-      {% endwith %}
+          <input id="{{ option.attrs.id }}" class="me-1" type="{{ option.type }}"
+            onclick="turnOffSpecify('{{ id }}_specify_value')"
+            name="{{ option.name }}" value="{{ option.value|stringformat:'s' }}" 
+            {% if not widget.value_was_specified and option.value == widget.initial %} checked{% endif %} 
+            required>{{ option.label }}</label>
     {% endfor %}
   {% endfor %}
   {% if widget.has_specify %}
   <div class = "specify">
-    <label><input id = "{{ id }}_specify" type="radio" class = "me-1" name="{{ widget.name }}" 
-      onclick="turnOnSpecify('{{ id }}_specify_value')" required>Other (specify):</label>
-    <input class="ms-1" id="{{ id }}_specify_value" type="text" name="{{ widget.name }}" disabled />
+    <label>
+      <input id = "{{ id }}_specify" type="radio" class = "me-1"
+      onclick="turnOnSpecify('{{ id }}_specify_value')" name="{{ widget.name }}"
+      {% if widget.value_was_specified %} checked{% endif %} required>Other (specify):</label>
+    <input class="ms-1" id="{{ id }}_specify_value" type="text" name="{{ widget.name }}" 
+    {% if widget.value_was_specified %} value="{{ widget.initial }}" {% else %} disabled {% endif %} />
   </div>
   {% endif %}
 </div>

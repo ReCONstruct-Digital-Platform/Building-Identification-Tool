@@ -1,3 +1,5 @@
+from pprint import pprint
+
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
@@ -10,13 +12,13 @@ from buildings.widgets import RadioSelect, NumberOrUnsure, CheckboxRequiredSelec
 
 
 YES_NO = [
-    ("yes", "Yes"),
-    ("no", "No"),
+    ("True", "Yes"),
+    ("False", "No"),
 ]
 YES_NO_UNSURE = [
-    ("yes", "Yes"),
-    ("no", "No"),
-    ("unsure", "Unsure"),
+    ("True", "Yes"),
+    ("False", "No"),
+    ("", "Unsure"),
 ]
 SITE_OBSTRUCTIONS = [
     ("trees_or_landscaping", "Important trees or landscaping"),
@@ -99,6 +101,7 @@ class SurveyV1(BaseSurvey):
     structure_type = models.TextField() # radio w specify 
     new_or_renovated = models.BooleanField(blank=True, null=True) # radio
 
+
  
 class SurveyV1Form(ModelForm):
     # Some reading:
@@ -108,6 +111,16 @@ class SurveyV1Form(ModelForm):
     # https://docs.djangoproject.com/en/4.2/ref/forms/validation/
 
     template_name = "surveys/survey_v1.html"
+    json_fields = ['site_obstructions', 'appendages', 'exterior_cladding']
+
+    def __init__(self, *data, **kwargs):
+        super().__init__(*data, **kwargs)
+
+        # Add initial values to the widgets
+        for field in self.fields:
+            if field in self.initial:
+                self.fields[field].widget.initial = self.initial[field]
+        
 
     class Meta:
         model = SurveyV1

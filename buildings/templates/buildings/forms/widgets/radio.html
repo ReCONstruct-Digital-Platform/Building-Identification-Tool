@@ -1,11 +1,11 @@
-{% with id=widget.attrs.id %}
+{% with id=widget.attrs.id initial_val=widget.value.0 %}
 <div id="{{ id }}" class="{{ widget.attrs.class }}">
   {% for _, options, _ in widget.optgroups %}
     {% for option in options %}
       {% with widget=option %}
         <label>
           <input id="{{ widget.attrs.id }}" class="me-1" type="{{ widget.type }}" 
-            name="{{ widget.name }}" value="{{ widget.value|stringformat:'s' }}" required>{{ widget.label }}</label>
+            name="{{ widget.name }}" value="{{ widget.value|stringformat:'s' }}" {% if initial_val == widget.value %} checked{% endif %} required>{{ widget.label }}</label>
       {% endwith %}
     {% endfor %}
   {% endfor %}

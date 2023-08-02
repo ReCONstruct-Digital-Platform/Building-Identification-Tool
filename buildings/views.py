@@ -2,12 +2,12 @@ import io
 import git
 import hmac
 import json
-import boto3
 import hashlib
 import requests
 import traceback
 
 from PIL import Image
+from pprint import pprint
 from w3lib.url import parse_data_uri
 from uuid_extensions import uuid7str
 from ipaddress import ip_address, ip_network
@@ -28,9 +28,9 @@ from django.shortcuts import get_object_or_404, render, redirect
 
 from .utils import b2_upload
 from .forms import CreateUserForm
-from .models.surveys import SurveyV1Form
+from .models.surveys import SurveyV1, SurveyV1Form
 from config.settings import B2_APPKEY_RW, B2_BUCKET_IMAGES, B2_ENDPOINT, B2_KEYID_RW, WEBHOOK_SECRET, BASE_DIR
-from .models.models import Building, BuildingSatelliteImage, BuildingStreetViewImage, BuildingLatestViewData, BuildingTypology, Material, NoBuildingFlag, Typology, Vote, BuildingNote, MaterialScore, Profile
+from .models.models import Building, BuildingSatelliteImage, BuildingStreetViewImage, BuildingLatestViewData, NoBuildingFlag, Vote, Profile
 
 import logging
 
@@ -135,94 +135,23 @@ def classify(request, building_id):
 
     building = get_object_or_404(Building, pk=building_id)
 
-    # Could check if a previous vote already exists for the building
-    # and return the filled form if it's the case!
+    # Fetch any previous survey entry for this building
+    # If none exist, initialize a survey with the building and user ids
+    survey_instance = SurveyV1.objects.filter(user=request.user, building=building).first()
+    if not survey_instance:
+        log.debug('No previous survey instance, initializing')
+        survey_instance = SurveyV1(user=request.user, building=building)
+    else:
+        log.debug('Found previous survey instance!')
 
+    # TODO: Do we still need the no building flag? 
     if request.method == "POST":
-        # # Because we'll be creating multiple DB objects with relations to each other,
-        # # we want either all of them to be created, or none if a problem occurs.
-        # with transaction.atomic():
-        #     # Form submission - need to create a new Vote object
-        #     # That will be references by a set of MaterialScores and an optional Note
-        #     new_vote = Vote(building = building, user = request.user)
-        #     new_vote.save()
 
-        #     log.debug(request.POST)
-
-        #     for key in request.POST:
-        #         if "typology" in key:
-        #             # Expect the value to be an array with 2 values, typology name and 1-5 score
-        #             value = request.POST.getlist(key)
-        #             if len(value) > 1:
-        #                 typology_name = value[0]
-        #                 score = value[1]
-
-        #                 typology = Typology.objects.filter(name__icontains=typology_name).first()
-        #                 if typology is None:
-        #                     typology = Typology(name=typology_name)
-        #                     typology.save()
-                        
-        #                 # Create a new MaterialScore linking this vote, the material and the score
-        #                 building_typology = BuildingTypology(vote=new_vote, typology=typology, score=score)
-        #                 building_typology.save()
-
-        #         elif "note" in key:
-        #             value = request.POST.getlist(key)[0]
-        #             # If the note value is not empty, save a note for the building
-        #             if value != '':
-        #                 note = BuildingNote(vote=new_vote, note=value)
-        #                 note.save()
-
-        #         elif "material" in key:
-        #             # Expect the value to be an array with 2 values, material name and 1-5 score
-        #             value = request.POST.getlist(key)
-        #             if len(value) > 1:
-        #                 material_name = value[0]
-        #                 score = value[1]
-        #                 # Get a reference to the material
-        #                 material = Material.objects.filter(name__icontains=material_name).first()
-
-        #                 log.debug(f"Found material {material}")
-        #                 # If it doesn't exist, create a new material
-        #                 if material is None:
-        #                     material = Material(name=material_name)
-        #                     material.save()
-                        
-        #                 # Create a new MaterialScore linking this vote, the material and the score
-        #                 material_score = MaterialScore(vote=new_vote, material=material, score=score)
-        #                 material_score.save()
-
-        #         elif key == "latest_view_data":
-
-        #             data = request.POST.getlist(key)[0]
-        #             if len(data) > 0: 
-        #                 data = json.loads(data)
-
-        #                 latest_view_data = BuildingLatestViewData(
-        #                     building = building,
-        #                     user = request.user,
-        #                     sv_pano = data['sv_pano'],
-        #                     sv_heading = data['sv_heading'], 
-        #                     sv_pitch = data['sv_pitch'], 
-        #                     sv_zoom = data['sv_zoom'], 
-        #                     marker_lat = data['marker_lat'], 
-        #                     marker_lng = data['marker_lng'], 
-        #                 )
-        #                 latest_view_data.save()
-
-        #         elif key == 'no_building':
-        #             NoBuildingFlag(vote = new_vote).save()
-
-        #     # Finally, we can save our vote
-        #     new_vote.save()
-        #     # Get the new current building
-        #     building = Building.objects.get_next_building_to_classify(exclude_id = building.id)
-        
+        # Save the last orientation/zoom for the building for later visits
         if 'latest_view_data' in request.POST:
             data = request.POST.getlist('latest_view_data')[0]
             if len(data) > 0: 
                 data = json.loads(data)
-
                 latest_view_data = BuildingLatestViewData(
                     building = building,
                     user = request.user,
@@ -234,19 +163,27 @@ def classify(request, building_id):
                     marker_lng = data['marker_lng'], 
                 )
                 latest_view_data.save()
-
+        
+        # Handle submission of survey version 1
         if 'survey_version' in request.POST and request.POST.get('survey_version') == '1.0':
-            form = SurveyV1Form(request.POST)
-            from pprint import pprint
-            pprint(request.POST)
+            # If previous_survey_answer is not None, we will modify the previous entry
+            form = SurveyV1Form(request.POST, instance=survey_instance)
 
             if form.is_valid():
-                pprint(form.cleaned_data)
+                # pprint(form.cleaned_data)
+                form.save()
+
+                # Update the building to a new one
                 next_building = Building.objects.get_next_building_to_classify(exclude_id = building.id)
+                # We redirect so the URL updates to the next building ID
                 return redirect("buildings:classify", building_id=next_building.id)
             else:
-                print(form.errors)
-        
+                log.error(form.errors)
+
+
+    # Common route for next building
+
+    # Fetch the latest view data for the current building if it exists
     building_latest_view_data = BuildingLatestViewData.objects.get_latest_view_data(building.id, request.user.id)
 
     if building_latest_view_data:
@@ -255,7 +192,7 @@ def classify(request, building_id):
     # Get the next building 
     next_building = Building.objects.get_next_building_to_classify(exclude_id = building.id)
 
-    form = SurveyV1Form()
+    form = SurveyV1Form(instance=survey_instance)
 
     context = {
         # TODO: Is this the best way to pass API keys to views?

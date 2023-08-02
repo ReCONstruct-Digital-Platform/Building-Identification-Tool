@@ -249,7 +249,6 @@ class Building(models.Model):
 class BuildingLatestViewDataQuerySet(models.QuerySet):
 
     def get_latest_view_data(self, building_id, user_id):
-        print(f'Looking for past saved data for building {building_id}')
 
         # First look if there are any previous saved data for this building
         if self.filter(building_id = building_id).count() == 0:
