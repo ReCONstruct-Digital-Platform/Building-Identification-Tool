@@ -99,23 +99,23 @@ function getSelectedMaterials() {
 
 
 function getLatestViewData() {
+    // Get the latest view data from streetview
     sv_pano = sv.getPano();
     sv_pov = sv.getPov();
     m_marker_pos = m_marker.getPosition();
     
-    var latest_view_data = {}
-    // Add extra data to the form
-    latest_view_data['sv_pano'] = sv_pano;
-    latest_view_data['sv_heading'] = sv_pov.heading;
-    latest_view_data['sv_pitch'] = sv_pov.pitch;
-    latest_view_data['sv_zoom'] = sv_pov.zoom;
-    latest_view_data['marker_lat'] = m_marker_pos.lat();
-    latest_view_data['marker_lng'] = m_marker_pos.lng();
-
-    return latest_view_data;
+    return {
+        'sv_pano': sv_pano,
+        'sv_heading': sv_pov.heading,
+        'sv_pitch': sv_pov.pitch,
+        'sv_zoom': sv_pov.zoom,
+        'marker_lat': m_marker_pos.lat(),
+        'marker_lng': m_marker_pos.lng(),
+    }
 }
 
-
+// TODO: Replace with https://github.com/tsayen/dom-to-image 
+// Apparently it is much faster
 async function screenshot(element_id) {
     return html2canvas(
         document.querySelector(`#${element_id}`), {
@@ -186,6 +186,7 @@ async function screenshotEvent(event) {
 
 $(document).ready(function() {
 
+    // Set-up the on-page back button
     const element = document.getElementById('prev-building-link');
 
     // Provide a standard href to facilitate standard browser features such as 
@@ -262,36 +263,29 @@ $(document).ready(function() {
     // Screenshot functionality
     $('#btn-screenshot').click(screenshotEvent);
 
-    $('#building-submition-form').one('submit', (e) => {
+    $('#building-submission-form').one('submit', (e) => {
         e.preventDefault();
         try {
+            // Add the latest view data to the form for next time
             const latest_view_data = getLatestViewData();
-            document.querySelector('#latest_view_data').value = JSON.stringify(latest_view_data);
+            $('#latest_view_data').value = JSON.stringify(latest_view_data);
+            console.log($('#latest_view_data'));
         } 
         catch (error) {
             console.error(error);
         } 
         finally {
             console.log('building submission form submitting');
-            // Go on to the normal processing
             // $('building-submission-form').submit();
         }
 
     })
 
-    // $('#building-submition-form').on('submit', (e) => {
-    //     e.preventDefault();
-    //     console.log('preventing submission');
-    //     return false;
-    // })
-
     // When user submits form, upload both current streetview and sat views
     // then continue with default behaviour
     $('#btn-submit-vote').click(async (e) => {
-
-        console.log('btn-submit-vote clicked');
-
         e.preventDefault();
+        console.log('btn-submit-vote clicked');
         form = $('#building-submission-form')[0];
         
         if (!form.checkValidity()) {
@@ -303,12 +297,12 @@ $(document).ready(function() {
         }
         // Form is valid
         else {
-            // await screenshotEvent(e);
+            await screenshotEvent(e);
+            $('#latest_view_data').val(JSON.stringify(getLatestViewData()));
+            console.log($('#latest_view_data').val());
             form.submit();
         }
-
     })
-    
 });
 
 function getCookie(name) {
@@ -327,50 +321,6 @@ function getCookie(name) {
     return cookieValue;
 }
 
-
-// for question 3
-// prompts user's inputs when selecting "number of storeys", disable the button when selecting "unsure",
-
-// for questions that have checkboxes as inputs, make sure at least one checkbox is selected
-// loops through the checkboxes with given name to check if at least one is checked.
-// if so, remove the required attribute from all of them
-// function deRequire(questionNum) {
-//   el = document.getElementsByName(questionNum);
-//   var atLeastOneChecked = false;
-//   for (i = 0; i < el.length; i++) {
-//     if (el[i].checked === true) {
-//       atLeastOneChecked = true;
-//     }
-//   }
-//   if (atLeastOneChecked) {
-//     for (i = 0; i < el.length; i++) {
-//       el[i].required = false;
-//     }
-//   } else {
-//     for (i = 0; i < el.length; i++) {
-//       el[i].required = true;
-//     }
-//   }
-// }
-
-// for questions other than question 3, which require text as user's inputs
-// prompt users to enter inputs or disable/clear inputs accordingly
-// function deDisabled(questionNum) {
-//     var substring = questionNum.slice(0, -1) //Q5_5
-//     // If checkbox is checked, activate the associated entry field
-//     // set it to required.
-//     if (document.getElementById(questionNum).checked) {
-//       document.getElementById(substring).disabled = false;
-//       document.getElementById(substring).required = true;
-//     }
-//     // If the checkbox is not checked, disabled the associated entry 
-//     // field, set it to not required and reset its value.
-//     else {
-//       document.getElementById(substring).disabled = true;
-//       document.getElementById(substring).required = false;
-//       document.getElementById(substring).value = "";
-//     }
-// }
 
 // dynamically control the scroll bar of the survey horizontally and vertically
 // use the width/height of device, minus the width/height of streetview, gives the width/height of scrolling div
@@ -393,8 +343,7 @@ $(document).ready(function() {
             changeWidth = "500px";
 
         window.onload = (function () {
-            document.getElementById("scroll1").style.height = textHeight + "px";
-            document.getElementById("scroll2").style.height = textHeight + "px";
+            document.getElementById("scroll").style.height = textHeight + "px";
         })();
         }).observe(sel, {childList: true, subtree: true});
     });

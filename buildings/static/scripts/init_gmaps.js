@@ -198,10 +198,12 @@ function initMaps() {
     });
   }
 
-  if (building_latest_view_data)
+  if (building_latest_view_data) {
     findPanoramaById(panoRequest, building_coord);
-    else
+  }
+  else {
     findPanoramaByRadius(panoRequest, building_coord);
+  }
 }
 
 window.initMaps = initMaps;

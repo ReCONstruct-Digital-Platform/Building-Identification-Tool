@@ -135,6 +135,9 @@ def classify(request, building_id):
 
     building = get_object_or_404(Building, pk=building_id)
 
+    # Could check if a previous vote already exists for the building
+    # and return the filled form if it's the case!
+
     if request.method == "POST":
         # # Because we'll be creating multiple DB objects with relations to each other,
         # # we want either all of them to be created, or none if a problem occurs.
@@ -214,16 +217,36 @@ def classify(request, building_id):
         #     new_vote.save()
         #     # Get the new current building
         #     building = Building.objects.get_next_building_to_classify(exclude_id = building.id)
+        
+        if 'latest_view_data' in request.POST:
+            data = request.POST.getlist('latest_view_data')[0]
+            if len(data) > 0: 
+                data = json.loads(data)
 
-        form = SurveyV1Form(request.POST)
-        from pprint import pprint
-        pprint(request.POST)
+                latest_view_data = BuildingLatestViewData(
+                    building = building,
+                    user = request.user,
+                    sv_pano = data['sv_pano'],
+                    sv_heading = data['sv_heading'], 
+                    sv_pitch = data['sv_pitch'], 
+                    sv_zoom = data['sv_zoom'], 
+                    marker_lat = data['marker_lat'], 
+                    marker_lng = data['marker_lng'], 
+                )
+                latest_view_data.save()
 
-        if form.is_valid():
-            print('Valid form')
-            next_building = Building.objects.get_next_building_to_classify(exclude_id = building.id)
-            return redirect("buildings:classify", building_id=next_building.id)
-    
+        if 'survey_version' in request.POST and request.POST.get('survey_version') == '1.0':
+            form = SurveyV1Form(request.POST)
+            from pprint import pprint
+            pprint(request.POST)
+
+            if form.is_valid():
+                pprint(form.cleaned_data)
+                next_building = Building.objects.get_next_building_to_classify(exclude_id = building.id)
+                return redirect("buildings:classify", building_id=next_building.id)
+            else:
+                print(form.errors)
+        
     building_latest_view_data = BuildingLatestViewData.objects.get_latest_view_data(building.id, request.user.id)
 
     if building_latest_view_data:

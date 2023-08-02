@@ -255,10 +255,10 @@ class BuildingLatestViewDataQuerySet(models.QuerySet):
         if self.filter(building_id = building_id).count() == 0:
             return None
         
+        # Then check if there is a previous saved value for this user
+        # If not, return the latest view saved by any other user
         if self.filter(building_id = building_id, user_id = user_id).count() == 0:
-            print(self.filter(building_id = building_id).all())
             return self.filter(building_id = building_id).order_by('-date_added').first()
-        
         else:
             return self.filter(building_id = building_id, user_id = user_id).order_by('-date_added').first()
 
@@ -271,9 +271,7 @@ class BuildingLatestViewData(models.Model):
         on_delete=models.CASCADE,
     )
     date_added = models.DateTimeField('date added', default=timezone.now)
-
     sv_pano = models.TextField(blank=True, null=True)
-
     sv_heading = models.FloatField(blank=True, null=True)
     sv_pitch = models.FloatField(blank=True, null=True)
     sv_zoom = models.FloatField(blank=True, null=True)

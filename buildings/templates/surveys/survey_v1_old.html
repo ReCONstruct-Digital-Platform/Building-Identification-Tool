@@ -1,0 +1,12 @@
+{{ form.media }}
+
+<input name="survey_version" type="hidden" value="1.0"/>
+
+{% for field in form.visible_fields %}
+  <fieldset class="q-container ps-5 pb-3">
+      <legend class="q-header pb-1">
+        <strong>Q{{ forloop.counter }}: {{ field.help_text }}</strong>
+      </legend>
+      {{ field }}
+    </fieldset>
+{% endfor %}

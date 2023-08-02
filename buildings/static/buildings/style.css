@@ -452,20 +452,21 @@ tr:hover .delete-row-icon {
   padding-left: 50px;
 }
 
-.q-container {
-  display: flex;
-  flex-direction: column;
-}
-
 .specify {
   display: inline-block;
   grid-column: span 2;
 }
 
+.q-container {
+  padding-left: 1.5rem;
+  padding-bottom: 1rem;
+}
+
 .q-header {
   font-size: 1rem;
   display: flex;
-  margin-bottom: -0.15rem;
+  align-items: center;
+  margin-bottom: -0.10rem;
 }
 
 .survey-3col {
