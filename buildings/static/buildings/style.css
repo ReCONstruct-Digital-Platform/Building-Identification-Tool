@@ -374,12 +374,12 @@ tr:hover .delete-row-icon {
   width: 50%;
 }
 
-.map-and-submit-container {
+.map-and-survey-container {
   height: 100%;
   width: auto;
   display: flex;
+  flex: 1;
   flex-direction: column;
-  flex-grow: 1;
 }
 
 .map-container  {
@@ -387,10 +387,11 @@ tr:hover .delete-row-icon {
   width: 100%;
 }
 
-#dragbar{
+#dragbar {
   height:100%;
   width: 7px;
   cursor: col-resize;
+  background: linear-gradient(#a8adb0, #a8adb0) no-repeat center/1px 100%;
 }
 
 #streetview {
@@ -440,9 +441,16 @@ tr:hover .delete-row-icon {
   font-size: large;
 }
 
- /* TODO: remove scroll1 and 2 */
-#scroll, #scroll1, #scroll2 {
+
+.tab-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   overflow-y: scroll;
+}
+
+.tab-pane {
+  height: 100%;
 }
 
 .survey {

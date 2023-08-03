@@ -1,108 +1,8 @@
-// Global counter variable to keep track of next ID to assign
-var NEXT_ROW_ID = 2;
-
-
-function getDeleteRowIconInnerHTML() {
-    html = `
-        <a class="a-delete-row" href="#">
-        <i class="x-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
-            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-            </svg>
-        </i>
-        </a>
-    `;
-    return html
-}
-
-function addNewMaterial(element) {
-    const name = element.name
-    element.old_name = name;
-    element.name = "";
-    const el = element.parentElement;
-
-    const text_input = document.createElement("input");
-    text_input.setAttribute("class", "new-material-input ms-2");
-    text_input.setAttribute("type", "text")
-    text_input.setAttribute("name", name)
-    text_input.setAttribute("required", "")
-    text_input.setAttribute("placeholder", "Enter new material...");
-
-    el.appendChild(text_input)
-}
-
-// Adds event listeners to a select element, to detect if 'new-material'
-// is selected. If so, make a text input field appear.
-function addEventListeners(element) {
-    // In case the value right after creation is new material, create the text input directly
-    if(element.value === "new-material")
-    {
-        addNewMaterial(element);
-    }
-
-    // Just in case, copied this from online but don't think it's ever used
-    element.addEventListener("click", function() {
-        var options = element.querySelectorAll("option");
-        var count = options.length;
-        if(typeof(count) === "undefined" || count < 1)
-        {
-            addNewMaterial(element);
-        }
-    });
-
-    element.addEventListener("change", function() {
-        if(element.value === "new-material")
-        {
-            if (!element.parentElement.querySelector('input')) {
-                addNewMaterial(element);
-            }
-        }
-        else
-        {
-            // When changing from selected materials, if new value is
-            // not 'New Material' then check if there's an input and delete it
-            if (element.parentElement.querySelector('input')) {
-                element.parentElement.querySelector('input').remove();
-                element.name = element.old_name;
-            }
-        } 
-    });
-}
-
-
-function addDeleteRowListener(element) {
-    // Configures the element to delete the given ID when clicked
-    element.addEventListener("click", function() {
-        const row = element.closest('tr');
-        row.remove();
-    });
-}
-
-function getSelectedMaterials() {
-    // Return all materials currently selected in dropdowns on the page
-    const material_selects = document.querySelectorAll('.material-select')
-
-    const selected_materials = [];
-    for (var i = 0; i < material_selects.length; i++) {
-        material = material_selects[i];
-
-        if (material.value === "new-material") {
-            selected_materials[i] = material.parentElement.querySelector('input').value;
-        }
-        else {
-            selected_materials[i] = material.value;
-        }
-    }
-    return selected_materials;
-}
-
-
 function getLatestViewData() {
     // Get the latest view data from streetview
-    sv_pano = sv.getPano();
-    sv_pov = sv.getPov();
-    m_marker_pos = m_marker.getPosition();
+    const sv_pano = sv.getPano();
+    const sv_pov = sv.getPov();
+    const m_marker_pos = m_marker.getPosition();
     
     return {
         'sv_pano': sv_pano,
@@ -114,13 +14,14 @@ function getLatestViewData() {
     }
 }
 
-// TODO: Replace with https://github.com/tsayen/dom-to-image 
-// Apparently it is much faster
+// Tried to replace with the faster https://github.com/tsayen/dom-to-image 
+// but failed due to this error https://github.com/tsayen/dom-to-image/issues/205
+// Since google maps loads the stylesheet, I can't add crossorigin="anonymous" to it.
 async function screenshot(element_id) {
     return html2canvas(
-        document.querySelector(`#${element_id}`), {
+        document.getElementById(element_id), {
             useCORS: true,
-            logging: false,
+            logging: false, // set true for debug
             ignoreElements: (el) => {
                 // The following hides unwanted controls, copyrights, pins etc. on the maps and streetview canvases
                 return el.classList.contains("gmnoprint") || el.classList.contains("gm-style-cc") 
@@ -130,59 +31,116 @@ async function screenshot(element_id) {
             },
         }
     ).then(canvas => {
-        // For testing - appends the images to the web page
+        // For testing - appends the images to the page
         // document.body.appendChild(canvas);
         // Convert the image to a dataURL for uploading to the backend
         return canvas.toDataURL('image/png');
     })
 }
 
-async function screenshotEvent(event) {
+
+async function screenshotAndUpload(event) {
     event.preventDefault();
-        
-    // If the satellite tab is inactive, it is not rendered
-    // We need it to be rendered to take a screenshot,
-    // so we temporarily render it in an invisible element.
-    let satelliteScreenshot;
-    const activeTab = $('#nav-tab button.active'); 
-    if ( activeTab.attr('id') !== 'nav-satellite-tab') {
-        const parent = $('#satmap').parent();
-        const width = parent.width();
-        const height = parent.height();
-        
-        $('#satmap').appendTo(document.body);
-        $('#satmap').width(width).height(height);
-        $('#satmap').addClass('offscreen');
-
-        satelliteScreenshot = await screenshot('satmap');
-        $('#satmap').removeClass('offscreen');
-        $('#satmap').appendTo(parent);
-    } else {
-        satelliteScreenshot = await screenshot('satmap');
+    // Attempt to get the satellite screenshot from this element
+    let satelliteDataUrl = $("#sat_data").attr("data-url");
+    
+    // If not found, screenshot it now
+    if (!satelliteDataUrl) {
+        console.log('Need to screenshot satellite');
+        satelliteDataUrl = await screenshot('satmap');
     }
-
+    // Screenshot the streetview as well
     const imgData = {
         streetview: await screenshot('streetview'),
-        satellite: satelliteScreenshot,
+        satellite: satelliteDataUrl,
     }
 
+    // Get the upload url from the page and POST the data
     const url = $("#upload_url").attr("data-url");
-    console.log(imgData);
-    
-    // async call
+
     fetch(url, {
-        method: "POST", // *GET, POST, PUT, DELETE, etc.
-        mode: "same-origin", // no-cors, *cors, same-origin
-        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-        credentials: "same-origin", // include, *same-origin, omit
+        method: "POST",
+        mode: "same-origin", 
+        cache: "no-cache", 
+        credentials: "same-origin", 
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": getCookie('csrftoken'),
+          "X-CSRFToken": getCookie('csrftoken'), // So django accepts the request
         },
-        body: JSON.stringify(imgData), // body data type must match "Content-Type" header
+        body: JSON.stringify(imgData), 
       });
 }
 
+
+function setUpDraggableMidBar() {
+    // Check if streetview container was previously resized by the user
+    // If not set its size to a default of 50%, otherwise use saved settings
+    const sv_container = $('#streetview-container');
+    const sv_saved_width = localStorage.getItem("sv_saved_width");
+
+    if (sv_saved_width){
+        sv_container.css("width", sv_saved_width);
+    } else {
+        sv_container.css("width", '50%');
+    }
+
+    let dragging = false;
+
+    $('#dragbar').mousedown(function(e) {
+        e.preventDefault();
+        dragging = true;
+        
+        $(document).mousemove(function(ex) {
+            sv_container.css("width", ex.pageX +2);
+            localStorage.setItem("sv_saved_width", ex.pageX +2);
+        });
+    });
+
+    // $('#dragbar').mouseup((e) => {
+    //     localStorage.setItem("sv_saved_width", e.pageX + 2);
+    // });
+
+    $(document).mouseup(() => {
+        if (dragging) {
+            $(document).unbind('mousemove');
+            dragging = false;
+        }
+    });
+}
+
+function setupDragBar2() {
+    const dragbar = document.getElementById('dragbar');
+    const left = document.getElementById('streetview-container');
+
+    // Check if streetview container was previously resized by the user
+    // If not set its size to a default of 50%, otherwise use saved settings
+    const saved = localStorage.getItem("savedWidth");
+
+    if (saved){
+        left.style.width = saved;
+    } else {
+        left.style.width = '50%';
+    }
+    
+    // Calculate the new width, set the left panel's width and save in local storage
+    const resizeOnDrag = (e) => {
+        const newWidth = (e.pageX - dragbar.offsetWidth / 2) + 'px'
+        left.style.width = newWidth;
+        localStorage.setItem("savedWidth", newWidth);
+    }
+      
+    dragbar.addEventListener('mousedown', () => {
+        document.addEventListener('mousemove', resizeOnDrag);
+    });
+    
+    dragbar.addEventListener('mouseup', () => {
+        document.removeEventListener('mousemove', resizeOnDrag);
+    });
+
+    document.addEventListener('mouseup', () => {
+        document.removeEventListener('mousemove', resizeOnDrag);
+    });
+}
 
 $(document).ready(function() {
 
@@ -204,6 +162,7 @@ $(document).ready(function() {
         history.back();
         return false;
     }
+
 
     $('#btn-no-building').click((e) => {
         e.preventDefault();
@@ -227,79 +186,41 @@ $(document).ready(function() {
         }
     })
 
+    // setUpDraggableMidBar();
+    setupDragBar2();
+    setUpScrollHeight();
 
-    // Check if streetview container was resized previously
-    // If not set its size to 50%, if yes use the saved settings
-    const sv_container = $('.streetview-container');
-
-    var sv_saved_width = localStorage.getItem("sv_saved_width");
-
-    if (sv_saved_width === null){
-        sv_container.css("width", '50%');
-    } else {
-        sv_container.css("width", sv_saved_width);
-    }
-
-    var dragging = false;
-
-    $('#dragbar').mousedown(function(e) {
-        e.preventDefault();
-        dragging = true;
-        
-        $(document).mousemove(function(ex) {
-            sv_container.css("width", ex.pageX +2);
-            localStorage.setItem("sv_saved_width", ex.pageX +2);
-        });
-    });
-
-    $(document).mouseup(function(e){
-    if (dragging) 
-    {
-        $(document).unbind('mousemove');
-        dragging = false;
-    }
+    // The hide.bs.tab event fires when the tab is to be hidden
+    $('#nav-satellite-tab').on('hide.bs.tab', async (e) => {
+        // We save a screenshot of its current version to upload later
+        console.log('screenshoting satellite');
+        const dataUrl = await screenshot('satmap');
+        $('#sat_data').attr('data-url', dataUrl);
     });
 
     // Screenshot functionality
-    $('#btn-screenshot').click(screenshotEvent);
-
-    $('#building-submission-form').one('submit', (e) => {
-        e.preventDefault();
-        try {
-            // Add the latest view data to the form for next time
-            const latest_view_data = getLatestViewData();
-            $('#latest_view_data').value = JSON.stringify(latest_view_data);
-            console.log($('#latest_view_data'));
-        } 
-        catch (error) {
-            console.error(error);
-        } 
-        finally {
-            console.log('building submission form submitting');
-            // $('building-submission-form').submit();
-        }
-
-    })
+    $('#btn-screenshot').click(screenshotAndUpload);
 
     // When user submits form, upload both current streetview and sat views
     // then continue with default behaviour
     $('#btn-submit-vote').click(async (e) => {
         e.preventDefault();
-        console.log('btn-submit-vote clicked');
         form = $('#building-submission-form')[0];
         
+        // Check form inputs are valid
         if (!form.checkValidity()) {
             // Create the temporary button, click and remove it
-            var tmpSubmit = document.createElement('button')
-            form.appendChild(tmpSubmit)
-            tmpSubmit.click()
-            form.removeChild(tmpSubmit)
+            // This makes the validation comments appear on screen
+            var tmpSubmit = document.createElement('button');
+            form.appendChild(tmpSubmit);
+            tmpSubmit.click();
+            form.removeChild(tmpSubmit);
         }
-        // Form is valid
         else {
-            await screenshotEvent(e);
+            // screenshot the streetview
+            await screenshotAndUpload(e);
+            // Set the latest view data
             $('#latest_view_data').val(JSON.stringify(getLatestViewData()));
-            console.log($('#latest_view_data').val());
             form.submit();
         }
     })
@@ -327,24 +248,34 @@ function getCookie(name) {
 // the min width of survey is set to 500px, making sure that words wouldn't squeeze together.
 // since DOMSubtreeModified is deprecated, use MutationObserver
 // https://stackoverflow.com/questions/41971140/implementing-mutationobserver-in-place-of-domsubtreemodified
-$(document).ready(function() {
-    $('#streetview').each(function() {
-      var sel = this;
 
-      new MutationObserver(function() {
-        var dynHeight = $('#streetview').height();
-        var navTabheight = $('#nav-tab').height();
-        var textHeight = dynHeight - navTabheight ;
-        var dynWidth =  $('#streetview').width();
-        var screenWidth = screen.width;
-        changeWidth = screenWidth - dynWidth ;
+// $(document).ready(
+function setUpScrollHeight() {
+    
+    const targetNode = document.getElementById('streetview');
 
-        if (parseFloat(changeWidth) < 500)
-            changeWidth = "500px";
+    const observer = new MutationObserver(() => {
+        var svHeight = $('#streetview').height();
+        var tabHeight = $('#nav-tab').height();
+        var textHeight = svHeight - tabHeight ;
 
-        window.onload = (function () {
-            document.getElementById("scroll").style.height = textHeight + "px";
-        })();
-        }).observe(sel, {childList: true, subtree: true});
-    });
-});
+        console.log(`sv height: ${svHeight}\nnavtab height: ${tabHeight}\ntextHeight: ${textHeight}`);
+        console.log()
+
+        // var dynWidth =  $('#streetview').width();
+        // changeWidth = screen.width - dynWidth;
+        
+        // if (parseFloat(changeWidth) < 500) {
+        //     changeWidth = "500";
+        // }
+        
+        // console.log(`changeWidth: ${changeWidth}`)
+
+        document.getElementById("scroll").style.height = textHeight + "px";
+
+    })
+
+    observer.observe(targetNode, {childList: true, subtree: true});
+
+}
+

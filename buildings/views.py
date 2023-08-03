@@ -282,10 +282,15 @@ def upload_imgs(request, building_id):
 
     for image_type in body.keys():
         print(image_type)
-        data = parse_data_uri(body.get(image_type))
-        image = Image.open(io.BytesIO(data.data))
-        # Convert the image to RGB to save as JPG
-        image = image.convert('RGB')
+
+        if data_uri := body.get(image_type):
+            data = parse_data_uri(data_uri)
+            image = Image.open(io.BytesIO(data.data))
+            # Convert the image to RGB to save as JPG
+            image = image.convert('RGB')
+
+        if not image:
+            return HttpResponse("Fail")
         
         # For streetview images, we'll store multiple sizes 
         if image_type == 'streetview':
@@ -326,6 +331,7 @@ def upload_imgs(request, building_id):
             image.thumbnail((1200, 1200))
             # Create an in memory file to temporarily store the image
             in_mem_file = io.BytesIO()
+            # Convert to JPEG for space, it's about 4 times smaller
             image.save(in_mem_file, format='jpeg')
             in_mem_file.seek(0)
             try:
@@ -339,7 +345,6 @@ def upload_imgs(request, building_id):
             except:
                 print(traceback.format_exc())
             in_mem_file.close()
-
 
     return HttpResponse('Ok')
 
