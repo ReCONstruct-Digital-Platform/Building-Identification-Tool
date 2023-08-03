@@ -147,6 +147,8 @@ def classify(request, building_id):
     # TODO: Do we still need the no building flag? 
     if request.method == "POST":
 
+        log.debug(pprint(request.POST))
+
         # Save the last orientation/zoom for the building for later visits
         if 'latest_view_data' in request.POST:
             data = request.POST.getlist('latest_view_data')[0]
@@ -163,7 +165,12 @@ def classify(request, building_id):
                     marker_lng = data['marker_lng'], 
                 )
                 latest_view_data.save()
-        
+
+        if 'no_building' in request.POST:
+            pass
+            # no_building = NoBuildingFlag(vote = new_vote)
+            # no_building.save()
+
         # Handle submission of survey version 1
         if 'survey_version' in request.POST and request.POST.get('survey_version') == '1.0':
             # If previous_survey_answer is not None, we will modify the previous entry
