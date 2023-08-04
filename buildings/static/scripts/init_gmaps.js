@@ -46,8 +46,7 @@ function findPanorama(svService, latestViewData, panoRequest, buildingCoord) {
       // otherwise the marker does not show for some reason!
       // https://stackoverflow.com/questions/23498921/google-street-view-with-custom-panorama-and-markers
       sv.setPano(panoData.location.pano);
-      window.sv = sv;
-
+      
       const map = new google.maps.Map(document.getElementById("satmap"), {
         center: buildingCoord,
         mapTypeId: 'satellite',
@@ -56,7 +55,7 @@ function findPanorama(svService, latestViewData, panoRequest, buildingCoord) {
         rotateControl: false,
         controlSize: 25,
       });
-
+      
       const m_marker = new google.maps.Marker({
         position: buildingCoord,
         map: map,
@@ -64,10 +63,15 @@ function findPanorama(svService, latestViewData, panoRequest, buildingCoord) {
       });
 
       map.setStreetView(sv);
+
+      // Export all of these to be able to access them from other scripts
+      window.sv = sv;
       window.map = map;
+      window.sv_marker = sv_marker;
+      window.m_marker = m_marker;
 
       // Set ondrag event listeners for both markers
-      // Dragging any of them will isntantly update the other
+      // Dragging any of them will instantly update the other
       sv_marker.addListener("drag", ()=> {
         m_marker.setPosition(sv_marker.getPosition());
       });

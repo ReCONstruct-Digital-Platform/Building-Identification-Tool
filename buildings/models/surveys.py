@@ -1,3 +1,4 @@
+import logging
 from pprint import pprint
 
 from django.db import models
@@ -12,13 +13,13 @@ from buildings.widgets import RadioSelect, NumberOrUnsure, CheckboxRequiredSelec
 
 
 YES_NO = [
-    ("True", "Yes"),
-    ("False", "No"),
+    (True, "Yes"),
+    (False, "No"),
 ]
 YES_NO_UNSURE = [
-    ("True", "Yes"),
-    ("False", "No"),
-    ("", "Unsure"),
+    (True, "Yes"),
+    (False, "No"),
+    (None, "Unsure"),
 ]
 SITE_OBSTRUCTIONS = [
     ("trees_or_landscaping", "Important trees or landscaping"),
@@ -116,9 +117,18 @@ class SurveyV1Form(ModelForm):
     def __init__(self, *data, **kwargs):
         super().__init__(*data, **kwargs)
 
-        # Add initial values to the widgets
-        for field in self.fields:
-            if field in self.initial:
+        logging.debug('initital values:')
+        pprint(self.initial)
+
+        self.was_filled = False
+        # If an instance was passed, there was a previous survey
+        # submission for this building and this user.
+        if kwargs['instance']:
+            self.was_filled = True
+
+            # Add initial values to the widgets
+            for field in self.fields:
+                self.fields[field].widget.was_filled = self.was_filled
                 self.fields[field].widget.initial = self.initial[field]
         
 
@@ -141,8 +151,8 @@ class SurveyV1Form(ModelForm):
             "facade_condition": RadioSelect(choices=FACADE_CONDITIONS, attrs={"class": "survey-2col"}),
             "window_wall_ratio": RadioSelect(choices=WINDOW_TO_WALL_RATIOS, attrs={"class": "survey-1col"}),
             "large_irregular_windows": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),
-            "roof_geometry": RadioWithSpecify(choices=ROOF_GEOMETRIES, has_specify=True, attrs={"class": "survey-3col"}),
-            "structure_type": RadioWithSpecify(choices=STRUCTURE_TYPES, has_specify=True, attrs={"class": "survey-2col"}),
+            "roof_geometry": RadioWithSpecify(choices=ROOF_GEOMETRIES, attrs={"class": "survey-3col"}),
+            "structure_type": RadioWithSpecify(choices=STRUCTURE_TYPES, attrs={"class": "survey-2col"}),
             "new_or_renovated": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),
         }
         help_texts = {

@@ -138,15 +138,15 @@ def classify(request, building_id):
     # Fetch any previous survey entry for this building
     # If none exist, initialize a survey with the building and user ids
     survey_instance = SurveyV1.objects.filter(user=request.user, building=building).first()
+    
     if not survey_instance:
-        log.debug('No previous survey instance, initializing')
-        survey_instance = SurveyV1(user=request.user, building=building)
+        log.debug('No previous survey instance')
     else:
         log.debug('Found previous survey instance!')
 
     # TODO: Do we still need the no building flag? 
     if request.method == "POST":
-
+        log.debug('request.POST:')   
         log.debug(pprint(request.POST))
 
         # Save the last orientation/zoom for the building for later visits
@@ -177,7 +177,8 @@ def classify(request, building_id):
             form = SurveyV1Form(request.POST, instance=survey_instance)
 
             if form.is_valid():
-                # pprint(form.cleaned_data)
+                log.debug('cleaned_data:')
+                pprint(form.cleaned_data)
                 form.save()
 
                 # Update the building to a new one
@@ -187,8 +188,6 @@ def classify(request, building_id):
             else:
                 log.error(form.errors)
 
-
-    # Common route for next building
 
     # Fetch the latest view data for the current building if it exists
     building_latest_view_data = BuildingLatestViewData.objects.get_latest_view_data(building.id, request.user.id)

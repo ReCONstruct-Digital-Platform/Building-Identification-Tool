@@ -1,18 +1,17 @@
-{% with id=widget.attrs.id intial_val=widget.value.0 %}
-<!-- <div>
-  {{ intial_val }}
-</div> -->
+{% with id=widget.attrs.id intial_val=widget.initial was_filled=widget.was_filled %}
 <div id="{{ id }}" class="{{ widget.attrs.class }}" >
   <div class="specify">
     <label class="me-1">
       <input id="{{ id }}_specify" type="radio" name="{{ widget.name }}" value="specify"
-        class="me-1 specify" onclick="turnOnSpecify('{{ id }}_specify_value')" {% if intial_val != '' %} checked{% endif %} required>Number of storeys:
+        class="me-1 specify" onclick="turnOnSpecify('{{ id }}_specify_value')" {% if was_filled and intial_val is not None %} checked{% endif %} required>Number of storeys:
     </label>
-    <input id="{{ id }}_specify_value" class = "me-1" type="number" name="{{ widget.name }}" min="0" max="50" step="1" {% if intial_val == '' %}disabled{% else %}value="{{ intial_val }}"{% endif %}/>
+    <input id="{{ id }}_specify_value" class = "me-1" type="number" name="{{ widget.name }}" 
+      min="0" max="50" step="1" {% if was_filled and intial_val is not None %}value="{{ intial_val }}"{% else %}disabled{% endif %}/>
   </div>
   <label>
     <input id="{{ id }}_unsure" class="me-1" type="radio" name="{{ widget.name }}" 
-      value="" onclick="turnOffSpecify('{{ id }}_specify_value')" {% if intial_val == '' %} checked{% endif %} required/>Unsure
+      value="" onclick="turnOffSpecify('{{ id }}_specify_value')" 
+      {% if was_filled and intial_val is None %} checked{% endif %} required/>Unsure
   </label>
 </div>
 {% endwith %}

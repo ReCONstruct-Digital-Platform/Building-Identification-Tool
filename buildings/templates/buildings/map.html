@@ -162,6 +162,11 @@
               <h5>
                 <strong>Building Identification Survey</strong>
               </h5>
+              {% if form.was_filled %}
+                <div style="background: lightgreen">
+                  Form was previously filled - Showing your original answers  
+                </div>
+              {% endif %}
             </div>
             <hr />
 
