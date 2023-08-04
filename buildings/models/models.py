@@ -23,6 +23,7 @@ STRING_QUERIES_TO_FILTER = {
 
 
 class Profile(models.Model):
+    
     user = models.OneToOneField(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)
     
     def get_avatar_url(self, size=32):
@@ -301,6 +302,8 @@ class Vote(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
+    # OnetoOneField to Survey?? But which version
+
     objects = VoteQuerySet.as_manager()
 
     def __str__(self):
