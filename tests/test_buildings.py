@@ -17,7 +17,6 @@ class BuildingTestCase(TestCase):
             lat = 23.545,
             lon = 46.4534,
         )
-        self.typology = Typology.objects.create(name = 'prefab_metal')
 
     def test_building_cubf_name(self):
         # Original CUBF
