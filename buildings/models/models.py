@@ -23,7 +23,7 @@ STRING_QUERIES_TO_FILTER = {
 
 
 class Profile(models.Model):
-    
+
     user = models.OneToOneField(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)
     
     def get_avatar_url(self, size=32):
@@ -59,19 +59,18 @@ class BuildingQuerySet(models.QuerySet):
             else:
                 lookups[f"num_votes__{op}"] = query["q_num_votes"]
 
-        if "q_score" in query:
-            op = query["q_score_op"]
-            if op == 'eq':
-                lookups["avg_score"] = query["q_score"]
-            else:
-                lookups[f"avg_score__{op}"] = query["q_score"]
+        # if "q_score" in query:
+        #     op = query["q_score_op"]
+        #     if op == 'eq':
+        #         lookups["avg_score"] = query["q_score"]
+        #     else:
+        #         lookups[f"avg_score__{op}"] = query["q_score"]
 
         log.info(lookups)
         lookups = Q(**lookups) 
 
         # Can split up the query into multiple steps too and merge the results
         result = self.annotate(num_votes=Count('vote')) \
-                    .annotate(avg_score=Coalesce(Avg('vote__buildingtypology__score'), 0.0)) \
                     .annotate(cubf_str=Cast('cubf', output_field=TextField())) \
                     .filter(lookups)
         if ordering:
@@ -99,7 +98,7 @@ class BuildingQuerySet(models.QuerySet):
         rand_num = random.randint(1, num_buildings_to_pick_from)
         return least_voted_buildings[rand_num]
     
-    def get_next_building_to_classify(self, exclude_id=None):
+    def get_next_building_to_survey(self, exclude_id=None):
         """
         Tries to get a random unvoted building. 
         If all buildings were voted, returns a random least voted building.
@@ -114,7 +113,8 @@ class BuildingQuerySet(models.QuerySet):
     
 class BuildingManager(models.Manager):
     def get_queryset(self):
-        return BuildingQuerySet(self.model, using=self._db).annotate(num_votes=Count('vote')).annotate(avg_score=Avg('vote__buildingtypology__score'))
+        return BuildingQuerySet(self.model, using=self._db).annotate(num_votes=Count('vote'))
+        # .annotate(avg_score=Avg('vote__buildingtypology__score'))
 
 
 class Building(models.Model):
@@ -188,24 +188,17 @@ class Building(models.Model):
         else:
             return ''
         
-    def avg_score(self):
-        """
-        Only the building typology vote score for now
-
-        b.vote_set.aggregate(Avg('buildingtypology__score'))
-        Building.objects.filter(vote__buildingtypology__score__gt=4).aggregate(django.db.models.Avg('vote__buildingtypology__score')
-
-        """
-        if self.vote_set is None or self.vote_set.filter(buildingtypology__isnull=False).count() == 0:
-            return 0
+    # def avg_score(self):
+    #     if self.vote_set is None or self.vote_set.filter(buildingtypology__isnull=False).count() == 0:
+    #         return 0
         
-        acc = 0
-        n = 0
-        for vote in self.vote_set.filter(buildingtypology__isnull=False):
-            acc += vote.buildingtypology.score
-            n += 1
+    #     acc = 0
+    #     n = 0
+    #     for vote in self.vote_set.filter(buildingtypology__isnull=False):
+    #         acc += vote.buildingtypology.score
+    #         n += 1
 
-        return round(acc/n, 2)
+    #     return round(acc/n, 2)
         
 
     def __str__(self):
@@ -218,7 +211,7 @@ class Building(models.Model):
     @classmethod
     def _get_proper_field_name(self, field):
         if field in [None, 'None']:
-            return "avg_score"
+            return "formatted_address"
         
         field = field.lower()
         if field == "address":
@@ -227,11 +220,11 @@ class Building(models.Model):
             return field
         elif field in self.get_field_names():
             return field
-        elif field == 'score':
-            return 'avg_score'
+        # elif field == 'score':
+        #     return 'avg_score'
         else:
-            # If the field is not valid, default to id
-            return "avg_score"
+            # If the field is not valid, default to address
+            return "formatted_address"
 
     @classmethod
     def get_ordering(cls, order_by, direction):
@@ -281,72 +274,32 @@ class BuildingLatestViewData(models.Model):
     objects = BuildingLatestViewDataQuerySet.as_manager()
 
 
-class Material(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-    date_added = models.DateTimeField('date added', default=timezone.now)
-
-    def __str__(self):
-        return f'{self.name}'
-
-
 class VoteQuerySet(models.QuerySet):
-    
     def get_latest(self, n=10):
         return self.order_by('-date_added')[:n]
     
 
 class Vote(models.Model):
+    """
+    Votes link submitted data (surveys, nobuildingflags or other) 
+    to a specific building and user.
+    Submitted data implements a 1-to-1 relationship to a Vote.
+    """
     building = models.ForeignKey(Building, on_delete=models.CASCADE)
-    date_added = models.DateTimeField('date added', default=timezone.now)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
-    # OnetoOneField to Survey?? But which version
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+    date_added = models.DateTimeField('date added', auto_now_add=True)
+    data_modified  = models.DateTimeField('date modified', auto_now=True)
 
     objects = VoteQuerySet.as_manager()
-
     def __str__(self):
         return f'{self.user.username} voted on {self.building.formatted_address} on {self.date_added}'
 
-
-class MaterialScore(models.Model):
-    vote = models.ForeignKey(Vote, on_delete=models.CASCADE)
-    material = models.ForeignKey(Material, on_delete=models.CASCADE)
-    score = models.IntegerField(default=0)
-
-    def __str__(self):
-        return f'{self.material} score of {self.score}'
-    
 
 class NoBuildingFlag(models.Model):
     vote = models.OneToOneField(Vote, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'No building at {self.vote.building.formatted_address}'
-    
-class BuildingNote(models.Model):
-    vote = models.OneToOneField(Vote, null=True, on_delete=models.CASCADE)
-    note = models.TextField(default=None, blank=True, null=True)
-
-    def __str__(self):
-        return f'{self.id} {self.vote.user} said on building {self.vote.building.id}: {self.note}'
-    
-
-class Typology(models.Model):
-    name = models.CharField(max_length=150)
-    date_added = models.DateTimeField('date added', default=timezone.now)
-
-    def __str__(self):
-        return f'{self.name}'
-    
-class BuildingTypology(models.Model):
-    vote = models.OneToOneField(Vote, on_delete=models.CASCADE)
-    typology = models.ForeignKey(Typology, on_delete=models.CASCADE)
-    score = models.IntegerField(default=0)
-
-    def __str__(self):
-        return f'{self.vote}'
     
 
 class BuildingStreetViewImage(models.Model):

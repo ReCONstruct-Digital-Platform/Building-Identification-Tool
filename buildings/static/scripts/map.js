@@ -1,3 +1,24 @@
+function setUpSurveyNavigation() {
+    // Set-up the on-page back button
+    const element = document.getElementById('prev-building-link');
+
+    // Provide a standard href to facilitate standard browser features such as 
+    //  - Hover to see link
+    //  - Right click and copy link
+    //  - Right click and open in new tab
+    element.setAttribute('href', document.referrer);
+
+    // We can't let the browser use the above href for navigation. If it does, 
+    // the browser will think that it is a regular link, and place the current 
+    // page on the browser history, so that if the user clicks "back" again,
+    // it'll actually return to this page. We need to perform a native back to
+    // integrate properly into the browser's history behavior
+    element.onclick = function() {
+        history.back();
+        return false;
+    }
+}
+
 function getLatestViewData() {
     // Get the latest view data from streetview
     const sv_pano = sv.getPano();
@@ -136,6 +157,7 @@ function setUpScrollHeightObserver() {
     observer.observe(targetNode, {childList: true, subtree: true});
 }
 
+
 function setUpButtons() {
     // Screenshot functionality
     $('#btn-screenshot').click(screenshotAndUpload);
@@ -188,32 +210,7 @@ function setUpButtons() {
     });
 }
 
-
-$(document).ready(function() {
-
-    // Set-up the on-page back button
-    const element = document.getElementById('prev-building-link');
-
-    // Provide a standard href to facilitate standard browser features such as 
-    //  - Hover to see link
-    //  - Right click and copy link
-    //  - Right click and open in new tab
-    element.setAttribute('href', document.referrer);
-
-    // We can't let the browser use the above href for navigation. If it does, 
-    // the browser will think that it is a regular link, and place the current 
-    // page on the browser history, so that if the user clicks "back" again,
-    // it'll actually return to this page. We need to perform a native back to
-    // integrate properly into the browser's history behavior
-    element.onclick = function() {
-        history.back();
-        return false;
-    }
-
-    setUpDragBar();
-    setUpScrollHeightObserver();
-    setUpButtons();
-
+function satelliteTabScreenshotOnHide() {
     // The hide.bs.tab event fires when the tab is to be hidden
     $('#nav-satellite-tab').on('hide.bs.tab', async () => {
         // We save a screenshot of its current version to upload later
@@ -221,5 +218,13 @@ $(document).ready(function() {
         const dataUrl = await screenshot('satmap');
         $('#sat_data').attr('data-url', dataUrl);
     });
+}
 
+
+$(document).ready(function() {
+    setUpSurveyNavigation();
+    setUpDragBar();
+    setUpScrollHeightObserver();
+    setUpButtons();
+    satelliteTabScreenshotOnHide();
 });

@@ -78,25 +78,6 @@
                     />
             </div>
             <div class="input-group mb-3 me-3">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">Score</span>
-                </div>
-                <select name="q_score_op" hx-include=".buildings-search-query">
-                    <option value="gte" {% if request.GET.q_score_op == 'gte' or request.GET.q_score_op is None %}selected{% endif %}>&ge;</option>
-                    <option value="lte" {% if request.GET.q_score_op == 'lte' %}selected{% endif %}>&le;</option>
-                    <option value="gt" {% if request.GET.q_score_op == 'gt' %}selected{% endif %}>&gt;</option>
-                    <option value="lt" {% if request.GET.q_score_op == 'lt' %}selected{% endif %}>&lt;</option>
-                    <option value="eq" {% if request.GET.q_score_op == 'eq' %}selected{% endif %}>=</option>
-                </select>
-                <input type="number" name="q_score" value="{{ request.GET.q_score }}"
-                    min="0"
-                    hx-get="{% url 'buildings:all_buildings' %}" 
-                    hx-trigger="keyup changed delay:200ms"
-                    hx-include=".buildings-search-query"
-                    hx-target="#building-search-target"
-                    />
-            </div>
-            <div class="input-group mb-3 me-3">
                 <input type="submit" value="Search"/>
             </div>
         </div>

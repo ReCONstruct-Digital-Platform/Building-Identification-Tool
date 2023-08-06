@@ -33,7 +33,7 @@
 
 
 <section class="container-wide mb-3">
-  <div class="classify-top-row">
+  <div class="survey-top-row">
     <div class="building-nav building-nav-left">
       <a id="prev-building-link">&laquo;&laquo; Prev</a>
     </div>
@@ -120,7 +120,7 @@
       </button>
     </div>
     <div class="building-nav building-nav-right">
-      <a id="next" href="{% url 'buildings:classify' next_building %}">Next &raquo;&raquo;</a>
+      <a id="next" href="{% url 'buildings:survey_v1' next_building %}">Next &raquo;&raquo;</a>
     </div>
   </div>
 </section>
@@ -164,13 +164,18 @@
               </h5>
               {% if form.was_filled %}
                 <div style="background: lightgreen">
-                  Form was previously filled - Showing your original answers  
+                  Survey was previously submitted - Submit again to overwrite your answers.  
+                </div>
+              {% endif %}
+              {% if previous_no_building_vote %}
+                <div style="background: lightcoral">
+                  You previously voted 'No Building' - Submit the survey to change this.  
                 </div>
               {% endif %}
             </div>
             <hr />
 
-            <form id="building-submission-form" action="{% url 'buildings:classify' building.id %}" method="post">
+            <form id="building-submission-form" action="{% url 'buildings:survey_v1' building.id %}" method="post">
               {% csrf_token %}
 
               {{ form }}

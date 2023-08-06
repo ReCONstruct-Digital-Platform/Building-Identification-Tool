@@ -3,15 +3,10 @@
 
 from .models import (
     Building, 
-    BuildingNote,
     BuildingLatestViewData, 
-    BuildingTypology, 
     BuildingSatelliteImage,
     BuildingStreetViewImage, 
-    Material, 
-    MaterialScore,
     NoBuildingFlag,
-    Typology,
     Vote,
     Profile
 )

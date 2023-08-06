@@ -48,53 +48,6 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 20px;
 }
 
-.article-title {
-  color: #444444;
-}
-
-a.article-title:hover {
-  color: #428bca;
-  text-decoration: none;
-}
-
-.article-content {
-  white-space: pre-line;
-}
-
-.article-img {
-  height: 65px;
-  width: 65px;
-  margin-right: 16px;
-}
-
-.article-metadata {
-  padding-bottom: 1px;
-  margin-bottom: 4px;
-  border-bottom: 1px solid #e3e3e3
-}
-
-.article-metadata a:hover {
-  color: #333;
-  text-decoration: none;
-}
-
-.article-svg {
-  width: 25px;
-  height: 25px;
-  vertical-align: middle;
-}
-
-.account-img {
-  height: 125px;
-  width: 125px;
-  margin-right: 20px;
-  margin-bottom: 16px;
-}
-
-.account-heading {
-  font-size: 2.5rem;
-}
-
 
 /* mouse over link */
 a:hover {
@@ -114,7 +67,6 @@ input[type='number']{
 .clear {
     clear: both;
 }
-
 
 
 .user_card {
@@ -203,11 +155,6 @@ td > a:first-child {
 }
 
 
-.classify-navigation {
-  display: flex;
-  justify-content: center;
-}
-
 .bottom-navigation {
   width: 25%;
   display: flex;
@@ -215,10 +162,6 @@ td > a:first-child {
   justify-content: space-between;
 }
 
-.classify-button-container {
-  display: flex;
-  justify-content: flex-start;
-}
 
 .material-selection-row {
   display: flex;
@@ -279,51 +222,16 @@ tr:hover .delete-row-icon {
   color: red;
 }
 
-.x-icon {
-  position: relative;
-  top: calc(50% - 10px);
-}
-
 .td-vote-last-cell {
   display: flex;
   justify-content: space-between;
 }
 
-.delete-note-icon a {
-  color: black;
-}
-
-.delete-note-icon {
-  text-align: center;
-  position: relative;
-  width: 30px;
-  height: 30px;
-  right: -40px;
-}
-
-.delete-note-icon a:hover {
-  color: red;
-}
-
-.note-inner-container {
-  width: 50%;
-}
-.note-inner-container textarea {
-  width: 75%;
-  resize: both;
-}
 
 .table {
   margin-bottom: 0%;
 }
 
-.note-input {
-  width: 98%;
-}
-
-.note-input-container {
-  display: flex;
-}
 
 .btn-no-building {
   align-self: center;
@@ -343,7 +251,7 @@ tr:hover .delete-row-icon {
   flex-direction: column;
 }
 
-.classify-top-row {
+.survey-top-row {
   display: flex;
   flex-direction: row;
   justify-content: space-between;

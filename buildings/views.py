@@ -124,25 +124,30 @@ def all_buildings(request):
 
 
 @login_required(login_url='buildings:login')
-def classify_home(request):
-    random_unscored_building = Building.objects.get_next_building_to_classify()
+def survey(request):
+    random_unscored_building = Building.objects.get_next_building_to_survey()
     building_id = random_unscored_building.id
-    return redirect('buildings:classify', building_id=building_id)
+    return redirect('buildings:survey_v1', building_id=building_id)
 
 
 @login_required(login_url='buildings:login')
-def classify(request, building_id):
+def survey_v1(request, building_id):
 
     building = get_object_or_404(Building, pk=building_id)
 
-    # Fetch any previous survey entry for this building
+    # Fetch any previous survey v1 entry for this building
     # If none exist, initialize a survey with the building and user ids
-    survey_instance = SurveyV1.objects.filter(user=request.user, building=building).first()
-    
-    if not survey_instance:
-        log.debug('No previous survey instance')
-    else:
+    previous_survey_vote = Vote.objects.filter(user=request.user, building=building, surveyv1__isnull=False).first()
+    previous_no_building_vote = Vote.objects.filter(user=request.user, building=building, nobuildingflag__isnull=False).first()
+
+    if previous_survey_vote:
         log.debug('Found previous survey instance!')
+        prev_survey_instance = previous_survey_vote.surveyv1
+    else:
+        prev_survey_instance = None
+
+    if previous_no_building_vote:
+        log.debug('Previously voted no building!')
 
     # TODO: Do we still need the no building flag? 
     if request.method == "POST":
@@ -167,27 +172,51 @@ def classify(request, building_id):
                 latest_view_data.save()
 
         if 'no_building' in request.POST:
-            pass
-            # no_building = NoBuildingFlag(vote = new_vote)
-            # no_building.save()
+            # Because we'll be creating multiple DB objects with relations to each other,
+            # we want either all of them to be created, or none if a problem occurs.
+            with transaction.atomic():
+                # If the user had previously submitted a survey for the building
+                # delete it and create a new no building vote instead
+                if previous_survey_vote:
+                    previous_survey_vote.delete()
+                # Form submission - need to create a new Vote object
+                # That will be references by a set of MaterialScores and an optional Note
+                new_vote = Vote(building = building, user = request.user)
+                new_vote.save()
+
+                no_building = NoBuildingFlag(vote = new_vote)
+                no_building.save()
+
+            next_building = Building.objects.get_next_building_to_survey(exclude_id = building.id)
+            return redirect("buildings:survey_v1", building_id=next_building.id)
 
         # Handle submission of survey version 1
-        if 'survey_version' in request.POST and request.POST.get('survey_version') == '1.0':
+        elif 'survey_version' in request.POST and request.POST.get('survey_version') == '1.0':
             # If previous_survey_answer is not None, we will modify the previous entry
-            form = SurveyV1Form(request.POST, instance=survey_instance)
+            form = SurveyV1Form(request.POST, instance=prev_survey_instance)
 
             if form.is_valid():
                 log.debug('cleaned_data:')
-                pprint(form.cleaned_data)
-                form.save()
+                log.debug(pprint(form.cleaned_data))
+
+                with transaction.atomic():
+                    # Delete any previous no building vote for this building
+                    # I.e. we're overwriting it.
+                    if previous_no_building_vote:
+                        previous_no_building_vote.delete()
+                    new_vote = Vote(building = building, user=request.user)
+                    new_vote.save()
+
+                    form = form.save(commit=False)
+                    form.vote = new_vote
+                    form.save()
 
                 # Update the building to a new one
-                next_building = Building.objects.get_next_building_to_classify(exclude_id = building.id)
+                next_building = Building.objects.get_next_building_to_survey(exclude_id = building.id)
                 # We redirect so the URL updates to the next building ID
-                return redirect("buildings:classify", building_id=next_building.id)
+                return redirect("buildings:survey_v1", building_id=next_building.id)
             else:
                 log.error(form.errors)
-
 
     # Fetch the latest view data for the current building if it exists
     building_latest_view_data = BuildingLatestViewData.objects.get_latest_view_data(building.id, request.user.id)
@@ -196,9 +225,9 @@ def classify(request, building_id):
         building_latest_view_data = model_to_dict(building_latest_view_data, exclude=['id', 'user', 'date_added'])
 
     # Get the next building 
-    next_building = Building.objects.get_next_building_to_classify(exclude_id = building.id)
+    next_building = Building.objects.get_next_building_to_survey(exclude_id = building.id)
 
-    form = SurveyV1Form(instance=survey_instance)
+    form = SurveyV1Form(instance=prev_survey_instance)
 
     context = {
         # TODO: Is this the best way to pass API keys to views?
@@ -206,7 +235,8 @@ def classify(request, building_id):
         'building': building,
         'building_latest_view_data': building_latest_view_data,
         'next_building': next_building.id,
-        'form': form
+        'form': form,
+        'previous_no_building_vote': previous_no_building_vote
     }
     return render(request, 'buildings/map.html', context)
 

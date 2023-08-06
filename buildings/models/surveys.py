@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.forms import ModelForm
 from django.utils.translation import gettext_lazy as _
 
-from buildings.models.models import Building
+from buildings.models.models import Building, Vote
 
 from buildings.widgets import RadioSelect, NumberOrUnsure, CheckboxRequiredSelectMultiple, RadioWithSpecify
 
@@ -73,21 +73,16 @@ STRUCTURE_TYPES = [
     ("unsure", "Unsure"),
 ]
 
-class BaseSurvey(models.Model):
-    """
-    A survey is created by a user, about a building.
-    Each user can only vote on a survey once for a given building.
-    """
-    class Meta:
-        unique_together = (('user','building'),)
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    building = models.ForeignKey(Building, on_delete=models.CASCADE)
-    creation_date = models.DateTimeField('date created', default=timezone.now)
-    last_modified = models.DateTimeField('last modified', default=timezone.now)
+# class BaseSurvey(models.Model):
+#     """
+#     Base class for Surveys.
+#     Can add other fields that will be common to all here.
+#     """
 
 
-class SurveyV1(BaseSurvey):
+class SurveyV1(models.Model):
+    vote = models.OneToOneField(Vote, on_delete=models.CASCADE)
     has_simple_footprint = models.BooleanField()
     has_simple_volume = models.BooleanField()
     num_storeys = models.IntegerField(blank=True, null=True)
@@ -118,7 +113,7 @@ class SurveyV1Form(ModelForm):
         super().__init__(*data, **kwargs)
 
         logging.debug('initital values:')
-        pprint(self.initial)
+        logging.debug(pprint(self.initial))
 
         self.was_filled = False
         # If an instance was passed, there was a previous survey
