@@ -2,10 +2,10 @@
 # https://docs.djangoproject.com/en/4.2/topics/db/models/#organizing-models-in-a-package
 
 from .models import (
-    Building, 
-    BuildingLatestViewData, 
-    BuildingSatelliteImage,
-    BuildingStreetViewImage, 
+    EvalUnit, 
+    EvalUnitLatestViewData, 
+    EvalUnitSatelliteImage,
+    EvalUnitStreetViewImage, 
     NoBuildingFlag,
     Vote,
     Profile

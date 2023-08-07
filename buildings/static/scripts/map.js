@@ -47,13 +47,13 @@ async function screenshot(element_id) {
                 // The following hides unwanted controls, copyrights, pins etc. on the maps and streetview canvases
                 return el.classList.contains("gmnoprint") || el.classList.contains("gm-style-cc") 
                 || el.id === 'gmimap1' || el.tagName === 'BUTTON' || el.classList.contains("gm-iv-address")
-                || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3_hdpi.png'
-                || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3.png'
+                // || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3_hdpi.png'
+                // || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3.png'
             },
         }
     ).then(canvas => {
         // For testing - appends the images to the page
-        // document.body.appendChild(canvas);
+        document.body.appendChild(canvas);
         // Convert the image to a dataURL for uploading to the backend
         return canvas.toDataURL('image/png');
     })

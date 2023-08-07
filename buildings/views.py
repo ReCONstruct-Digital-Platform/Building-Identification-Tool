@@ -30,7 +30,7 @@ from .utils import b2_upload
 from .forms import CreateUserForm
 from .models.surveys import SurveyV1, SurveyV1Form
 from config.settings import B2_APPKEY_RW, B2_BUCKET_IMAGES, B2_ENDPOINT, B2_KEYID_RW, WEBHOOK_SECRET, BASE_DIR
-from .models.models import Building, BuildingSatelliteImage, BuildingStreetViewImage, BuildingLatestViewData, NoBuildingFlag, Vote, Profile
+from .models.models import EvalUnit, EvalUnitSatelliteImage, EvalUnitStreetViewImage, EvalUnitLatestViewData, NoBuildingFlag, Vote, Profile
 
 import logging
 
@@ -39,13 +39,13 @@ log = logging.getLogger(__name__)
 @login_required(login_url='buildings:login')
 def index(request):
 
-    random_building = Building.objects.get_random_unvoted()
+    random_building = EvalUnit.objects.get_random_unvoted()
 
     latest_votes = Vote.objects.get_latest(n=5)
 
     # If all buildings have votes, return a random building from the least voted ones
     if random_building is None:
-        random_building = Building.objects.get_random_least_voted()
+        random_building = EvalUnit.objects.get_random_least_voted()
 
     context = {
         "random_unscored_building_id": random_building.id,
@@ -97,9 +97,9 @@ def all_buildings(request):
     order_by = request.GET.get('order_by')
     dir = request.GET.get('dir')
 
-    ordering, direction = Building.get_ordering(order_by, dir)
+    ordering, direction = EvalUnit.get_ordering(order_by, dir)
     log.debug(f'Ordering: {ordering}, direction: {direction}')
-    qs = Building.objects.search(query=query, ordering=ordering)
+    qs = EvalUnit.objects.search(query=query, ordering=ordering)
 
     paginator = Paginator(qs, 25) # Show 25 contacts per page.
 
@@ -125,20 +125,20 @@ def all_buildings(request):
 
 @login_required(login_url='buildings:login')
 def survey(request):
-    random_unscored_building = Building.objects.get_next_building_to_survey()
-    building_id = random_unscored_building.id
-    return redirect('buildings:survey_v1', building_id=building_id)
+    random_unscored_unit = EvalUnit.objects.get_next_unit_to_survey()
+    eval_unit_id = random_unscored_unit.id
+    return redirect('buildings:survey_v1', eval_unit_id=eval_unit_id)
 
 
 @login_required(login_url='buildings:login')
-def survey_v1(request, building_id):
+def survey_v1(request, eval_unit_id):
 
-    building = get_object_or_404(Building, pk=building_id)
+    eval_unit = get_object_or_404(EvalUnit, pk=eval_unit_id)
 
     # Fetch any previous survey v1 entry for this building
     # If none exist, initialize a survey with the building and user ids
-    previous_survey_vote = Vote.objects.filter(user=request.user, building=building, surveyv1__isnull=False).first()
-    previous_no_building_vote = Vote.objects.filter(user=request.user, building=building, nobuildingflag__isnull=False).first()
+    previous_survey_vote = Vote.objects.filter(user=request.user, eval_unit=eval_unit, surveyv1__isnull=False).first()
+    previous_no_building_vote = Vote.objects.filter(user=request.user, eval_unit=eval_unit, nobuildingflag__isnull=False).first()
 
     if previous_survey_vote:
         log.debug('Found previous survey instance!')
@@ -159,8 +159,8 @@ def survey_v1(request, building_id):
             data = request.POST.getlist('latest_view_data')[0]
             if len(data) > 0: 
                 data = json.loads(data)
-                latest_view_data = BuildingLatestViewData(
-                    building = building,
+                latest_view_data = EvalUnitLatestViewData(
+                    eval_unit = eval_unit,
                     user = request.user,
                     sv_pano = data['sv_pano'],
                     sv_heading = data['sv_heading'], 
@@ -181,14 +181,14 @@ def survey_v1(request, building_id):
                     previous_survey_vote.delete()
                 # Form submission - need to create a new Vote object
                 # That will be references by a set of MaterialScores and an optional Note
-                new_vote = Vote(building = building, user = request.user)
+                new_vote = Vote(eval_unit = eval_unit, user = request.user)
                 new_vote.save()
 
                 no_building = NoBuildingFlag(vote = new_vote)
                 no_building.save()
 
-            next_building = Building.objects.get_next_building_to_survey(exclude_id = building.id)
-            return redirect("buildings:survey_v1", building_id=next_building.id)
+            next_eval_unit = EvalUnit.objects.get_next_unit_to_survey(exclude_id = eval_unit.id)
+            return redirect("buildings:survey_v1", eval_unit_id=next_eval_unit.id)
 
         # Handle submission of survey version 1
         elif 'survey_version' in request.POST and request.POST.get('survey_version') == '1.0':
@@ -204,37 +204,37 @@ def survey_v1(request, building_id):
                     # I.e. we're overwriting it.
                     if previous_no_building_vote:
                         previous_no_building_vote.delete()
-                    new_vote = Vote(building = building, user=request.user)
+                    new_vote = Vote(eval_unit = eval_unit, user=request.user)
                     new_vote.save()
 
                     form = form.save(commit=False)
                     form.vote = new_vote
                     form.save()
 
-                # Update the building to a new one
-                next_building = Building.objects.get_next_building_to_survey(exclude_id = building.id)
+                # Update the eval unit to a new one
+                next_eval_unit = EvalUnit.objects.get_next_unit_to_survey(exclude_id = eval_unit.id)
                 # We redirect so the URL updates to the next building ID
-                return redirect("buildings:survey_v1", building_id=next_building.id)
+                return redirect("buildings:survey_v1", eval_unit_id=next_eval_unit.id)
             else:
                 log.error(form.errors)
 
     # Fetch the latest view data for the current building if it exists
-    building_latest_view_data = BuildingLatestViewData.objects.get_latest_view_data(building.id, request.user.id)
+    latest_view_data = EvalUnitLatestViewData.objects.get_latest_view_data(eval_unit.id, request.user.id)
 
-    if building_latest_view_data:
-        building_latest_view_data = model_to_dict(building_latest_view_data, exclude=['id', 'user', 'date_added'])
+    if latest_view_data:
+        latest_view_data = model_to_dict(latest_view_data, exclude=['id', 'user', 'date_added'])
 
     # Get the next building 
-    next_building = Building.objects.get_next_building_to_survey(exclude_id = building.id)
+    next_eval_unit = EvalUnit.objects.get_next_unit_to_survey(exclude_id = eval_unit.id)
 
     form = SurveyV1Form(instance=prev_survey_instance)
 
     context = {
         # TODO: Is this the best way to pass API keys to views?
         'key': settings.GOOGLE_MAPS_API_KEY,
-        'building': building,
-        'building_latest_view_data': building_latest_view_data,
-        'next_building': next_building.id,
+        'eval_unit': eval_unit,
+        'latest_view_data': latest_view_data,
+        'next_eval_unit': next_eval_unit.id,
         'form': form,
         'previous_no_building_vote': previous_no_building_vote
     }
@@ -242,7 +242,7 @@ def survey_v1(request, building_id):
 
 
 class DetailView(generic.DetailView):
-    model = Building
+    model = EvalUnit
     template_name = 'buildings/detail.html'
 
     def get_queryset(self):
@@ -250,7 +250,7 @@ class DetailView(generic.DetailView):
         Excludes any questions that aren't published yet.
         TODO: This is from the tutorial, remove and create a detail view
         """
-        return Building.objects.filter(pub_date__lte=timezone.now())
+        return EvalUnit.objects.filter(pub_date__lte=timezone.now())
 
 
 def register(request):
@@ -305,7 +305,7 @@ def upload_imgs(request, building_id):
 
     b2 = b2_upload.get_b2_resource(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW)
 
-    building = get_object_or_404(Building, pk=building_id)
+    building = get_object_or_404(EvalUnit, pk=building_id)
 
     # Add any kind of metadata to be associated with the image
     extra_args = {
@@ -355,7 +355,7 @@ def upload_imgs(request, building_id):
                     )
 
                 # Only need to save the UUID in DB once, since formats share it
-                BuildingStreetViewImage(building=building, uuid=uuid, user=request.user).save()
+                EvalUnitStreetViewImage(building=building, uuid=uuid, user=request.user).save()
             except:
                 print(traceback.format_exc())
             
@@ -377,7 +377,7 @@ def upload_imgs(request, building_id):
                     f"images/satellite/medium/{uuid}.jpg",
                     ExtraArgs=extra_args
                 )
-                BuildingSatelliteImage(building=building, uuid=uuid, user=request.user).save()
+                EvalUnitSatelliteImage(building=building, uuid=uuid, user=request.user).save()
             except:
                 print(traceback.format_exc())
             in_mem_file.close()

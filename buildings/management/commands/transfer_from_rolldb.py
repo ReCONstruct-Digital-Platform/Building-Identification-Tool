@@ -1,6 +1,6 @@
 import psycopg2
 import psycopg2.extras
-from buildings.models.models import Building
+from buildings.models.models import EvalUnit
   
 from django.core.management.base import BaseCommand
 
@@ -38,7 +38,7 @@ class Command(BaseCommand):
         for i, res in enumerate(results):
             if i % 100 == 0:
                 print(f'On building {i}')
-            Building(
+            EvalUnit(
                 lat=res['lat'],
                 lon=res['lng'],
                 locality=res['muni'],

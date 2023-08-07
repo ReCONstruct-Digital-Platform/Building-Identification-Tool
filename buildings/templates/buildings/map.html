@@ -25,8 +25,8 @@
 <script src="{% static 'scripts/map.js' %}"></script>
 <script src="{% static 'scripts/html2canvas.min.js' %}"></script>
 <script src="{% static 'scripts/init_gmaps.js' %}" 
-  data-building-lat="{{ building.lat }}"
-  data-building-lon="{{ building.lon }}"
+  data-eval-unit-lat="{{ eval_unit.lat }}"
+  data-eval-unit-lng="{{ eval_unit.lng }}"
   data-gmaps-api-key="{{ key }}"></script>
 
 <link rel="stylesheet" type="text/css" href="{% static 'buildings/style.css'%}"> 
@@ -42,22 +42,25 @@
       <div class="building-info-col">
         <div class="building-id">
           <h4>
-            Building #{{ building.id }}
+            Evaluation Unit: {{ eval_unit.id }}
+            {% if eval_unit.num_adr_inf and eval_unit.num_adr_sup %}
+            (contains multiple buildings)
+            {% endif %}
           </h4>
         </div>
         <div>
-          {{ building.formatted_address }}
+          {{ eval_unit.address }}
         </div>
         <div class="building-cubf">
-          CUBF {{ building.cubf }}: {{ building.cubf_name }}
+          CUBF {{ eval_unit.cubf }}: {{ eval_unit.cubf_name }}
         </div>
       </div>
       <div class="building-info-col ms-5">
         <div>
           Const. year:
-          {% if building.construction_year != 9999 %}
-            {{ building.construction_year }}
-            {% if building.year_real_esti == 'E' %}
+          {% if eval_unit.const_yr %}
+            {{ eval_unit.const_yr }}
+            {% if eval_unit.const_yr_real == 'E' %}
             (est.)
             {% endif %}
           {% else %}
@@ -66,16 +69,16 @@
         </div>
         <div>
           Max floors:
-          {% if building.max_num_floor %}
-          {{ building.max_num_floor }}
+          {% if eval_unit.max_floors %}
+          {{ eval_unit.max_floors }}
           {% else %}
           &mdash;
           {% endif %}
         </div>
         <div>
           Num dwellings:
-          {% if building.num_dwell %}
-            {{ building.num_dwell }}
+          {% if eval_unit.num_dwelling %}
+            {{ eval_unit.num_dwelling }}
           {% else %}
           &mdash;
           {% endif %}
@@ -85,22 +88,22 @@
       <div class="building-info-col ms-5">
         <div>
           Type const.:
-          {% if building.type_const %}
+          {% if eval_unit.const_type %}
 
-          {% include "buildings/utils/construction_type.html" with type_const=building.type_const %}
+          {% include "buildings/utils/construction_type.html" with type_const=eval_unit.const_type %}
 
           {% else %}
           &mdash;
           {% endif %}
         </div>
         <div>
-          Property value: ${{ building.value_prop|intcomma }}
+          Property value: ${{ eval_unit.value|intcomma }}
         </div>
 
         <div>
           Floor area:
-          {% if building.floor_area != 9999.0 %}
-          {{ building.floor_area|intcomma }} m<sup>2</sup>
+          {% if eval_unit.floor_area != 9999.0 %}
+          {{ eval_unit.floor_area|intcomma }} m<sup>2</sup>
           {% else %}
           &mdash;
           {% endif %}
@@ -175,7 +178,7 @@
             </div>
             <hr />
 
-            <form id="building-submission-form" action="{% url 'buildings:survey_v1' building.id %}" method="post">
+            <form id="building-submission-form" action="{% url 'buildings:survey_v1' eval_unit.id %}" method="post">
               {% csrf_token %}
 
               {{ form }}
@@ -196,7 +199,7 @@
 
 </section>
 
-<input type="hidden" id="upload_url" data-url="{% url 'buildings:upload_imgs' building.id %}" />
+<input type="hidden" id="upload_url" data-url="{% url 'buildings:upload_imgs' eval_unit.id %}" />
 <input type="hidden" id="sat_data" data-url="" />
 
 

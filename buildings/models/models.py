@@ -15,12 +15,11 @@ log = logging.getLogger(__name__)
 
 
 STRING_QUERIES_TO_FILTER = {
-    "q_address": "formatted_address__icontains",
+    "q_address": "address__icontains",
     "q_locality": "locality__icontains",
     "q_region": "region__icontains",
     "q_cubf": "cubf_str__icontains",
 }
-
 
 class Profile(models.Model):
 
@@ -31,7 +30,7 @@ class Profile(models.Model):
         return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
     
 
-class BuildingQuerySet(models.QuerySet):
+class EvalUnitQuerySet(models.QuerySet):
     # We implement this ourselves, not an override of a QuerySet method
     def search(self, query=None, ordering=None):
         if query is None or len(query) == 0:
@@ -79,7 +78,7 @@ class BuildingQuerySet(models.QuerySet):
         return result
     
     def get_unvoted(self):
-        return Building.objects.filter(vote = None)
+        return EvalUnit.objects.filter(vote = None)
     
     def get_random_unvoted(self, exclude_id=None):
         # "order_by('?')" orders objects randomly in the database.
@@ -87,22 +86,24 @@ class BuildingQuerySet(models.QuerySet):
     
     def get_random_least_voted(self, exclude_id=None, num_buildings_to_pick_from=25):
         # Get the 'num_buildings_to_pick_from' least voted buildings 
-        least_voted_buildings = Building.objects.exclude(id=exclude_id) \
+        least_voted_buildings = EvalUnit.objects.exclude(id=exclude_id) \
                 .annotate(num_votes=Count('vote')) \
                 .order_by('-num_votes')[:num_buildings_to_pick_from]
         
         if len(least_voted_buildings) == 0:
-            return Building(id=0)
+            return EvalUnit(id=0)
             
         # return a random one from them
         rand_num = random.randint(1, num_buildings_to_pick_from)
         return least_voted_buildings[rand_num]
     
-    def get_next_building_to_survey(self, exclude_id=None):
+    def get_next_unit_to_survey(self, exclude_id=None):
         """
         Tries to get a random unvoted building. 
         If all buildings were voted, returns a random least voted building.
         """
+        import code
+        code.interact(local=dict(globals(), **locals()))
         b = self.get_random_unvoted(exclude_id=exclude_id)
         if b is None:
             b = self.get_random_least_voted(exclude_id=exclude_id)
@@ -111,72 +112,69 @@ class BuildingQuerySet(models.QuerySet):
 
 
     
-class BuildingManager(models.Manager):
+class EvalUnitManager(models.Manager):
     def get_queryset(self):
-        return BuildingQuerySet(self.model, using=self._db).annotate(num_votes=Count('vote'))
+        return EvalUnitQuerySet(self.model, using=self._db).annotate(num_votes=Count('vote'))
         # .annotate(avg_score=Avg('vote__buildingtypology__score'))
 
 
-class Building(models.Model):
-    street_number = models.TextField()
-    street_name = models.TextField()
-    locality = models.TextField(blank=True, null=True)
-    region = models.TextField()
-    province = models.TextField()
-    country = models.TextField()
-    postal_code = models.CharField(max_length=7)
-    formatted_address = models.TextField()
-    cubf = models.IntegerField()
+class EvalUnit(models.Model):
+    """
+    Model representing an evaluation unit of the QC property assessment roll.
+    An evaluation unit can be composed of one or more buildings, and
+    has a primary land-use code (CUBF) describing its primary use.
+    """
+    # 23 character unique ID
+    id = models.TextField(primary_key=True)
     lat = models.FloatField()
-    lon = models.FloatField()
+    lng = models.FloatField()
+    muni = models.TextField()
+    muni_code = models.TextField(null=True, blank=True)
+    arrond = models.TextField(null=True, blank=True)
+    address = models.TextField()
+    num_adr_inf = models.TextField(null=True, blank=True)
+    num_adr_inf_2 = models.TextField(null=True, blank=True)
+    num_adr_sup = models.TextField(null=True, blank=True)
+    num_adr_sup_2 = models.TextField(null=True, blank=True)
+    way_type = models.TextField(null=True, blank=True)
+    way_link = models.TextField(null=True, blank=True)
+    street_name = models.TextField(null=True, blank=True)
+    cardinal_pt = models.TextField(null=True, blank=True)
+    apt_num = models.TextField(null=True, blank=True)
+    apt_num_1 = models.TextField(null=True, blank=True)
+    apt_num_2 = models.TextField(null=True, blank=True)
+    mat18 = models.TextField()
+    cubf = models.IntegerField()
+    file_num = models.TextField(null=True, blank=True)
+    nghbr_unit = models.TextField(null=True, blank=True)
+    owner_date = models.DateTimeField(null=True, blank=True)
+    owner_type = models.TextField(null=True, blank=True)
+    owner_status = models.TextField(null=True, blank=True)
+    lot_lin_dim = models.FloatField(null=True, blank=True)
+    lot_area = models.FloatField(null=True, blank=True)
+    max_floors = models.IntegerField(null=True, blank=True)
+    const_yr = models.IntegerField(null=True, blank=True)
+    const_yr_real = models.TextField(null=True, blank=True)
+    floor_area = models.FloatField(null=True, blank=True)
+    phys_link = models.TextField(null=True, blank=True)
+    const_type = models.TextField(null=True, blank=True)
+    num_dwelling = models.IntegerField(null=True, blank=True)
+    num_rental = models.IntegerField(null=True, blank=True)
+    num_non_res = models.IntegerField(null=True, blank=True)
+    apprais_date = models.DateTimeField(null=True, blank=True)
+    lot_value = models.IntegerField(null=True, blank=True)
+    building_value = models.IntegerField(null=True, blank=True)
+    value = models.IntegerField(null=True, blank=True)
+    prev_value = models.IntegerField(null=True, blank=True)
+
+    # JSON dictionary giving the IDs of any secondary objects 
+    # (e.g. HLMs) associated with this evaluation unit.
+    associated = models.JSONField(null=True, blank=True)
     date_added = models.DateTimeField('date added', default=timezone.now)
-
-    # Original address in the CSV
-    csv_address = models.TextField(blank=True, null=True)
-    
-    # Set as text field as some were bigger than the maximum integer allowed by SQLite!
-    serial_number = models.TextField(blank=True, null=True, unique=True)
-
-    # Linear dimension of the land facing the public right of way
-    lin_dim = models.FloatField(blank=True, null=True)
-
-    # Area of the land entered in the roll
-    area = models.FloatField(blank=True, null=True)
-
-    # Maximum number of floors in the buildings of the assessment unit
-    max_num_floor = models.IntegerField(blank=True, null=True)
-
-    # Year of the original construction of the main building, if there is only one
-    construction_year = models.IntegerField(blank=True, null=True)
-
-    # Indication of whether the original year of construction indicated is real or estimated
-    year_real_esti = models.CharField(max_length=1, blank=True, null=True)
-
-    # Floor area of the main building, if there is only one
-    floor_area = models.FloatField(blank=True, null=True)
-
-    type_const = models.IntegerField(blank=True, null=True)
-
-    # Total number of dwellings in the assessment unit
-    num_dwell = models.IntegerField(blank=True, null=True)
-
-    # Total number of rental rooms in the assessment unit
-    num_rental = models.IntegerField(blank=True, null=True)
-
-    # Total number of non-residential premises in the assessment unit
-    num_non_res = models.IntegerField(blank=True, null=True)
-
-    # Value of the property entered on the current roll
-    value_prop = models.IntegerField(blank=True, null=True)
-
-    # Used in the google places API to retrieve photos, etc.
-    place_id = models.TextField(blank=True, null=True)
-
 
     # Override the objects attribute of the model
     # in order to implement custom search functionality
-    # objects = BuildingQuerySet.as_manager()
-    objects = BuildingManager.from_queryset(BuildingQuerySet)()
+    objects = EvalUnitManager.from_queryset(EvalUnitQuerySet)()
 
 
     def num_votes(self):
@@ -202,20 +200,20 @@ class Building(models.Model):
         
 
     def __str__(self):
-        return f'{self.formatted_address} {self.region} ({self.lat}, {self.lon})'
+        return f'{self.address} ({self.lat}, {self.lng})'
     
     @classmethod
     def get_field_names(self):
-        return [f.name for f in Building._meta.get_fields()]
+        return [f.name for f in EvalUnit._meta.get_fields()]
 
     @classmethod
     def _get_proper_field_name(self, field):
         if field in [None, 'None']:
-            return "formatted_address"
+            return "num_votes"
         
         field = field.lower()
         if field == "address":
-            return "formatted_address"
+            return "address"
         if field == "num_votes":
             return field
         elif field in self.get_field_names():
@@ -224,7 +222,7 @@ class Building(models.Model):
         #     return 'avg_score'
         else:
             # If the field is not valid, default to address
-            return "formatted_address"
+            return "num_votes"
 
     @classmethod
     def get_ordering(cls, order_by, direction):
@@ -240,25 +238,25 @@ class Building(models.Model):
         return ordering, direction
 
 
-class BuildingLatestViewDataQuerySet(models.QuerySet):
+class EvalUnitLatestViewDataQuerySet(models.QuerySet):
 
-    def get_latest_view_data(self, building_id, user_id):
+    def get_latest_view_data(self, unit_id, user_id):
 
         # First look if there are any previous saved data for this building
-        if self.filter(building_id = building_id).count() == 0:
+        if self.filter(building_id = unit_id).count() == 0:
             return None
         
         # Then check if there is a previous saved value for this user
         # If not, return the latest view saved by any other user
-        if self.filter(building_id = building_id, user_id = user_id).count() == 0:
-            return self.filter(building_id = building_id).order_by('-date_added').first()
+        if self.filter(building_id = unit_id, user_id = user_id).count() == 0:
+            return self.filter(building_id = unit_id).order_by('-date_added').first()
         else:
-            return self.filter(building_id = building_id, user_id = user_id).order_by('-date_added').first()
+            return self.filter(building_id = unit_id, user_id = user_id).order_by('-date_added').first()
 
-class BuildingLatestViewData(models.Model):
+class EvalUnitLatestViewData(models.Model):
 
     # User saved data about a building
-    building = models.ForeignKey(Building, on_delete=models.CASCADE)
+    eval_unit = models.ForeignKey(EvalUnit, on_delete=models.CASCADE)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -271,7 +269,7 @@ class BuildingLatestViewData(models.Model):
     marker_lat = models.FloatField(blank=True, null=True)
     marker_lng = models.FloatField(blank=True, null=True)
 
-    objects = BuildingLatestViewDataQuerySet.as_manager()
+    objects = EvalUnitLatestViewDataQuerySet.as_manager()
 
 
 class VoteQuerySet(models.QuerySet):
@@ -285,25 +283,25 @@ class Vote(models.Model):
     to a specific building and user.
     Submitted data implements a 1-to-1 relationship to a Vote.
     """
-    building = models.ForeignKey(Building, on_delete=models.CASCADE)
+    eval_unit = models.ForeignKey(EvalUnit, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
     date_added = models.DateTimeField('date added', auto_now_add=True)
     data_modified  = models.DateTimeField('date modified', auto_now=True)
 
     objects = VoteQuerySet.as_manager()
     def __str__(self):
-        return f'{self.user.username} voted on {self.building.formatted_address} on {self.date_added}'
+        return f'{self.user.username} voted on {self.eval_unit.address} on {self.date_added}'
 
 
 class NoBuildingFlag(models.Model):
     vote = models.OneToOneField(Vote, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'No building at {self.vote.building.formatted_address}'
+        return f'No building at {self.vote.eval_unit.address}'
     
 
-class BuildingStreetViewImage(models.Model):
-    building = models.ForeignKey(Building, on_delete=models.CASCADE)
+class EvalUnitStreetViewImage(models.Model):
+    eval_unit = models.ForeignKey(EvalUnit, on_delete=models.CASCADE)
     uuid = models.TextField(null=False)
     date_added = models.DateTimeField('date added', default=timezone.now)
     user = models.ForeignKey(
@@ -311,8 +309,8 @@ class BuildingStreetViewImage(models.Model):
         on_delete=models.CASCADE,
     )
 
-class BuildingSatelliteImage(models.Model):
-    building = models.ForeignKey(Building, on_delete=models.CASCADE)
+class EvalUnitSatelliteImage(models.Model):
+    eval_unit = models.ForeignKey(EvalUnit, on_delete=models.CASCADE)
     uuid = models.TextField(null=False)
     date_added = models.DateTimeField('date added', default=timezone.now)
     user = models.ForeignKey(
@@ -320,4 +318,28 @@ class BuildingSatelliteImage(models.Model):
         on_delete=models.CASCADE,
     )
 
+
+class HLMBuilding(models.Model):
+    """
+    Model representing an HLM building.
+    """
+    id = models.IntegerField(primary_key=True)
+    eval_unit = models.ForeignKey(EvalUnit, on_delete=models.CASCADE)
+    project_id = models.IntegerField()
+    organism = models.TextField()
+    service_center = models.TextField()
+    street_num = models.TextField()
+    street_name = models.TextField()
+    muni = models.TextField()
+    postal_code = models.TextField()
+    num_dwellings = models.IntegerField()
+    num_floors = models.IntegerField()
+    area_footprint = models.FloatField()
+    area_total = models.FloatField()
+    ivp = models.FloatField()
+    disrepair_state = models.TextField()
+    interest_adjust_date = models.DateTimeField(null=True, blank=True)
+    contract_end_date = models.DateTimeField(null=True, blank=True)
+    category = models.TextField()
+    building_id = models.IntegerField()
 

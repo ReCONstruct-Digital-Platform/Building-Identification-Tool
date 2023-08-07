@@ -2,7 +2,7 @@
 var data = document.currentScript.dataset;
 
 
-function findPanorama(svService, latestViewData, panoRequest, buildingCoord) {
+function findPanorama(svService, latestViewData, panoRequest, evalUnitCoord) {
   console.log(`Searching for panorama: ${JSON.stringify(panoRequest)}`);
 
   // Send a request to the panorama service
@@ -18,7 +18,7 @@ function findPanorama(svService, latestViewData, panoRequest, buildingCoord) {
         zoom = latestViewData['sv_zoom'];
         pitch = latestViewData['sv_pitch'];
       } else {
-        heading = google.maps.geometry.spherical.computeHeading(panoData.location.latLng, buildingCoord);
+        heading = google.maps.geometry.spherical.computeHeading(panoData.location.latLng, evalUnitCoord);
         zoom = 0;
         pitch = 0;
       }
@@ -26,8 +26,8 @@ function findPanorama(svService, latestViewData, panoRequest, buildingCoord) {
       const sv = new google.maps.StreetViewPanorama(
         document.getElementById('streetview'),
         {
-            position: buildingCoord,
-            center: buildingCoord,
+            position: evalUnitCoord,
+            center: evalUnitCoord,
             zoom: zoom,
             pov: {
               heading: heading,
@@ -36,7 +36,7 @@ function findPanorama(svService, latestViewData, panoRequest, buildingCoord) {
         });
 
       const sv_marker = new google.maps.Marker({
-        position: buildingCoord,
+        position: evalUnitCoord,
         map: sv,
         title: "Building",
         draggable: true,
@@ -48,7 +48,7 @@ function findPanorama(svService, latestViewData, panoRequest, buildingCoord) {
       sv.setPano(panoData.location.pano);
       
       const map = new google.maps.Map(document.getElementById("satmap"), {
-        center: buildingCoord,
+        center: evalUnitCoord,
         mapTypeId: 'satellite',
         zoom: 18,
         // streetViewControl: false,
@@ -57,7 +57,7 @@ function findPanorama(svService, latestViewData, panoRequest, buildingCoord) {
       });
       
       const m_marker = new google.maps.Marker({
-        position: buildingCoord,
+        position: evalUnitCoord,
         map: map,
         draggable: true,
       });
@@ -95,7 +95,7 @@ function findPanorama(svService, latestViewData, panoRequest, buildingCoord) {
       else {
         console.log(`Status ${status}: could not find panorama within ${radius}m, trying ${radius+50}m.`)
         panoRequest.radius += 50;
-        return findPanorama(svService, latestViewData, panoRequest, buildingCoord);
+        return findPanorama(svService, latestViewData, panoRequest, evalUnitCoord);
       }
     }
     // Else we were doing an ID search - switch to radius search
@@ -103,12 +103,12 @@ function findPanorama(svService, latestViewData, panoRequest, buildingCoord) {
       console.log(`Could not find panorama id ${panoRequest.pano}. Switching to radius search.`);
       // Making a radius search request
       panoRequest = {
-        location: buildingCoord,
+        location: evalUnitCoord,
         preference: google.maps.StreetViewPreference.BEST,
         radius: 50,
         source: google.maps.StreetViewSource.OUTDOOR
       };
-      return findPanorama(svService, latestViewData, panoRequest, buildingCoord);
+      return findPanorama(svService, latestViewData, panoRequest, evalUnitCoord);
     }
   });
 }
@@ -116,16 +116,16 @@ function findPanorama(svService, latestViewData, panoRequest, buildingCoord) {
 function initMaps() {
 
   let panoRequest,
-      buildingCoord;
+      evalUnitCoord;
   
   const svService = new google.maps.StreetViewService();
 
-  // If we have already seen the building, get the latest user defined view
+  // If we have already seen the evaluation unit, get the latest user defined view
   const latestViewData = JSON.parse(document.getElementById('latest_view_data').textContent);
 
   // Latest view data includes a panorama ID and marker coords
   if (latestViewData) {
-    buildingCoord = {
+    evalUnitCoord = {
       lat: latestViewData['marker_lat'],
       lng: latestViewData['marker_lng']
     };
@@ -137,20 +137,20 @@ function initMaps() {
   // No previously saved view data
   // we will search for the best panorama
   else {
-    buildingCoord = {
-      lat: parseFloat(data.buildingLat),
-      lng: parseFloat(data.buildingLon),
+    evalUnitCoord = { 
+      lat: parseFloat(data.evalUnitLat),
+      lng: parseFloat(data.evalUnitLng),
     };
 
     panoRequest = {
-      location: buildingCoord,
+      location: evalUnitCoord,
       preference: google.maps.StreetViewPreference.BEST,
       radius: 50,
       source: google.maps.StreetViewSource.OUTDOOR
     };
   }
 
-  return findPanorama(svService, latestViewData, panoRequest, buildingCoord);
+  return findPanorama(svService, latestViewData, panoRequest, evalUnitCoord);
 }
 
 window.initMaps = initMaps;

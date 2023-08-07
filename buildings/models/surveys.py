@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.forms import ModelForm
 from django.utils.translation import gettext_lazy as _
 
-from buildings.models.models import Building, Vote
+from buildings.models.models import EvalUnit, Vote
 
 from buildings.widgets import RadioSelect, NumberOrUnsure, CheckboxRequiredSelectMultiple, RadioWithSpecify
 
@@ -74,15 +74,18 @@ STRUCTURE_TYPES = [
 ]
 
 
-# class BaseSurvey(models.Model):
-#     """
-#     Base class for Surveys.
-#     Can add other fields that will be common to all here.
-#     """
-
-
-class SurveyV1(models.Model):
+class BaseSurvey(models.Model):
+    """
+    Base class for Surveys.
+    Can add other fields that will be common to all here.
+    """
     vote = models.OneToOneField(Vote, on_delete=models.CASCADE)
+
+    class Meta:
+        abstract = True
+
+
+class SurveyV1(BaseSurvey):
     has_simple_footprint = models.BooleanField()
     has_simple_volume = models.BooleanField()
     num_storeys = models.IntegerField(blank=True, null=True)

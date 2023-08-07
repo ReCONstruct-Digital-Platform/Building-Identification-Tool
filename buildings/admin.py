@@ -1,12 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models.models import Building
-
-# class ChoiceInline(admin.TabularInline):
-#     model = Choice
-#     # provide enough fields for x choices by default
-#     extra = 2
+from .models.models import EvalUnit
 
 class BuildingAdmin(admin.ModelAdmin):
     fieldsets = [
@@ -15,7 +10,7 @@ class BuildingAdmin(admin.ModelAdmin):
     ]
     # inlines=[ChoiceInline]
     list_filter = ['cubf']
-    search_fields = ['formatted_address']
+    search_fields = ['address']
 
 
-admin.site.register(Building, BuildingAdmin)
+admin.site.register(EvalUnit, BuildingAdmin)

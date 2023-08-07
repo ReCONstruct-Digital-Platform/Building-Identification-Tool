@@ -15,7 +15,7 @@ from pathlib import Path
 
 # Initialise environment variables and defaults
 env = environ.Env(
-    DEBUG=(bool, False),
+    DEBUG=(bool, True),
     ALLOWED_HOSTS=([str], ['127.0.0.1']),
     CSRF_TRUSTED_ORIGINS=([str], ['http://localhost']),
     CSRF_COOKIE_SECURE=(bool, True),

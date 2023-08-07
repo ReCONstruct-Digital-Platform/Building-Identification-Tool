@@ -1,4 +1,4 @@
-from buildings.models.models import Building
+from buildings.models.models import EvalUnit
 from django.db.models import Count
   
 from django.core.management.base import BaseCommand
@@ -11,13 +11,13 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # Groups by unique formatted address, counts the unique IDs for each. 
-        dupes = Building.objects.values('formatted_address').annotate(Count('id')).order_by().filter(id__count__gt=1)
+        dupes = EvalUnit.objects.values('formatted_address').annotate(Count('id')).order_by().filter(id__count__gt=1)
         num_deleted = 0
         total_duplicates = 0
 
         for dup in dupes:
             # Return all duplicates except the first one (ordered by ID)
-            duplicated_buildings = Building.objects.filter(formatted_address__exact=dup['formatted_address']).order_by('id')[1:]
+            duplicated_buildings = EvalUnit.objects.filter(formatted_address__exact=dup['formatted_address']).order_by('id')[1:]
             num_duplicates = len(duplicated_buildings)
             total_duplicates += num_duplicates
 
