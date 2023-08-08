@@ -8,17 +8,17 @@ The latest version focuses on identifying pre-fabricated metal buildings. The se
 
 ![image](assets/screenshot1.JPG)
 
-## Installation
+# Installation
 
 
-### 0. Google Maps API key
+## 0. Get a Google Maps API key
 
 This project makes use of the google maps API. To run it locally, you will need to obtain an authorization key.
 Ask us for one from ReCONstruct, or set up your own by following the instructions [here](https://developers.google.com/maps/documentation/javascript/cloud-setup). (You will need to input a credit card, but local development and testing should come out at less than $5-10).
 
 Once you have a key, set the `GOOGLE_MAPS_API_KEY` variable to it in the file `config/settings.py`.
 
-### 1. (Optional) Create a virtual environment for the project
+## 1. (Optional) Create a virtual environment for the project
 Virtual environments (venv for short) hold all dependencies for your project, and allow avoiding package version conflicts at the system level.
 Each project has its specific dependency package versions installed in its virtual environment. 
 This comes at the cost of disk space to store potential duplicate packages, for porject who would use the same ones. 
@@ -28,38 +28,71 @@ python -m venv .venv        # Will create the virtual environment in the '.venv'
 source .venv/bin/activate   # On Linux/Mac
 ```
 
-### 2. Install dependencies
+## 2. Install dependencies
 ```
 pip install -r requirements.txt
 ```
 
-### 3. Create the database
-This project uses the [Django](https://www.djangoproject.com/) web framework. When using django, commands go through the `manage.py` script.
+## 3. Create the database and fill it with data
 
-```
-python manage.py migrate       # Will create a db.sqlite3 file in the root directory
-```
+### Step 1:
 
-### 4. Fill the database with buildings
+Download and Install PostgreSQL on your local machine: https://www.postgresql.org/download/
 
-The newly created database does not contain any buildings to classify yet, so we need to add some.
-`data/buildings.csv` contains a few of them to get you started. 
-
-These buildings have addresses, which must be converted to latitude/longitude coordinates in order to be used by the tool. This conversion process is called [geocoding](https://developers.google.com/maps/documentation/javascript/geocoding).
-
-Run the following to geocode `n` buildings - each building will incur a call to the Google Maps Geocoding API, and thus incur a cost ($0.005 USD per request).
-```
-python manage.py geocode -n <n>
-```
-`geocode` is implemented as a Django management command, and is defined in `buildings/management/commands/geocode.py`.
-
-Note: we attempt to detect duplicate buildings when geocoding the next time. You might still end up with duplicates in the DB.
-If that's the case, you can run the following command to get rid of them. 
-```
-python manage.py dedup_buildings       # this command will identify duplicates, running again with option '-d' will actually delete them
+You should be able to use the `psql` command to login to postgres as the default user:
+```bash
+psql -U postgres
 ```
 
-### 5. Start the local server
+### Step 2:
+
+Create a PostgreSQL DB and user for the application:
+```sql
+CREATE USER bitdbuser WITH PASSWORD 'password';
+ALTER ROLE bitdbuser SET client_encoding TO 'utf8';
+ALTER ROLE bitdbuser SET default_transaction_isolation TO 'read committed';
+ALTER ROLE bitdbuser SET timezone TO 'UTC';
+CREATE DATABASE bitdb OWNER bitdbuser LC_COLLATE 'en_US.UTF-8' LC_CTYPE 'en_US.UTF-8' TEMPLATE 'template0';
+GRANT ALL PRIVILEGES ON DATABASE bitdb TO bitdbuser;
+GRANT ALL ON SCHEMA public TO bitdbuser;
+``` 
+
+You can rename the DB and user as your wish, however you must place those values in your local .env file, filling in the following fields:
+Django will user these credentials to access the DB.
+```conf
+# DB connections settings
+POSTGRES_NAME=bitdb
+POSTGRES_USER=bitdbuser
+POSTGRES_PW=password
+POSTGRES_HOST=localhost # DB is running locally
+POSTGRES_PORT=5432 # default port number for postgres
+```
+
+### Step 3:
+Make and run the Django migrations, this will create all tables for our application in the DB.
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+### Step 4:
+
+Open a `psql` command line as either user `postgres` or `bitdbuser`, and connect to your new database.
+```bash
+psql -U bitdbuser
+\c bitdb
+```
+
+Finally, import some test data from the CSV files in `./data/`. Make sure to give the path for your machine.
+
+```sql
+\copy buildings_evalunit FROM 'path/to/data/15_000_murbs.csv' DELIMITER ',' CSV HEADER;
+\copy buildings_evalunit FROM 'path/to/data/5_000_potential_community_centers.csv' DELIMITER ',' CSV HEADER;
+\copy buildings_hlmbuilding(id, eval_unit_id, project_id, organism, service_center, street_num, street_name, muni, postal_code, num_dwellings, num_floors, area_footprint, area_total, ivp, disrepair_state, interest_adjust_date, contract_end_date, category, building_id) FROM 'path/to/data/hlms.csv' DELIMITER ',' CSV HEADER;
+```
+
+
+## 5. Start the server
 
 The final step is to run the development server. This will make the application run at `http://127.0.0.1:8000/`.
 Note that every access to the "Classify" section of the app will incur a Google Maps Javascript API call for a dynamic streetview and will thus incur a cost ($0.014 USD).
@@ -69,14 +102,30 @@ python manage.py runserver
 ```
 
 
-
-## Database Model
-
-![image](assets/imgtool-db-model2023-02-09-1547.png)
-
-Arrows indicate a foreign key relationship.
+<br>
 
 
-## Learning resources
+# Commands to generate the CSVs from the full roll DB
 
-To understand the codebase, see the links in `extras/learning_resources.txt`.
+We have provided you with initial data from the repository. In production, we use BIT with a larger database, which you can create by following the instructions here: https://github.com/ReCONstruct-Digital-Platform/QC-Prop-Roll
+
+Generate 20_000 MURBs and possible community centers for local test data.
+We need to resolve the physical link, owner status and construction type to their values.
+We also add the current date as a constant for all.
+```sql
+\copy (SELECT r.id, lat, lng, muni, muni_code, arrond, address, num_adr_inf, num_adr_inf_2, num_adr_sup, num_adr_sup_2, way_type, way_link, street_name, cardinal_pt, apt_num, apt_num_1, apt_num_2, mat18, cubf, file_num, nghbr_unit, owner_date, owner_type, os.value as "owner_status", lot_lin_dim, lot_area, max_floors, const_yr, const_yr_real, floor_area, pl.value as "phys_link", ct.value as "const_type", num_dwelling, num_rental, num_non_res, apprais_date, lot_value, building_value, r.value, prev_value, associated, '2023-08-07' as "date_added" FROM roll r LEFT JOIN phys_link pl ON r.phys_link = pl.id LEFT JOIN const_type ct ON r.const_type = ct.id LEFT JOIN owner_status os ON r.owner_status = os.id WHERE cubf = 1000  AND num_dwelling >= 3 ORDER BY num_dwelling DESC LIMIT 15000) TO 'C:\Users\lhv\VSCode\reconbuilding\data\15_000_murbs.csv' CSV HEADER;
+```
+
+```sql
+\copy (SELECT r.id, lat, lng, muni, muni_code, arrond, address, num_adr_inf, num_adr_inf_2, num_adr_sup, num_adr_sup_2, way_type, way_link, street_name, cardinal_pt, apt_num, apt_num_1, apt_num_2, mat18, cubf, file_num, nghbr_unit, owner_date, owner_type, os.value as "owner_status", lot_lin_dim, lot_area, max_floors, const_yr, const_yr_real, floor_area, pl.value as "phys_link", ct.value as "const_type", num_dwelling, num_rental, num_non_res, apprais_date, lot_value, building_value, r.value, prev_value, associated, '2023-08-07' as "date_added" FROM roll r LEFT JOIN phys_link pl ON r.phys_link = pl.id LEFT JOIN const_type ct ON r.const_type = ct.id LEFT JOIN owner_status os ON r.owner_status = os.id WHERE cubf IN (6811, 6812, 6813, 6814, 6815, 6816, 7219, 7221, 7222, 7223, 7224, 7225, 7229, 7233, 7239, 7290, 7311, 7312, 7313, 7314, 7392, 7393, 7394, 7395, 7396, 7397, 7399, 7411, 7412, 7413, 7414, 7415, 7416, 7417, 7418, 7419, 7421, 7422, 7423, 7424, 7425, 7429, 7431, 7432, 7433, 7441, 7442, 7443, 7444, 7445, 7446, 7447, 7448, 7449, 7451, 7452, 7459, 7491, 7492, 7493, 7499, 7611) LIMIT 5000) TO 'C:\Users\lhv\VSCode\reconbuilding\data\5_000_potential_community_centers.csv' CSV HEADER;
+```
+
+Extract HLMs with a condition that they link to one of the above extracted MURBs (still outputs a few that don't, not sure why).
+```sql
+\copy (SELECT id, eval_unit_id, project_id, organism, service_center, street_num, street_name, muni, postal_code, num_dwellings, num_floors, area_footprint, area_total, ivp, disrepair_state, interest_adjust_date, contract_end_date, category, building_id FROM hlm LEFT JOIN ON (SELECT roll.id from roll WHERE cubf = 1000  AND num_dwelling >= 3 ORDER BY num_dwelling DESC LIMIT 15000) as murbs) TO 'C:\Users\lhv\VSCode\reconbuilding\data\hlms.csv' CSV HEADER;
+
+\copy (SELECT hlm.id, eval_unit_id, project_id, organism, service_center, street_num, street_name, muni, postal_code, num_dwellings, num_floors, area_footprint, area_total, ivp, disrepair_state, interest_adjust_date, contract_end_date, category, building_id FROM hlm INNER JOIN (SELECT roll.id from roll WHERE cubf = 1000  AND num_dwelling >= 3 ORDER BY num_dwelling DESC LIMIT 15000) as murbs ON hlm.eval_unit_id = murbs.id) TO 'C:\Users\lhv\VSCode\reconbuilding\data\hlms.csv' CSV HEADER;
+```
+
+The `hlms.csv` file generated contained about 30 entries that linked to a MURB that was not present in the 15_000 extract above. I dont know why that was the case (if you find the error please let me know), but I had to manually delete each line before it worked.
+On each error, control-F for the eval unit id in the hlms.csv file and delete the entire line. It should eventually work!

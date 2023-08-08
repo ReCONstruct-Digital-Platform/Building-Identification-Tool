@@ -164,6 +164,11 @@ DATABASES = {
         'PASSWORD': env('POSTGRES_PW'),
         'HOST': env('POSTGRES_HOST'),
         'PORT': env('POSTGRES_PORT'),
+        'TEST': {
+            'TEMPLATE': 'template0', 
+            'COLLATION': 'en_US.UTF-8',
+
+        }
     }
 }
 

@@ -28,7 +28,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 
 from .utils import b2_upload
 from .forms import CreateUserForm
-from .models.surveys import SurveyV1, SurveyV1Form
+from .models.surveys import SurveyV1Form
 from config.settings import B2_APPKEY_RW, B2_BUCKET_IMAGES, B2_ENDPOINT, B2_KEYID_RW, WEBHOOK_SECRET, BASE_DIR
 from .models.models import EvalUnit, EvalUnitSatelliteImage, EvalUnitStreetViewImage, EvalUnitLatestViewData, NoBuildingFlag, Vote, Profile
 
