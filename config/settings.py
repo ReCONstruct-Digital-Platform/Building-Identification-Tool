@@ -26,7 +26,12 @@ env = environ.Env(
     B2_KEYID_RW=(str, ''),
     B2_APPKEY_RW=(str, ''),
     B2_ENDPOINT=(str, ''),
-    B2_BUCKET_IMAGES=(str, '')
+    B2_BUCKET_IMAGES=(str, ''),
+    POSTGRES_NAME=(str, ''),
+    POSTGRES_USER=(str, ''),
+    POSTGRES_PW=(str, ''),
+    POSTGRES_HOST=(str, ''),
+    POSTGRES_PORT=(int, ''),
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -153,8 +158,12 @@ INTERNAL_IPS = (
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': env('POSTGRES_NAME'),
+        'USER': env('POSTGRES_USER'),
+        'PASSWORD': env('POSTGRES_PW'),
+        'HOST': env('POSTGRES_HOST'),
+        'PORT': env('POSTGRES_PORT'),
     }
 }
 

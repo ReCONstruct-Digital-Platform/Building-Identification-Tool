@@ -238,7 +238,7 @@ def survey_v1(request, eval_unit_id):
         'form': form,
         'previous_no_building_vote': previous_no_building_vote
     }
-    return render(request, 'buildings/map.html', context)
+    return render(request, 'buildings/survey.html', context)
 
 
 class DetailView(generic.DetailView):

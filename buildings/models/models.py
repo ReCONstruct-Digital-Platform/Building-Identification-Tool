@@ -102,8 +102,6 @@ class EvalUnitQuerySet(models.QuerySet):
         Tries to get a random unvoted building. 
         If all buildings were voted, returns a random least voted building.
         """
-        import code
-        code.interact(local=dict(globals(), **locals()))
         b = self.get_random_unvoted(exclude_id=exclude_id)
         if b is None:
             b = self.get_random_least_voted(exclude_id=exclude_id)
@@ -166,7 +164,6 @@ class EvalUnit(models.Model):
     building_value = models.IntegerField(null=True, blank=True)
     value = models.IntegerField(null=True, blank=True)
     prev_value = models.IntegerField(null=True, blank=True)
-
     # JSON dictionary giving the IDs of any secondary objects 
     # (e.g. HLMs) associated with this evaluation unit.
     associated = models.JSONField(null=True, blank=True)
@@ -243,15 +240,15 @@ class EvalUnitLatestViewDataQuerySet(models.QuerySet):
     def get_latest_view_data(self, unit_id, user_id):
 
         # First look if there are any previous saved data for this building
-        if self.filter(building_id = unit_id).count() == 0:
+        if self.filter(eval_unit_id = unit_id).count() == 0:
             return None
         
         # Then check if there is a previous saved value for this user
         # If not, return the latest view saved by any other user
-        if self.filter(building_id = unit_id, user_id = user_id).count() == 0:
-            return self.filter(building_id = unit_id).order_by('-date_added').first()
+        if self.filter(eval_unit_id = unit_id, user_id = user_id).count() == 0:
+            return self.filter(eval_unit_id = unit_id).order_by('-date_added').first()
         else:
-            return self.filter(building_id = unit_id, user_id = user_id).order_by('-date_added').first()
+            return self.filter(eval_unit_id = unit_id, user_id = user_id).order_by('-date_added').first()
 
 class EvalUnitLatestViewData(models.Model):
 
