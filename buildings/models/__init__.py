@@ -8,6 +8,5 @@ from .models import (
     EvalUnitStreetViewImage, 
     NoBuildingFlag,
     Vote,
-    Profile
 )
 from .surveys import SurveyV1

@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.db.models import Q, Count, Avg, TextField
 from django.db.models.functions import Cast, Coalesce
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import AbstractUser
 import logging
 
 from buildings.utils.contants import CUBF_TO_NAME_MAP
@@ -21,14 +22,14 @@ STRING_QUERIES_TO_FILTER = {
     "q_cubf": "cubf_str__icontains",
 }
 
-class Profile(models.Model):
 
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)
-    
+# https://docs.djangoproject.com/en/4.2/topics/auth/customizing/#extending-the-existing-user-model
+class User(AbstractUser):
     def get_avatar_url(self, size=32):
-        digest = md5(self.user.email.encode('utf-8')).hexdigest()
+        digest = md5(self.email.encode('utf-8')).hexdigest()
         return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
-    
+
+
 
 class EvalUnitQuerySet(models.QuerySet):
     # We implement this ourselves, not an override of a QuerySet method
@@ -108,7 +109,6 @@ class EvalUnitQuerySet(models.QuerySet):
         return b
     
 
-
     
 class EvalUnitManager(models.Manager):
     def get_queryset(self):
@@ -183,19 +183,6 @@ class EvalUnit(models.Model):
         else:
             return ''
         
-    # def avg_score(self):
-    #     if self.vote_set is None or self.vote_set.filter(buildingtypology__isnull=False).count() == 0:
-    #         return 0
-        
-    #     acc = 0
-    #     n = 0
-    #     for vote in self.vote_set.filter(buildingtypology__isnull=False):
-    #         acc += vote.buildingtypology.score
-    #         n += 1
-
-    #     return round(acc/n, 2)
-        
-
     def __str__(self):
         return f'{self.address} ({self.lat}, {self.lng})'
     

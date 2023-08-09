@@ -55,6 +55,7 @@ ALTER ROLE bitdbuser SET timezone TO 'UTC';
 CREATE DATABASE bitdb OWNER bitdbuser LC_COLLATE 'en_US.UTF-8' LC_CTYPE 'en_US.UTF-8' TEMPLATE 'template0';
 GRANT ALL PRIVILEGES ON DATABASE bitdb TO bitdbuser;
 GRANT ALL ON SCHEMA public TO bitdbuser;
+ALTER USER bitdbuser CREATEDB; --- Needed to create the test database
 ``` 
 
 You can rename the DB and user as your wish, however you must place those values in your local .env file, filling in the following fields:

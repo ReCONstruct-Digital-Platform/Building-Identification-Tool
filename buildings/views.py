@@ -15,7 +15,6 @@ from ipaddress import ip_address, ip_network
 from django.views import generic 
 from django.conf import settings
 from django.db import transaction
-from django.utils import timezone
 from django.contrib import messages 
 from django.http import HttpResponse
 from django.core.paginator import Paginator
@@ -30,8 +29,7 @@ from .utils import b2_upload
 from .forms import CreateUserForm
 from .models.surveys import SurveyV1Form
 from config.settings import B2_APPKEY_RW, B2_BUCKET_IMAGES, B2_ENDPOINT, B2_KEYID_RW, WEBHOOK_SECRET, BASE_DIR
-from .models.models import EvalUnit, EvalUnitSatelliteImage, EvalUnitStreetViewImage, EvalUnitLatestViewData, NoBuildingFlag, Vote, Profile
-
+from .models.models import EvalUnit, EvalUnitSatelliteImage, EvalUnitStreetViewImage, EvalUnitLatestViewData, NoBuildingFlag, Vote
 import logging
 
 log = logging.getLogger(__name__)
@@ -241,16 +239,13 @@ def survey_v1(request, eval_unit_id):
     return render(request, 'buildings/survey.html', context)
 
 
-class DetailView(generic.DetailView):
+class EvalUnitDetailView(generic.DetailView):
+    """
+    TODO: Create a detail view for out eval units, showing votes and info summary
+    """
     model = EvalUnit
     template_name = 'buildings/detail.html'
 
-    def get_queryset(self):
-        """
-        Excludes any questions that aren't published yet.
-        TODO: This is from the tutorial, remove and create a detail view
-        """
-        return EvalUnit.objects.filter(pub_date__lte=timezone.now())
 
 
 def register(request):
@@ -262,9 +257,7 @@ def register(request):
         if form.is_valid():
             # This will create the user
             user = form.save()
-            Profile(user=user).save()
-            messages.success(request, f'Account created for {form.cleaned_data.get("username")}')
-
+            messages.success(request, f'Account created for {user.username}')
             return redirect('buildings:login')
     else:
         form = CreateUserForm()
