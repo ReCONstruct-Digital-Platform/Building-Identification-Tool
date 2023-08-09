@@ -278,7 +278,10 @@ def login_page(request):
 
         if user:
             login(request, user)
-            return redirect('buildings:index')
+            if request.GET and 'next' in request.GET:
+                return redirect(request.GET['next'])
+            else:
+                return redirect('buildings:index')
         else:
             messages.error(request, "Username or password incorrect")
             return render(request, 'buildings/login.html')

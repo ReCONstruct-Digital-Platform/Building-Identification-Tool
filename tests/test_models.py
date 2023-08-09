@@ -1,10 +1,9 @@
 from django.test import TestCase
-from django.contrib.auth.models import User
-from buildings.models.models import EvalUnit
+from buildings.models.models import EvalUnit, User
 
 class EvalUnitTestCase(TestCase):
     def setUp(self):
-        self.user = User.objects.create(username='testuser')
+        self.user = User.objects.create_user(username='testuser', password='testpw')
         self.evalunit = EvalUnit.objects.create(
             id = "3fvsg",
             address = "1 street name",
