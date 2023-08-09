@@ -50,12 +50,12 @@ jobs:
         pip install -r requirements.txt
         sudo apt-get update
         sudo apt-get install --yes --no-install-recommends postgresql-client
-        psql -h localhost -U postgres -c "CREATE USER bitdbuser WITH PASSWORD 'password';"
-        psql -h localhost -U postgres -c "ALTER ROLE bitdbuser SET client_encoding TO 'utf8';"
-        psql -h localhost -U postgres -c "ALTER ROLE bitdbuser SET default_transaction_isolation TO 'read committed';"
-        psql -h localhost -U postgres -c "ALTER ROLE bitdbuser SET timezone TO 'UTC';"
-        psql -h localhost -U postgres -c "GRANT ALL ON SCHEMA public TO bitdbuser;"
-        psql -h localhost -U postgres -c "ALTER USER bitdbuser CREATEDB;"
+        psql postgresql://postgres:postgres@localhost:5432 -c "CREATE USER bitdbuser WITH PASSWORD 'password';"
+        psql postgresql://postgres:postgres@localhost:5432 -c "ALTER ROLE bitdbuser SET client_encoding TO 'utf8';"
+        psql postgresql://postgres:postgres@localhost:5432 -c "ALTER ROLE bitdbuser SET default_transaction_isolation TO 'read committed';"
+        psql postgresql://postgres:postgres@localhost:5432 -c "ALTER ROLE bitdbuser SET timezone TO 'UTC';"
+        psql postgresql://postgres:postgres@localhost:5432 -c "GRANT ALL ON SCHEMA public TO bitdbuser;"
+        psql postgresql://postgres:postgres@localhost:5432 -c "ALTER USER bitdbuser CREATEDB;"
 
     - name: Run All Tests
       env: 
