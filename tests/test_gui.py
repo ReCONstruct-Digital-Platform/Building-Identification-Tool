@@ -1,6 +1,5 @@
 import os
 import re
-import IPython
 
 from django.test import Client
 from selenium.webdriver.common.by import By
@@ -101,6 +100,5 @@ class SeleniumFirefoxAndChromeTests(StaticLiveServerTestCase):
             driver.find_element(By.ID, "btn-submit-vote").click()
 
             wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id{next_eval_unit_id}"))
-            # IPython.embed()
 
 
