@@ -1,17 +1,23 @@
+import io
 import git
 import hmac
 import json
 import hashlib
 import requests
 import traceback
+
+from PIL import Image
+from pprint import pprint
+from w3lib.url import parse_data_uri
+from uuid_extensions import uuid7str
 from ipaddress import ip_address, ip_network
 
 from django.views import generic 
 from django.conf import settings
 from django.db import transaction
-from django.utils import timezone
 from django.contrib import messages 
 from django.http import HttpResponse
+from django.core.paginator import Paginator
 from django.forms.models import model_to_dict
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -19,11 +25,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
 
-from .forms import CreateUserForm
-from config.settings import WEBHOOK_SECRET, BASE_DIR
-from django.core.paginator import Paginator
-from .models import Building, BuildingLatestViewData, BuildingTypology, Material, NoBuildingFlag, Typology, Vote, BuildingNote, MaterialScore, Profile
+from buildings.utils.utility import print_query_dict
 
+from .utils import b2_upload
+from .forms import CreateUserForm
+from .models.surveys import SurveyV1Form
+from config.settings import B2_APPKEY_RW, B2_BUCKET_IMAGES, B2_ENDPOINT, B2_KEYID_RW, WEBHOOK_SECRET, BASE_DIR
+from .models.models import EvalUnit, EvalUnitSatelliteImage, EvalUnitStreetViewImage, EvalUnitLatestViewData, NoBuildingFlag, Vote
 import logging
 
 log = logging.getLogger(__name__)
@@ -31,13 +39,13 @@ log = logging.getLogger(__name__)
 @login_required(login_url='buildings:login')
 def index(request):
 
-    random_building = Building.objects.get_random_unvoted()
+    random_building = EvalUnit.objects.get_random_unvoted()
 
     latest_votes = Vote.objects.get_latest(n=5)
 
     # If all buildings have votes, return a random building from the least voted ones
     if random_building is None:
-        random_building = Building.objects.get_random_least_voted()
+        random_building = EvalUnit.objects.get_random_least_voted()
 
     context = {
         "random_unscored_building_id": random_building.id,
@@ -89,9 +97,9 @@ def all_buildings(request):
     order_by = request.GET.get('order_by')
     dir = request.GET.get('dir')
 
-    ordering, direction = Building.get_ordering(order_by, dir)
+    ordering, direction = EvalUnit.get_ordering(order_by, dir)
     log.debug(f'Ordering: {ordering}, direction: {direction}')
-    qs = Building.objects.search(query=query, ordering=ordering)
+    qs = EvalUnit.objects.search(query=query, ordering=ordering)
 
     paginator = Paginator(qs, 25) # Show 25 contacts per page.
 
@@ -116,129 +124,129 @@ def all_buildings(request):
 
 
 @login_required(login_url='buildings:login')
-def classify_home(request):
-    random_unscored_building = Building.objects.get_next_building_to_classify()
-    building_id = random_unscored_building.id
-    return redirect('buildings:classify', building_id=building_id)
+def survey(request):
+    random_unscored_unit = EvalUnit.objects.get_next_unit_to_survey()
+    eval_unit_id = random_unscored_unit.id
+    return redirect('buildings:survey_v1', eval_unit_id=eval_unit_id)
 
 
 @login_required(login_url='buildings:login')
-def classify(request, building_id):
+def survey_v1(request, eval_unit_id):
 
-    building = get_object_or_404(Building, pk=building_id)
+    eval_unit = get_object_or_404(EvalUnit, pk=eval_unit_id)
 
+    # Fetch any previous survey v1 entry for this building
+    # If none exist, initialize a survey with the building and user ids
+    previous_survey_vote = Vote.objects.filter(user=request.user, eval_unit=eval_unit, surveyv1__isnull=False).first()
+    previous_no_building_vote = Vote.objects.filter(user=request.user, eval_unit=eval_unit, nobuildingflag__isnull=False).first()
+
+    if previous_survey_vote:
+        log.debug('Found previous survey instance!')
+        prev_survey_instance = previous_survey_vote.surveyv1
+    else:
+        prev_survey_instance = None
+
+    if previous_no_building_vote:
+        log.debug('Previously voted no building!')
+
+    # TODO: Do we still need the no building flag? 
     if request.method == "POST":
-        # Because we'll be creating multiple DB objects with relations to each other,
-        # we want either all of them to be created, or none if a problem occurs.
-        with transaction.atomic():
-            # Form submission - need to create a new Vote object
-            # That will be references by a set of MaterialScores and an optional Note
-            new_vote = Vote(building = building, user = request.user)
-            new_vote.save()
+        log.debug(print_query_dict(request.POST))
 
-            logging.debug(request.POST)
+        # Save the last orientation/zoom for the building for later visits
+        if 'latest_view_data' in request.POST:
+            data = request.POST.getlist('latest_view_data')[0]
+            if len(data) > 0: 
+                data = json.loads(data)
+                latest_view_data = EvalUnitLatestViewData(
+                    eval_unit = eval_unit,
+                    user = request.user,
+                    sv_pano = data['sv_pano'],
+                    sv_heading = data['sv_heading'], 
+                    sv_pitch = data['sv_pitch'], 
+                    sv_zoom = data['sv_zoom'], 
+                    marker_lat = data['marker_lat'], 
+                    marker_lng = data['marker_lng'], 
+                )
+                latest_view_data.save()
 
-            for key in request.POST:
-                if "typology" in key:
-                    # Expect the value to be an array with 2 values, typology name and 1-5 score
-                    value = request.POST.getlist(key)
-                    if len(value) > 1:
-                        typology_name = value[0]
-                        score = value[1]
+        if 'no_building' in request.POST:
+            # Because we'll be creating multiple DB objects with relations to each other,
+            # we want either all of them to be created, or none if a problem occurs.
+            with transaction.atomic():
+                # If the user had previously submitted a survey for the building
+                # delete it and create a new no building vote instead
+                if previous_survey_vote:
+                    previous_survey_vote.delete()
+                # Form submission - need to create a new Vote object
+                # That will be references by a set of MaterialScores and an optional Note
+                new_vote = Vote(eval_unit = eval_unit, user = request.user)
+                new_vote.save()
 
-                        typology = Typology.objects.filter(name__icontains=typology_name).first()
-                        if typology is None:
-                            typology = Typology(name=typology_name)
-                            typology.save()
-                        
-                        # Create a new MaterialScore linking this vote, the material and the score
-                        building_typology = BuildingTypology(vote=new_vote, typology=typology, score=score)
-                        building_typology.save()
+                no_building = NoBuildingFlag(vote = new_vote)
+                no_building.save()
 
-                elif "note" in key:
-                    value = request.POST.getlist(key)[0]
-                    # If the note value is not empty, save a note for the building
-                    if value != '':
-                        note = BuildingNote(vote=new_vote, note=value)
-                        note.save()
+            next_eval_unit = EvalUnit.objects.get_next_unit_to_survey(exclude_id = eval_unit.id)
+            return redirect("buildings:survey_v1", eval_unit_id=next_eval_unit.id)
 
-                elif "material" in key:
-                    # Expect the value to be an array with 2 values, material name and 1-5 score
-                    value = request.POST.getlist(key)
-                    if len(value) > 1:
-                        material_name = value[0]
-                        score = value[1]
-                        # Get a reference to the material
-                        material = Material.objects.filter(name__icontains=material_name).first()
+        # Handle submission of the survey
+        else:
+            # If previous_survey_answer is not None, we will modify the previous entry
+            form = SurveyV1Form(request.POST, instance=prev_survey_instance)
 
-                        logging.debug(f"Found material {material}")
-                        # If it doesn't exist, create a new material
-                        if material is None:
-                            material = Material(name=material_name)
-                            material.save()
-                        
-                        # Create a new MaterialScore linking this vote, the material and the score
-                        material_score = MaterialScore(vote=new_vote, material=material, score=score)
-                        material_score.save()
+            if form.is_valid():
+                log.debug('cleaned_data:')
+                log.debug(pprint(form.cleaned_data))
 
-                elif key == "latest_view_data":
+                with transaction.atomic():
+                    # Delete any previous no building vote for this building
+                    # I.e. we're overwriting it.
+                    if previous_no_building_vote:
+                        previous_no_building_vote.delete()
+                    new_vote = Vote(eval_unit = eval_unit, user=request.user)
+                    new_vote.save()
 
-                    data = request.POST.getlist(key)[0]
-                    if len(data) > 0: 
-                        data = json.loads(data)
+                    form = form.save(commit=False)
+                    form.vote = new_vote
+                    form.save()
 
-                        latest_view_data = BuildingLatestViewData(
-                            building = building,
-                            user = request.user,
-                            sv_pano = data['sv_pano'],
-                            sv_heading = data['sv_heading'], 
-                            sv_pitch = data['sv_pitch'], 
-                            sv_zoom = data['sv_zoom'], 
-                            marker_lat = data['marker_lat'], 
-                            marker_lng = data['marker_lng'], 
-                        )
-                        latest_view_data.save()
+                # Update the eval unit to a new one
+                next_eval_unit = EvalUnit.objects.get_next_unit_to_survey(exclude_id = eval_unit.id)
+                # We redirect so the URL updates to the next building ID
+                return redirect("buildings:survey_v1", eval_unit_id=next_eval_unit.id)
+            else:
+                log.error(form.errors)
 
-                elif key == 'no_building':
-                    no_building = NoBuildingFlag(vote = new_vote)
-                    no_building.save()
+    # Fetch the latest view data for the current building if it exists
+    latest_view_data = EvalUnitLatestViewData.objects.get_latest_view_data(eval_unit.id, request.user.id)
 
-            # Finally, we can save our vote
-            new_vote.save()
-            # Get the new current building
-            building = Building.objects.get_next_building_to_classify(exclude_id = building.id)
-
-        next_building = Building.objects.get_next_building_to_classify(exclude_id = building.id)
-
-        return redirect("buildings:classify", building_id=next_building.id)
-    
-    building_latest_view_data = BuildingLatestViewData.objects.get_latest_view_data(building.id, request.user.id)
-
-    if building_latest_view_data:
-        building_latest_view_data = model_to_dict(building_latest_view_data, exclude=['id', 'user', 'date_added'])
+    if latest_view_data:
+        latest_view_data = model_to_dict(latest_view_data, exclude=['id', 'user', 'date_added'])
 
     # Get the next building 
-    next_building = Building.objects.get_next_building_to_classify(exclude_id = building.id)
+    next_eval_unit = EvalUnit.objects.get_next_unit_to_survey(exclude_id = eval_unit.id)
+
+    form = SurveyV1Form(instance=prev_survey_instance)
 
     context = {
         # TODO: Is this the best way to pass API keys to views?
         'key': settings.GOOGLE_MAPS_API_KEY,
-        'building': building,
-        'building_latest_view_data': building_latest_view_data,
-        'next_building': next_building.id,
+        'eval_unit': eval_unit,
+        'latest_view_data': latest_view_data,
+        'next_eval_unit': next_eval_unit.id,
+        'form': form,
+        'previous_no_building_vote': previous_no_building_vote
     }
-    return render(request, 'buildings/map.html', context)
+    return render(request, 'buildings/survey.html', context)
 
 
-class DetailView(generic.DetailView):
-    model = Building
+class EvalUnitDetailView(generic.DetailView):
+    """
+    TODO: Create a detail view for out eval units, showing votes and info summary
+    """
+    model = EvalUnit
     template_name = 'buildings/detail.html'
 
-    def get_queryset(self):
-        """
-        Excludes any questions that aren't published yet.
-        """
-        return Building.objects.filter(pub_date__lte=timezone.now())
 
 
 def register(request):
@@ -250,9 +258,7 @@ def register(request):
         if form.is_valid():
             # This will create the user
             user = form.save()
-            Profile(user=user).save()
-            messages.success(request, f'Account created for {form.cleaned_data.get("username")}')
-
+            messages.success(request, f'Account created for {user.username}')
             return redirect('buildings:login')
     else:
         form = CreateUserForm()
@@ -273,7 +279,10 @@ def login_page(request):
 
         if user:
             login(request, user)
-            return redirect('buildings:index')
+            if request.GET and 'next' in request.GET:
+                return redirect(request.GET['next'])
+            else:
+                return redirect('buildings:index')
         else:
             messages.error(request, "Username or password incorrect")
             return render(request, 'buildings/login.html')
@@ -284,6 +293,81 @@ def login_page(request):
 def logout_page(request):
     logout(request)
     return redirect('buildings:login')
+
+
+@require_POST
+def upload_imgs(request, eval_unit_id):
+    # Receive the images from the frontend
+    body = json.loads(request.body)
+
+    b2 = b2_upload.get_b2_resource(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW)
+
+    eval_unit = get_object_or_404(EvalUnit, pk=eval_unit_id)
+
+    # Add any kind of metadata to be associated with the image
+    # upload date is already available
+    extra_args = {
+        'Metadata': {
+            'user': request.user.username,
+            'eval_unit': eval_unit_id,  # add a reverse link to eval unit
+        }
+    }
+
+    upload_formats_and_sizes = [('l', 1200), ('m', 700), ('s', 300)]
+
+    # create 2 UUIDs to be shared by images of the same type
+    UUIDs = {
+        'streetview': uuid7str(),
+        'satellite': uuid7str()
+    }
+
+    for image_type in ['streetview', 'satellite']:
+
+        if data_uri := body.get(image_type):
+            data = parse_data_uri(data_uri)
+            image = Image.open(io.BytesIO(data.data))
+            # Convert the image to RGB to save as JPG
+            image = image.convert('RGB')
+            logging.debug(f'Image original size: {image.size}')
+
+        if not image:
+            return HttpResponse(f"Iamge of type {image_type} not founD!")
+        
+        uuid = UUIDs[image_type]
+
+        # We'll do an all or nothing save here. 
+        # If an exception occurs during saving any of the sizes
+        # we won't save the link in the DB. On the other hand, if 
+        # we have a link in the DB, we know that all sizes exist.
+        # This could result in stranded images in B2 if only some uploads fail.
+        try:
+            for format, size in upload_formats_and_sizes: 
+                # Resize the image, maintaining the aspect ratio
+                image.thumbnail((size, size))
+                print(image.size)
+                # Create an in memory file to temporarily store the image
+                in_mem_file = io.BytesIO()
+                image.save(in_mem_file, format='jpeg')
+                in_mem_file.seek(0)
+
+                # Try to upload the image
+                b2.Bucket(B2_BUCKET_IMAGES).upload_fileobj(
+                    in_mem_file,
+                    f"screenshots/{image_type}/{format}/{uuid}.jpg",
+                    ExtraArgs=extra_args
+                )
+
+            # Only need to save the UUID in DB once, since diff sizes share it
+            if image_type == 'streetview':
+                EvalUnitStreetViewImage(eval_unit=eval_unit, uuid=uuid, user=request.user).save()
+            elif image_type == 'satellite':
+                EvalUnitSatelliteImage(eval_unit=eval_unit, uuid=uuid, user=request.user).save()
+        except:
+            print(traceback.format_exc())
+        
+        in_mem_file.close()
+
+    return HttpResponse('Ok')
 
 
 @csrf_exempt
@@ -360,8 +444,6 @@ def redeploy_server(request):
 
 def verify_signature(payload_body, secret_token, signature_header):
     """Verify that the payload was sent from GitHub by validating SHA256.
-    
-    Raise and return 403 if not authorized.
     
     Args:
         payload_body: original request body to verify (request.body())

@@ -4,8 +4,8 @@
 <div class="container">
     <div class="row ">
         <div>
-            <h1>Hello {{ request.user }},</h1>
-            <h1>Welcome to the Image Selection Tool</h1>
+            <h1>Welcome to the Building Identification Tool</h1>
+            <h1>Hello {{ request.user }}!</h1>
         </div>
     </div>
         
@@ -13,7 +13,7 @@
 
         <div class="spread-apart-container">
             <div class="user-stats-container mt-4">
-                You've voted on {{ request.user.vote_set.all | length }} buildings!
+                You've voted on {{ request.user.vote_set.all | length }} evaluation units!
             </div>
             <div class="col-md-5">
                 <div class="content-section">
@@ -29,31 +29,16 @@
                                 <br>
                             </div>
                             <div class="activity-building-info mt-2">
-                                <a href="{% url 'buildings:classify' vote.building.id %}">
-                                    {{vote.building.street_number}} {{vote.building.street_name}}, {{vote.building.locality}}
+                                <a href="{% url 'buildings:survey_v1' vote.eval_unit.id %}">
+                                    {{vote.eval_unit.street_number}} {{vote.eval_unit.street_name}}, {{vote.eval_unit.locality}}
                                 </a>
                             </div>
-
-                            {% if vote.buildingtypology %}
-                            <div class="material-scores-activity">
-                                Voted: {{ vote.buildingtypology.score }}
-                            </div>
-                            {% endif %}
 
                             {% if vote.nobuildingflag %}
                             <div class="material-scores-activity">
                                 Voted: No Building!
                             </div>
                             {% endif %}
-
-                        {% if vote.buildingnote %}
-                            <div class="note-added-activity mt-2">
-                                With note:
-                                <div class="activity-note">
-                                    {{ vote.buildingnote.note }}
-                                </div>
-                            </div>
-                        {% endif %}
                         </li>
                             
                         {% empty %}

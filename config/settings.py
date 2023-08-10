@@ -15,14 +15,23 @@ from pathlib import Path
 
 # Initialise environment variables and defaults
 env = environ.Env(
-    DEBUG=(bool, False),
+    DEBUG=(bool, True),
     ALLOWED_HOSTS=([str], ['127.0.0.1']),
     CSRF_TRUSTED_ORIGINS=([str], ['http://localhost']),
     CSRF_COOKIE_SECURE=(bool, True),
     SESSION_COOKIE_SECURE=(bool, True),
     STATIC_URL=(str, 'static/'),
     STATIC_ROOT=(str, ''),
-    WEBHOOK_SECRET=(str, 'secret')
+    WEBHOOK_SECRET=(str, 'secret'),
+    B2_KEYID_RW=(str, ''),
+    B2_APPKEY_RW=(str, ''),
+    B2_ENDPOINT=(str, ''),
+    B2_BUCKET_IMAGES=(str, ''),
+    POSTGRES_NAME=(str, ''),
+    POSTGRES_USER=(str, ''),
+    POSTGRES_PW=(str, ''),
+    POSTGRES_HOST=(str, ''),
+    POSTGRES_PORT=(int, ''),
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -49,12 +58,19 @@ CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE')
 
 SESSION_COOKIE_SECURE = env('SESSION_COOKIE_SECURE')
 
+# Backblaze B2 variables
+B2_KEYID_RW = env('B2_KEYID_RW')
+B2_APPKEY_RW = env('B2_APPKEY_RW')
+B2_ENDPOINT = env('B2_ENDPOINT')
+B2_BUCKET_IMAGES = env('B2_BUCKET_IMAGES')
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 STATIC_URL = env('STATIC_URL')
 
 STATIC_ROOT = env('STATIC_ROOT')
 
+# See https://docs.djangoproject.com/en/4.2/topics/logging/#configuring-logging
 LOGGING = {
     'version': 1,                       # the dictConfig format version
     'disable_existing_loggers': False,  # retain the default loggers
@@ -68,6 +84,22 @@ LOGGING = {
             'level': 'DEBUG',
             'handlers': ['stdout'],
         },
+        'boto3': {
+            'level': 'CRITICAL',
+            'handlers': ['stdout'],
+        },
+        'botocore': {
+            'level': 'CRITICAL',
+            'handlers': ['stdout'],
+        },
+        's3transfer': {
+            'level': 'CRITICAL',
+            'handlers': ['stdout'],
+        },
+        'urllib3': {
+            'level': 'CRITICAL',
+            'handlers': ['stdout'],
+        }
     },
 }
 
@@ -117,17 +149,29 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
+INTERNAL_IPS = (
+    '127.0.0.1',
+)
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': env('POSTGRES_NAME'),
+        'USER': env('POSTGRES_USER'),
+        'PASSWORD': env('POSTGRES_PW'),
+        'HOST': env('POSTGRES_HOST'),
+        'PORT': env('POSTGRES_PORT'),
+        'TEST': {
+            'TEMPLATE': 'template0', 
+        }
     }
 }
 
+# https://docs.djangoproject.com/en/4.2/topics/auth/customizing/#extending-the-existing-user-model
+AUTH_USER_MODEL = "buildings.User"
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -163,3 +207,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Max request size increased to 16MB to upload images
+DATA_UPLOAD_MAX_MEMORY_SIZE = 16_777_216

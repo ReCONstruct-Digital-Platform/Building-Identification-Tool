@@ -1,21 +1,11 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from .models.models import User, Vote
 
-# Register your models here.
-from .models import Building
+class VoteAdmin(admin.ModelAdmin):
+    fields = ['eval_unit', 'user', 'date_added', 'data_modified']
+    list_filter = ['eval_unit']
+    search_fields = ['eval_unit', 'user', 'date_added', 'date_modified']
 
-# class ChoiceInline(admin.TabularInline):
-#     model = Choice
-#     # provide enough fields for x choices by default
-#     extra = 2
-
-class BuildingAdmin(admin.ModelAdmin):
-    fieldsets = [
-        ('Address Components', {'fields': ['street_number', 'street_name', 'locality', 'region', 'province', 'country', 'postal_code']}),
-        ('Other Information', {'fields': ['cubf', 'date_added']}),
-    ]
-    # inlines=[ChoiceInline]
-    list_filter = ['cubf']
-    search_fields = ['formatted_address']
-
-
-admin.site.register(Building, BuildingAdmin)
+admin.site.register(User, UserAdmin)
+admin.site.register(Vote, VoteAdmin)

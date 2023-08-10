@@ -16,19 +16,59 @@ jobs:
       matrix:
         python-version: [3.8, 3.9]
 
+    # Service containers to run with `runner-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
     steps:
-    - uses: actions/checkout@v3
+    - name: Check out code
+      uses: actions/checkout@v3
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
+
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-    - name: Run Tests
+        sudo apt-get update
+        sudo apt-get install --yes --no-install-recommends postgresql-client
+        psql postgresql://postgres:postgres@localhost:5432 -c "CREATE USER bitdbuser WITH PASSWORD 'password';"
+        psql postgresql://postgres:postgres@localhost:5432 -c "ALTER ROLE bitdbuser SET client_encoding TO 'utf8';"
+        psql postgresql://postgres:postgres@localhost:5432 -c "ALTER ROLE bitdbuser SET default_transaction_isolation TO 'read committed';"
+        psql postgresql://postgres:postgres@localhost:5432 -c "ALTER ROLE bitdbuser SET timezone TO 'UTC';"
+        psql postgresql://postgres:postgres@localhost:5432 -c "GRANT ALL ON SCHEMA public TO bitdbuser;"
+        psql postgresql://postgres:postgres@localhost:5432 -c "ALTER USER bitdbuser CREATEDB;"
+
+    - name: Run All Tests
       env: 
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        B2_KEYID_RW: ${{ secrets.B2_KEYID_RW }}
+        B2_APPKEY_RW: ${{ secrets.B2_APPKEY_RW }}
+        B2_ENDPOINT: ${{ secrets.B2_ENDPOINT }}
+        B2_BUCKET_IMAGES: ${{ secrets.B2_BUCKET_IMAGES }}
+        POSTGRES_NAME: bitdb
+        POSTGRES_USER: bitdbuser
+        POSTGRES_PW: password
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
       run: |
         python manage.py test

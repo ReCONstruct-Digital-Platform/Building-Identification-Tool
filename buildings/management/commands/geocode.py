@@ -3,7 +3,7 @@ import googlemaps
 from pathlib import Path
 
 from django.utils import timezone
-from buildings.models import Building
+from buildings.models.models import EvalUnit
 from config.settings import GOOGLE_MAPS_API_KEY
   
 from django.core.management.base import BaseCommand
@@ -55,7 +55,7 @@ class Command(BaseCommand):
         logdir.mkdir(exist_ok=True)
         logfile = logdir / "geocode.log"
 
-        num_buildings_in_db = len(Building.objects.all())
+        num_buildings_in_db = len(EvalUnit.objects.all())
 
         print(f'{datetime.now()} Currently {num_buildings_in_db} buildings in the database')
 
@@ -100,7 +100,7 @@ class Command(BaseCommand):
                 # code.interact(local=locals())
 
                 # Often the original address is not similar enough to detect duplicates before geocoding
-                if Building.objects.filter(serial_number=serial_number).exists():
+                if EvalUnit.objects.filter(serial_number=serial_number).exists():
                     print(f'{datetime.now()} Already have geocoded row: {row.rstrip()}')
                     continue
 
@@ -116,7 +116,7 @@ class Command(BaseCommand):
                     elif 'admin_area_3' in address_components:
                         locality = address_components['admin_area_3']
                     
-                    b = Building(
+                    b = EvalUnit(
                         street_number = address_components['street_number'],
                         street_name = address_components['street_name'],
                         locality = locality,

@@ -80,30 +80,18 @@
                     {% include "buildings/utils/sort_icons.html" with field="num_votes" dir=dir %}
                 </div>
             </th>
-            <th scope="col">
-                {% if order_by == "score" and dir == "desc" %}
-                    <a href="?order_by=score&dir=asc&{{current_search_query}}" class="row-link">
-                {% else %}
-                    <a href="?order_by=score&dir=desc&{{current_search_query}}" class="row-link">
-                {% endif %}
-                <div class="th-buildings">
-                    Score
-                    {% include "buildings/utils/sort_icons.html" with field="score" dir=dir %}
-                </div>
-            </th>
         </tr>
         </thead>
         <tbody>
             {% for building in page_obj %}
             <tr class="mb-2">
-                <th scope="row"><a href="{% url 'buildings:classify' building.id %}" class="row-link">{{ building.id }}</a></th>
-                <td><a href="{% url 'buildings:classify' building.id %}" tabindex="-1" class="row-link">{{ building.formatted_address }}</a></td>
-                <td><a href="{% url 'buildings:classify' building.id %}" tabindex="-1" class="row-link">{{ building.locality }}</a></td>
-                <td><a href="{% url 'buildings:classify' building.id %}" tabindex="-1" class="row-link">{{ building.region }}</a></td>
-                <td><a href="{% url 'buildings:classify' building.id %}" tabindex="-1" class="row-link">{{ building.cubf }}</a></td>
-                <td><a href="{% url 'buildings:classify' building.id %}" tabindex="-1" class="row-link">{{ building.date_added }}</a></td>
-                <td><a href="{% url 'buildings:classify' building.id %}" tabindex="-1" class="row-link">{{ building.vote_set.all | length }}</a></td>
-                <td><a href="{% url 'buildings:classify' building.id %}" tabindex="-1" class="row-link">{{ building.avg_score|default_if_none:0 }}</a></td>
+                <th scope="row"><a href="{% url 'buildings:survey_v1' building.id %}" class="row-link">{{ building.id }}</a></th>
+                <td><a href="{% url 'buildings:survey_v1' building.id %}" tabindex="-1" class="row-link">{{ building.formatted_address }}</a></td>
+                <td><a href="{% url 'buildings:survey_v1' building.id %}" tabindex="-1" class="row-link">{{ building.locality }}</a></td>
+                <td><a href="{% url 'buildings:survey_v1' building.id %}" tabindex="-1" class="row-link">{{ building.region }}</a></td>
+                <td><a href="{% url 'buildings:survey_v1' building.id %}" tabindex="-1" class="row-link">{{ building.cubf }}</a></td>
+                <td><a href="{% url 'buildings:survey_v1' building.id %}" tabindex="-1" class="row-link">{{ building.date_added }}</a></td>
+                <td><a href="{% url 'buildings:survey_v1' building.id %}" tabindex="-1" class="row-link">{{ building.vote_set.all | length }}</a></td>
             </tr>
             {% empty %}
             <tr class="mb-2">
@@ -123,17 +111,18 @@
     <div class="pagination mb-3">
         <span class="step-links">
             {% if page_obj.has_previous %}
-                <a class="mr-2" href="?order_by={{ order_by|default_if_none:'id' }}&dir={{ dir|default_if_none:'desc' }}{{current_search_query}}&page=1">&laquo; first</a>
-                <a class="mr-2" href="?order_by={{ order_by|default_if_none:'id' }}&dir={{ dir|default_if_none:'desc' }}{{current_search_query}}&page={{ page_obj.previous_page_number }}"> &lt; previous</a>
+                <a class="me-2" href="?order_by={{ order_by|default_if_none:'id' }}&dir={{ dir|default_if_none:'desc' }}{{current_search_query}}&page=1">&laquo; first</a>
+                <a class="me-2" href="?order_by={{ order_by|default_if_none:'id' }}&dir={{ dir|default_if_none:'desc' }}{{current_search_query}}&page={{ page_obj.previous_page_number }}"> &lt; previous</a>
             {% endif %}
 
-            <span class="current ml-2 mr-2">
+            <span class="current ms-2 me-2">
                 Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
             </span>
 
             {% if page_obj.has_next %}
-                <a class="mr-2" href="?order_by={{ order_by|default_if_none:'id' }}&dir={{ dir|default_if_none:'desc' }}{{current_search_query}}&page={{ page_obj.next_page_number }}">next &gt;</a>
-                <a class="mr-2" href="?order_by={{ order_by|default_if_none:'id' }}&dir={{ dir|default_if_none:'desc' }}{{current_search_query}}&page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                <a class="me-2" href="?order_by={{ order_by|default_if_none:'id' }}&dir={{ dir|default_if_none:'desc' }}{{current_search_query}}&page={{ page_obj.next_page_number }}">next &gt;</a>
+                <a class="me-2" href="?order_by={{ order_by|default_if_none:'id' }}&dir={{ dir|default_if_none:'desc' }}{{current_search_query}}&page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
             {% endif %}
         </span>
     </div>
+</div>

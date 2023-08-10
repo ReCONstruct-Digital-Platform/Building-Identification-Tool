@@ -1,6 +1,7 @@
 .venv/
 notes/
 log/
+.vscode/
 
 **/__pycache__/
 *db.sqlite*

@@ -1,127 +1,5 @@
-// Global counter variable to keep track of next ID to assign
-var NEXT_ROW_ID = 2;
-
-
-function getDeleteRowIconInnerHTML() {
-    html = `
-        <a class="a-delete-row" href="#">
-        <i class="x-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
-            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-            </svg>
-        </i>
-        </a>
-    `;
-    return html
-}
-
-function addNewMaterial(element) {
-    const name = element.name
-    element.old_name = name;
-    element.name = "";
-    const el = element.parentElement;
-
-    const text_input = document.createElement("input");
-    text_input.setAttribute("class", "new-material-input ml-2");
-    text_input.setAttribute("type", "text")
-    text_input.setAttribute("name", name)
-    text_input.setAttribute("required", "")
-    text_input.setAttribute("placeholder", "Enter new material...");
-
-    el.appendChild(text_input)
-}
-
-// Adds event listeners to a select element, to detect if 'new-material'
-// is selected. If so, make a text input field appear.
-function addEventListeners(element) {
-    // In case the value right after creation is new material, create the text input directly
-    if(element.value == "new-material")
-    {
-        addNewMaterial(element);
-    }
-
-    // Just in case, copied this from online but don't think it's ever used
-    element.addEventListener("click", function() {
-        var options = element.querySelectorAll("option");
-        var count = options.length;
-        if(typeof(count) === "undefined" || count < 1)
-        {
-            addNewMaterial(element);
-        }
-    });
-
-    element.addEventListener("change", function() {
-        if(element.value == "new-material")
-        {
-            if (!element.parentElement.querySelector('input')) {
-                addNewMaterial(element);
-            }
-        }
-        else
-        {
-            // When changing from selected materials, if new value is
-            // not 'New Material' then check if there's an input and delete it
-            if (element.parentElement.querySelector('input')) {
-                element.parentElement.querySelector('input').remove();
-                element.name = element.old_name;
-            }
-        } 
-    });
-}
-
-
-function addDeleteRowListener(element) {
-    // Configures the element to delete the given ID when clicked
-    element.addEventListener("click", function() {
-        const row = element.closest('tr');
-        row.remove();
-    });
-}
-
-function getSelectedMaterials() {
-    // Return all materials currently selected in dropdowns on the page
-    const material_selects = document.querySelectorAll('.material-select')
-
-    const selected_materials = [];
-    for (var i = 0; i < material_selects.length; i++) {
-        material = material_selects[i];
-
-        if (material.value === "new-material") {
-            selected_materials[i] = material.parentElement.querySelector('input').value;
-        }
-        else {
-            selected_materials[i] = material.value;
-        }
-    }
-    return selected_materials;
-}
-
-
-function getLatestViewData() {
-    sv_pano = sv.getPano();
-    sv_pov = sv.getPov();
-    m_marker_pos = m_marker.getPosition();
-    
-    var latest_view_data = {}
-    // Add extra data to the form
-    latest_view_data['sv_pano'] = sv_pano;
-    latest_view_data['sv_heading'] = sv_pov.heading;
-    latest_view_data['sv_pitch'] = sv_pov.pitch;
-    latest_view_data['sv_zoom'] = sv_pov.zoom;
-    latest_view_data['marker_lat'] = m_marker_pos.lat();
-    latest_view_data['marker_lng'] = m_marker_pos.lng();
-
-    return latest_view_data;
-}
-
-
-
-
-$(document).ready(function() {
-
-
-
+function setUpSurveyNavigation() {
+    // Set-up the on-page back button
     const element = document.getElementById('prev-building-link');
 
     // Provide a standard href to facilitate standard browser features such as 
@@ -139,54 +17,162 @@ $(document).ready(function() {
         history.back();
         return false;
     }
+}
 
-    // // Add a text input when user clicks the 'Add Note' button
-    // // Only add if one doesn't already exist, to avoid duplicates.
-    // $('#btn-add-note').click(function() {
-    //     const note_container = document.getElementById('note-container');
+function getLatestViewData() {
+    // Get the latest view data from streetview
+    const sv_pano = sv.getPano();
+    const sv_pov = sv.getPov();
+    const m_marker_pos = m_marker.getPosition();
+    
+    return {
+        'sv_pano': sv_pano,
+        'sv_heading': sv_pov.heading,
+        'sv_pitch': sv_pov.pitch,
+        'sv_zoom': sv_pov.zoom,
+        'marker_lat': m_marker_pos.lat(),
+        'marker_lng': m_marker_pos.lng(),
+    }
+}
 
-    //     if (!note_container.hasChildNodes()) {
-            
-    //         // Create this inner container to be deleted, instead of the overall element
-    //         const inner_container = document.createElement('div');
-    //         inner_container.setAttribute("class", "note-inner-container")
-    //         inner_container.setAttribute("id", "note-inner-container")
-    //         note_container.appendChild(inner_container);
+// Tried to replace with the faster https://github.com/tsayen/dom-to-image 
+// but failed due to this error https://github.com/tsayen/dom-to-image/issues/205
+// Since google maps loads the stylesheet, I can't add crossorigin="anonymous" to it.
+async function screenshot(element_id) {
+    return html2canvas(
+        document.getElementById(element_id), {
+            useCORS: true,
+            logging: false, // set true for debug,
+            ignoreElements: (el) => {
+                if (element_id === 'satmap') {
+                    // Keep the red pin for the satellite image
+                    return el.classList.contains("gmnoprint") || el.classList.contains("gm-style-cc") 
+                    || el.id === 'gmimap1' || el.tagName === 'BUTTON' || el.classList.contains("gm-iv-address")
+                } else {
+                    // The following hides unwanted controls, copyrights, pins etc. on the maps and streetview canvases
+                    return el.classList.contains("gmnoprint") || el.classList.contains("gm-style-cc") 
+                    || el.id === 'gmimap1' || el.tagName === 'BUTTON' || el.classList.contains("gm-iv-address")
+                    || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3_hdpi.png'
+                    || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3.png'
+                }
+            },
+        }
+    ).then(canvas => {
+        // For testing - appends the images to the page
+        // document.body.appendChild(canvas);
+        // Convert the image to a dataURL for uploading to the backend
+        return canvas.toDataURL('image/png');
+    })
+}
 
-    //         const p = document.createElement('p');
-    //         p.innerText = "Additonal notes about this building:"
-    //         inner_container.appendChild(p);
-            
-    //         const input_container = document.createElement('div');
-    //         input_container.setAttribute("class", "note-input-container")
-    //         inner_container.appendChild(input_container);
-            
 
-    //         const text_input = document.createElement('textarea');
-    //         // text_input.setAttribute("type", "text");
-    //         text_input.setAttribute("name", "note") ;
-    //         text_input.setAttribute("placeholder", "Enter note...");
-    //         text_input.setAttribute("class", "mb-3");
-    //         text_input.setAttribute("required", "");
-    //         text_input.setAttribute("resize", "both");
-    //         input_container.appendChild(text_input);
-            
-    //         const delete_note = document.createElement('div');
-    //         delete_note.setAttribute("class", "delete-note-icon");
-    //         delete_note.innerHTML = getDeleteRowIconInnerHTML();
-            
-    //         delete_note.addEventListener("click", function() {
-    //             inner_container.remove();
-    //         });
+async function screenshotAndUpload(event) {
+    event.preventDefault();
+    // Attempt to get the satellite screenshot from this element
+    let satelliteDataUrl = $("#sat_data").attr("data-url");
+    
+    // If not found, screenshot it now
+    if (!satelliteDataUrl) {
+        console.log('Need to screenshot satellite');
+        satelliteDataUrl = await screenshot('satmap');
+    }
+    // Screenshot the streetview as well
+    const imgData = {
+        streetview: await screenshot('streetview'),
+        satellite: satelliteDataUrl,
+    }
 
-    //         input_container.appendChild(delete_note);
-    //     }
-    // });
+    // Get the upload url from the page and POST the data
+    const url = $("#upload_url").attr("data-url");
 
+    fetch(url, {
+        method: "POST",
+        mode: "same-origin", 
+        cache: "no-cache", 
+        credentials: "same-origin", 
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie('csrftoken'), // So django accepts the request
+        },
+        body: JSON.stringify(imgData), 
+      });
+}
+
+
+function setUpDragBar() {
+    const dragbar = document.getElementById('dragbar');
+    const left = document.getElementById('streetview-container');
+
+    // Check if streetview container was previously resized by the user
+    // If not set its size to a default of 50%, otherwise use saved settings
+    const saved = localStorage.getItem("savedWidth");
+
+    if (saved){
+        left.style.width = saved;
+    } else {
+        left.style.width = '50%';
+    }
+    
+    // Calculate the new width, set the left panel's width and save in local storage
+    const resizeOnDrag = (e) => {
+        document.selection ? document.selection.empty() : window.getSelection().removeAllRanges();
+        const newWidth = (e.pageX - dragbar.offsetWidth / 2) + 'px'
+        left.style.width = newWidth;
+        localStorage.setItem("savedWidth", newWidth);
+    }
+      
+    dragbar.addEventListener('mousedown', () => {
+        document.addEventListener('mousemove', resizeOnDrag);
+    });
+    
+    dragbar.addEventListener('mouseup', () => {
+        document.removeEventListener('mousemove', resizeOnDrag);
+    });
+
+    document.addEventListener('mouseup', () => {
+        document.removeEventListener('mousemove', resizeOnDrag);
+    });
+}
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// This function dynamically sets the height of the right panel (satellite view and survey)
+function setUpScrollHeightObserver() {
+    const targetNode = document.getElementById('streetview');
+
+    const observer = new MutationObserver(() => {
+        const svHeight = $('#streetview').height();
+        const tabHeight = $('#nav-tab').height();
+        const textHeight = svHeight - tabHeight ;
+        document.getElementById("tab-content-container").style.height = textHeight + "px";
+    })
+    observer.observe(targetNode, {childList: true, subtree: true});
+}
+
+
+function setUpButtons() {
+    // Screenshot functionality
+    $('#btn-screenshot').click(screenshotAndUpload);
+
+    // No building button
     $('#btn-no-building').click((e) => {
         e.preventDefault();
         
-        const form = document.getElementById('building-submition-form');
+        const form = document.getElementById('building-submission-form');
 
         const no_building_input = document.createElement("input");
         no_building_input.setAttribute("type", "hidden");
@@ -203,56 +189,48 @@ $(document).ready(function() {
         finally {
             form.submit();
         }
-
     })
 
-    $('#building-submition-form').one('submit', (e) => {
+    // When user submits form, upload both current streetview and sat views
+    // then continue with default behaviour
+    $('#btn-submit-vote').click(async (e) => {
         e.preventDefault();
-        try {
-            const latest_view_data = getLatestViewData();
-            document.querySelector('#latest_view_data').value = JSON.stringify(latest_view_data);
-        } 
-        catch (error) {
-            console.error(error);
-        } 
-        finally {
-            // Go on to the normal processing
-            $('#building-submition-form').submit();
-        }
-
-    })
-
-    // Check if streetview container was resized previously
-    // If not set its size to 50%, if yes use the saved settings
-    const sv_container = $('.streetview-container');
-
-    var sv_saved_width = localStorage.getItem("sv_saved_width");
-
-    if (sv_saved_width == null){
-        sv_container.css("width", '50%');
-    } else {
-        sv_container.css("width", sv_saved_width);
-    }
-
-    var dragging = false;
-
-    $('#dragbar').mousedown(function(e) {
-        e.preventDefault();
-        dragging = true;
+        form = $('#building-submission-form')[0];
         
-        $(document).mousemove(function(ex) {
-            sv_container.css("width", ex.pageX +2);
-            localStorage.setItem("sv_saved_width", ex.pageX +2);
-        });
+        // Check form inputs are valid
+        if (!form.checkValidity()) {
+            // Create the temporary button, click and remove it
+            // This makes the validation comments appear on screen
+            var tmpSubmit = document.createElement('button');
+            form.appendChild(tmpSubmit);
+            tmpSubmit.click();
+            form.removeChild(tmpSubmit);
+        }
+        else {
+            // screenshot the streetview
+            await screenshotAndUpload(e);
+            // Set the latest view data
+            $('#latest_view_data').val(JSON.stringify(getLatestViewData()));
+            form.submit();
+        }
     });
+}
 
-    $(document).mouseup(function(e){
-    if (dragging) 
-    {
-        $(document).unbind('mousemove');
-        dragging = false;
-    }
+function satelliteTabScreenshotOnHide() {
+    // The hide.bs.tab event fires when the tab is to be hidden
+    $('#nav-satellite-tab').on('hide.bs.tab', async () => {
+        // We save a screenshot of its current version to upload later
+        console.log('screenshoting satellite');
+        const dataUrl = await screenshot('satmap');
+        $('#sat_data').attr('data-url', dataUrl);
     });
+}
 
 
+$(document).ready(function() {
+    setUpSurveyNavigation();
+    setUpDragBar();
+    setUpScrollHeightObserver();
+    setUpButtons();
+    satelliteTabScreenshotOnHide();
 });

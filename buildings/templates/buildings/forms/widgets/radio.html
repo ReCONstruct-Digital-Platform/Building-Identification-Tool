@@ -1,0 +1,12 @@
+{% with id=widget.attrs.id initial_val=widget.initial was_filled=widget.was_filled %}
+<div id="{{ id }}" class="{{ widget.attrs.class }}">
+  {% for _, options, _ in widget.optgroups %}
+    {% for option in options %}
+      <label>
+        <input id="{{ option.attrs.id }}" class="me-1" type="{{ option.type }}" 
+          name="{{ option.name }}" value="{{ option.value|stringformat:'s' }}" 
+          {% if was_filled and initial_val == option.value %} checked{% elif was_filled and initial_val is None and option.value == ''%} checked{% endif %} required>{{ option.label }}</label>
+    {% endfor %}
+  {% endfor %}
+</div>
+{% endwith %}
