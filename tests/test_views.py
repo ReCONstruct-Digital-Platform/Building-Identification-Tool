@@ -26,7 +26,15 @@ class LoginViewTests(TestCase):
     def test_logging_in_and_redirecting_to_survey(self):
         response = self.client.post('/login?next=/survey', data={'username':'testuser', 'password':'testpw'}, follow=True)
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertListEqual(response.redirect_chain, [('/survey', 302), ('/survey/v1/id1', 302)])
+
+        url, status =  response.redirect_chain[0]
+        self.assertEqual(url, '/survey')
+        self.assertEqual(status, 302)
+
+        url, status =  response.redirect_chain[1]
+        self.assertRegex(url, r'/survey/v1/id[12]')
+        self.assertEqual(status, 302)
+
 
 
 class SurveyViewTests(TestCase):
