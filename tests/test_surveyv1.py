@@ -1,9 +1,6 @@
-import IPython
-
 from django.test import TestCase
 from django.forms.models import model_to_dict
 from buildings.models import SurveyV1Form, User, EvalUnit
-
 
 
 class MyTests(TestCase):
