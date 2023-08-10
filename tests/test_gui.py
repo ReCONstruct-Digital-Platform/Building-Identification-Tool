@@ -332,16 +332,19 @@ class SeleniumChromeTests(StaticLiveServerTestCase):
 
         # Fill in the form
         # Chrome has a problem where it cant scroll normally like friefox
-        wait.until(EC.presence_of_element_located((By.ID, 'id_has_simple_footprint_0')))
-        wait.until(EC.visibility_of_element_located((By.ID, 'id_has_simple_footprint_0')))
-        driver.find_element(By.ID, "id_has_simple_footprint_0").click()
-        wait.until(EC.presence_of_element_located((By.ID, 'id_has_simple_volume_1')))
-        wait.until(EC.visibility_of_element_located((By.ID, 'id_has_simple_volume_1')))
-        driver.find_element(By.ID, "id_has_simple_volume_1").click()
-        driver.find_element(By.ID, "id_num_storeys_specify").click()
-        driver.find_element(By.ID, "id_num_storeys_specify_value").send_keys('5')
-        wait.until(EC.presence_of_element_located((By.ID, 'id_has_basement_2')))
-        wait.until(EC.visibility_of_element_located((By.ID, 'id_has_basement_2')))
+        e = driver.find_element(By.ID, "id_has_simple_footprint_0")
+        driver.execute_script("arguments[0].scrollIntoView();", e)
+        driver.execute_script("arguments[0].click();", e)
+
+        e = driver.find_element(By.ID, "id_has_simple_volume_1")
+        driver.execute_script("arguments[0].scrollIntoView();", e)
+        driver.execute_script("arguments[0].click();", e)
+
+        e = driver.find_element(By.ID, "id_num_storeys_specify")
+        driver.execute_script("arguments[0].scrollIntoView();", e)
+        driver.execute_script("arguments[0].click();", e)
+        e = driver.find_element(By.ID, "id_num_storeys_specify_value")
+        driver.execute_script("arguments[0].value = arguments[1];", e, '5')
 
         e = driver.find_element(By.ID, "id_has_basement_2")
         driver.execute_script("arguments[0].scrollIntoView();", e)
