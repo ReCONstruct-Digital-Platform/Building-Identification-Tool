@@ -61,6 +61,10 @@ jobs:
       env: 
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        B2_KEYID_RW: ${{ secrets.B2_KEYID_RW }}
+        B2_APPKEY_RW: ${{ secrets.B2_APPKEY_RW }}
+        B2_ENDPOINT: ${{ secrets.B2_ENDPOINT }}
+        B2_BUCKET_IMAGES: ${{ secrets.B2_BUCKET_IMAGES }}
         POSTGRES_NAME: bitdb
         POSTGRES_USER: bitdbuser
         POSTGRES_PW: password
