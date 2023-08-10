@@ -10,6 +10,7 @@ class LoginViewTests(TestCase):
     def setUpTestData(cls):
         cls.user = User.objects.create_user(username='testuser', password='testpw')
         cls.eval_unit = EvalUnit.objects.create(id='id1', lat=1.0, lng=1.5, muni='mtl', address='123 a st', mat18='fsd', cubf=1000)
+        cls.eval_unit2 = EvalUnit.objects.create(id='id2', lat=1.0, lng=1.5, muni='mtl', address='123 a st', mat18='fsd', cubf=1000)
         cls.client = Client()
         
     def test_redirect_if_not_logged_in(self):
@@ -33,13 +34,18 @@ class SurveyViewTests(TestCase):
     def setUpTestData(cls):
         cls.user = User.objects.create_user(username='testuser', password='testpw')
         cls.eval_unit = EvalUnit.objects.create(id='id1', lat=1.0, lng=1.5, muni='mtl', address='123 a st', mat18='fsd', cubf=1000)
+        cls.eval_unit2 = EvalUnit.objects.create(id='id2', lat=1.0, lng=1.5, muni='mtl', address='123 a st', mat18='fsd', cubf=1000)
         cls.client = Client()
 
     def test_get_survey_home(self):
         self.client.login(username='testuser', password='testpw')
         response = self.client.get("/survey", follow=True)
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertListEqual(response.redirect_chain, [('/survey/v1/id1', 302)])
+        redirect_chain = response.redirect_chain
+        self.assertEqual(len(redirect_chain), 1)
+        url, status = redirect_chain[0]
+        self.assertEqual(status, 302)
+        self.assertRegex(url, r'/survey/v1/id[12]')
 
     def test_get_survey_v1_specific(self):
         self.client.login(username='testuser', password='testpw')

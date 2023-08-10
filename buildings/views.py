@@ -25,6 +25,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
 
+from buildings.utils.utility import print_query_dict
+
 from .utils import b2_upload
 from .forms import CreateUserForm
 from .models.surveys import SurveyV1Form
@@ -149,8 +151,7 @@ def survey_v1(request, eval_unit_id):
 
     # TODO: Do we still need the no building flag? 
     if request.method == "POST":
-        log.debug('request.POST:')   
-        log.debug(pprint(request.POST))
+        log.debug(print_query_dict(request.POST))
 
         # Save the last orientation/zoom for the building for later visits
         if 'latest_view_data' in request.POST:
@@ -188,8 +189,8 @@ def survey_v1(request, eval_unit_id):
             next_eval_unit = EvalUnit.objects.get_next_unit_to_survey(exclude_id = eval_unit.id)
             return redirect("buildings:survey_v1", eval_unit_id=next_eval_unit.id)
 
-        # Handle submission of survey version 1
-        elif 'survey_version' in request.POST and request.POST.get('survey_version') == '1.0':
+        # Handle submission of the survey
+        else:
             # If previous_survey_answer is not None, we will modify the previous entry
             form = SurveyV1Form(request.POST, instance=prev_survey_instance)
 
@@ -295,88 +296,76 @@ def logout_page(request):
 
 
 @require_POST
-def upload_imgs(request, building_id):
+def upload_imgs(request, eval_unit_id):
     # Receive the images from the frontend
     body = json.loads(request.body)
 
     b2 = b2_upload.get_b2_resource(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW)
 
-    building = get_object_or_404(EvalUnit, pk=building_id)
+    eval_unit = get_object_or_404(EvalUnit, pk=eval_unit_id)
 
     # Add any kind of metadata to be associated with the image
+    # upload date is already available
     extra_args = {
         'Metadata': {
             'user': request.user.username,
+            'eval_unit': eval_unit_id,  # add a reverse link to eval unit
         }
     }
 
-    upload_formats_and_sizes = [('large', 2400), ('medium', 1200), ('small', 400)]
+    upload_formats_and_sizes = [('l', 1200), ('m', 700), ('s', 300)]
 
-    for image_type in body.keys():
-        print(image_type)
+    # create 2 UUIDs to be shared by images of the same type
+    UUIDs = {
+        'streetview': uuid7str(),
+        'satellite': uuid7str()
+    }
+
+    for image_type in ['streetview', 'satellite']:
 
         if data_uri := body.get(image_type):
             data = parse_data_uri(data_uri)
             image = Image.open(io.BytesIO(data.data))
             # Convert the image to RGB to save as JPG
             image = image.convert('RGB')
+            logging.debug(f'Image original size: {image.size}')
 
         if not image:
-            return HttpResponse("Fail")
+            return HttpResponse(f"Iamge of type {image_type} not founD!")
         
-        # For streetview images, we'll store multiple sizes 
-        if image_type == 'streetview':
-            # Streetview pics of all sizes will share a UUID
-            uuid = uuid7str()
-            # We'll do an all or nothing save here. 
-            # If an exception occurs during saving any of the sizes
-            # we won't save the link in the DB. On the other hand, if 
-            # we have a link in the DB, we know that all sizes exist.
-            # This could result in stranded images in B2 if only some uploads fail.
-            try:
-                for format, size in upload_formats_and_sizes: 
-                    # Resize the image, maintaining the aspect ratio
-                    image.thumbnail((size, size))
-                    print(image.size)
-                    # Create an in memory file to temporarily store the image
-                    in_mem_file = io.BytesIO()
-                    image.save(in_mem_file, format='jpeg')
-                    in_mem_file.seek(0)
+        uuid = UUIDs[image_type]
 
-                    # Try to upload the image
-                    b2.Bucket(B2_BUCKET_IMAGES).upload_fileobj(
-                        in_mem_file,
-                        f"images/streetview/{format}/{uuid}.jpg",
-                        ExtraArgs=extra_args
-                    )
+        # We'll do an all or nothing save here. 
+        # If an exception occurs during saving any of the sizes
+        # we won't save the link in the DB. On the other hand, if 
+        # we have a link in the DB, we know that all sizes exist.
+        # This could result in stranded images in B2 if only some uploads fail.
+        try:
+            for format, size in upload_formats_and_sizes: 
+                # Resize the image, maintaining the aspect ratio
+                image.thumbnail((size, size))
+                print(image.size)
+                # Create an in memory file to temporarily store the image
+                in_mem_file = io.BytesIO()
+                image.save(in_mem_file, format='jpeg')
+                in_mem_file.seek(0)
 
-                # Only need to save the UUID in DB once, since formats share it
-                EvalUnitStreetViewImage(building=building, uuid=uuid, user=request.user).save()
-            except:
-                print(traceback.format_exc())
-            
-            in_mem_file.close()
-
-        elif image_type == 'satellite':
-            uuid = uuid7str()
-            # Resize the image, maintaining the aspect ratio
-            image.thumbnail((1200, 1200))
-            # Create an in memory file to temporarily store the image
-            in_mem_file = io.BytesIO()
-            # Convert to JPEG for space, it's about 4 times smaller
-            image.save(in_mem_file, format='jpeg')
-            in_mem_file.seek(0)
-            try:
                 # Try to upload the image
                 b2.Bucket(B2_BUCKET_IMAGES).upload_fileobj(
                     in_mem_file,
-                    f"images/satellite/medium/{uuid}.jpg",
+                    f"screenshots/{image_type}/{format}/{uuid}.jpg",
                     ExtraArgs=extra_args
                 )
-                EvalUnitSatelliteImage(building=building, uuid=uuid, user=request.user).save()
-            except:
-                print(traceback.format_exc())
-            in_mem_file.close()
+
+            # Only need to save the UUID in DB once, since diff sizes share it
+            if image_type == 'streetview':
+                EvalUnitStreetViewImage(eval_unit=eval_unit, uuid=uuid, user=request.user).save()
+            elif image_type == 'satellite':
+                EvalUnitSatelliteImage(eval_unit=eval_unit, uuid=uuid, user=request.user).save()
+        except:
+            print(traceback.format_exc())
+        
+        in_mem_file.close()
 
     return HttpResponse('Ok')
 

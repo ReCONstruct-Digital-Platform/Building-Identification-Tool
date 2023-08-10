@@ -33,7 +33,7 @@ def upload_file(b2, fileobj, bucket, b2_path, extra_args=None):
         ExtraArgs=extra_args
     )
 
-def download_file(bucket, directory, local_name, key_name, b2):
+def download_file(b2, bucket, directory, local_name, key_name):
     file_path = directory + '/' + local_name
     try:
         b2.Bucket(bucket).download_file(key_name, file_path)

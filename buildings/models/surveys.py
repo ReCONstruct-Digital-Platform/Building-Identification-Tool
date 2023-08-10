@@ -11,7 +11,8 @@ from buildings.models.models import EvalUnit, Vote
 
 from buildings.widgets import RadioSelect, NumberOrUnsure, CheckboxRequiredSelectMultiple, RadioWithSpecify
 
-
+# The first element is the actual value
+# forms will pass it as a string nack to the backend
 YES_NO = [
     (True, "Yes"),
     (False, "No"),
@@ -119,9 +120,9 @@ class SurveyV1Form(ModelForm):
         logging.debug(pprint(self.initial))
 
         self.was_filled = False
-        # If an instance was passed, there was a previous survey
+        # If a non-null instance was passed, there was a previous survey
         # submission for this building and this user.
-        if kwargs['instance']:
+        if 'instance' in kwargs and kwargs['instance']:
             self.was_filled = True
 
             # Add initial values to the widgets

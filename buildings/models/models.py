@@ -85,18 +85,25 @@ class EvalUnitQuerySet(models.QuerySet):
         # "order_by('?')" orders objects randomly in the database.
         return self.get_unvoted().exclude(id=exclude_id).order_by('?').first()
     
-    def get_random_least_voted(self, exclude_id=None, num_buildings_to_pick_from=25):
-        # Get the 'num_buildings_to_pick_from' least voted buildings 
-        least_voted_buildings = EvalUnit.objects.exclude(id=exclude_id) \
+    def get_random_least_voted(self, exclude_id=None):
+        # Go through max 25 buildings
+        num_units_to_pick_from = min(EvalUnit.objects.count(), 25)
+        if exclude_id:
+            num_units_to_pick_from -= 1
+
+        least_voted_units = EvalUnit.objects.exclude(id=exclude_id) \
                 .annotate(num_votes=Count('vote')) \
-                .order_by('-num_votes')[:num_buildings_to_pick_from]
-        
-        if len(least_voted_buildings) == 0:
-            return EvalUnit(id=0)
+                .order_by('-num_votes')[:num_units_to_pick_from]
+
+        if len(least_voted_units) == 0:
+            raise Exception('No eval units to pick from!')
+
+        if len(least_voted_units) == 1:
+            return least_voted_units[0]
             
         # return a random one from them
-        rand_num = random.randint(1, num_buildings_to_pick_from)
-        return least_voted_buildings[rand_num]
+        rand_num = random.randint(0, num_units_to_pick_from)
+        return least_voted_units[rand_num]
     
     def get_next_unit_to_survey(self, exclude_id=None):
         """
