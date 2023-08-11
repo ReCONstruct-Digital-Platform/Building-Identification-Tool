@@ -51,10 +51,15 @@ if __name__=='__main__':
     env = environ.Env()
     environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-    import code
-    code.interact(local=locals())
-    
-    b2 = get_b2_resource(env('B2_ENDPOINT'), env('B2_KEYID_RW'), env('B2_APPKEY_RW'))
+    B2_KEYID_RW=''
+    B2_APPKEY_RW=''
+    B2_ENDPOINT=''
+    B2_BUCKET_IMAGES=''
 
-    # b2.Bucket(bucket).objects.all()
+    b2 = get_b2_resource(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW)
+    c = get_b2_client(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW)
+    
+    import IPython
+    IPython.embed()
+
 

@@ -1,14 +1,14 @@
-from hashlib import md5
 import random
+import logging
+from hashlib import md5
 
-from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from django.db import models, connection
 from django.db.models import Q, Count, Avg, TextField
 from django.db.models.functions import Cast, Coalesce
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractUser
-import logging
 
 from buildings.utils.contants import CUBF_TO_NAME_MAP
 
@@ -30,6 +30,39 @@ class User(AbstractUser):
         return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
 
 
+
+SQL_RANDOM_UNVOTED_ID = f"""
+    SELECT buildings_evalunit.id FROM buildings_evalunit 
+    LEFT OUTER JOIN buildings_vote ON (buildings_evalunit.id = buildings_vote.eval_unit_id)
+    WHERE buildings_vote.eval_unit_id IS NULL ORDER BY RANDOM() LIMIT 1;
+"""
+
+SQL_RANDOM_UNVOTED_ID_WITH_EXCLUDE = f"""
+    SELECT buildings_evalunit.id FROM buildings_evalunit 
+    LEFT OUTER JOIN buildings_vote ON (buildings_evalunit.id = buildings_vote.eval_unit_id)
+    WHERE buildings_vote.eval_unit_id IS NULL AND buildings_evalunit.id != %s
+    ORDER BY RANDOM() LIMIT 1;
+"""
+
+# The limit parameter gives the number of eval units from which we will randomly pick
+# ideally we want it somewaht large (though not too much that the query is expensive)
+# but it can't be less than the number of eval units minus 1, else the query won't work
+SQL_RANDOM_LEAST_VOTED_ID = f"""
+    SELECT sub.id FROM 
+        (SELECT buildings_evalunit.id FROM buildings_evalunit 
+        INNER JOIN buildings_vote ON (buildings_evalunit.id = buildings_vote.eval_unit_id) 
+        GROUP BY buildings_evalunit.id ORDER BY COUNT(buildings_vote.id) ASC limit %s) 
+    AS sub ORDER BY RANDOM() LIMIT 1;
+"""
+
+SQL_RANDOM_LEAST_VOTED_ID_WITH_EXCLUDE = f"""
+    SELECT sub.id FROM 
+        (SELECT buildings_evalunit.id FROM buildings_evalunit 
+        INNER JOIN buildings_vote ON (buildings_evalunit.id = buildings_vote.eval_unit_id) 
+        WHERE buildings_evalunit.id != %s
+        GROUP BY buildings_evalunit.id ORDER BY COUNT(buildings_vote.id) ASC limit %s) 
+    AS sub ORDER BY RANDOM() LIMIT 1;
+"""
 
 class EvalUnitQuerySet(models.QuerySet):
     # We implement this ourselves, not an override of a QuerySet method
@@ -81,39 +114,46 @@ class EvalUnitQuerySet(models.QuerySet):
     def get_unvoted(self):
         return EvalUnit.objects.filter(vote = None)
     
-    def get_random_unvoted(self, exclude_id=None):
-        # "order_by('?')" orders objects randomly in the database.
-        return self.get_unvoted().exclude(id=exclude_id).order_by('?').first()
     
-    def get_random_least_voted(self, exclude_id=None):
-        # Go through max 25 buildings
-        num_units_to_pick_from = min(EvalUnit.objects.count(), 25)
-        if exclude_id:
-            num_units_to_pick_from -= 1
+    def get_random_unvoted_id(self, exclude_id=None):
+        with connection.cursor() as cursor:
+            if exclude_id:
+                cursor.execute(SQL_RANDOM_UNVOTED_ID_WITH_EXCLUDE, (exclude_id,))
+            else:
+                cursor.execute(SQL_RANDOM_UNVOTED_ID)
+            res = cursor.fetchone()
 
-        least_voted_units = EvalUnit.objects.exclude(id=exclude_id) \
-                .annotate(num_votes=Count('vote')) \
-                .order_by('-num_votes')[:num_units_to_pick_from]
+        if res is None:
+            return res
+        return res[0]
 
-        if len(least_voted_units) == 0:
-            raise Exception('No eval units to pick from!')
 
-        if len(least_voted_units) == 1:
-            return least_voted_units[0]
-            
-        # return a random one from them
-        rand_num = random.randint(0, num_units_to_pick_from)
-        return least_voted_units[rand_num]
+    def get_random_least_voted_id(self, exclude_id=None):
+        # Number of least voted eval units from which to randomly pick
+        # Can't be smaller than the number of units, else it won't work
+        inner_limit = min(100, self.count()-1)
+        with connection.cursor() as cursor:
+            if exclude_id:
+                cursor.execute(SQL_RANDOM_LEAST_VOTED_ID_WITH_EXCLUDE, (exclude_id, inner_limit))
+            else:
+                cursor.execute(SQL_RANDOM_LEAST_VOTED_ID, (inner_limit,))
+            res = cursor.fetchone()
+        # Should not be None if there is at least 1 model
+        return res[0]
     
-    def get_next_unit_to_survey(self, exclude_id=None):
+
+    def get_next_unit_to_survey(self, exclude_id=None, id_only=False):
         """
         Tries to get a random unvoted building. 
         If all buildings were voted, returns a random least voted building.
         """
-        b = self.get_random_unvoted(exclude_id=exclude_id)
-        if b is None:
-            b = self.get_random_least_voted(exclude_id=exclude_id)
-        return b
+        id = self.get_random_unvoted_id(exclude_id=exclude_id)
+        if id is None:
+            id = self.get_random_least_voted_id(exclude_id=exclude_id)
+        if id_only:
+            return id
+        
+        return EvalUnit.objects.get(pk=id)
     
 
     

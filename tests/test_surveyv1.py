@@ -1,17 +1,18 @@
 from django.test import TestCase
 from django.forms.models import model_to_dict
 from buildings.models import SurveyV1Form, User, EvalUnit
+from buildings.models.models import Vote
 
 
 class MyTests(TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.user = User.objects.create_superuser(username='testuser', password='testpw')
-        cls.eval_unit = EvalUnit.objects.create(id='id1', lat=1.0, lng=1.5, muni='mtl', address='123 a st', mat18='fsd', cubf=1000)
-        cls.eval_unit2 = EvalUnit.objects.create(id='id2', lat=1.0, lng=1.5, muni='mtl', address='4656 a st', mat18='fsdfsd', cubf=1000)
-        cls.form_data = {
+    serialized_rollback = False
+    
+    def setUp(self):
+        self.user = User.objects.create_superuser(username='testuser', password='testpw')
+        self.eval_unit = EvalUnit.objects.create(id='id1', lat=1.0, lng=1.5, muni='mtl', address='123 a st', mat18='fsd', cubf=1000)
+        self.eval_unit2 = EvalUnit.objects.create(id='id2', lat=1.0, lng=1.5, muni='mtl', address='4656 a st', mat18='fsdfsd', cubf=1000)
+        self.form_data = {
             "has_simple_footprint": 'True',
             "has_simple_volume": 'False',
             "num_storeys": 5,
@@ -57,9 +58,12 @@ class MyTests(TestCase):
         response = self.client.get("/survey/v1/id1")
         self.assertTrue(response.context['form'].was_filled)
         form_as_dict = model_to_dict(response.context['form'].instance)
+        # Get the current vote id
+        # the PKs keep incrementing between tests, but objects get destroyed
+        vote_id = Vote.objects.first().id
         self.assertDictEqual(form_as_dict, {
             "id": 1,
-            "vote": 1,
+            "vote": vote_id,
             "has_simple_footprint": True,
             "has_simple_volume": False,
             "num_storeys": 5,

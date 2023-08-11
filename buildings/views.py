@@ -39,16 +39,9 @@ log = logging.getLogger(__name__)
 @login_required(login_url='buildings:login')
 def index(request):
 
-    random_building = EvalUnit.objects.get_random_unvoted()
-
     latest_votes = Vote.objects.get_latest(n=5)
 
-    # If all buildings have votes, return a random building from the least voted ones
-    if random_building is None:
-        random_building = EvalUnit.objects.get_random_least_voted()
-
     context = {
-        "random_unscored_building_id": random_building.id,
         "latest_votes": latest_votes
     }
     return render(request, 'buildings/index.html', context)
@@ -149,10 +142,7 @@ def survey_v1(request, eval_unit_id):
     if previous_no_building_vote:
         log.debug('Previously voted no building!')
 
-    # TODO: Do we still need the no building flag? 
     if request.method == "POST":
-        log.debug(print_query_dict(request.POST))
-
         # Save the last orientation/zoom for the building for later visits
         if 'latest_view_data' in request.POST:
             data = request.POST.getlist('latest_view_data')[0]
@@ -186,8 +176,8 @@ def survey_v1(request, eval_unit_id):
                 no_building = NoBuildingFlag(vote = new_vote)
                 no_building.save()
 
-            next_eval_unit = EvalUnit.objects.get_next_unit_to_survey(exclude_id = eval_unit.id)
-            return redirect("buildings:survey_v1", eval_unit_id=next_eval_unit.id)
+            next_eval_unit_id = EvalUnit.objects.get_next_unit_to_survey(exclude_id = eval_unit.id, id_only=True)
+            return redirect("buildings:survey_v1", eval_unit_id=next_eval_unit_id)
 
         # Handle submission of the survey
         else:
@@ -195,9 +185,6 @@ def survey_v1(request, eval_unit_id):
             form = SurveyV1Form(request.POST, instance=prev_survey_instance)
 
             if form.is_valid():
-                log.debug('cleaned_data:')
-                log.debug(pprint(form.cleaned_data))
-
                 with transaction.atomic():
                     # Delete any previous no building vote for this building
                     # I.e. we're overwriting it.
@@ -211,9 +198,9 @@ def survey_v1(request, eval_unit_id):
                     form.save()
 
                 # Update the eval unit to a new one
-                next_eval_unit = EvalUnit.objects.get_next_unit_to_survey(exclude_id = eval_unit.id)
+                next_eval_unit_id = EvalUnit.objects.get_next_unit_to_survey(exclude_id = eval_unit.id, id_only = True)
                 # We redirect so the URL updates to the next building ID
-                return redirect("buildings:survey_v1", eval_unit_id=next_eval_unit.id)
+                return redirect("buildings:survey_v1", eval_unit_id=next_eval_unit_id)
             else:
                 log.error(form.errors)
 
@@ -224,7 +211,7 @@ def survey_v1(request, eval_unit_id):
         latest_view_data = model_to_dict(latest_view_data, exclude=['id', 'user', 'date_added'])
 
     # Get the next building 
-    next_eval_unit = EvalUnit.objects.get_next_unit_to_survey(exclude_id = eval_unit.id)
+    next_eval_unit_id = EvalUnit.objects.get_next_unit_to_survey(exclude_id = eval_unit.id, id_only=True)
 
     form = SurveyV1Form(instance=prev_survey_instance)
 
@@ -233,7 +220,7 @@ def survey_v1(request, eval_unit_id):
         'key': settings.GOOGLE_MAPS_API_KEY,
         'eval_unit': eval_unit,
         'latest_view_data': latest_view_data,
-        'next_eval_unit': next_eval_unit.id,
+        'next_eval_unit_id': next_eval_unit_id,
         'form': form,
         'previous_no_building_vote': previous_no_building_vote
     }
@@ -344,7 +331,7 @@ def upload_imgs(request, eval_unit_id):
             for format, size in upload_formats_and_sizes: 
                 # Resize the image, maintaining the aspect ratio
                 image.thumbnail((size, size))
-                print(image.size)
+                print(image.size, end='')
                 # Create an in memory file to temporarily store the image
                 in_mem_file = io.BytesIO()
                 image.save(in_mem_file, format='jpeg')

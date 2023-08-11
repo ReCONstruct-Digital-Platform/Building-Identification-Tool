@@ -116,9 +116,6 @@ class SurveyV1Form(ModelForm):
     def __init__(self, *data, **kwargs):
         super().__init__(*data, **kwargs)
 
-        logging.debug('initital values:')
-        logging.debug(pprint(self.initial))
-
         self.was_filled = False
         # If a non-null instance was passed, there was a previous survey
         # submission for this building and this user.
