@@ -36,14 +36,14 @@ APPENDAGES = [
     ("none", "No significant appendages"),
 ]
 FACADE_MATERIALS = [
-    ("concrete", "Concrete"),
-    ("plaster", "Plaster"),
-    ("wood", "Wood"),
-    ("vinyl", "Vinyl"),
-    ("curtain_wall", "Curtain Wall"),
-    ("metal", "Metal"),
     ("brick_masonry", "Brick Masonry"),
+    ("concrete", "Concrete"),
+    ("curtain_wall", "Curtain Wall"),
+    ("plaster", "Plaster"),
+    ("metal", "Metal"),
+    ("vinyl", "Vinyl"),
     ("stone_masonry", "Stone Masonry"),
+    ("wood", "Wood"),
     ("unsure", "Unsure"),
 ]
 FACADE_CONDITIONS = [
@@ -110,7 +110,7 @@ class SurveyV1Form(ModelForm):
     # https://docs.djangoproject.com/en/4.2/ref/forms/widgets/
     # https://docs.djangoproject.com/en/4.2/ref/forms/validation/
 
-    template_name = "surveys/survey_v1.html"
+    template_name = "buildings/surveys/survey_v1.html"
     json_fields = ['site_obstructions', 'appendages', 'exterior_cladding']
 
     def __init__(self, *data, **kwargs):
@@ -144,7 +144,7 @@ class SurveyV1Form(ModelForm):
             "site_obstructions": CheckboxRequiredSelectMultiple(choices=SITE_OBSTRUCTIONS, has_specify=True, attrs={"class": "survey-1col"}),
             "appendages": CheckboxRequiredSelectMultiple(choices=APPENDAGES, has_specify=True, attrs={"class": "survey-1col"}),
             "exterior_cladding": CheckboxRequiredSelectMultiple(choices=FACADE_MATERIALS, has_specify=True, attrs={"class": "survey-3col"}),
-            "facade_condition": RadioSelect(choices=FACADE_CONDITIONS, attrs={"class": "survey-2col"}),
+            "facade_condition": RadioSelect(choices=FACADE_CONDITIONS, attrs={"class": "survey-1col"}),
             "window_wall_ratio": RadioSelect(choices=WINDOW_TO_WALL_RATIOS, attrs={"class": "survey-1col"}),
             "large_irregular_windows": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),
             "roof_geometry": RadioWithSpecify(choices=ROOF_GEOMETRIES, attrs={"class": "survey-3col"}),

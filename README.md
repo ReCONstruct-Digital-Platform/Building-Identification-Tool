@@ -115,6 +115,9 @@ We need to resolve the physical link, owner status and construction type to thei
 We also add the current date as a constant for all.
 ```sql
 \copy (SELECT r.id, lat, lng, muni, muni_code, arrond, address, num_adr_inf, num_adr_inf_2, num_adr_sup, num_adr_sup_2, way_type, way_link, street_name, cardinal_pt, apt_num, apt_num_1, apt_num_2, mat18, cubf, file_num, nghbr_unit, owner_date, owner_type, os.value as "owner_status", lot_lin_dim, lot_area, max_floors, const_yr, const_yr_real, floor_area, pl.value as "phys_link", ct.value as "const_type", num_dwelling, num_rental, num_non_res, apprais_date, lot_value, building_value, r.value, prev_value, associated, '2023-08-07' as "date_added" FROM roll r LEFT JOIN phys_link pl ON r.phys_link = pl.id LEFT JOIN const_type ct ON r.const_type = ct.id LEFT JOIN owner_status os ON r.owner_status = os.id WHERE cubf = 1000  AND num_dwelling >= 3 ORDER BY num_dwelling DESC LIMIT 15000) TO 'C:\Users\lhv\VSCode\reconbuilding\data\15_000_murbs.csv' CSV HEADER;
+
+--- Extract all MURBs from the Roll DB
+\copy (SELECT r.id, lat, lng, muni, muni_code, arrond, address, num_adr_inf, num_adr_inf_2, num_adr_sup, num_adr_sup_2, way_type, way_link, street_name, cardinal_pt, apt_num, apt_num_1, apt_num_2, mat18, cubf, file_num, nghbr_unit, owner_date, owner_type, os.value as "owner_status", lot_lin_dim, lot_area, max_floors, const_yr, const_yr_real, floor_area, pl.value as "phys_link", ct.value as "const_type", num_dwelling, num_rental, num_non_res, apprais_date, lot_value, building_value, r.value, prev_value, associated, '2023-08-14' as "date_added" FROM roll r LEFT JOIN phys_link pl ON r.phys_link = pl.id LEFT JOIN const_type ct ON r.const_type = ct.id LEFT JOIN owner_status os ON r.owner_status = os.id WHERE cubf = 1000  AND num_dwelling >= 3) TO 'C:\Users\lhv\VSCode\reconbuilding\notes\all_murbs.csv' CSV HEADER;
 ```
 
 ```sql

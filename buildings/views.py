@@ -39,7 +39,7 @@ log = logging.getLogger(__name__)
 @login_required(login_url='buildings:login')
 def index(request):
 
-    latest_votes = Vote.objects.get_latest(n=5)
+    latest_votes = Vote.objects.get_latest(n=10)
 
     context = {
         "latest_votes": latest_votes
@@ -130,6 +130,7 @@ def survey_v1(request, eval_unit_id):
 
     # Fetch any previous survey v1 entry for this building
     # If none exist, initialize a survey with the building and user ids
+    # TODO: This might become slow once there are many Votes
     previous_survey_vote = Vote.objects.filter(user=request.user, eval_unit=eval_unit, surveyv1__isnull=False).first()
     previous_no_building_vote = Vote.objects.filter(user=request.user, eval_unit=eval_unit, nobuildingflag__isnull=False).first()
 

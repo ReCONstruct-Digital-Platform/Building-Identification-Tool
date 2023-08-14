@@ -164,6 +164,7 @@ function setUpScrollHeightObserver() {
 }
 
 
+
 function setUpButtons() {
     // Screenshot functionality
     $('#btn-screenshot').click(screenshotAndUpload);
