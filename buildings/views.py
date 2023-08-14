@@ -39,10 +39,22 @@ log = logging.getLogger(__name__)
 @login_required(login_url='buildings:login')
 def index(request):
 
-    latest_votes = Vote.objects.get_latest(n=10)
+    total_votes = Vote.objects.count()
+    latest_votes = Vote.objects.order_by('-date_added')
+    user_votes = Vote.objects.filter(user = request.user).order_by('-date_added')
+    latest_votes_page = Paginator(latest_votes, 25)
+    user_votes_page = Paginator(user_votes, 25)
+
+    page_num_latest = 0
+    page_num_user = 0
+
+    # import IPython
+    # IPython.embed()
 
     context = {
-        "latest_votes": latest_votes
+        "total_votes": total_votes,
+        "latest_votes_page": latest_votes_page.get_page(page_num_latest),
+        "user_votes_page": user_votes_page.get_page(page_num_user),
     }
     return render(request, 'buildings/index.html', context)
 

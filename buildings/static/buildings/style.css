@@ -1,6 +1,9 @@
 body {
     background-color: #fafafa;
     color: #333333;
+    height: 100vh;
+    display: flex;
+    flex-flow: column;
 }
 
 .main {
@@ -9,7 +12,7 @@ body {
   background-position: center;
   background-size: cover;
   overflow-y: hidden;
-  height: 94vh;
+  flex-grow : 1; /* allows the main section to fill the rest of the vertical space*/
 }
 
 .navbar-brand {
@@ -49,23 +52,39 @@ h1, h2, h3, h4, h5, h6 {
 .nav-item .nav-link {
   color: #cbd5db;
 }
-
 .nav-item .nav-link:hover {
   color: #ffffff;
 }
-
 .nav-item .nav-link.active {
   font-weight: 500;
 }
 
-.spread-apart-container {
-  height: 80vh;
+.activity-nav-item .nav-link {
+  color: #515354;
+}
+.activity-nav-item .nav-link:hover {
+  color: #1e2225;
+}
+.activity-nav-item .nav-link.active {
+  font-weight: 500;
+}
+
+.home-page-container {
+  height: 100%;
+}
+
+.home-content {
+  height: 85%;
 }
 
 @media(max-width: 1600px) {
-  .spread-apart-container {
+  .home-content {
     height: 67vh;
   }
+}
+
+.activity-tab-content {
+  width: 85%;
 }
 
 .latest-activity-box {
@@ -74,8 +93,6 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid #dddddd;
   border-radius: 10px;
   margin-bottom: 20px;
-  width: 100%;
-  height: 100%;
   overflow-y: scroll;
 }
 
@@ -88,12 +105,15 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-
+.activity-header {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
 /* mouse over link */
 a:hover {
   color: lightblue;
 }
-
 
 label {
     float:left;
@@ -109,6 +129,10 @@ input[type='number']{
 }
 
 input[disabled] {pointer-events:none}
+
+.navbar {
+  --bs-navbar-padding-y: 0.25rem;
+}
 
 .user-card {
   width: 350px;
@@ -311,7 +335,7 @@ tr:hover .delete-row-icon {
 }
 
 .container-wide {
-  width: 99%;
+  width: 100%;
 }
 
 .btn-row {
@@ -320,19 +344,18 @@ tr:hover .delete-row-icon {
 }
 
 .streetview-and-map-container {
-  height: 80vh;
+  height: 85vh;
   width: 100%;
   display: flex;
   flex-direction: row;
   justify-content: center;
 }
 
-@media(max-height: 850px) {
+@media(max-height: 980px) {
   .streetview-and-map-container {
-    height: 75vh;
+    height: 80vh;
   }
 }
-
 
 .streetview-container {
   height: 100%;
@@ -397,6 +420,7 @@ tr:hover .delete-row-icon {
 
 .spread-apart-container {
   width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
