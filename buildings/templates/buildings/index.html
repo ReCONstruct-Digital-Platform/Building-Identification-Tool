@@ -1,53 +1,158 @@
 {% extends "buildings/base.html" %}
 {% block content %}
 
-<div class="container">
-    <div class="row ">
-        <div>
-            <h1>Welcome to the Building Identification Tool</h1>
-            <h1>Hello {{ request.user }}!</h1>
-        </div>
+{% load humanize %}
+<div class="container home-page-container">
+    <div class="home-title mt-3">
+        <h2>Hello {{ request.user }}! </h2>
+        <h3>Welcome to the Building Identification Tool</h3>
     </div>
         
-    <div class="row">
-
+    <div class="home-content mt-4">
         <div class="spread-apart-container">
-            <div class="user-stats-container mt-4">
-                You've voted on {{ request.user.vote_set.all | length }} evaluation units!
+            <div>
+                <ul class="nav nav-underline flex-column pe-3">
+                    <li class="nav-item activity-nav-item">
+                        <a class="nav-link active" id="latest-activity-link" data-bs-toggle="tab" 
+                        data-bs-target="#latest-activity" type="button" role="tab" aria-controls="latest-activity" 
+                        aria-selected="true">Latest Activity</a>
+                    </li>
+                    <li class="nav-item activity-nav-item">
+                        <a class="nav-link" id="user-activity-link" data-bs-toggle="tab" 
+                        data-bs-target="#user-activity" type="button" role="tab" aria-controls="user-activity" 
+                        aria-selected="true">Your Votes</a>
+                    </li>
+                </ul>
             </div>
-            <div class="col-md-5">
-                <div class="content-section">
-                    <h3>Latest Activity</h3>
+            
+            <div class="activity-tab-content tab-content pb-4">
+                <div id="latest-activity" class="latest-activity-box tab-pane show active" 
+                    role="tabpanel" aria-labelledby="latest-activity-link" tabindex="0">
+                    <div class="activity-header">
+                        <h5 class="me-2">Latest Activity: </h5>
+                        <div>{{ total_votes }} evaluation units surveyed in total!</div>
+                    </div>
                     <ul class="list-group">
-                        {% for vote in latest_votes %}
-                        
-                        <li class="list-group-item list-group-item-light card mb-2">
-
+                        {% for vote in latest_votes_page %}
+                        {% if vote.surveyv1 or vote.nobuildingflag %}
+                        <li class="list-group-item list-group-item-light card mb-3">
                             <div class="activity-top-row mb-2">
-                                <img class="profile-pic" src="{{ vote.user.profile.get_avatar_url }}">
-                                {{ vote.user.username }} - {{ vote.date_added }}
-                                <br>
+                                <div class="vote-user">
+                                    <img class="profile-pic me-2" src="{{ vote.user.get_avatar_url }}">
+                                    {{ vote.user.username }}
+                                </div>
+                                <div class="vote-date">
+                                    {{ vote.date_added | naturaltime }}
+                                </div>
                             </div>
+                            {% if vote.surveyv1 %}
                             <div class="activity-building-info mt-2">
+                                Surveyed 
                                 <a href="{% url 'buildings:survey_v1' vote.eval_unit.id %}">
-                                    {{vote.eval_unit.street_number}} {{vote.eval_unit.street_name}}, {{vote.eval_unit.locality}}
+                                    {{vote.eval_unit.address}}, {{vote.eval_unit.muni}}
                                 </a>
                             </div>
-
-                            {% if vote.nobuildingflag %}
-                            <div class="material-scores-activity">
-                                Voted: No Building!
+                            {% elif vote.nobuildingflag %}
+                            <div class="activity-building-info mt-2">
+                                Flagged 'No Building' on 
+                                <a href="{% url 'buildings:survey_v1' vote.eval_unit.id %}">
+                                    {{vote.eval_unit.address}}, {{vote.eval_unit.muni}}
+                                </a>
                             </div>
                             {% endif %}
                         </li>
+                        {% endif %}
                             
                         {% empty %}
-                            <li class="list-group-item list-group-item-light">No activity</li>
+                            <li class="list-group-item list-group-item-light">No recent activity</li>
                         {% endfor %}
                     </ul>
+                    <div class="pagination">
+                        <span class="step-links">
+                            {% if latest_votes_page.has_previous %}
+                                <a href="?page=1">&laquo; first</a>
+                                <a href="?page={{ latest_votes_page.previous_page_number }}">previous</a>
+                            {% endif %}
+                    
+                            <span class="current">
+                                Page {{ latest_votes_page.number }} of {{ latest_votes_page.paginator.num_pages }}.
+                            </span>
+                    
+                            {% if latest_votes_page.has_next %}
+                                <a href="?page={{ latest_votes_page.next_page_number }}">next</a>
+                                <a href="?page={{ latest_votes_page.paginator.num_pages }}">last &raquo;</a>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <div id="user-activity" class="latest-activity-box tab-pane"
+                    role="tabpanel" aria-labelledby="user-activity-link" tabindex="1">
+                    <div class="activity-header">
+                        <h5 class="me-2">Your Votes:</h5>
+                        <div>You've surveyed {{ request.user.vote_set.all | length }} evaluation units!</div>
+                    </div>
+                    <ul class="list-group">
+                        {% for vote in user_votes_page %}
+                        
+                        {% if vote.surveyv1 or vote.nobuildingflag %}
+                        <li class="list-group-item list-group-item-light card mb-3">
+                            <div class="activity-top-row mb-2">
+                                <div class="vote-user">
+                                    <img class="profile-pic me-2" src="{{ vote.user.get_avatar_url }}">
+                                    {{ vote.user.username }}
+                                </div>
+                                <div class="vote-date">
+                                    {{ vote.date_added | naturaltime }}
+                                </div>
+                            </div>
+                            {% if vote.surveyv1 %}
+                            <div class="activity-building-info mt-2">
+                                Surveyed 
+                                <a href="{% url 'buildings:survey_v1' vote.eval_unit.id %}">
+                                    {{vote.eval_unit.address}}, {{vote.eval_unit.muni}}
+                                </a>
+                            </div>
+                            {% elif vote.nobuildingflag %}
+                            <div class="activity-building-info mt-2">
+                                Flagged 'No Building' on 
+                                <a href="{% url 'buildings:survey_v1' vote.eval_unit.id %}">
+                                    {{vote.eval_unit.address}}, {{vote.eval_unit.muni}}
+                                </a>
+                            </div>
+                            {% endif %}
+                        </li>
+                        {% endif %}
+                            
+                        {% empty %}
+                            <li class="list-group-item list-group-item-light">No recent activity</li>
+                        {% endfor %}
+                    </ul>
+                    <div class="pagination">
+                        <span class="step-links">
+                            {% if user_votes_page.has_previous %}
+                                <a href="?page=1">&laquo; first</a>
+                                <a href="?page={{ user_votes_page.previous_page_number }}">previous</a>
+                            {% endif %}
+                    
+                            <span class="current">
+                                Page {{ user_votes_page.number }} of {{ user_votes_page.paginator.num_pages }}.
+                            </span>
+                    
+                            {% if user_votes_page.has_next %}
+                                <a href="?page={{ user_votes_page.next_page_number }}">next</a>
+                                <a href="?page={{ user_votes_page.paginator.num_pages }}">last &raquo;</a>
+                            {% endif %}
+                        </span>
+                    </div>
                 </div>
             </div>
+
         </div>
+    </div>
+
+    <div class="row">
+        <footer>&nbsp;</footer>
     </div>
 </div>
 

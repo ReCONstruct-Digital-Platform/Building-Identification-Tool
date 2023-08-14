@@ -181,10 +181,7 @@ class EvalUnit(models.Model):
     num_adr_inf_2 = models.TextField(null=True, blank=True)
     num_adr_sup = models.TextField(null=True, blank=True)
     num_adr_sup_2 = models.TextField(null=True, blank=True)
-    way_type = models.TextField(null=True, blank=True)
-    way_link = models.TextField(null=True, blank=True)
     street_name = models.TextField(null=True, blank=True)
-    cardinal_pt = models.TextField(null=True, blank=True)
     apt_num = models.TextField(null=True, blank=True)
     apt_num_1 = models.TextField(null=True, blank=True)
     apt_num_2 = models.TextField(null=True, blank=True)
@@ -220,7 +217,6 @@ class EvalUnit(models.Model):
     # in order to implement custom search functionality
     objects = EvalUnitManager.from_queryset(EvalUnitQuerySet)()
 
-
     def num_votes(self):
         return len(self.vote_set)
     
@@ -231,7 +227,7 @@ class EvalUnit(models.Model):
             return ''
         
     def __str__(self):
-        return f'{self.address} ({self.lat}, {self.lng})'
+        return f'{self.address} CUBF: {self.cubf_name()}, {self.num_votes} votes ({self.lat}, {self.lng})'
     
     @classmethod
     def get_field_names(self):
