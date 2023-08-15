@@ -6,8 +6,8 @@ class EvalUnitTestCase(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_superuser(username='testuser', password='testpw')
-        self.eval_unit = EvalUnit.objects.create(id='id1', lat=1.0, lng=1.5, muni='mtl', address='123 a st', mat18='fsd', cubf=1000)
-        self.eval_unit2 = EvalUnit.objects.create(id='id2', lat=1.0, lng=1.5, muni='mtl', address='4656 a st', mat18='fsdfsd', cubf=1000)
+        self.eval_unit = EvalUnit.objects.create(id='id1', lat=1.0, lng=1.5, muni='mtl', address='123 a st', mat18='fsd', cubf=1000, associated={'hlm': ['hlm1']})
+        self.eval_unit2 = EvalUnit.objects.create(id='id2', lat=1.0, lng=1.5, muni='mtl', address='4656 a st', mat18='fsdfsd', cubf=1000, associated={'hlm': ['hlm1']})
  
 
     def test_cubf_name(self):

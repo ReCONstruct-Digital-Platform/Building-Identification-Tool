@@ -40,23 +40,39 @@ log = logging.getLogger(__name__)
 def index(request):
 
     total_votes = Vote.objects.count()
-    latest_votes = Vote.objects.order_by('-date_added')
-    user_votes = Vote.objects.filter(user = request.user).order_by('-date_added')
-    latest_votes_page = Paginator(latest_votes, 25)
-    user_votes_page = Paginator(user_votes, 25)
+    latest_votes = Vote.objects.order_by('-date_added').all()
 
-    page_num_latest = 0
-    page_num_user = 0
+    num_user_votes = Vote.objects.filter(user = request.user).count()
+    user_votes = Vote.objects.filter(user = request.user).order_by('-date_added').all()
 
-    # import IPython
+    import IPython
     # IPython.embed()
+
+    if request.htmx:
+        pprint(request.GET)
+        page_num_latest = request.GET.get('latest_votes_page')
+        page_num_user = request.GET.get('user_votes_page')
+        active_tab = request.GET.get('active_tab')
+        latest_votes_page = Paginator(latest_votes, 10).get_page(page_num_latest)
+        user_votes_page = Paginator(user_votes, 10).get_page(page_num_user)
+
+        template = 'buildings/partials/index.html'
+    else:
+        page_num_latest = 1
+        page_num_user = 1
+        latest_votes_page = Paginator(latest_votes, 10).get_page(page_num_latest)
+        user_votes_page = Paginator(user_votes, 10).get_page(page_num_user)
+        active_tab = 'latest'
+        template = 'buildings/index.html'
 
     context = {
         "total_votes": total_votes,
-        "latest_votes_page": latest_votes_page.get_page(page_num_latest),
-        "user_votes_page": user_votes_page.get_page(page_num_user),
+        "num_user_votes": num_user_votes,
+        "latest_votes_page": latest_votes_page,
+        "user_votes_page": user_votes_page,
+        "active_tab": active_tab,
     }
-    return render(request, 'buildings/index.html', context)
+    return render(request, template, context)
 
 
 def _get_current_html_query_str(query):
@@ -129,7 +145,7 @@ def all_buildings(request):
 
 
 @login_required(login_url='buildings:login')
-def survey(request):
+def survey(_):
     random_unscored_unit = EvalUnit.objects.get_next_unit_to_survey()
     eval_unit_id = random_unscored_unit.id
     return redirect('buildings:survey_v1', eval_unit_id=eval_unit_id)

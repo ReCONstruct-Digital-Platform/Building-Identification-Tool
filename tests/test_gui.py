@@ -37,8 +37,8 @@ class SeleniumFirefoxTests(StaticLiveServerTestCase):
 
         # Create DB objects
         cls.user = User.objects.create_superuser(username='testuser', password='testpw')
-        cls.eval_unit = EvalUnit.objects.create(id='id1', lat=46.7879814932, lng=-71.2895307544, muni='mtl', address='123 a st', mat18='fsd', cubf=1000)
-        cls.eval_unit2 = EvalUnit.objects.create(id='id2', lat=46.7879814932, lng=-71.2895307544, muni='mtl', address='123 a st', mat18='fsd', cubf=1000)
+        cls.eval_unit = EvalUnit.objects.create(id='id1', lat=46.7879814932, lng=-71.2895307544, muni='mtl', address='123 a st', mat18='fsd', cubf=1000, associated={'hlm': ['hlm1']})
+        cls.eval_unit2 = EvalUnit.objects.create(id='id2', lat=46.7879814932, lng=-71.2895307544, muni='mtl', address='123 a st', mat18='fsd', cubf=1000, associated={'hlm': ['hlm1']})
         
 
     @classmethod
@@ -61,15 +61,15 @@ class SeleniumFirefoxTests(StaticLiveServerTestCase):
         wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
 
         driver.get(f"{self.live_server_url}/survey/v1/id1")
-
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
+        wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
         driver.find_element(By.ID, "nav-survey-tab").click()
 
         wait.until(EC.presence_of_element_located((By.ID, 'sat_data')))
-        wait.until(EC.text_to_be_present_in_element_attribute((By.ID, 'sat_data'), 'data-url', 'data:image/png;base64,'))
         # Check the satellite screenshot was taken
         sat_data = driver.find_element(By.ID, "sat_data")
-        self.assertRegex(sat_data.get_attribute('data-url'), 'data:image/png;base64,')
+        wait.until(EC.text_to_be_present_in_element_attribute((By.ID, 'sat_data'), 'data-url', 'data:image/png;base64'))
+        self.assertRegex(sat_data.get_attribute('data-url'), 'data:image/png;base64')
 
         m = re.match(rf'{self.live_server_url}/survey/v1/id([0-9])', driver.current_url)
         eval_unit_id = m.group(1)
@@ -131,8 +131,8 @@ class SeleniumChromeTests(StaticLiveServerTestCase):
 
         # Create DB objects
         cls.user = User.objects.create_superuser(username='testuser', password='testpw')
-        cls.eval_unit = EvalUnit.objects.create(id='id1', lat=46.7879814932, lng=-71.2895307544, muni='mtl', address='123 a st', mat18='fsd', cubf=1000)
-        cls.eval_unit2 = EvalUnit.objects.create(id='id2', lat=46.7879814932, lng=-71.2895307544, muni='mtl', address='123 a st', mat18='fsd', cubf=1000)
+        cls.eval_unit = EvalUnit.objects.create(id='id1', lat=46.7879814932, lng=-71.2895307544, muni='mtl', address='123 a st', mat18='fsd', cubf=1000, associated={'hlm': ['hlm1']})
+        cls.eval_unit2 = EvalUnit.objects.create(id='id2', lat=46.7879814932, lng=-71.2895307544, muni='mtl', address='123 a st', mat18='fsd', cubf=1000, associated={'hlm': ['hlm1']})
         
 
     @classmethod
@@ -157,6 +157,7 @@ class SeleniumChromeTests(StaticLiveServerTestCase):
         driver.get(f"{self.live_server_url}/survey/v1/id1")
 
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
+        wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
         driver.find_element(By.ID, "nav-survey-tab").click()
 
         wait.until(EC.presence_of_element_located((By.ID, 'sat_data')))

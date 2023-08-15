@@ -34,13 +34,15 @@ class User(AbstractUser):
 SQL_RANDOM_UNVOTED_ID = f"""
     SELECT buildings_evalunit.id FROM buildings_evalunit 
     LEFT OUTER JOIN buildings_vote ON (buildings_evalunit.id = buildings_vote.eval_unit_id)
-    WHERE buildings_vote.eval_unit_id IS NULL ORDER BY RANDOM() LIMIT 1;
+    WHERE buildings_vote.eval_unit_id IS NULL AND buildings_evalunit.associated IS NOT NULL 
+    ORDER BY RANDOM() LIMIT 1;
 """
 
 SQL_RANDOM_UNVOTED_ID_WITH_EXCLUDE = f"""
     SELECT buildings_evalunit.id FROM buildings_evalunit 
     LEFT OUTER JOIN buildings_vote ON (buildings_evalunit.id = buildings_vote.eval_unit_id)
     WHERE buildings_vote.eval_unit_id IS NULL AND buildings_evalunit.id != %s
+    AND buildings_evalunit.associated IS NOT NULL 
     ORDER BY RANDOM() LIMIT 1;
 """
 
@@ -91,13 +93,6 @@ class EvalUnitQuerySet(models.QuerySet):
                 lookups["num_votes"] = query["q_num_votes"]
             else:
                 lookups[f"num_votes__{op}"] = query["q_num_votes"]
-
-        # if "q_score" in query:
-        #     op = query["q_score_op"]
-        #     if op == 'eq':
-        #         lookups["avg_score"] = query["q_score"]
-        #     else:
-        #         lookups[f"avg_score__{op}"] = query["q_score"]
 
         log.info(lookups)
         lookups = Q(**lookups) 
@@ -227,7 +222,7 @@ class EvalUnit(models.Model):
             return ''
         
     def __str__(self):
-        return f'{self.address} CUBF: {self.cubf_name()}, {self.num_votes} votes ({self.lat}, {self.lng})'
+        return f'{self.address}, {self.muni}, CUBF: {self.cubf_name()}'
     
     @classmethod
     def get_field_names(self):

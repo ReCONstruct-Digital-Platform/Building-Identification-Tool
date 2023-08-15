@@ -9,24 +9,24 @@
     </div>
         
     <div class="home-content mt-4">
-        <div class="spread-apart-container">
+        <div id="activity-target" class="spread-apart-container">
             <div>
                 <ul class="nav nav-underline flex-column pe-3">
                     <li class="nav-item activity-nav-item">
-                        <a class="nav-link active" id="latest-activity-link" data-bs-toggle="tab" 
+                        <a class="nav-link{% if active_tab == 'latest' %} active{% endif %}" id="latest-activity-link" data-bs-toggle="tab" 
                         data-bs-target="#latest-activity" type="button" role="tab" aria-controls="latest-activity" 
-                        aria-selected="true">Latest Activity</a>
+                        aria-selected="{% if active_tab == 'latest' %}true{% else %}false{% endif %}">Latest Activity</a>
                     </li>
                     <li class="nav-item activity-nav-item">
-                        <a class="nav-link" id="user-activity-link" data-bs-toggle="tab" 
+                        <a class="nav-link{% if active_tab == 'user' %} active{% endif %}" id="user-activity-link" data-bs-toggle="tab" 
                         data-bs-target="#user-activity" type="button" role="tab" aria-controls="user-activity" 
-                        aria-selected="true">Your Votes</a>
+                        aria-selected="{% if active_tab == 'user' %}true{% else %}false{% endif %}">Your Activity</a>
                     </li>
                 </ul>
             </div>
             
-            <div class="activity-tab-content tab-content pb-4">
-                <div id="latest-activity" class="latest-activity-box tab-pane show active" 
+            <div id="activity-tab-content" class="activity-tab-content tab-content pb-4">
+                <div id="latest-activity" class="latest-activity-box tab-pane {% if active_tab == 'latest' %}show active{% endif %}" 
                     role="tabpanel" aria-labelledby="latest-activity-link" tabindex="0">
                     <div class="activity-header">
                         <h5 class="me-2">Latest Activity: </h5>
@@ -34,7 +34,7 @@
                     </div>
                     <ul class="list-group">
                         {% for vote in latest_votes_page %}
-                        {% if vote.surveyv1 or vote.nobuildingflag %}
+                        {% if vote.eval_unit or vote.nobuildingflag %}
                         <li class="list-group-item list-group-item-light card mb-3">
                             <div class="activity-top-row mb-2">
                                 <div class="vote-user">
@@ -45,16 +45,16 @@
                                     {{ vote.date_added | naturaltime }}
                                 </div>
                             </div>
-                            {% if vote.surveyv1 %}
+                            {% if vote.nobuildingflag %}
                             <div class="activity-building-info mt-2">
-                                Surveyed 
+                                Flagged 'No Building' on 
                                 <a href="{% url 'buildings:survey_v1' vote.eval_unit.id %}">
                                     {{vote.eval_unit.address}}, {{vote.eval_unit.muni}}
                                 </a>
                             </div>
-                            {% elif vote.nobuildingflag %}
+                            {% elif vote.eval_unit %}
                             <div class="activity-building-info mt-2">
-                                Flagged 'No Building' on 
+                                Surveyed 
                                 <a href="{% url 'buildings:survey_v1' vote.eval_unit.id %}">
                                     {{vote.eval_unit.address}}, {{vote.eval_unit.muni}}
                                 </a>
@@ -67,11 +67,13 @@
                             <li class="list-group-item list-group-item-light">No recent activity</li>
                         {% endfor %}
                     </ul>
-                    <div class="pagination">
+                    <div class="pagination mt-3">
                         <span class="step-links">
                             {% if latest_votes_page.has_previous %}
-                                <a href="?page=1">&laquo; first</a>
-                                <a href="?page={{ latest_votes_page.previous_page_number }}">previous</a>
+                                <a href='#' hx-swap="outerHTML" hx-target='#activity-target' 
+                                    hx-get="?latest_votes_page=1&active_tab=latest&user_votes_page={{ user_votes_page.number }}">&laquo; first</a>
+                                <a href='#' hx-swap="outerHTML" hx-target='#activity-target' 
+                                    hx-get="?latest_votes_page={{ latest_votes_page.previous_page_number }}&active_tab=latest&user_votes_page={{ user_votes_page.number }}">prev.</a>
                             {% endif %}
                     
                             <span class="current">
@@ -79,23 +81,27 @@
                             </span>
                     
                             {% if latest_votes_page.has_next %}
-                                <a href="?page={{ latest_votes_page.next_page_number }}">next</a>
-                                <a href="?page={{ latest_votes_page.paginator.num_pages }}">last &raquo;</a>
+                                <a href='#' hx-swap="outerHTML" hx-target='#activity-target' 
+                                    hx-get="?latest_votes_page={{ latest_votes_page.next_page_number }}&active_tab=latest&user_votes_page={{ user_votes_page.number }}">next</a>
+                                <a href='#' hx-swap="outerHTML" hx-target='#activity-target' 
+                                    hx-get="?latest_votes_page={{ latest_votes_page.paginator.num_pages }}&active_tab=latest&user_votes_page={{ user_votes_page.number }}">last &raquo;</a>
                             {% endif %}
                         </span>
                     </div>
                 </div>
 
-                <div id="user-activity" class="latest-activity-box tab-pane"
+                <div id="user-activity" class="latest-activity-box tab-pane {% if active_tab == 'user' %}show active{% endif %}"
                     role="tabpanel" aria-labelledby="user-activity-link" tabindex="1">
                     <div class="activity-header">
-                        <h5 class="me-2">Your Votes:</h5>
-                        <div>You've surveyed {{ request.user.vote_set.all | length }} evaluation units!</div>
+                        <h5 class="me-2">Your Activity:</h5>
+                        <div>
+                            {% if num_user_votes > 30 %}You're Amazing!!! {% elif num_user_votes > 20 %}Great Job!! {% elif num_user_votes > 10 %}Keep it up!! {% elif num_user_votes > 2 %}Good Job! {% endif %}
+                            You've surveyed {{ num_user_votes }} evaluation units!</div>
                     </div>
                     <ul class="list-group">
                         {% for vote in user_votes_page %}
                         
-                        {% if vote.surveyv1 or vote.nobuildingflag %}
+                        {% if vote.eval_unit or vote.nobuildingflag %}
                         <li class="list-group-item list-group-item-light card mb-3">
                             <div class="activity-top-row mb-2">
                                 <div class="vote-user">
@@ -106,16 +112,16 @@
                                     {{ vote.date_added | naturaltime }}
                                 </div>
                             </div>
-                            {% if vote.surveyv1 %}
+                            {% if vote.nobuildingflag %}
                             <div class="activity-building-info mt-2">
-                                Surveyed 
+                                Flagged 'No Building' on 
                                 <a href="{% url 'buildings:survey_v1' vote.eval_unit.id %}">
                                     {{vote.eval_unit.address}}, {{vote.eval_unit.muni}}
                                 </a>
                             </div>
-                            {% elif vote.nobuildingflag %}
+                            {% elif vote.eval_unit %}
                             <div class="activity-building-info mt-2">
-                                Flagged 'No Building' on 
+                                Surveyed 
                                 <a href="{% url 'buildings:survey_v1' vote.eval_unit.id %}">
                                     {{vote.eval_unit.address}}, {{vote.eval_unit.muni}}
                                 </a>
@@ -128,11 +134,13 @@
                             <li class="list-group-item list-group-item-light">No recent activity</li>
                         {% endfor %}
                     </ul>
-                    <div class="pagination">
+                    <div class="pagination mt-3">
                         <span class="step-links">
                             {% if user_votes_page.has_previous %}
-                                <a href="?page=1">&laquo; first</a>
-                                <a href="?page={{ user_votes_page.previous_page_number }}">previous</a>
+                                <a href='#' hx-swap="outerHTML" hx-target='#activity-target' 
+                                    hx-get="?user_votes_page=1&active_tab=user&latest_votes_page={{ latest_votes_page.number }}">&laquo; first</a>
+                                <a href='#' hx-swap="outerHTML" hx-target='#activity-target' 
+                                    hx-get="?user_votes_page={{ user_votes_page.previous_page_number }}&active_tab=user&latest_votes_page={{ latest_votes_page.number }}">prev.</a>
                             {% endif %}
                     
                             <span class="current">
@@ -140,8 +148,10 @@
                             </span>
                     
                             {% if user_votes_page.has_next %}
-                                <a href="?page={{ user_votes_page.next_page_number }}">next</a>
-                                <a href="?page={{ user_votes_page.paginator.num_pages }}">last &raquo;</a>
+                                <a href='#' hx-swap="outerHTML" hx-target='#activity-target' 
+                                    hx-get="?user_votes_page={{ user_votes_page.next_page_number }}&active_tab=user&latest_votes_page={{ latest_votes_page.number }}">next</a>
+                                <a href='#' hx-swap="outerHTML" hx-target='#activity-target' 
+                                    hx-get="?user_votes_page={{ user_votes_page.paginator.num_pages }}&active_tab=user&latest_votes_page={{ latest_votes_page.number }}">last &raquo;</a>
                             {% endif %}
                         </span>
                     </div>
