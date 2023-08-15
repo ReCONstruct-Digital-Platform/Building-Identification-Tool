@@ -87,9 +87,9 @@ psql -U bitdbuser
 Finally, import some test data from the CSV files in `./data/`. Make sure to give the path for your machine.
 
 ```sql
-\copy buildings_evalunit FROM 'path/to/data/15_000_murbs.csv' DELIMITER ',' CSV HEADER;
-\copy buildings_evalunit FROM 'path/to/data/5_000_potential_community_centers.csv' DELIMITER ',' CSV HEADER;
-\copy buildings_hlmbuilding(id, eval_unit_id, project_id, organism, service_center, street_num, street_name, muni, postal_code, num_dwellings, num_floors, area_footprint, area_total, ivp, disrepair_state, interest_adjust_date, contract_end_date, category, building_id) FROM 'path/to/data/hlms.csv' DELIMITER ',' CSV HEADER;
+\copy buildings_evalunit FROM 'data/all_murbs.csv' DELIMITER ',' CSV HEADER;
+\copy buildings_evalunit FROM 'data/all_potential_community_centers.csv' DELIMITER ',' CSV HEADER;
+\copy buildings_hlmbuilding(id, eval_unit_id, project_id, organism, service_center, street_num, street_name, muni, postal_code, num_dwellings, num_floors, area_footprint, area_total, ivp, disrepair_state, interest_adjust_date, contract_end_date, category, building_id) FROM 'data/all_hlms.csv' DELIMITER ',' CSV HEADER;
 ```
 
 
@@ -102,38 +102,24 @@ Note that every access to the "Classify" section of the app will incur a Google 
 python manage.py runserver
 ```
 
-
 <br>
 
 
-# Commands to generate the CSVs from the full roll DB
+# Commands to generate the CSVs from the Roll DB
 
-We have provided you with initial data from the repository. In production, we use BIT with a larger database, which you can create by following the instructions here: https://github.com/ReCONstruct-Digital-Platform/QC-Prop-Roll
+We have provided you with data in `./data` to fill up the BIT database. It was extracted from the Roll DB, which you can generate by following the instructions here: https://github.com/ReCONstruct-Digital-Platform/QC-Prop-Roll
 
-Generate 20_000 MURBs and possible community centers for local test data.
-We need to resolve the physical link, owner status and construction type to their values.
-We also add the current date as a constant for all.
 ```sql
-\copy (SELECT r.id, lat, lng, muni, muni_code, arrond, address, num_adr_inf, num_adr_inf_2, num_adr_sup, num_adr_sup_2, way_type, way_link, street_name, cardinal_pt, apt_num, apt_num_1, apt_num_2, mat18, cubf, file_num, nghbr_unit, owner_date, owner_type, os.value as "owner_status", lot_lin_dim, lot_area, max_floors, const_yr, const_yr_real, floor_area, pl.value as "phys_link", ct.value as "const_type", num_dwelling, num_rental, num_non_res, apprais_date, lot_value, building_value, r.value, prev_value, associated, '2023-08-07' as "date_added" FROM roll r LEFT JOIN phys_link pl ON r.phys_link = pl.id LEFT JOIN const_type ct ON r.const_type = ct.id LEFT JOIN owner_status os ON r.owner_status = os.id WHERE cubf = 1000  AND num_dwelling >= 3 ORDER BY num_dwelling DESC LIMIT 15000) TO 'C:\Users\lhv\VSCode\reconbuilding\data\15_000_murbs.csv' CSV HEADER;
-
 --- Extract all MURBs from the Roll DB
-\copy (SELECT r.id, lat, lng, muni, muni_code, arrond, address, num_adr_inf, num_adr_inf_2, num_adr_sup, num_adr_sup_2, street_name, apt_num, apt_num_1, apt_num_2, mat18, cubf, file_num, nghbr_unit, owner_date, owner_type, os.value as "owner_status", lot_lin_dim, lot_area, max_floors, const_yr, const_yr_real, floor_area, pl.value as "phys_link", ct.value as "const_type", num_dwelling, num_rental, num_non_res, apprais_date, lot_value, building_value, r.value, prev_value, associated, '2023-08-14' as "date_added" FROM roll2 r LEFT JOIN phys_link pl ON r.phys_link = pl.id LEFT JOIN const_type ct ON r.const_type = ct.id LEFT JOIN owner_status os ON r.owner_status = os.id WHERE cubf = 1000  AND num_dwelling >= 3) TO 'C:\Users\lhv\VSCode\reconbuilding\notes\all_murbs.csv' CSV HEADER;
+\copy (SELECT r.id, lat, lng, muni, muni_code, arrond, address, num_adr_inf, num_adr_inf_2, num_adr_sup, num_adr_sup_2, street_name, apt_num, apt_num_1, apt_num_2, mat18, cubf, file_num, nghbr_unit, owner_date, owner_type, os.value as "owner_status", lot_lin_dim, lot_area, max_floors, const_yr, const_yr_real, floor_area, pl.value as "phys_link", ct.value as "const_type", num_dwelling, num_rental, num_non_res, apprais_date, lot_value, building_value, r.value, prev_value, associated, '2023-08-14' as "date_added" FROM roll r LEFT JOIN phys_link pl ON r.phys_link = pl.id LEFT JOIN const_type ct ON r.const_type = ct.id LEFT JOIN owner_status os ON r.owner_status = os.id WHERE cubf = 1000  AND num_dwelling >= 3) TO './data/all_murbs.csv' CSV HEADER;
 ```
 
 ```sql
-\copy (SELECT r.id, lat, lng, muni, muni_code, arrond, address, num_adr_inf, num_adr_inf_2, num_adr_sup, num_adr_sup_2, way_type, way_link, street_name, cardinal_pt, apt_num, apt_num_1, apt_num_2, mat18, cubf, file_num, nghbr_unit, owner_date, owner_type, os.value as "owner_status", lot_lin_dim, lot_area, max_floors, const_yr, const_yr_real, floor_area, pl.value as "phys_link", ct.value as "const_type", num_dwelling, num_rental, num_non_res, apprais_date, lot_value, building_value, r.value, prev_value, associated, '2023-08-07' as "date_added" FROM roll r LEFT JOIN phys_link pl ON r.phys_link = pl.id LEFT JOIN const_type ct ON r.const_type = ct.id LEFT JOIN owner_status os ON r.owner_status = os.id WHERE cubf IN (6811, 6812, 6813, 6814, 6815, 6816, 7219, 7221, 7222, 7223, 7224, 7225, 7229, 7233, 7239, 7290, 7311, 7312, 7313, 7314, 7392, 7393, 7394, 7395, 7396, 7397, 7399, 7411, 7412, 7413, 7414, 7415, 7416, 7417, 7418, 7419, 7421, 7422, 7423, 7424, 7425, 7429, 7431, 7432, 7433, 7441, 7442, 7443, 7444, 7445, 7446, 7447, 7448, 7449, 7451, 7452, 7459, 7491, 7492, 7493, 7499, 7611) LIMIT 5000) TO 'C:\Users\lhv\VSCode\reconbuilding\data\5_000_potential_community_centers.csv' CSV HEADER;
-
 -- Extract all potential community centers
-\copy (SELECT r.id, lat, lng, muni, muni_code, arrond, address, num_adr_inf, num_adr_inf_2, num_adr_sup, num_adr_sup_2, street_name, apt_num, apt_num_1, apt_num_2, mat18, cubf, file_num, nghbr_unit, owner_date, owner_type, os.value as "owner_status", lot_lin_dim, lot_area, max_floors, const_yr, const_yr_real, floor_area, pl.value as "phys_link", ct.value as "const_type", num_dwelling, num_rental, num_non_res, apprais_date, lot_value, building_value, r.value, prev_value, associated, '2023-08-14' as "date_added" FROM roll2 r LEFT JOIN phys_link pl ON r.phys_link = pl.id LEFT JOIN const_type ct ON r.const_type = ct.id LEFT JOIN owner_status os ON r.owner_status = os.id WHERE cubf IN (6811, 6812, 6813, 6814, 6815, 6816, 7219, 7221, 7222, 7223, 7224, 7225, 7229, 7233, 7239, 7290, 7311, 7312, 7313, 7314, 7392, 7393, 7394, 7395, 7396, 7397, 7399, 7411, 7412, 7413, 7414, 7415, 7416, 7417, 7418, 7419, 7421, 7422, 7423, 7424, 7425, 7429, 7431, 7432, 7433, 7441, 7442, 7443, 7444, 7445, 7446, 7447, 7448, 7449, 7451, 7452, 7459, 7491, 7492, 7493, 7499, 7611)) TO 'C:\Users\lhv\VSCode\reconbuilding\notes\all_potential_community_centers.csv' CSV HEADER;
+\copy (SELECT r.id, lat, lng, muni, muni_code, arrond, address, num_adr_inf, num_adr_inf_2, num_adr_sup, num_adr_sup_2, street_name, apt_num, apt_num_1, apt_num_2, mat18, cubf, file_num, nghbr_unit, owner_date, owner_type, os.value as "owner_status", lot_lin_dim, lot_area, max_floors, const_yr, const_yr_real, floor_area, pl.value as "phys_link", ct.value as "const_type", num_dwelling, num_rental, num_non_res, apprais_date, lot_value, building_value, r.value, prev_value, associated, '2023-08-14' as "date_added" FROM roll r LEFT JOIN phys_link pl ON r.phys_link = pl.id LEFT JOIN const_type ct ON r.const_type = ct.id LEFT JOIN owner_status os ON r.owner_status = os.id WHERE cubf IN (6811, 6812, 6813, 6814, 6815, 6816, 7219, 7221, 7222, 7223, 7224, 7225, 7229, 7233, 7239, 7290, 7311, 7312, 7313, 7314, 7392, 7393, 7394, 7395, 7396, 7397, 7399, 7411, 7412, 7413, 7414, 7415, 7416, 7417, 7418, 7419, 7421, 7422, 7423, 7424, 7425, 7429, 7431, 7432, 7433, 7441, 7442, 7443, 7444, 7445, 7446, 7447, 7448, 7449, 7451, 7452, 7459, 7491, 7492, 7493, 7499, 7611)) TO './data/all_potential_community_centers.csv' CSV HEADER;
 ```
 
-Extract HLMs with a condition that they link to one of the above extracted MURBs (still outputs a few that don't, not sure why).
 ```sql
-\copy (SELECT hlm.id, eval_unit_id, project_id, organism, service_center, street_num, street_name, muni, postal_code, num_dwellings, num_floors, area_footprint, area_total, ivp, disrepair_state, interest_adjust_date, contract_end_date, category, building_id FROM hlm INNER JOIN (SELECT roll.id from roll WHERE cubf = 1000  AND num_dwelling >= 3 ORDER BY num_dwelling DESC LIMIT 15000) as murbs ON hlm.eval_unit_id = murbs.id) TO 'C:\Users\lhv\VSCode\reconbuilding\data\hlms.csv' CSV HEADER;
-
--- Extract all HLMs
-\copy (SELECT hlm.id, eval_unit_id, project_id, organism, service_center, street_num, street_name, muni, postal_code, num_dwellings, num_floors, area_footprint, area_total, ivp, disrepair_state, interest_adjust_date, contract_end_date, category, building_id FROM hlm INNER JOIN (SELECT roll2.id from roll2 WHERE cubf = 1000  AND num_dwelling >= 3) as murbs ON hlm.eval_unit_id = murbs.id) TO 'C:\Users\lhv\VSCode\reconbuilding\notes\all_hlms.csv' CSV HEADER;
+-- Extract all HLMs, with a condition that they link to one of the above extracted MURBs
+\copy (SELECT hlm.id, eval_unit_id, project_id, organism, service_center, street_num, street_name, muni, postal_code, num_dwellings, num_floors, area_footprint, area_total, ivp, disrepair_state, interest_adjust_date, contract_end_date, category, building_id FROM hlm INNER JOIN (SELECT roll.id FROM roll WHERE cubf = 1000  AND num_dwelling >= 3) as murbs ON hlm.eval_unit_id = murbs.id) TO './data/all_hlms.csv' CSV HEADER;
 ```
-
-The `hlms.csv` file generated contained about 30 entries that linked to a MURB that was not present in the 15_000 extract above. I dont know why that was the case (if you find the error please let me know), but I had to manually delete each line before it worked.
-On each error, control-F for the eval unit id in the hlms.csv file and delete the entire line. It should eventually work!
