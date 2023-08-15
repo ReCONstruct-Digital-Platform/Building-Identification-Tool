@@ -45,9 +45,6 @@ def index(request):
     num_user_votes = Vote.objects.filter(user = request.user).count()
     user_votes = Vote.objects.filter(user = request.user).order_by('-date_added').all()
 
-    import IPython
-    # IPython.embed()
-
     if request.htmx:
         pprint(request.GET)
         page_num_latest = request.GET.get('latest_votes_page')
