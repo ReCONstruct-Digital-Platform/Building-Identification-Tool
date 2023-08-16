@@ -52,7 +52,7 @@ SQL_RANDOM_UNVOTED_ID_WITH_EXCLUDE = f"""
 SQL_RANDOM_LEAST_VOTED_ID = f"""
     SELECT sub.id FROM 
         (SELECT buildings_evalunit.id FROM buildings_evalunit 
-        INNER JOIN buildings_vote ON (buildings_evalunit.id = buildings_vote.eval_unit_id) 
+        LEFT OUTER JOIN buildings_vote ON (buildings_evalunit.id = buildings_vote.eval_unit_id) 
         GROUP BY buildings_evalunit.id ORDER BY COUNT(buildings_vote.id) ASC limit %s) 
     AS sub ORDER BY RANDOM() LIMIT 1;
 """
@@ -60,8 +60,8 @@ SQL_RANDOM_LEAST_VOTED_ID = f"""
 SQL_RANDOM_LEAST_VOTED_ID_WITH_EXCLUDE = f"""
     SELECT sub.id FROM 
         (SELECT buildings_evalunit.id FROM buildings_evalunit 
-        INNER JOIN buildings_vote ON (buildings_evalunit.id = buildings_vote.eval_unit_id) 
-        WHERE buildings_evalunit.id != %s
+        LEFT OUTER JOIN buildings_vote ON (buildings_evalunit.id = buildings_vote.eval_unit_id) 
+        WHERE buildings_evalunit.id != %s 
         GROUP BY buildings_evalunit.id ORDER BY COUNT(buildings_vote.id) ASC limit %s) 
     AS sub ORDER BY RANDOM() LIMIT 1;
 """
@@ -133,6 +133,8 @@ class EvalUnitQuerySet(models.QuerySet):
             else:
                 cursor.execute(SQL_RANDOM_LEAST_VOTED_ID, (inner_limit,))
             res = cursor.fetchone()
+        if res is None:
+            return res
         # Should not be None if there is at least 1 model
         return res[0]
     
@@ -145,9 +147,10 @@ class EvalUnitQuerySet(models.QuerySet):
         id = self.get_random_unvoted_id(exclude_id=exclude_id)
         if id is None:
             id = self.get_random_least_voted_id(exclude_id=exclude_id)
+        if id is None:
+            raise Exception("Could not get next EvalUnit!")
         if id_only:
             return id
-        
         return EvalUnit.objects.get(pk=id)
     
 
