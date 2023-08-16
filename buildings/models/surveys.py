@@ -23,17 +23,17 @@ YES_NO_UNSURE = [
     (None, "Unsure"),
 ]
 SITE_OBSTRUCTIONS = [
+    ("no_obstructions", "No significant obstructions"),
     ("trees_or_landscaping", "Important trees or landscaping"),
     ("buildings", "Buildings"),
-    ("overhead_wires", "Overhead wires, including those blocking general access to site"),
-    ("no_obstructions", "No significant obstructions"),
+    ("overhead_wires", "Overhead wires, incl. those blocking general access to site"),
 ]
 APPENDAGES = [
-    ("canopies_eaves", "Canopies/overhangs/eaves"),
+    ("none", "No significant appendages"),
+    ("canopies_eaves", "Roof overhangs/eaves"),
     ("balconies", "Balconies"),
     ("porches_stoops", "Porches/stoops"),
-    ("vestibules", "Vestibules"),
-    ("none", "No significant appendages"),
+    ("vestibules", "Exterior Vestibules"),
 ]
 FACADE_MATERIALS = [
     ("brick_masonry", "Brick Masonry"),
@@ -160,7 +160,7 @@ class SurveyV1Form(ModelForm):
             "appendages": _("Are there significant appendages to the building faces? Select all that apply."),
             "exterior_cladding": _("What type of exterior cladding does the building appear to have? Select all that apply."),
             "facade_condition": _("How would you describe the condition of the exterior façades?"),
-            "window_wall_ratio": _("Is there a large proportion of windows to overall façade area?"),
+            "window_wall_ratio": _("Is there a large proportion of glazing to overall façade area?"),
             "large_irregular_windows": _("Are there very large and/or irregularly shaped windows?"),
             "roof_geometry": _("What best describes the roof geometry?"),
             "structure_type": _("What type of structure does the building appear to have?"),

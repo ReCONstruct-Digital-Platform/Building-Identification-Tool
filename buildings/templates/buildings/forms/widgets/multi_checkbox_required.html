@@ -11,14 +11,13 @@
     {% endfor %}
   {% endfor %}
   {% if widget.has_specify %}
-  <div class = "specify">
-    <label>
+  <div id="{{ id }}_specify_container" class = "specify">
+    <label onclick="markCheckboxesNotRequired('{{ widget.name }}'); activateSpecifyEntryField('{{ id }}_specify');" >
       <input id = "{{ id }}_specify" type="{{ widget.input_type }}" class = "me-1" name="{{ widget.name }}" 
-      onclick="markCheckboxesNotRequired('{{ widget.name }}'); activateSpecifyEntryField('{{ id }}_specify');" 
       {% if 'on' in widget.initial %} checked{% endif %} 
       {% if widget.initial|length == 0 %}required{%endif%}>Other (specify):</label>
     <input class="ms-1" id="{{ id }}_specify_value" type="text" name="{{ widget.name }}" 
-    {% if 'on' in widget.initial %} value="{{ widget.initial|last }}" {% else %} disabled{% endif %}/>
+      {% if 'on' in widget.initial %} value="{{ widget.initial|last }}" {% else %} disabled{% endif %}/>
   </div>
   {% endif %}
 </div>

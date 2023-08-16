@@ -1,9 +1,9 @@
-function markCheckboxesNotRequired(id) {
+function markCheckboxesNotRequired(name) {
   // Select all checked checkboxes
-  checked = document.querySelectorAll(`input[name=${id}][type='checkbox']:checked`);
+  checked = document.querySelectorAll(`input[name=${name}][type='checkbox']:checked`);
   const atLeastOneChecked = (checked.length > 0);
   // If a checkbox is checked, we can remove the required flag from all, else it needs to be there.
-  all_checkboxes = document.querySelectorAll(`input[name=${id}][type='checkbox']`);
+  all_checkboxes = document.querySelectorAll(`input[name=${name}][type='checkbox']`);
   all_checkboxes.forEach((el) => {el.required = !atLeastOneChecked});
 }
 
@@ -16,7 +16,7 @@ function activateSpecifyEntryField(input_id) {
     document.getElementById(entry_field_id).disabled = false;
     document.getElementById(entry_field_id).required = true;
   }
-  // If the checkbox is not checked, disabled the associated entry 
+  // If the checkbox is not checked, disable the associated entry 
   // field, set it to not required and reset its value.
   else {
     document.getElementById(entry_field_id).disabled = true;

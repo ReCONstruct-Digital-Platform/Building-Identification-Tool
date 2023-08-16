@@ -10,12 +10,12 @@
             required>{{ option.label }}</label>
     {% endfor %}
   {% endfor %}
-  <div class = "specify">
+  <div id="{{ id }}_specify_container" class = "specify">
     <label>
       <input id = "{{ id }}_specify" type="radio" class = "me-1"
       onclick="turnOnSpecify('{{ id }}_specify_value')" name="{{ widget.name }}"
       {% if widget.value_was_specified %} checked{% endif %} required>Other (specify):</label>
-    <input class="ms-1" id="{{ id }}_specify_value" type="text" name="{{ widget.name }}" 
+    <input class="ms-1" id="{{ id }}_specify_value" type="text" name="{{ widget.name }}"
     {% if widget.value_was_specified %} value="{{ widget.initial }}" {% else %} disabled {% endif %} />
   </div>
 </div>

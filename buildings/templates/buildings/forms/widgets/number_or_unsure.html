@@ -1,6 +1,6 @@
 {% with id=widget.attrs.id intial_val=widget.initial was_filled=widget.was_filled %}
 <div id="{{ id }}" class="{{ widget.attrs.class }}" >
-  <div class="specify">
+  <div id="{{ id }}_specify_container" class="specify">
     <label class="me-1">
       <input id="{{ id }}_specify" type="radio" name="{{ widget.name }}" value="specify"
         class="me-1 specify" onclick="turnOnSpecify('{{ id }}_specify_value')" {% if was_filled and intial_val is not None %} checked{% endif %} required>Number of storeys:
