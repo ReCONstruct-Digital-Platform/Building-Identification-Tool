@@ -131,7 +131,15 @@
   <div class="streetview-and-map-container">
 
     <div id="streetview-container" class="streetview-container ms-3">
-      <div id="streetview"></div>
+      <div id="streetview">
+          <div id="time-travel-container" class="time-travel-container">
+            <label class='time-travel-label'>
+              Time Travel
+              <select id="time-travel-select" class='time-travel-select mt-1' onchange="timeTravel(this.value)"> 
+              </select>
+            </label>
+          </div>
+      </div>
     </div>
 
     <div id="dragbar"></div>
@@ -150,7 +158,8 @@
 
         <!-- Satellite view -->
         <div id="nav-satellite" class="tab-pane active" role="tabpanel" aria-labelledby="nav-satellite-tab">
-          <div id="satmap"></div>
+          <div id="satmap">
+          </div>
         </div>
 
         <!-- Survey -->
@@ -199,5 +208,6 @@
 <input type="hidden" id="upload_url" data-url="{% url 'buildings:upload_imgs' eval_unit.id %}" />
 <input type="hidden" id="sat_data" data-url="" />
 
+<div id="test-screenshots-container"></div>
 
 {% endblock content %}
