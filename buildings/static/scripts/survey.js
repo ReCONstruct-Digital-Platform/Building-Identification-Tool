@@ -44,22 +44,25 @@ async function screenshot(element_id) {
             useCORS: true,
             logging: false, // set true for debug,
             ignoreElements: (el) => {
-                if (element_id === 'satmap') {
-                    // Keep the red pin for the satellite image
-                    return el.classList.contains("gmnoprint") || el.classList.contains("gm-style-cc") 
-                    || el.id === 'gmimap1' || el.tagName === 'BUTTON' || el.classList.contains("gm-iv-address")
-                } else {
-                    // The following hides unwanted controls, copyrights, pins etc. on the maps and streetview canvases
-                    return el.classList.contains("gmnoprint") || el.classList.contains("gm-style-cc") 
-                    || el.id === 'gmimap1' || el.tagName === 'BUTTON' || el.classList.contains("gm-iv-address")
-                    || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3_hdpi.png'
+                // The following hides unwanted controls, copyrights, pins etc. on the maps and streetview canvases
+                let condition = el.classList.contains("gmnoprint") || el.classList.contains("gm-style-cc") 
+                || el.id === 'gmimap1' || el.tagName === 'BUTTON' || el.classList.contains("gm-iv-address")
+                || el.id === 'time-travel-container';
+
+                // Addtionally remove the red pin for the streetview (but keep it for satellite)
+                if (element_id === 'streetview') {
+                    condition ||= el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3_hdpi.png'
                     || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3.png'
                 }
+                return condition; 
             },
         }
     ).then(canvas => {
-        // For testing - appends the images to the page
-        // document.body.appendChild(canvas);
+        // Uncomment for testing - appends the images to the page
+        // document.body.style.overflowY = 'scroll';
+        // document.body.style.height = '100%';
+        // document.getElementById('test-screenshots-container').appendChild(canvas);
+
         // Convert the image to a dataURL for uploading to the backend
         return canvas.toDataURL('image/png');
     })

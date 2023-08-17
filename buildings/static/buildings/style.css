@@ -161,7 +161,6 @@ input[disabled] {pointer-events:none}
 }
 
 .btn-vote {
-  /* width: 100%;   */
   align-self: center;
   background: #5f788a;
   color: white;
@@ -184,9 +183,6 @@ input[disabled] {pointer-events:none}
   margin-top: 10px;
 }
 
-.td-vote {
-  width: 18%
-}
 
 th:hover,
 th:focus-within,
@@ -238,29 +234,7 @@ td > a:first-child {
   align-items: center;
 }
 
-.material-selection-row {
-  display: flex;
-  vertical-align: top;
-}
 
-.material-selection-radios {
-  display: flex;
-  flex-direction: row;
-  vertical-align: top;
-  justify-content: space-between;
-}
-
-.radio-label-group {
-    vertical-align: top;
-    display: flex;
-    flex-direction: column;
-    text-align: center;
-    margin-right: 30px;
-}
-
-.radio-label-group input label {
-  margin-top: 5px;
-}
 
 .th-buildings {
   display: flex;
@@ -282,15 +256,6 @@ td > a:first-child {
 .vote-table td {
   vertical-align: middle;
 
-}
-
-.delete-row-icon {
-  text-align: center;
-  position: relative;
-  height: 120%;
-  /* width: 30px; */
-  /* height: 30px; */
-  right: -40px;
 }
 
 tr:hover .delete-row-icon {
@@ -448,13 +413,6 @@ tr:hover .delete-row-icon {
   height: 100%;
 }
 
-.survey {
-  -webkit-column-count: 3; /* Chrome, Safari, Opera */
-  -moz-column-count: 3; /* Firefox */
-  column-count: 3;
-  padding-left: 50px;
-}
-
 .specify {
   display: inline-block;
   grid-column: span 2;
@@ -487,6 +445,30 @@ tr:hover .delete-row-icon {
     flex-direction: column;
 }
 
+.time-travel-container {
+  display: none;
+  background-color: #222222;
+  opacity: .8;
+  position: absolute;
+  right: 0px;
+  z-index: 10000;
+  margin-top: 10px;
+  font-family: Roboto,Arial,sans-serif;
+  border-bottom-left-radius: 2px;
+  border-top-left-radius: 2px;
+  padding: 6px 8px;
+}
+
+.time-travel-label {
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.time-travel-select {
+  display: block;
+  height: 25px;
+}
 
 .desc { display: none; }
 .desc2 { display: none; }
@@ -494,10 +476,3 @@ tr:hover .delete-row-icon {
 .desc4 { display: none; }
 .desc5 { display: none; }
 
-/* Hidden element to store streetview/satellite snapshots */
-.offscreen {
-  position: absolute;
-  left: -10000px;
-  z-index: -99999;
-  overflow: hidden;
-}

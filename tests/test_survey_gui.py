@@ -42,6 +42,38 @@ class SeleniumFirefoxTests(StaticLiveServerTestCase):
         super().tearDownClass()
 
 
+    def test_survey_GUI_firefox_should_screnshot_satellite_on_survey_tab_click(self):
+        driver = self.driver
+        wait = self.wait 
+
+        driver.get(f"{self.live_server_url}/login?next=/survey")
+        username_input = driver.find_element(By.NAME, "username")
+        username_input.send_keys("testuser")
+        password_input = driver.find_element(By.NAME, "password")
+        password_input.send_keys("testpw")
+        driver.find_element(By.XPATH, '//input[@value="Login"]').click()
+        # Wait until weève redirected to an eval unit
+        wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
+
+        # In Selenium we have to wait for the element to appear, otherwise it will
+        # click too quickly on the tab, and no screenshot will be taken, since
+        # the satellite map will never have been visible. Waiting for the map outer
+        # element to be visible is not enough, so we wait on 'gmimap1' as well (red pin)
+        wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))   
+        wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
+        # This is a proxy to know when the satellite map is visible
+        wait.until(EC.visibility_of_element_located((By.ID, 'gmimap1')))
+
+        # Click the survey tab
+        driver.find_element(By.ID, "nav-survey-tab").click()
+
+        # The satellite screenshot should be stored in the 'data-url' attribute of sat_data
+        sat_data = driver.find_element(By.ID, "sat_data")
+        wait.until(EC.text_to_be_present_in_element_attribute((By.ID, 'sat_data'), 'data-url', 'data:image/png;base64'))
+        self.assertRegex(sat_data.get_attribute('data-url'), 'data:image/png;base64')
+
+
+
     def test_survey_GUI_firefox_should_submit_successfully_vanilla(self):
 
         driver = self.driver
@@ -58,14 +90,7 @@ class SeleniumFirefoxTests(StaticLiveServerTestCase):
 
         driver.get(f"{self.live_server_url}/survey/v1/id1")
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
-        wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
         driver.find_element(By.ID, "nav-survey-tab").click()
-
-        wait.until(EC.presence_of_element_located((By.ID, 'sat_data')))
-        # Check the satellite screenshot was taken
-        sat_data = driver.find_element(By.ID, "sat_data")
-        wait.until(EC.text_to_be_present_in_element_attribute((By.ID, 'sat_data'), 'data-url', 'data:image/png;base64'))
-        self.assertRegex(sat_data.get_attribute('data-url'), 'data:image/png;base64')
 
         m = re.match(rf'{self.live_server_url}/survey/v1/id([0-9])', driver.current_url)
         eval_unit_id = m.group(1)
@@ -116,16 +141,9 @@ class SeleniumFirefoxTests(StaticLiveServerTestCase):
         # Test redirect to an eval unit
         wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
 
-        driver.get(f"{self.live_server_url}/survey/v1/id1")
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
         wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
         driver.find_element(By.ID, "nav-survey-tab").click()
-
-        wait.until(EC.presence_of_element_located((By.ID, 'sat_data')))
-        # Check the satellite screenshot was taken
-        sat_data = driver.find_element(By.ID, "sat_data")
-        wait.until(EC.text_to_be_present_in_element_attribute((By.ID, 'sat_data'), 'data-url', 'data:image/png;base64'))
-        self.assertRegex(sat_data.get_attribute('data-url'), 'data:image/png;base64')
 
         m = re.match(rf'{self.live_server_url}/survey/v1/id([0-9])', driver.current_url)
         eval_unit_id = m.group(1)
@@ -265,16 +283,9 @@ class SeleniumFirefoxTests(StaticLiveServerTestCase):
         # Test redirect to an eval unit
         wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
 
-        driver.get(f"{self.live_server_url}/survey/v1/id1")
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
         wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
         driver.find_element(By.ID, "nav-survey-tab").click()
-
-        wait.until(EC.presence_of_element_located((By.ID, 'sat_data')))
-        # Check the satellite screenshot was taken
-        sat_data = driver.find_element(By.ID, "sat_data")
-        wait.until(EC.text_to_be_present_in_element_attribute((By.ID, 'sat_data'), 'data-url', 'data:image/png;base64'))
-        self.assertRegex(sat_data.get_attribute('data-url'), 'data:image/png;base64')
 
         m = re.match(rf'{self.live_server_url}/survey/v1/id([0-9])', driver.current_url)
         eval_unit_id = m.group(1)
@@ -338,6 +349,37 @@ class SeleniumChromeTests(StaticLiveServerTestCase):
         super().tearDownClass()
 
 
+    def test_survey_GUI_chrome_should_screnshot_satellite_on_survey_tab_click(self):
+        driver = self.driver
+        wait = self.wait 
+
+        driver.get(f"{self.live_server_url}/login?next=/survey")
+        username_input = driver.find_element(By.NAME, "username")
+        username_input.send_keys("testuser")
+        password_input = driver.find_element(By.NAME, "password")
+        password_input.send_keys("testpw")
+        driver.find_element(By.XPATH, '//input[@value="Login"]').click()
+        # Wait until weève redirected to an eval unit
+        wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
+
+        # In Selenium we have to wait for the element to appear, otherwise it will
+        # click too quickly on the tab, and no screenshot will be taken, since
+        # the satellite map will never have been visible. Waiting for the map outer
+        # element to be visible is not enough, so we wait on 'gmimap1' as well (red pin)
+        wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))   
+        wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
+        # This is a proxy to know when the satellite map is visible
+        wait.until(EC.visibility_of_element_located((By.ID, 'gmimap1')))
+
+        # Click the survey tab
+        driver.find_element(By.ID, "nav-survey-tab").click()
+
+        # The satellite screenshot should be stored in the 'data-url' attribute of sat_data
+        sat_data = driver.find_element(By.ID, "sat_data")
+        wait.until(EC.text_to_be_present_in_element_attribute((By.ID, 'sat_data'), 'data-url', 'data:image/png;base64'))
+        self.assertRegex(sat_data.get_attribute('data-url'), 'data:image/png;base64')
+
+
     def test_submit_survey_chrome_clicking_on_inputs(self):
         driver = self.driver
         wait = self.wait 
@@ -348,22 +390,10 @@ class SeleniumChromeTests(StaticLiveServerTestCase):
         password_input = driver.find_element(By.NAME, "password")
         password_input.send_keys("testpw")
         driver.find_element(By.XPATH, '//input[@value="Login"]').click()
-
-
-        # Test redirect to an eval unit
         wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
 
-        driver.get(f"{self.live_server_url}/survey/v1/id1")
-
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
-        wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
         driver.find_element(By.ID, "nav-survey-tab").click()
-
-        wait.until(EC.presence_of_element_located((By.ID, 'sat_data')))
-        wait.until(EC.text_to_be_present_in_element_attribute((By.ID, 'sat_data'), 'data-url', 'data:image/png;base64,'))
-        # Check the satellite screenshot was taken
-        sat_data = driver.find_element(By.ID, "sat_data")
-        self.assertRegex(sat_data.get_attribute('data-url'), 'data:image/png;base64,')
 
         m = re.match(rf'{self.live_server_url}/survey/v1/id([0-9])', driver.current_url)
         eval_unit_id = m.group(1)
@@ -453,21 +483,9 @@ class SeleniumChromeTests(StaticLiveServerTestCase):
         password_input.send_keys("testpw")
         driver.find_element(By.XPATH, '//input[@value="Login"]').click()
 
-
-        # Test redirect to an eval unit
         wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
-
-        driver.get(f"{self.live_server_url}/survey/v1/id1")
-
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
-        wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
         driver.find_element(By.ID, "nav-survey-tab").click()
-
-        wait.until(EC.presence_of_element_located((By.ID, 'sat_data')))
-        wait.until(EC.text_to_be_present_in_element_attribute((By.ID, 'sat_data'), 'data-url', 'data:image/png;base64,'))
-        # Check the satellite screenshot was taken
-        sat_data = driver.find_element(By.ID, "sat_data")
-        self.assertRegex(sat_data.get_attribute('data-url'), 'data:image/png;base64,')
 
         m = re.match(rf'{self.live_server_url}/survey/v1/id([0-9])', driver.current_url)
         eval_unit_id = m.group(1)
@@ -561,9 +579,10 @@ class SeleniumChromeTests(StaticLiveServerTestCase):
         password_input = driver.find_element(By.NAME, "password")
         password_input.send_keys("testpw")
         driver.find_element(By.XPATH, '//input[@value="Login"]').click()
-        driver.get(f"{self.live_server_url}/survey/v1/id1")
+        # Wait until redirect completes
+        wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
+
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
-        wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
         driver.find_element(By.ID, "nav-survey-tab").click()
 
         # Test the NumberOrUnsure field
@@ -648,17 +667,8 @@ class SeleniumChromeTests(StaticLiveServerTestCase):
         # Test redirect to an eval unit
         wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
 
-        driver.get(f"{self.live_server_url}/survey/v1/id1")
-
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
-        wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
         driver.find_element(By.ID, "nav-survey-tab").click()
-
-        wait.until(EC.presence_of_element_located((By.ID, 'sat_data')))
-        wait.until(EC.text_to_be_present_in_element_attribute((By.ID, 'sat_data'), 'data-url', 'data:image/png;base64,'))
-        # Check the satellite screenshot was taken
-        sat_data = driver.find_element(By.ID, "sat_data")
-        self.assertRegex(sat_data.get_attribute('data-url'), 'data:image/png;base64,')
 
         m = re.match(rf'{self.live_server_url}/survey/v1/id([0-9])', driver.current_url)
         eval_unit_id = m.group(1)
