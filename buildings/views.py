@@ -8,9 +8,11 @@ import traceback
 
 from PIL import Image
 from pprint import pprint
+from functools import reduce
 from w3lib.url import parse_data_uri
 from uuid_extensions import uuid7str
 from ipaddress import ip_address, ip_network
+from render_block import render_block_to_string
 
 from django.views import generic 
 from django.conf import settings
@@ -24,43 +26,37 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
-
 from buildings.utils.utility import print_query_dict, verify_github_signature
 
 from .utils import b2_upload
 from .forms import CreateUserForm
 from .models.surveys import SurveyV1Form
 from config.settings import B2_APPKEY_RW, B2_BUCKET_IMAGES, B2_ENDPOINT, B2_KEYID_RW, WEBHOOK_SECRET, BASE_DIR
-from .models.models import EvalUnit, EvalUnitSatelliteImage, EvalUnitStreetViewImage, EvalUnitLatestViewData, NoBuildingFlag, Vote
+from .models.models import (
+    EvalUnit, EvalUnitSatelliteImage, EvalUnitStreetViewImage, EvalUnitLatestViewData, NoBuildingFlag, User, Vote
+)
 import logging
 
 log = logging.getLogger(__name__)
 
 @login_required(login_url='buildings:login')
 def index(request):
+    template = 'buildings/index.html'
 
     total_votes = Vote.objects.count()
     latest_votes = Vote.objects.order_by('-date_added').all()
 
     num_user_votes = Vote.objects.filter(user = request.user).count()
     user_votes = Vote.objects.filter(user = request.user).order_by('-date_added').all()
+    top_3_users = User.get_top_3()
+    top_3_total_votes = reduce(lambda a, b: a.num_votes + b.num_votes, top_3_users)
+    top_3_vote_percentage = int(top_3_total_votes / total_votes * 100)
 
-    if request.htmx:
-        pprint(request.GET)
-        page_num_latest = request.GET.get('latest_votes_page')
-        page_num_user = request.GET.get('user_votes_page')
-        active_tab = request.GET.get('active_tab')
-        latest_votes_page = Paginator(latest_votes, 10).get_page(page_num_latest)
-        user_votes_page = Paginator(user_votes, 10).get_page(page_num_user)
-
-        template = 'buildings/partials/index.html'
-    else:
-        page_num_latest = 1
-        page_num_user = 1
-        latest_votes_page = Paginator(latest_votes, 10).get_page(page_num_latest)
-        user_votes_page = Paginator(user_votes, 10).get_page(page_num_user)
-        active_tab = 'latest'
-        template = 'buildings/index.html'
+    page_num_latest = request.GET.get('latest_votes_page', 1)
+    page_num_user = request.GET.get('user_votes_page', 1)
+    latest_votes_page = Paginator(latest_votes, 10).get_page(page_num_latest)
+    user_votes_page = Paginator(user_votes, 10).get_page(page_num_user)
+    active_tab = request.GET.get('active_tab', 'leaderboard')
 
     context = {
         "total_votes": total_votes,
@@ -68,8 +64,20 @@ def index(request):
         "latest_votes_page": latest_votes_page,
         "user_votes_page": user_votes_page,
         "active_tab": active_tab,
+        "top_3_users": top_3_users,
+        "top_3_total_votes": top_3_total_votes,
+        "top_3_vote_percentage": top_3_vote_percentage
     }
-    return render(request, template, context)
+
+
+    if request.htmx:
+        rendered_content = render_block_to_string(
+            template, "activity-tab-content", context=context, request=request
+        )
+    else:
+        rendered_content = render(request, template, context)
+
+    return HttpResponse(content=rendered_content)
 
 
 def _get_current_html_query_str(query):
