@@ -15,12 +15,33 @@ body {
   flex-grow : 1; /* allows the main section to fill the rest of the vertical space*/
 }
 
+/* Navbar */
 .navbar-brand {
   color: #dee4e8;
 }
 .navbar-brand:hover {
   color: #ffffff;
 }
+.brand-logo {
+  height: 36px;
+  width: auto;
+}
+.brand-text {
+  position: relative;
+  top: 1px;
+}
+.profile-pic-icon {
+  border-radius: 50%;
+}
+
+@media(min-width: 768px) {
+  .dropdown-menu.show {
+    right: -10px;
+    top: 125%;
+    left: unset;
+  }
+}
+  
 
 .container {
   max-width: 80%;
@@ -35,10 +56,6 @@ body {
   }
 }
 
-.logo-img {
-  height: 40px;
-  width: auto;
-}
   
 h1, h2, h3, h4, h5, h6 {
   color: #444444;
@@ -154,16 +171,22 @@ input[disabled] {pointer-events:none}
 }
 
 
-.btn-login {
-  width: 100%;  
+.btn-primary {
+  border: #5f788a;
   background: #5f788a;
   color: white;
+}
+.btn-primary:hover {
+  background: #cdd7e6;
+  color: #1e2225;
+}
+
+.btn-login {
+  width: 100%;  
 }
 
 .btn-vote {
   align-self: center;
-  background: #5f788a;
-  color: white;
 }
 
 .form-error, 
@@ -379,12 +402,6 @@ tr:hover .delete-row-icon {
   margin-right: 4rem;
 }
 
-.profile-pic {
-  border-radius: 50%;
-  border: 1px solid;
-  border-color: #444444;
-}
-
 .spread-apart-container {
   width: 100%;
   max-height: 100%;
@@ -476,3 +493,10 @@ tr:hover .delete-row-icon {
 .desc4 { display: none; }
 .desc5 { display: none; }
 
+.material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 48
+}

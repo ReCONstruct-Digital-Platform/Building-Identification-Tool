@@ -25,7 +25,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
 
-from buildings.utils.utility import print_query_dict
+from buildings.utils.utility import print_query_dict, verify_github_signature
 
 from .utils import b2_upload
 from .forms import CreateUserForm
@@ -407,7 +407,7 @@ def redeploy_server(request):
     secret = WEBHOOK_SECRET
     x_hub_signature = request.headers.get('x-hub-signature-256')
 
-    if not verify_signature(request.body, secret, x_hub_signature):
+    if not verify_github_signature(request.body, secret, x_hub_signature):
         log.warning(f'Wrong x-hub-signature!')
         return HttpResponse(status=403, reason="x-hub-signature-256 header is missing!")
     
@@ -455,21 +455,3 @@ def redeploy_server(request):
     return HttpResponse("All good!")
 
 
-def verify_signature(payload_body, secret_token, signature_header):
-    """Verify that the payload was sent from GitHub by validating SHA256.
-    
-    Args:
-        payload_body: original request body to verify (request.body())
-        secret_token: GitHub app webhook token (WEBHOOK_SECRET)
-        signature_header: header received from GitHub (x-hub-signature-256)
-    """
-    if not signature_header:
-        return False
-    
-    hash_object = hmac.new(secret_token.encode('utf-8'), msg=payload_body, digestmod=hashlib.sha256)
-    expected_signature = "sha256=" + hash_object.hexdigest()
-
-    if not hmac.compare_digest(expected_signature, signature_header):
-        return False
-    
-    return True
