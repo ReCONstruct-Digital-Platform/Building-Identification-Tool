@@ -25,10 +25,17 @@ STRING_QUERIES_TO_FILTER = {
 
 # https://docs.djangoproject.com/en/4.2/topics/auth/customizing/#extending-the-existing-user-model
 class User(AbstractUser):
+
+    def num_votes(self):
+        return len(self.vote_set)
+    
     def get_avatar_url(self, size=32):
         digest = md5(self.email.encode('utf-8')).hexdigest()
         return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
 
+    @classmethod
+    def get_top_3(cls):
+        return cls.objects.annotate(num_votes=Count('vote')).order_by('-num_votes')[:3]
 
 
 SQL_RANDOM_UNVOTED_ID = f"""

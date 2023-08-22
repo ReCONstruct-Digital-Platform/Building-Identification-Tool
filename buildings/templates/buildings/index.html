@@ -5,17 +5,22 @@
 <div class="container home-page-container">
     <div class="home-title mt-3">
         <h2>Hello {{ request.user }}! </h2>
-        <h3>Welcome to the Building Identification Tool</h3>
+        <h3 class="d-none d-sm-block">Welcome to the Building Identification Tool</h3>
     </div>
         
-    <div class="home-content mt-4">
+    <div class="home-content mt-md-4">
         <div id="activity-target" class="spread-apart-container">
             <div>
-                <ul class="nav nav-underline flex-column pe-3">
+                <ul class="nav nav-underline flex-nowrap flex-md-column">
+                    <li class="nav-item activity-nav-item">
+                        <a class="nav-link{% if active_tab == 'leaderboard' %} active{% endif %}" id="leaderboard-link" data-bs-toggle="tab" 
+                        data-bs-target="#leaderboard" type="button" role="tab" aria-controls="leaderboard" 
+                        aria-selected="{% if active_tab == 'latest' %}true{% else %}false{% endif %}">Top 3</a>
+                    </li>
                     <li class="nav-item activity-nav-item">
                         <a class="nav-link{% if active_tab == 'latest' %} active{% endif %}" id="latest-activity-link" data-bs-toggle="tab" 
                         data-bs-target="#latest-activity" type="button" role="tab" aria-controls="latest-activity" 
-                        aria-selected="{% if active_tab == 'latest' %}true{% else %}false{% endif %}">Latest Activity</a>
+                        aria-selected="{% if active_tab == 'latest' %}true{% else %}false{% endif %}">Latest</a>
                     </li>
                     <li class="nav-item activity-nav-item">
                         <a class="nav-link{% if active_tab == 'user' %} active{% endif %}" id="user-activity-link" data-bs-toggle="tab" 
@@ -25,11 +30,44 @@
                 </ul>
             </div>
             
-            <div id="activity-tab-content" class="activity-tab-content tab-content pb-4">
+            {% block activity-tab-content %}
+            <div id="activity-tab-content" class="activity-tab-content tab-content">
+                <div id="leaderboard" class="latest-activity-box tab-pane {% if active_tab == 'leaderboard' %}show active{% endif %}" 
+                    role="tabpanel" aria-labelledby="latest-activity-link" tabindex="0">
+                    <div class="activity-header flex-column flex-md-row">
+                        <h5 class="me-2 text-nowrap">Top 3:</h5>
+                        <div>Together these users completed {{top_3_total_votes}} of the {{ total_votes }} ({{ top_3_vote_percentage }} %) surveys.</div>
+                    </div>
+                    <ul class="list-group">
+                        <div class="activity-top-row mb-2">
+                            <div class="ms-4"><strong>User</strong></div>
+                            <div><strong>Num Votes</strong></div>
+                        </div>
+                        {% for user in top_3_users %}
+                        <li class="list-group-item list-group-item-light card mb-3">
+                            <div class="activity-top-row">
+                                <div class="vote-user">
+                                    <img class="profile-pic-icon border me-2" src="{{ user.get_avatar_url }}">
+                                    <strong>{{ user.username }}</strong> 
+                                    <span class="ms-2 d-none d-md-flex">
+                                        (joined {{ user.date_joined | naturalday }})
+                                    </span>
+                                </div>
+                                <div class="">
+                                    {{ user.num_votes }}
+                                </div>
+                            </div>
+                        </li>
+                        {% empty %}
+                            <li class="list-group-item list-group-item-light">No users ??</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
                 <div id="latest-activity" class="latest-activity-box tab-pane {% if active_tab == 'latest' %}show active{% endif %}" 
                     role="tabpanel" aria-labelledby="latest-activity-link" tabindex="0">
-                    <div class="activity-header">
-                        <h5 class="me-2">Latest Activity: </h5>
+                    <div class="activity-header flex-column flex-md-row">
+                        <h5 class="me-2 text-nowrap">Latest Activity: </h5>
                         <div>{{ total_votes }} evaluation units surveyed in total!</div>
                     </div>
                     <ul class="list-group">
@@ -39,7 +77,9 @@
                             <div class="activity-top-row mb-2">
                                 <div class="vote-user">
                                     <img class="profile-pic-icon border me-2" src="{{ vote.user.get_avatar_url }}">
-                                    {{ vote.user.username }}
+                                    <strong>
+                                        {{ vote.user.username }}
+                                    </strong>
                                 </div>
                                 <div class="vote-date">
                                     {{ vote.date_added | naturaltime }}
@@ -70,9 +110,13 @@
                     <div class="pagination mt-3">
                         <span class="step-links">
                             {% if latest_votes_page.has_previous %}
-                                <a href='#' hx-swap="outerHTML" hx-target='#activity-target' 
+                                <a href='#' 
+                                    hx-swap="outerHTML" 
+                                    hx-target='#activity-tab-content' 
                                     hx-get="?latest_votes_page=1&active_tab=latest&user_votes_page={{ user_votes_page.number }}">&laquo; first</a>
-                                <a href='#' hx-swap="outerHTML" hx-target='#activity-target' 
+                                <a href='#' 
+                                hx-swap="outerHTML" 
+                                    hx-target='#activity-tab-content' 
                                     hx-get="?latest_votes_page={{ latest_votes_page.previous_page_number }}&active_tab=latest&user_votes_page={{ user_votes_page.number }}">prev.</a>
                             {% endif %}
                     
@@ -81,9 +125,13 @@
                             </span>
                     
                             {% if latest_votes_page.has_next %}
-                                <a href='#' hx-swap="outerHTML" hx-target='#activity-target' 
+                                <a href='#' 
+                                    hx-swap="outerHTML" 
+                                    hx-target='#activity-tab-content' 
                                     hx-get="?latest_votes_page={{ latest_votes_page.next_page_number }}&active_tab=latest&user_votes_page={{ user_votes_page.number }}">next</a>
-                                <a href='#' hx-swap="outerHTML" hx-target='#activity-target' 
+                                <a href='#' 
+                                    hx-swap="outerHTML" 
+                                    hx-target='#activity-tab-content' 
                                     hx-get="?latest_votes_page={{ latest_votes_page.paginator.num_pages }}&active_tab=latest&user_votes_page={{ user_votes_page.number }}">last &raquo;</a>
                             {% endif %}
                         </span>
@@ -92,8 +140,8 @@
 
                 <div id="user-activity" class="latest-activity-box tab-pane {% if active_tab == 'user' %}show active{% endif %}"
                     role="tabpanel" aria-labelledby="user-activity-link" tabindex="1">
-                    <div class="activity-header">
-                        <h5 class="me-2">Your Activity:</h5>
+                    <div class="activity-header flex-column flex-md-row">
+                        <h5 class="me-2 text-nowrap">Your Activity:</h5>
                         <div>
                             {% if num_user_votes > 30 %}You're Amazing!!! {% elif num_user_votes > 20 %}Great Job!! {% elif num_user_votes > 10 %}Keep it up!! {% elif num_user_votes > 2 %}Good Job! {% endif %}
                             You've surveyed {{ num_user_votes }} evaluation units!</div>
@@ -106,7 +154,9 @@
                             <div class="activity-top-row mb-2">
                                 <div class="vote-user">
                                     <img class="profile-pic-icon border me-2" src="{{ vote.user.get_avatar_url }}">
-                                    {{ vote.user.username }}
+                                    <strong>
+                                        {{ vote.user.username }}
+                                    </strong>
                                 </div>
                                 <div class="vote-date">
                                     {{ vote.date_added | naturaltime }}
@@ -137,9 +187,13 @@
                     <div class="pagination mt-3">
                         <span class="step-links">
                             {% if user_votes_page.has_previous %}
-                                <a href='#' hx-swap="outerHTML" hx-target='#activity-target' 
+                                <a href='#' 
+                                    hx-swap="outerHTML" 
+                                    hx-target='#activity-tab-content' 
                                     hx-get="?user_votes_page=1&active_tab=user&latest_votes_page={{ latest_votes_page.number }}">&laquo; first</a>
-                                <a href='#' hx-swap="outerHTML" hx-target='#activity-target' 
+                                <a href='#' 
+                                    hx-swap="outerHTML" 
+                                    hx-target='#activity-tab-content' 
                                     hx-get="?user_votes_page={{ user_votes_page.previous_page_number }}&active_tab=user&latest_votes_page={{ latest_votes_page.number }}">prev.</a>
                             {% endif %}
                     
@@ -148,16 +202,20 @@
                             </span>
                     
                             {% if user_votes_page.has_next %}
-                                <a href='#' hx-swap="outerHTML" hx-target='#activity-target' 
+                                <a href='#' 
+                                    hx-swap="outerHTML" 
+                                    hx-target='#activity-tab-content' 
                                     hx-get="?user_votes_page={{ user_votes_page.next_page_number }}&active_tab=user&latest_votes_page={{ latest_votes_page.number }}">next</a>
-                                <a href='#' hx-swap="outerHTML" hx-target='#activity-target' 
+                                <a href='#' 
+                                    hx-swap="outerHTML" 
+                                    hx-target='#activity-tab-content' 
                                     hx-get="?user_votes_page={{ user_votes_page.paginator.num_pages }}&active_tab=user&latest_votes_page={{ latest_votes_page.number }}">last &raquo;</a>
                             {% endif %}
                         </span>
                     </div>
                 </div>
             </div>
-
+            {% endblock %}
         </div>
     </div>
 
