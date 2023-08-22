@@ -52,16 +52,19 @@ async function screenshot(element_id) {
                 // Addtionally remove the red pin for the streetview (but keep it for satellite)
                 if (element_id === 'streetview') {
                     condition ||= el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3_hdpi.png'
-                    || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3.png'
+                    || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3.png';
+                }
+                else {
+                    condition ||= el.getAttribute('style') === "position: absolute; left: 0px; top: 0px; z-index: 1;";
                 }
                 return condition; 
             },
         }
     ).then(canvas => {
         // Uncomment for testing - appends the images to the page
-        // document.body.style.overflowY = 'scroll';
-        // document.body.style.height = '100%';
-        // document.getElementById('test-screenshots-container').appendChild(canvas);
+        document.body.style.overflowY = 'scroll';
+        document.body.style.height = '100%';
+        document.getElementById('test-screenshots-container').appendChild(canvas);
 
         // Convert the image to a dataURL for uploading to the backend
         return canvas.toDataURL('image/png');

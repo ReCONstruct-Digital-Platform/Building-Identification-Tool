@@ -114,7 +114,7 @@ h1, h2, h3, h4, h5, h6, strong {
     width: 100%;
     display: flex;
     flex-direction: column;
-    overflow-y: scroll;
+    overflow-y: auto;
     margin-bottom: 0.5rem;
   }
 }
@@ -137,7 +137,7 @@ h1, h2, h3, h4, h5, h6, strong {
   background: rgba(255, 255, 255, .7);
   border-radius: 10px;
   padding: 10px 20px;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .latest-activity-box-col {
@@ -195,12 +195,12 @@ input[disabled] {pointer-events:none}
 }
 
 
-.btn-primary {
+.btn-main {
   border: #5f788a;
   background: #5f788a;
   color: white;
 }
-.btn-primary:hover {
+.btn-main:hover, .btn-main:active, .btn-main:focus {
   background: #cdd7e6;
   color: #1e2225;
 }
@@ -346,6 +346,9 @@ tr:hover .delete-row-icon {
   font-size: medium;
 }
 
+.container-fluid {
+  width: 90%;
+}
 .container-wide {
   width: 100%;
   margin-top: 0.5rem;
