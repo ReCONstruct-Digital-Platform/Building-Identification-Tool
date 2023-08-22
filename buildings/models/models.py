@@ -22,6 +22,16 @@ STRING_QUERIES_TO_FILTER = {
     "q_cubf": "cubf_str__icontains",
 }
 
+class UserQuerySet(models.QuerySet):
+
+    def get_top_3(self):
+        return self.annotate(num_votes=Count('vote')).order_by('-num_votes')[:3]
+
+
+class UserManager(models.Manager):
+    def get_queryset(self):
+        return UserQuerySet(self.model, using=self._db)
+
 
 # https://docs.djangoproject.com/en/4.2/topics/auth/customizing/#extending-the-existing-user-model
 class User(AbstractUser):
@@ -36,6 +46,11 @@ class User(AbstractUser):
     @classmethod
     def get_top_3(cls):
         return cls.objects.annotate(num_votes=Count('vote')).order_by('-num_votes')[:3]
+    
+    # Override the objects attribute of the model
+    # in order to implement custom search functionality
+    objects = UserManager.from_queryset(UserQuerySet)()
+
 
 
 SQL_RANDOM_UNVOTED_ID = f"""

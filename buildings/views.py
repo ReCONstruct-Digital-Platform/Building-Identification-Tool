@@ -48,7 +48,7 @@ def index(request):
 
     num_user_votes = Vote.objects.filter(user = request.user).count()
     user_votes = Vote.objects.filter(user = request.user).order_by('-date_added').all()
-    top_3_users = User.get_top_3()
+    top_3_users = User.objects.get_top_3()
     top_3_total_votes = reduce(lambda a, b: a.num_votes + b.num_votes, top_3_users)
     top_3_vote_percentage = int(top_3_total_votes / total_votes * 100)
 
