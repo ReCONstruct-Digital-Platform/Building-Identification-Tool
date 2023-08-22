@@ -14,9 +14,9 @@
                 <li class="nav-item">
                     <a class="nav-link {% if current_url == 'survey_v1' %}active{% endif %}" href="{% url 'buildings:survey' %}">Survey</a>
                 </li>
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a class="nav-link {% if current_url == 'all_buildings' %}active{% endif %}" href="#">All Buildings</a>
-                </li>
+                </li> -->
             </ul>
             {% if user.is_authenticated %}
             <div class="dropdown nav-item">
@@ -25,7 +25,7 @@
                     <span class="ms-2 me-1">{{ user.username }}</span>
                 </a>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Profile</a></li>
+                    <!-- <li><a class="dropdown-item" href="#">Profile</a></li> -->
                     <li><a class="dropdown-item" href="{% url 'buildings:logout' %}">Logout</a></li>
                 </ul>
             </div>

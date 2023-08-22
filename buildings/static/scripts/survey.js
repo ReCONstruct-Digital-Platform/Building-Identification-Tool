@@ -61,10 +61,10 @@ async function screenshot(element_id) {
             },
         }
     ).then(canvas => {
-        // Uncomment for testing - appends the images to the page
-        document.body.style.overflowY = 'scroll';
-        document.body.style.height = '100%';
-        document.getElementById('test-screenshots-container').appendChild(canvas);
+        // // Uncomment for testing - appends the images to the page
+        // document.body.style.overflowY = 'scroll';
+        // document.body.style.height = '100%';
+        // document.getElementById('test-screenshots-container').appendChild(canvas);
 
         // Convert the image to a dataURL for uploading to the backend
         return canvas.toDataURL('image/png');

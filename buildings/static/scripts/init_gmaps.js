@@ -257,7 +257,6 @@ function findPanorama(svService, latestViewData, panoRequest, evalUnitCoord) {
       window.m_marker = m_marker;
       window.lastSVImageDate = panoData.imageDate;
       window.lastPanoChanged = panoData.location.pano;
-      window.manualPanSetExtraEventsIntercepted = 0;
 
       // Set the time travel select visible only once the streetview is loaded
       // Otherwise it shows on the side of the screen before ending in the right place
@@ -274,81 +273,26 @@ function findPanorama(svService, latestViewData, panoRequest, evalUnitCoord) {
       const config = { attributes: true, childList: true, subtree: true };
       observer.observe(document.getElementById('streetview'), config);
       observer.observe(document.getElementById('satmap'), config);
-      
-      // // Register a mutation observer to print out map events
-      // const observer2 = new MutationObserver(findImageDateElement);
-      // observer2.observe(document.getElementById('streetview'), config);
 
-      sv.addListener('pano_changed', () => {
-        console.log('pano_changed');
-      });
-      
+
       sv.addListener('pano_changed', () => {
         let panoId = sv.getPano();
 
         if (window.lastPanoChanged === panoId ) {
-          console.log(`Extra event on ${window.lastPanoChanged}, returning!`)
           return;
         }
-        // else if (window.doingManualPanoSet) {
-
-        //   window.doingManualPanoSet = false;
-        //   return;
-        // }
-        // Event fires twice for some reason, log the ID in window to save work
-        
         
         // Get more info on the pano from StreetViewService
         svService.getPanorama({pano: panoId}, function(panoData, status) {
           if (status === google.maps.StreetViewStatus.OK) {
-            console.log(`Current pano: ${window.lastPanoChanged} - (${window.lastSVImageDate})`)
-            console.log(`Pano changed to: ${panoId} - (${panoData.imageDate})`);
-
-            if (window.pegmanDropped) {
-              window.pegmanDropped = false;
-              // If the new pano date is not the same as lastImageDate, 
-              // need to fetch the closest one and manually set it!!
-              if (panoData.imageDate !== window.lastSVImageDate) {
-                console.log("Pegman dropped and new pano date not equal to last.")
-                // Need to manually set
-                var {options, closestPanoByDate} = generateOptionsAndReturnClosestPano(panoData.time, window.lastSVImageDate);
-                console.log(`returning setPano on ${closestPanoByDate}`);
-                window.doingManualPanoSet = true;
-                sv.setPano(closestPanoByDate);
-                map.setStreetView(sv);
-                return;
-              } 
-              else {
-                console.log("Pegman dropped but new pano in same year as previous, continue normally ")
-              }
-            }
-            
-            else if (panoData.imageDate !== window.lastSVImageDate && window.doingManualPanoSet) {
-              console.log('catching extra event trying to fuck with my manual pano set!! Returning')
-
-              if (window.manualPanSetExtraEventsIntercepted === 2) {
-                window.manualPanSetExtraEventsIntercepted = 0;
-                sv.setPano(window.lastPanoChanged);
-                window.doingManualPanoSet = false;
-                return;
-              } else {
-                window.manualPanSetExtraEventsIntercepted += 1;
-                return;
-              }
-            }
-
-            console.log(`Generating options for new pano ${panoData.imageDate}`);
             var {options} = generateOptionsAndReturnClosestPano(panoData.time, panoData.imageDate);
             document.getElementById('time-travel-select').replaceChildren(...options);
             // save the current image date for next time
             window.lastSVImageDate = panoData.imageDate;
-            console.log(`Setting last pano to ${panoId}`);
             window.lastPanoChanged = panoId;
           }
         });
       });
-
-
 
       // Set ondrag event listeners for both markers
       // Dragging any of them will instantly update the other
