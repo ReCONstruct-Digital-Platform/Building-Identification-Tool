@@ -3,12 +3,13 @@ import logging
 from hashlib import md5
 
 from django.conf import settings
+from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.db import models, connection
 from django.db.models import Q, Count, Avg, TextField
 from django.db.models.functions import Cast, Coalesce
 from django.utils.translation import gettext_lazy as _
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 from buildings.utils.contants import CUBF_TO_NAME_MAP
 
@@ -24,17 +25,43 @@ STRING_QUERIES_TO_FILTER = {
 
 class UserQuerySet(models.QuerySet):
 
-    def get_top_3(self):
-        return self.annotate(num_votes=Count('vote')).order_by('-num_votes')[:3]
+    def get_top_n(self, n) -> QuerySet:
+        return self.annotate(num_votes=Coalesce(models.Count("vote"), 0)).order_by('-num_votes')[:n]
+
+class UserManager(BaseUserManager):
+
+    def create_user(self, username, password, email=None, **otherfields):
+        email = self.normalize_email(email)
+        self.model(username=username, password=password, email=email, **otherfields)
+        user = self.model(username=username, email=email,
+                          is_staff=False, is_active=True, is_superuser=False)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
 
 
-class UserManager(models.Manager):
-    def get_queryset(self):
+    def create_superuser(self, username, password, email=None, **otherfields):
+        """
+        Creates and saves a superuser with the given email and password.
+        """
+        user = self.create_user(
+            username=username,
+            password=password,
+            email=email,
+            **otherfields
+        )
+        user.is_staff = True
+        user.is_superuser = True
+        user.save(using=self._db)
+        return user
+    
+    def get_queryset(self) -> QuerySet:
         return UserQuerySet(self.model, using=self._db)
 
-
-# https://docs.djangoproject.com/en/4.2/topics/auth/customizing/#extending-the-existing-user-model
 class User(AbstractUser):
+    """https://docs.djangoproject.com/en/4.2/topics/auth/customizing/#extending-the-existing-user-model"""
+
+    objects: UserQuerySet = UserManager.from_queryset(UserQuerySet)()
 
     def num_votes(self):
         return len(self.vote_set)
@@ -42,14 +69,6 @@ class User(AbstractUser):
     def get_avatar_url(self, size=32):
         digest = md5(self.email.encode('utf-8')).hexdigest()
         return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
-
-    @classmethod
-    def get_top_3(cls):
-        return cls.objects.annotate(num_votes=Count('vote')).order_by('-num_votes')[:3]
-    
-    # Override the objects attribute of the model
-    # in order to implement custom search functionality
-    objects = UserManager.from_queryset(UserQuerySet)()
 
 
 

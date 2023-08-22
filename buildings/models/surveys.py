@@ -163,7 +163,7 @@ class SurveyV1Form(ModelForm):
             "window_wall_ratio": _("Is there a large proportion of glazing to overall façade area?"),
             "large_irregular_windows": _("Are there very large and/or irregularly shaped windows?"),
             "roof_geometry": _("What best describes the roof geometry?"),
-            "structure_type": _("What type of structure does the building appear to have?"),
+            "structure_type": _("(Optional) What type of structure does the building appear to have?"),
             "new_or_renovated": _("Does this building look new and/or recently renovated?"),
         }
 

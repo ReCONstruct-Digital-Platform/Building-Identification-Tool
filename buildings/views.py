@@ -1,8 +1,6 @@
 import io
 import git
-import hmac
 import json
-import hashlib
 import requests
 import traceback
 
@@ -22,11 +20,12 @@ from django.http import HttpResponse
 from django.core.paginator import Paginator
 from django.forms.models import model_to_dict
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST   
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
 from buildings.utils.utility import print_query_dict, verify_github_signature
+from django.db.models import Q, Count
 
 from .utils import b2_upload
 from .forms import CreateUserForm
@@ -48,8 +47,9 @@ def index(request):
 
     num_user_votes = Vote.objects.filter(user = request.user).count()
     user_votes = Vote.objects.filter(user = request.user).order_by('-date_added').all()
-    top_3_users = User.objects.get_top_3()
-    top_3_total_votes = reduce(lambda a, b: a.num_votes + b.num_votes, top_3_users)
+
+    top_3_users = User.objects.get_top_n(3)
+    top_3_total_votes = sum(t.num_votes for t in top_3_users)
     top_3_vote_percentage = int(top_3_total_votes / total_votes * 100)
 
     page_num_latest = request.GET.get('latest_votes_page', 1)
