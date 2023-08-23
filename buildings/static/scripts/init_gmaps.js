@@ -4,10 +4,26 @@ var data = document.currentScript.dataset;
 
 function timeTravel(panoId) {
   window.sv.setPano(panoId);
-  window.map.setStreetView(window.sv);
 }
 
 
+/* 
+* Get the date key.
+* Assumptions:
+* - All elements of the array have the same keys
+* - The date key immediately follows the panorama ID key
+* In practice, always observed 2 keys per element
+* and both 'Qm' and 'yp' as date keys. No idea if there are others.
+*/
+function getPanoDateKey(panoArray) {
+  return Object.keys(panoArray[0]).filter((e) => {return e !== 'pano'})[0];
+}
+
+
+/*
+* Take an array of available panoramas and their dates
+* and return a list of <option> elements for a drop-down
+*/
 function generateOptionsAndReturnClosestPano(panoArray, selectedDate) {
   const options = [];
   const dateSplit = selectedDate.split('-');
@@ -17,21 +33,12 @@ function generateOptionsAndReturnClosestPano(panoArray, selectedDate) {
   let minDiff = Infinity;
   let minDiffElem;
 
-  
-  /* 
-  * Get the date key.
-  * Assumptions:
-  * - All elements of the array have the same keys
-  * - The date key immediately follows the panorama ID key
-  * In practice, always observed 2 keys per element
-  * and both 'Qm' and 'yp' as date keys. No idea if there are others.
-  */
-  const dateKey = Object.keys(panoArray[0]).filter((e) => {return e !== 'pano'})[0];
+  const dateKey = getPanoDateKey(panoArray);
 
   panoArray.reverse().forEach((el, _) => {
     
     let option = document.createElement('option');
-    option.value = el['pano'];
+    option.value = option.id = el['pano'];
     
     const date = el[dateKey];
     option.innerText = date.toLocaleDateString('en-US', { year:"numeric", month:"long"});
@@ -60,70 +67,26 @@ function generateOptionsAndReturnClosestPano(panoArray, selectedDate) {
 }
 
 
-/*
-* Take an array of available panoramas and their dates
-* and return a list of <option> elements for a drop-down
-*/
-function generateSelectOptions(panoArray, selectedDate) {
-  const options = [];
-  const dateSplit = selectedDate.split('-');
-
-  const selectedPanoDate = 
-    new Date(Date.UTC(dateSplit[0], dateSplit[1], 1))
-      .toLocaleDateString('en-US', { year:"numeric", month:"long"});
-
-  let selectPanoId;
-  
-  /* 
-  * Get the date key.
-  * Assumptions:
-  * - All elements of the array have the same keys
-  * - The date key immediately follows the panorama ID key
-  * In practice, always observed 2 keys per element
-  * and both 'Qm' and 'yp' as date keys. No idea if there are others.
-  */
-  const dateKey = Object.keys(panoArray[0]).filter((e) => {return e !== 'pano'})[0];
-
-  panoArray.reverse().forEach((el, i) => {
-    
-    let option = document.createElement('option');
-    option.value = el['pano'];
-    
-    const date = new Date(el[dateKey]).toLocaleDateString('en-US', { year:"numeric", month:"long"});
-    option.innerText = date;
-    
-    if (!date) {
-      console.log('Could not get date from element: ', el);
-    }
-    
-    // Match the dates as strings
-    // I couldn't find how to declare a Date as UTC easily
-    // Format is 'fullmonth-year'
-    if (date === selectedPanoDate) {
-      option.selected = true;
-      selectPanoId = option.value;
-    }
-    options.push(option);
-  });
-
-  return options 
-}
-
 
 /*
 * Function to hide certain things on the streetview as they get loaded in
 * You can console.log() all the mutations first to know which ones to select.
+*
+* Also find the Pegman and register a drag and drop listener 
 */
-function mutationCallbackHideGoogleLogo(mutationList, _) {
+function mutationObserverCallback(mutationList, _) {
   for (const mutation of mutationList) {
     if (
       mutation.target.getAttribute('title') === "Open this area in Google Maps (opens a new window)" 
     ) {
         mutation.target.style.display = "none";
     }
-    if (mutation.target.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/transparent.png')
+    else if (mutation.target.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/transparent.png')
     {
+      // Save a reference if needed later
       window.pegman = mutation.target;
+
+      // Add event listeners to the element
       mutation.target.addEventListener('mousedown', (e) => {
         window.pegmanDropped = false;
         window.pegmanMousedown = true;
@@ -138,50 +101,16 @@ function mutationCallbackHideGoogleLogo(mutationList, _) {
   }
 };
 
-function getImageDateFromElem() {
-  const txt =  window.imageDateElem.innerText;
-  const regex = /Image Date:\s+([A-Za-z]+\s+[0-9]{4})/
-  const match = txt.match(regex);
-  if (match) {
-    return match[1];
-  }
-};
-
-function observeImageDate(mutationList, _) {
-  const regex = /Image Date:\s+([A-Za-z]+\s+[0-9]{4})/
-  
-  for (const mutation of mutationList) {
-    const match = mutation.target.innerText.match(regex);
-    if (match) {
-      console.log(match[1]);
-    }
-  }
-}
-
-function findImageDateElement(mutationList, observer) {
-  for (const mutation of mutationList) {
-    if (mutation.target.getAttribute('title') === "Map Data") {
-      const txt =  mutation.target.nextSibling.innerText;
-      const regex = /Image Date:\s+([A-Za-z]+\s+[0-9]{4})/
-      const match = txt.match(regex);
-      if (match) {
-        window.imageDateElem = mutation.target.nextSibling;
-        console.log(`mutation observed: ${match[1]}`);
-
-        dateChangeObserver = new MutationObserver(observeImageDate);
-        // Adds a text node
-        dateChangeObserver.observe(mutation.target.nextSibling, {childList: true});
-        observer.disconnect();
-      }
-    }
-  }
-};
-
 function printMutationsCallback(mutationList, _) {
   for (const mutation of mutationList) {
     console.log(mutation)
   }
 };
+
+function sleep(time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
+
 
 function findPanorama(svService, latestViewData, panoRequest, evalUnitCoord) {
   console.log(`Searching for panorama: ${JSON.stringify(panoRequest)}`);
@@ -192,7 +121,7 @@ function findPanorama(svService, latestViewData, panoRequest, evalUnitCoord) {
     if (status === google.maps.StreetViewStatus.OK) 
     {
       console.log(`Status ${status}: panorama found.`);
-
+      console.log(JSON.stringify(panoData));
       let heading, zoom, pitch;
       
       if (latestViewData) {
@@ -268,27 +197,62 @@ function findPanorama(svService, latestViewData, panoRequest, evalUnitCoord) {
       });
 
       
-      // Register a mutation observer to filter out elements
-      const observer = new MutationObserver(mutationCallbackHideGoogleLogo);
-      const config = { attributes: true, childList: true, subtree: true };
+      // Register a mutation observer to remove the Goog logo from streetview/satmap
+      // (It showed up a bit in the screenshots) - could also remove it in html2canvas
+      const observer = new MutationObserver(mutationObserverCallback);
+      const config = {attributes: true, childList: true, subtree: true };
       observer.observe(document.getElementById('streetview'), config);
       observer.observe(document.getElementById('satmap'), config);
+      
+      // Custom event launched when pegman is dropped and we need a manual pano set
+      sv.addListener('manual_pano_set', () => {
+        sleep(0).then(() => {
+          console.log(`detected manual pano set needed to ${window.shouldBePano}`);
+          sv.setPano(window.shouldBePano);
+        })
+      });
 
-
+      // 
       sv.addListener('pano_changed', () => {
+        console.log('pano_changed');
         let panoId = sv.getPano();
-
+      
+        if (window.doingManualPanoSet) {
+          window.doingManualPanoSet = false;
+          console.log(`Manual set extra event on ${window.lastPanoChanged}, triggering manual_pano_set event!`);
+          // trigger custom event
+          return google.maps.event.trigger(sv, 'manual_pano_set');
+        }
+        // Skip duplicate events
         if (window.lastPanoChanged === panoId ) {
+          console.log(`Extra event on ${window.lastPanoChanged}, returning!`)
           return;
         }
         
         // Get more info on the pano from StreetViewService
-        svService.getPanorama({pano: panoId}, function(panoData, status) {
+        svService.getPanorama({pano: panoId}, function(panoData, status) 
+        {
           if (status === google.maps.StreetViewStatus.OK) {
+            console.log(`Current pano: ${window.lastPanoChanged} - (${window.lastSVImageDate})`)
+            console.log(`Pano changed to: ${panoId} - (${panoData.imageDate})`);
+            
+            if (panoData.imageDate !== window.lastSVImageDate) {
+              if (window.pegmanDropped) {
+                window.pegmanDropped = false;
+                console.log("Pegman dropped and new pano date not equal to last.")
+                // Need to manually set
+                var {options, closestPanoByDate} = generateOptionsAndReturnClosestPano(panoData.time, window.lastSVImageDate);
+                console.log(`should be pano ${closestPanoByDate}`);
+                window.doingManualPanoSet = true;
+                window.shouldBePano = closestPanoByDate;
+              }
+            }
+            console.log(`Generating options for new pano ${panoData.imageDate}`);
             var {options} = generateOptionsAndReturnClosestPano(panoData.time, panoData.imageDate);
             document.getElementById('time-travel-select').replaceChildren(...options);
             // save the current image date for next time
             window.lastSVImageDate = panoData.imageDate;
+            console.log(`Setting last pano to ${panoId}`);
             window.lastPanoChanged = panoId;
           }
         });
@@ -382,7 +346,7 @@ function initMaps() {
 window.initMaps = initMaps;
 
 // Note that we set the above function as callback
-const gmapsURL = `https://maps.googleapis.com/maps/api/js?key=${data.gmapsApiKey}&libraries=geometry&callback=initMaps&v=weekly`;
+const gmapsURL = `https://maps.googleapis.com/maps/api/js?key=${data.gmapsApiKey}&libraries=geometry&callback=initMaps&v=3.53`;
 
 // Create the script tag, set the appropriate attributes
 var script = document.createElement('script');
