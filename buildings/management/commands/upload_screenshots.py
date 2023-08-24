@@ -46,9 +46,10 @@ def process_job(job: UploadImageJob):
         'streetview': uuid7str(),
         'satellite': uuid7str()
     }
+    in_mem_file = None
 
-    for image_type in ['streetview', 'satellite']:
-        try:
+    try:
+        for image_type in ['streetview', 'satellite']:
             if data_uri := job.job_data[image_type]:
                 data = parse_data_uri(data_uri)
                 image = Image.open(io.BytesIO(data.data))
@@ -85,20 +86,22 @@ def process_job(job: UploadImageJob):
             elif image_type == 'satellite':
                 EvalUnitSatelliteImage(eval_unit=job.eval_unit, uuid=uuid, user=job.user).save()
             
-            log.info(f'Screenshot {uuid}: successfully uploaded!')
-            # Can't delete the job here - I get
-            # ValueError: UploadImageJob object can't be deleted because its id attribute is set to None.
-            # job.delete()
-            return 0
-        except:
-            log.error(traceback.format_exc())
-            job.status = UploadImageJob.Status.ERROR
-            # Remove the image data but keep the job for visibility on errors?
-            job.save()
-        finally:
-            if in_mem_file:
-                in_mem_file.close()
-            return 1
+
+        log.info(f'Screenshot {uuid}: successfully uploaded!')
+        # Can't delete the job here - I get
+        # ValueError: UploadImageJob object can't be deleted because its id attribute is set to None.
+        # job.delete()
+
+        return 0
+    except:
+        log.error(traceback.format_exc())
+        job.status = UploadImageJob.Status.ERROR
+        # Remove the image data but keep the job for visibility on errors?
+        job.save()
+    finally:
+        if in_mem_file:
+            in_mem_file.close()
+        return 1
 
 
 class Command(BaseCommand):
