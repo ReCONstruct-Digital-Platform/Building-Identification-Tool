@@ -108,8 +108,9 @@ class Command(BaseCommand):
         
         sleep_time = 1
         num_checks = 0
+        log.info(f"Checking for pending jobs every {sleep_time}s")
+
         while True:
-            log.debug('Checking for pending jobs...')
             if jobs := get_pending_jobs():
                 log.info(f"Starting processing on {len(jobs)} job{'s' if len(jobs) > 1 else ''}")
 
