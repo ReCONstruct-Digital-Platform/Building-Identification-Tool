@@ -134,10 +134,10 @@ class Command(BaseCommand):
                 # If nothing after 1h, start checking every 10 seconds
                 # If pending job found, revert to old regime
                 if sleep_time == 1 and num_checks == 600:
-                    log.info(f'No pending jobs found in last 10 minutes. Switching to {sleep_time}s sleep time')
                     sleep_time = 5
                     num_checks = 0
+                    log.info(f'No pending jobs found in last 10 minutes. Switching to {sleep_time}s sleep time')
                 elif sleep_time == 5 and num_checks == 720:
-                    log.info(f'No pending jobs found in last hour. Switching to {sleep_time}s sleep time')
                     sleep_time = 10
                     num_checks = 0
+                    log.info(f'No pending jobs found in last hour. Switching to {sleep_time}s sleep time')
