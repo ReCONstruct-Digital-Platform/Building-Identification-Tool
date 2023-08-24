@@ -21,12 +21,11 @@ function setUpSurveyNavigation() {
 
 function getLatestViewData() {
     // Get the latest view data from streetview
-    const sv_pano = sv.getPano();
     const sv_pov = sv.getPov();
     const m_marker_pos = m_marker.getPosition();
     
     return {
-        'sv_pano': sv_pano,
+        'sv_pano': sv.getPano(),
         'sv_heading': sv_pov.heading,
         'sv_pitch': sv_pov.pitch,
         'sv_zoom': sv_pov.zoom,
@@ -61,10 +60,10 @@ async function screenshot(element_id) {
             },
         }
     ).then(canvas => {
-        // // Uncomment for testing - appends the images to the page
-        // document.body.style.overflowY = 'scroll';
-        // document.body.style.height = '100%';
-        // document.getElementById('test-screenshots-container').appendChild(canvas);
+        // Uncomment for testing - appends the images to the page
+        document.body.style.overflowY = 'scroll';
+        document.body.style.height = '100%';
+        document.getElementById('test-screenshots-container').appendChild(canvas);
 
         // Convert the image to a dataURL for uploading to the backend
         return canvas.toDataURL('image/png');

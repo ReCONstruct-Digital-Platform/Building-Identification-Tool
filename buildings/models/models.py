@@ -409,3 +409,20 @@ class HLMBuilding(models.Model):
     category = models.TextField()
     building_id = models.IntegerField()
 
+
+class UploadImageJob(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "pending", _("Pending")
+        IN_PROGRESS = "in_progress", _("In Progress")
+        DONE = "done", _("Done")
+        ERROR = "error", _("Error")
+
+    """Async job for uploading screenshots to storage"""
+    eval_unit = models.ForeignKey(EvalUnit, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+    date_added = models.DateTimeField('date added', default=timezone.now)
+    status = models.TextField(choices=Status.choices, default=Status.PENDING)
+    job_data = models.JSONField()
+
+    def __str__(self):
+        return f"Job {self.id}: {self.status}"

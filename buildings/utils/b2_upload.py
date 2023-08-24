@@ -8,6 +8,7 @@ from pathlib import Path
 from botocore.config import Config
 from botocore.exceptions import ClientError
 
+from config.settings import B2_APPKEY_RW, B2_BUCKET_IMAGES, B2_ENDPOINT, B2_KEYID_RW
 
 # Return a boto3 resource object for B2 service
 def get_b2_resource(endpoint, key_id, application_key):
@@ -23,6 +24,18 @@ def get_b2_client(endpoint, keyID, applicationKey):
                                  aws_access_key_id=keyID,              # Backblaze keyID
                                  aws_secret_access_key=applicationKey) # Backblaze applicationKey
         return b2_client
+
+
+def get_image_bucket():
+    return get_b2_resource(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW).Bucket(B2_BUCKET_IMAGES)
+
+
+def upload_image(fileobj, file_name, extra_args=None):
+    get_image_bucket().upload_fileobj(
+        fileobj,
+        file_name,
+        ExtraArgs=extra_args
+    )
 
 
 # Upload specified file into the specified bucket
@@ -51,10 +64,11 @@ if __name__=='__main__':
     env = environ.Env()
     environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-    B2_KEYID_RW=''
-    B2_APPKEY_RW=''
-    B2_ENDPOINT=''
-    B2_BUCKET_IMAGES=''
+    # # Possible override of settings to test
+    # B2_KEYID_RW=''
+    # B2_APPKEY_RW=''
+    # B2_ENDPOINT=''
+    # B2_BUCKET_IMAGES=''
 
     b2 = get_b2_resource(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW)
     c = get_b2_client(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW)

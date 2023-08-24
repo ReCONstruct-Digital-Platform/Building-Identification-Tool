@@ -32,7 +32,7 @@ from .forms import CreateUserForm
 from .models.surveys import SurveyV1Form
 from config.settings import B2_APPKEY_RW, B2_BUCKET_IMAGES, B2_ENDPOINT, B2_KEYID_RW, WEBHOOK_SECRET, BASE_DIR
 from .models.models import (
-    EvalUnit, EvalUnitSatelliteImage, EvalUnitStreetViewImage, EvalUnitLatestViewData, NoBuildingFlag, User, Vote
+    EvalUnit, EvalUnitSatelliteImage, EvalUnitStreetViewImage, EvalUnitLatestViewData, NoBuildingFlag, UploadImageJob, User, Vote
 )
 import logging
 
@@ -318,76 +318,16 @@ def logout_page(request):
 
 @require_POST
 def upload_imgs(request, eval_unit_id):
-    # Receive the images from the frontend
-    body = json.loads(request.body)
-
-    b2 = b2_upload.get_b2_resource(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW)
-
+    """
+    We'll process the image uploading asynchronously using a PythonAnywhere (PA) Always-on Task
+    We have to do this because PA doesn't support laucnhing background threads.
+    If we switch to another VPS, we should implement the backgruond thread solution
+    https://blog.pythonanywhere.com/198/
+    https://www.pythonanywhere.com/forums/topic/3627/
+    """
+    data = json.loads(request.body)
     eval_unit = get_object_or_404(EvalUnit, pk=eval_unit_id)
-
-    # Add any kind of metadata to be associated with the image
-    # upload date is already available
-    extra_args = {
-        'Metadata': {
-            'user': request.user.username,
-            'eval_unit': eval_unit_id,  # add a reverse link to eval unit
-        }
-    }
-
-    upload_formats_and_sizes = [('l', 1200), ('m', 700), ('s', 300)]
-
-    # create 2 UUIDs to be shared by images of the same type
-    UUIDs = {
-        'streetview': uuid7str(),
-        'satellite': uuid7str()
-    }
-
-    for image_type in ['streetview', 'satellite']:
-
-        if data_uri := body.get(image_type):
-            data = parse_data_uri(data_uri)
-            image = Image.open(io.BytesIO(data.data))
-            # Convert the image to RGB to save as JPG
-            image = image.convert('RGB')
-            logging.debug(f'Image original size: {image.size}')
-
-        if not image:
-            return HttpResponse(f"Iamge of type {image_type} not founD!")
-        
-        uuid = UUIDs[image_type]
-
-        # We'll do an all or nothing save here. 
-        # If an exception occurs during saving any of the sizes
-        # we won't save the link in the DB. On the other hand, if 
-        # we have a link in the DB, we know that all sizes exist.
-        # This could result in stranded images in B2 if only some uploads fail.
-        try:
-            for format, size in upload_formats_and_sizes: 
-                # Resize the image, maintaining the aspect ratio
-                image.thumbnail((size, size))
-                print(image.size, end='')
-                # Create an in memory file to temporarily store the image
-                in_mem_file = io.BytesIO()
-                image.save(in_mem_file, format='jpeg')
-                in_mem_file.seek(0)
-
-                # Try to upload the image
-                b2.Bucket(B2_BUCKET_IMAGES).upload_fileobj(
-                    in_mem_file,
-                    f"screenshots/{image_type}/{format}/{uuid}.jpg",
-                    ExtraArgs=extra_args
-                )
-
-            # Only need to save the UUID in DB once, since diff sizes share it
-            if image_type == 'streetview':
-                EvalUnitStreetViewImage(eval_unit=eval_unit, uuid=uuid, user=request.user).save()
-            elif image_type == 'satellite':
-                EvalUnitSatelliteImage(eval_unit=eval_unit, uuid=uuid, user=request.user).save()
-        except:
-            print(traceback.format_exc())
-        
-        in_mem_file.close()
-
+    UploadImageJob(eval_unit=eval_unit, user=request.user, job_data=data, status=UploadImageJob.Status.PENDING).save()
     return HttpResponse('Ok')
 
 
