@@ -90,13 +90,14 @@ def process_job(job: UploadImageJob):
         log.info(f'Screenshot {uuid}: successfully uploaded!')
         # Can't delete the job here - I get
         # ValueError: UploadImageJob object can't be deleted because its id attribute is set to None.
-        # job.delete()
-
+        job.status = UploadImageJob.Status.DONE
+        # Delete the (large) image data from successful jobs
+        job.job_data = {}
+        job.save()
         return 0
     except:
         log.error(traceback.format_exc())
         job.status = UploadImageJob.Status.ERROR
-        # Remove the image data but keep the job for visibility on errors?
         job.save()
     finally:
         if in_mem_file:
@@ -119,8 +120,12 @@ class Command(BaseCommand):
 
                 # Process all jobs, deleting successful ones
                 for job in jobs:
-                    if process_job(job) == 0:
-                        job.delete()
+                    process_job(job)
+
+                # TODO: Periodic cleanup of images, probably use a scheduled task for this
+                # for job in jobs:
+                #     if job.status == UploadImageJob.Status.DONE:
+                #         job.delete()
 
                 # If pending job found, reset the retry policy to checks every 1s
                 sleep_time = 1
