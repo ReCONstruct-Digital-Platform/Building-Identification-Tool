@@ -82,7 +82,7 @@
                                     </strong>
                                 </div>
                                 <div class="vote-date">
-                                    {{ vote.date_added | naturaltime }}
+                                    {{ vote.date_modified | naturaltime }}
                                 </div>
                             </div>
                             {% if vote.nobuildingflag %}
@@ -159,7 +159,7 @@
                                     </strong>
                                 </div>
                                 <div class="vote-date">
-                                    {{ vote.date_added | naturaltime }}
+                                    {{ vote.date_modified | naturaltime }}
                                 </div>
                             </div>
                             {% if vote.nobuildingflag %}

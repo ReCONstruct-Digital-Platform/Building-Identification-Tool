@@ -5,55 +5,27 @@ import logging
 import IPython
 
 from selenium.webdriver.common.by import By
-from selenium.webdriver import firefox, chrome
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-
 from selenium.webdriver.remote.remote_connection import LOGGER
 LOGGER.setLevel(logging.WARNING)
 
+from tests.gui_tests_base import ChromeSeleniumTestsBase, FirefoxSeleniumTestsBase
 
-class SeleniumFirefoxTests(StaticLiveServerTestCase):
+
+class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
     """
     The live server listens on localhost and binds to port 0 which uses a free port assigned by the OS. 
     The server's URL can be accessed with self.live_server_url during the tests.
     """
     fixtures = ['user.json', 'evalunits.json']
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-        firefox_opts = firefox.options.Options()
-        firefox_opts.add_argument('--headless')
-        firefox_svc = firefox.service.Service(log_output=os.devnull)
-        firefox_driver = firefox.webdriver.WebDriver(service = firefox_svc, options=firefox_opts)
-        firefox_driver.implicitly_wait(10)
-
-        # Hold a driver for each browser
-        cls.driver = firefox_driver
-        cls.wait = WebDriverWait(firefox_driver, 10)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.driver.quit()
-        super().tearDownClass()
-
 
     def test_survey_GUI_firefox_should_screnshot_satellite_on_survey_tab_click(self):
         driver = self.driver
         wait = self.wait 
 
-        driver.get(f"{self.live_server_url}/login?next=/survey")
-        username_input = driver.find_element(By.NAME, "username")
-        username_input.send_keys("testuser")
-        password_input = driver.find_element(By.NAME, "password")
-        password_input.send_keys("testpw")
-        driver.find_element(By.XPATH, '//input[@value="Login"]').click()
-        # Wait until weève redirected to an eval unit
-        wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
+        driver.get(f"{self.live_server_url}/login?next=")
+        self._sign_in('/survey')
 
         # In Selenium we have to wait for the element to appear, otherwise it will
         # click too quickly on the tab, and no screenshot will be taken, since
@@ -73,32 +45,17 @@ class SeleniumFirefoxTests(StaticLiveServerTestCase):
         self.assertRegex(sat_data.get_attribute('data-url'), 'data:image/png;base64')
 
 
-
     def test_survey_GUI_firefox_should_submit_successfully_vanilla(self):
 
         driver = self.driver
         wait = self.wait 
 
-        driver.get(f"{self.live_server_url}/login?next=/survey")
-        username_input = driver.find_element(By.NAME, "username")
-        username_input.send_keys("testuser")
-        password_input = driver.find_element(By.NAME, "password")
-        password_input.send_keys("testpw")
-        driver.find_element(By.XPATH, '//input[@value="Login"]').click()
-        # Test redirect to an eval unit
-        wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
-
+        self._sign_in('/survey')
         driver.get(f"{self.live_server_url}/survey/v1/id1")
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
         driver.find_element(By.ID, "nav-survey-tab").click()
 
-        m = re.match(rf'{self.live_server_url}/survey/v1/id([0-9])', driver.current_url)
-        eval_unit_id = m.group(1)
-
-        if eval_unit_id == '1':
-            next_eval_unit_id = '2'
-        else:
-            next_eval_unit_id = '1'
+        next_eval_unit_id = self._get_next_eval_unit_id_when_there_are_2()
 
         # Fill in the form
         wait.until(EC.presence_of_element_located((By.ID, 'id_has_simple_footprint_0')))
@@ -132,12 +89,7 @@ class SeleniumFirefoxTests(StaticLiveServerTestCase):
         driver = self.driver
         wait = self.wait 
 
-        driver.get(f"{self.live_server_url}/login?next=/survey")
-        username_input = driver.find_element(By.NAME, "username")
-        username_input.send_keys("testuser")
-        password_input = driver.find_element(By.NAME, "password")
-        password_input.send_keys("testpw")
-        driver.find_element(By.XPATH, '//input[@value="Login"]').click()
+        self._sign_in('/survey')
         # Test redirect to an eval unit
         wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
 
@@ -145,12 +97,7 @@ class SeleniumFirefoxTests(StaticLiveServerTestCase):
         wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
         driver.find_element(By.ID, "nav-survey-tab").click()
 
-        m = re.match(rf'{self.live_server_url}/survey/v1/id([0-9])', driver.current_url)
-        eval_unit_id = m.group(1)
-        if eval_unit_id == '1':
-            next_eval_unit_id = '2'
-        else:
-            next_eval_unit_id = '1'
+        next_eval_unit_id = self._get_next_eval_unit_id_when_there_are_2()
 
         # Fill in the form
         wait.until(EC.presence_of_element_located((By.ID, 'id_has_simple_footprint_0')))
@@ -194,12 +141,7 @@ class SeleniumFirefoxTests(StaticLiveServerTestCase):
         wait = self.wait 
 
         # Login and go on the survey
-        driver.get(f"{self.live_server_url}/login?next=/survey")
-        username_input = driver.find_element(By.NAME, "username")
-        username_input.send_keys("testuser")
-        password_input = driver.find_element(By.NAME, "password")
-        password_input.send_keys("testpw")
-        driver.find_element(By.XPATH, '//input[@value="Login"]').click()
+        self._sign_in('/survey')
         driver.get(f"{self.live_server_url}/survey/v1/id1")
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
         wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
@@ -274,12 +216,7 @@ class SeleniumFirefoxTests(StaticLiveServerTestCase):
         driver = self.driver
         wait = self.wait 
 
-        driver.get(f"{self.live_server_url}/login?next=/survey")
-        username_input = driver.find_element(By.NAME, "username")
-        username_input.send_keys("testuser")
-        password_input = driver.find_element(By.NAME, "password")
-        password_input.send_keys("testpw")
-        driver.find_element(By.XPATH, '//input[@value="Login"]').click()
+        self._sign_in('/survey')
         # Test redirect to an eval unit
         wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
 
@@ -321,44 +258,19 @@ class SeleniumFirefoxTests(StaticLiveServerTestCase):
 
 
 
-class SeleniumChromeTests(StaticLiveServerTestCase):
+class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
     """
     The live server listens on localhost and binds to port 0 which uses a free port assigned by the OS. 
     The server's URL can be accessed with self.live_server_url during the tests.
     """
-    LOGGER.setLevel(logging.ERROR)
     fixtures = ['user.json', 'evalunits.json']
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-        chrome_opts = chrome.options.Options()
-        chrome_opts.add_argument('--headless')
-        chrome_svc = chrome.service.Service(log_output=os.devnull)
-        chrome_driver = chrome.webdriver.WebDriver(service = chrome_svc, options=chrome_opts)
-        chrome_driver.implicitly_wait(10)
-
-        cls.driver = chrome_driver
-        cls.wait = WebDriverWait(chrome_driver, 10)
-
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.driver.quit()
-        super().tearDownClass()
 
 
     def test_survey_GUI_chrome_should_screnshot_satellite_on_survey_tab_click(self):
         driver = self.driver
         wait = self.wait 
 
-        driver.get(f"{self.live_server_url}/login?next=/survey")
-        username_input = driver.find_element(By.NAME, "username")
-        username_input.send_keys("testuser")
-        password_input = driver.find_element(By.NAME, "password")
-        password_input.send_keys("testpw")
-        driver.find_element(By.XPATH, '//input[@value="Login"]').click()
+        self._sign_in('/survey')
         # Wait until weève redirected to an eval unit
         wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
 
@@ -384,24 +296,13 @@ class SeleniumChromeTests(StaticLiveServerTestCase):
         driver = self.driver
         wait = self.wait 
 
-        driver.get(f"{self.live_server_url}/login?next=/survey")
-        username_input = driver.find_element(By.NAME, "username")
-        username_input.send_keys("testuser")
-        password_input = driver.find_element(By.NAME, "password")
-        password_input.send_keys("testpw")
-        driver.find_element(By.XPATH, '//input[@value="Login"]').click()
+        self._sign_in('/survey')
         wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
 
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
         driver.find_element(By.ID, "nav-survey-tab").click()
 
-        m = re.match(rf'{self.live_server_url}/survey/v1/id([0-9])', driver.current_url)
-        eval_unit_id = m.group(1)
-
-        if eval_unit_id == '1':
-            next_eval_unit_id = '2'
-        else:
-            next_eval_unit_id = '1'
+        next_eval_unit_id = self._get_next_eval_unit_id_when_there_are_2()
 
         # Fill in the form
         # Chrome has a problem where it cant scroll normally like friefox
@@ -476,24 +377,13 @@ class SeleniumChromeTests(StaticLiveServerTestCase):
         driver = self.driver
         wait = self.wait 
 
-        driver.get(f"{self.live_server_url}/login?next=/survey")
-        username_input = driver.find_element(By.NAME, "username")
-        username_input.send_keys("testuser")
-        password_input = driver.find_element(By.NAME, "password")
-        password_input.send_keys("testpw")
-        driver.find_element(By.XPATH, '//input[@value="Login"]').click()
+        self._sign_in('/survey')
 
         wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
         driver.find_element(By.ID, "nav-survey-tab").click()
 
-        m = re.match(rf'{self.live_server_url}/survey/v1/id([0-9])', driver.current_url)
-        eval_unit_id = m.group(1)
-
-        if eval_unit_id == '1':
-            next_eval_unit_id = '2'
-        else:
-            next_eval_unit_id = '1'
+        next_eval_unit_id = self._get_next_eval_unit_id_when_there_are_2()
 
         # Fill in the form
         # Chrome has a problem where it cant scroll normally like friefox
@@ -573,12 +463,7 @@ class SeleniumChromeTests(StaticLiveServerTestCase):
         wait = self.wait 
 
         # Login and go on the survey
-        driver.get(f"{self.live_server_url}/login?next=/survey")
-        username_input = driver.find_element(By.NAME, "username")
-        username_input.send_keys("testuser")
-        password_input = driver.find_element(By.NAME, "password")
-        password_input.send_keys("testpw")
-        driver.find_element(By.XPATH, '//input[@value="Login"]').click()
+        self._sign_in('/survey')
         # Wait until redirect completes
         wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
 
@@ -658,12 +543,7 @@ class SeleniumChromeTests(StaticLiveServerTestCase):
         driver = self.driver
         wait = self.wait 
 
-        driver.get(f"{self.live_server_url}/login?next=/survey")
-        username_input = driver.find_element(By.NAME, "username")
-        username_input.send_keys("testuser")
-        password_input = driver.find_element(By.NAME, "password")
-        password_input.send_keys("testpw")
-        driver.find_element(By.XPATH, '//input[@value="Login"]').click()
+        self._sign_in('/survey')
         # Test redirect to an eval unit
         wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
 
