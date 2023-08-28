@@ -1,14 +1,10 @@
-import io
 import git
 import json
 import requests
 import traceback
 
-from PIL import Image
 from pprint import pprint
-from functools import reduce
-from w3lib.url import parse_data_uri
-from uuid_extensions import uuid7str
+from datetime import datetime
 from ipaddress import ip_address, ip_network
 from render_block import render_block_to_string
 
@@ -25,14 +21,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
 from buildings.utils.utility import print_query_dict, verify_github_signature
-from django.db.models import Q, Count
 
-from .utils import b2_upload
 from .forms import CreateUserForm
 from .models.surveys import SurveyV1Form
-from config.settings import B2_APPKEY_RW, B2_BUCKET_IMAGES, B2_ENDPOINT, B2_KEYID_RW, WEBHOOK_SECRET, BASE_DIR
+from config.settings import WEBHOOK_SECRET, BASE_DIR
 from .models.models import (
-    EvalUnit, EvalUnitSatelliteImage, EvalUnitStreetViewImage, EvalUnitLatestViewData, NoBuildingFlag, UploadImageJob, User, Vote
+    EvalUnit, EvalUnitLatestViewData, NoBuildingFlag, UploadImageJob, User, Vote
 )
 import logging
 
@@ -43,10 +37,10 @@ def index(request):
     template = 'buildings/index.html'
 
     total_votes = Vote.objects.count()
-    latest_votes = Vote.objects.order_by('-date_added').all()
+    latest_votes = Vote.objects.order_by('-date_modified').all()
 
     num_user_votes = Vote.objects.filter(user = request.user).count()
-    user_votes = Vote.objects.filter(user = request.user).order_by('-date_added').all()
+    user_votes = Vote.objects.filter(user = request.user).order_by('-date_modified').all()
 
     top_3_users = User.objects.get_top_n(3)
     top_3_total_votes = sum(t.num_votes for t in top_3_users)
@@ -68,7 +62,6 @@ def index(request):
         "top_3_total_votes": top_3_total_votes,
         "top_3_vote_percentage": top_3_vote_percentage
     }
-
 
     if request.htmx:
         rendered_content = render_block_to_string(
@@ -165,13 +158,15 @@ def survey_v1(request, eval_unit_id):
     # If none exist, initialize a survey with the building and user ids
     # TODO: This might become slow once there are many Votes
     previous_survey_vote = Vote.objects.filter(user=request.user, eval_unit=eval_unit, surveyv1__isnull=False).first()
-    previous_no_building_vote = Vote.objects.filter(user=request.user, eval_unit=eval_unit, nobuildingflag__isnull=False).first()
 
     if previous_survey_vote:
         log.debug('Found previous survey instance!')
+        # We know the survey is not null here since we filtered on that above
         prev_survey_instance = previous_survey_vote.surveyv1
     else:
         prev_survey_instance = None
+
+    previous_no_building_vote = Vote.objects.filter(user=request.user, eval_unit=eval_unit, nobuildingflag__isnull=False).first()
 
     if previous_no_building_vote:
         log.debug('Previously voted no building!')
@@ -224,11 +219,21 @@ def survey_v1(request, eval_unit_id):
                     # I.e. we're overwriting it.
                     if previous_no_building_vote:
                         previous_no_building_vote.delete()
-                    new_vote = Vote(eval_unit = eval_unit, user=request.user)
-                    new_vote.save()
-
+                    
                     form = form.save(commit=False)
-                    form.vote = new_vote
+                    # If there was a previous vote by this user on this building
+                    # we want to replace the previous vote and delete the previous survey
+                    if previous_survey_vote:
+                        # Update the modified timestamp on the vote
+                        previous_survey_vote.date_modified = datetime.now()
+                        previous_survey_vote.save()
+                        form.vote = previous_survey_vote
+                        prev_survey_instance.delete()
+                    # Otherwise, we create a new vote and associate the survey to it.
+                    else:
+                        new_vote = Vote(eval_unit = eval_unit, user=request.user)
+                        new_vote.save()
+                        form.vote = new_vote
                     form.save()
 
                 # Update the eval unit to a new one

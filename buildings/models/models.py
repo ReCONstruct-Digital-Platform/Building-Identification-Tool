@@ -352,7 +352,7 @@ class Vote(models.Model):
     eval_unit = models.ForeignKey(EvalUnit, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
     date_added = models.DateTimeField('date added', auto_now_add=True)
-    data_modified  = models.DateTimeField('date modified', auto_now=True)
+    date_modified  = models.DateTimeField('date modified', auto_now=True)
 
     objects = VoteQuerySet.as_manager()
     def __str__(self):

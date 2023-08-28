@@ -1,0 +1,62 @@
+[
+{
+    "model": "buildings.surveyv1",
+    "pk": 1,
+    "fields": {
+        "vote": 1,
+        "has_simple_footprint": true,
+        "has_simple_volume": false,
+        "num_storeys": 5,
+        "has_basement": false,
+        "site_obstructions": [
+            "trees_or_landscaping",
+            "on",
+            "df"
+        ],
+        "appendages": [
+            "canopies_eaves"
+        ],
+        "exterior_cladding": [
+            "plaster",
+            "stone_masonry",
+            "on",
+            "dfd"
+        ],
+        "facade_condition": "poor",
+        "window_wall_ratio": "small",
+        "large_irregular_windows": false,
+        "roof_geometry": "dfdf",
+        "structure_type": "d",
+        "new_or_renovated": null
+    }
+},
+{
+    "model": "buildings.surveyv1",
+    "pk": 2,
+    "fields": {
+        "vote": 2,
+        "has_simple_footprint": true,
+        "has_simple_volume": true,
+        "num_storeys": 5,
+        "has_basement": true,
+        "site_obstructions": [
+            "overhead_wires",
+            "on",
+            "fdbsf"
+        ],
+        "appendages": [
+            "porches_stoops",
+            "vestibules"
+        ],
+        "exterior_cladding": [
+            "stone_masonry"
+        ],
+        "facade_condition": "fair",
+        "window_wall_ratio": "small",
+        "large_irregular_windows": true,
+        "roof_geometry": "complex",
+        "structure_type": "dfdf",
+        "new_or_renovated": null
+    }
+}
+]
