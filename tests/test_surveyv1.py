@@ -11,8 +11,9 @@ class MyTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_superuser(username='testuser', password='testpw')
         self.eval_unit = EvalUnit.objects.create(id='id1', lat=1.0, lng=1.5, muni='mtl', address='123 a st', mat18='fsd', cubf=1000, associated={'hlm': ['hlm1']})
-        self.eval_unit2 = EvalUnit.objects.create(id='id2', lat=1.0, lng=1.5, muni='mtl', address='4656 a st', mat18='fsdfsd', cubf=1000, associated={'hlm': ['hlm1']})
+        self.eval_unit2 = EvalUnit.objects.create(id='id2', lat=1.0, lng=1.5, muni='mtl', address='4656 a st', mat18='fsdfsd', cubf=1000, const_yr = 1234, associated={'hlm': ['hlm1']})
         self.form_data = {
+            "self_similar_cluster": 'True',
             "has_simple_footprint": 'True',
             "has_simple_volume": 'False',
             "num_storeys": 5,
@@ -20,11 +21,10 @@ class MyTests(TestCase):
             "site_obstructions": ['trees_or_landscaping', 'buildings', 'on', 'specified'],
             "appendages": ['balconies', 'porches_stoops'],
             "exterior_cladding": ['concrete'],
-            "facade_condition": 'good',
+            "facade_condition": 'true',
             "window_wall_ratio": 'unsure',
             "large_irregular_windows": 'False',
             "roof_geometry": 'flat',
-            "structure_type": 'specified',
             "new_or_renovated": '',
         }
 
@@ -32,6 +32,7 @@ class MyTests(TestCase):
         form = SurveyV1Form(data=self.form_data)
         self.assertTrue(form.is_valid())
         self.assertDictEqual(form.cleaned_data, {
+            "self_similar_cluster": True,
             "has_simple_footprint": True,
             "has_simple_volume": False,
             "num_storeys": 5,
@@ -39,12 +40,11 @@ class MyTests(TestCase):
             "site_obstructions": ['trees_or_landscaping', 'buildings', 'on', 'specified'],
             "appendages": ['balconies', 'porches_stoops'],
             "exterior_cladding": ['concrete'],
-            "facade_condition": 'good',
-            "window_wall_ratio": 'unsure',
+            "facade_condition": True,
+            "window_wall_ratio": None,
             "large_irregular_windows": False,
             "roof_geometry": 'flat',
-            "structure_type": 'specified',
-            "new_or_renovated": None,   
+            "new_or_renovated": None,
         })
 
     def test_form_post_and_initial_fill(self):
@@ -64,6 +64,7 @@ class MyTests(TestCase):
         self.assertDictEqual(form_as_dict, {
             "id": 1,
             "vote": vote_id,
+            "self_similar_cluster": True,
             "has_simple_footprint": True,
             "has_simple_volume": False,
             "num_storeys": 5,
@@ -71,10 +72,9 @@ class MyTests(TestCase):
             "site_obstructions": ['trees_or_landscaping', 'buildings', 'on', 'specified'],
             "appendages": ['balconies', 'porches_stoops'],
             "exterior_cladding": ['concrete'],
-            "facade_condition": 'good',
-            "window_wall_ratio": 'unsure',
+            "facade_condition": True,
+            "window_wall_ratio": None,
             "large_irregular_windows": False,
             "roof_geometry": 'flat',
-            "structure_type": 'specified',
             "new_or_renovated": None,   
         })

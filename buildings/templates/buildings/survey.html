@@ -188,7 +188,7 @@
             <form id="building-submission-form" action="{% url 'buildings:survey_v1' eval_unit.id %}" method="post">
               {% csrf_token %}
 
-              {{ form }}
+              {% include "buildings/surveys/survey_v1.html" with form=form eval_unit=eval_unit %}
 
               <input type="hidden" id="latest_view_data" name="latest_view_data" value=""/>
 

@@ -1,12 +1,17 @@
 <!-- Gathers all the JS/CSS given to field widgets and imports them -->
 {{ form.media }}
 
-<input name="survey_version" type="hidden" value="1.0"/>
-
-<!-- Form manual layout -->
 <fieldset class="q-container">
   <legend class="q-header">
-    <strong>Q1: {{ form.has_simple_footprint.help_text }}</strong>
+    <strong>Q{{form.field_ordering.self_similar_cluster}}: {{ form.self_similar_cluster.help_text }}</strong>
+    {% include 'buildings/utils/info_modal_button.html' with modal_id="self_similar_cluster" %}
+  </legend>
+  {{ form.self_similar_cluster }}
+</fieldset>
+
+<fieldset class="q-container">
+  <legend class="q-header">
+    <strong>Q{{form.field_ordering.has_simple_footprint}}: {{ form.has_simple_footprint.help_text }}</strong>
     {% include 'buildings/utils/info_modal_button.html' with modal_id="has_simple_footprint" %}
   </legend>
   {{ form.has_simple_footprint }}
@@ -14,7 +19,7 @@
 
 <fieldset class="q-container">
   <legend class="q-header">
-    <strong>Q2: {{ form.has_simple_volume.help_text }}</strong>
+    <strong>Q{{form.field_ordering.has_simple_volume}}: {{ form.has_simple_volume.help_text }}</strong>
     {% include 'buildings/utils/info_modal_button.html' with modal_id="has_simple_volume" %}
   </legend>
   {{ form.has_simple_volume }}
@@ -22,7 +27,7 @@
 
 <fieldset class="q-container">
   <legend class="q-header">
-    <strong>Q3: {{ form.num_storeys.help_text }}</strong>
+    <strong>Q{{form.field_ordering.num_storeys}}: {{ form.num_storeys.help_text }}</strong>
     {% include 'buildings/utils/info_modal_button.html' with modal_id="num_storeys" %}
   </legend>
   {{ form.num_storeys }}
@@ -30,7 +35,7 @@
 
 <fieldset class="q-container">
   <legend class="q-header">
-    <strong>Q4: {{ form.has_basement.help_text }}</strong>
+    <strong>Q{{form.field_ordering.has_basement}}: {{ form.has_basement.help_text }}</strong>
     {% include 'buildings/utils/info_modal_button.html' with modal_id="has_basement" %}
   </legend>
   {{ form.has_basement }}
@@ -38,7 +43,7 @@
 
 <fieldset class="q-container">
   <legend class="q-header">
-    <strong>Q5: {{ form.site_obstructions.help_text }}</strong>
+    <strong>Q{{form.field_ordering.site_obstructions}}: {{ form.site_obstructions.help_text }}</strong>
     {% include 'buildings/utils/info_modal_button.html' with modal_id="site_obstructions" %}
   </legend>
 
@@ -49,7 +54,7 @@
 
 <fieldset class="q-container">
   <legend class="q-header">
-    <strong>Q6: {{ form.appendages.help_text }}</strong>
+    <strong>Q{{form.field_ordering.appendages}}: {{ form.appendages.help_text }}</strong>
     {% include 'buildings/utils/info_modal_button.html' with modal_id="appendages" %}
   </legend>
   {{ form.appendages }}
@@ -57,7 +62,7 @@
 
 <fieldset class="q-container">
   <legend class="q-header">
-    <strong>Q7: {{ form.exterior_cladding.help_text }}</strong>
+    <strong>Q{{form.field_ordering.exterior_cladding}}: {{ form.exterior_cladding.help_text }}</strong>
     {% include 'buildings/utils/info_modal_button.html' with modal_id="exterior_cladding" %}
   </legend>
   {{ form.exterior_cladding }}
@@ -65,7 +70,7 @@
 
 <fieldset class="q-container">
   <legend class="q-header">
-    <strong>Q8: {{ form.facade_condition.help_text }}</strong>
+    <strong>Q{{form.field_ordering.facade_condition}}: {{ form.facade_condition.help_text }}</strong>
     {% include 'buildings/utils/info_modal_button.html' with modal_id="facade_condition" %}
   </legend>
   {{ form.facade_condition }}
@@ -73,7 +78,7 @@
 
 <fieldset class="q-container">
   <legend class="q-header">
-    <strong>Q9: {{ form.window_wall_ratio.help_text }}</strong>
+    <strong>Q{{form.field_ordering.window_wall_ratio}}: {{ form.window_wall_ratio.help_text }}</strong>
     {% include 'buildings/utils/info_modal_button.html' with modal_id="window_wall_ratio" %}
   </legend>
   {{ form.window_wall_ratio }}
@@ -81,7 +86,7 @@
 
 <fieldset class="q-container">
   <legend class="q-header">
-    <strong>Q10: {{ form.large_irregular_windows.help_text }}</strong>
+    <strong>Q{{form.field_ordering.large_irregular_windows}}: {{ form.large_irregular_windows.help_text }}</strong>
     {% include 'buildings/utils/info_modal_button.html' with modal_id="large_irregular_windows" %}
   </legend>
   {{ form.large_irregular_windows }}
@@ -89,24 +94,17 @@
 
 <fieldset class="q-container">
   <legend class="q-header">
-    <strong>Q11: {{ form.roof_geometry.help_text }}</strong>
+    <strong>Q{{form.field_ordering.roof_geometry}}: {{ form.roof_geometry.help_text }}</strong>
     {% include 'buildings/utils/info_modal_button.html' with modal_id="roof_geometry" %}
   </legend>
   {{ form.roof_geometry }}
 </fieldset>
 
+<!-- Extra question only if eval unit has not construction year -->
+{% if eval_unit.const_yr is None or eval_unit.const_yr == '' %}
 <fieldset class="q-container">
   <legend class="q-header">
-    <strong>Q12: {{ form.structure_type.help_text }}</strong>
-    {% include 'buildings/utils/info_modal_button.html' with modal_id="structure_type" %}
-  </legend>
-  {{ form.structure_type }}
-</fieldset>
-
-{% if building.construction_year != None %}
-<fieldset class="q-container">
-  <legend class="q-header">
-    <strong>Q13: {{ form.new_or_renovated.help_text }}</strong>
+    <strong>Q{{form.field_ordering.new_or_renovated}}: {{ form.new_or_renovated.help_text }}</strong>
     {% include 'buildings/utils/info_modal_button.html' with modal_id="new_or_renovated" %}
   </legend>
   {{ form.new_or_renovated }}

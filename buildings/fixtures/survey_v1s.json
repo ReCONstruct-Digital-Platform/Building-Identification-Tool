@@ -4,6 +4,7 @@
     "pk": 1,
     "fields": {
         "vote": 1,
+        "self_similar_cluster": true,
         "has_simple_footprint": true,
         "has_simple_volume": false,
         "num_storeys": 5,
@@ -22,11 +23,10 @@
             "on",
             "dfd"
         ],
-        "facade_condition": "poor",
-        "window_wall_ratio": "small",
+        "facade_condition": null,
+        "window_wall_ratio": true,
         "large_irregular_windows": false,
         "roof_geometry": "dfdf",
-        "structure_type": "d",
         "new_or_renovated": null
     }
 },
@@ -35,6 +35,7 @@
     "pk": 2,
     "fields": {
         "vote": 2,
+        "self_similar_cluster": false,
         "has_simple_footprint": true,
         "has_simple_volume": true,
         "num_storeys": 5,
@@ -51,11 +52,10 @@
         "exterior_cladding": [
             "stone_masonry"
         ],
-        "facade_condition": "fair",
-        "window_wall_ratio": "small",
+        "facade_condition": true,
+        "window_wall_ratio": null,
         "large_irregular_windows": true,
         "roof_geometry": "complex",
-        "structure_type": "dfdf",
         "new_or_renovated": null
     }
 }
