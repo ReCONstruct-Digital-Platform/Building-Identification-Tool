@@ -46,18 +46,6 @@ FACADE_MATERIALS = [
     ("wood", "Wood"),
     ("unsure", "Unsure"),
 ]
-FACADE_CONDITIONS = [
-    ("good", "Good"),
-    ("fair", "Fair"),
-    ("poor", "Poor"),
-    ("unsure", "Unsure"),
-]
-WINDOW_TO_WALL_RATIOS = [
-    ("small", "Small"),
-    ("medium", "Medium"),
-    ("large", "Large"),
-    ("unsure", "Unsure"),
-]
 ROOF_GEOMETRIES = [
     ("flat", "Flat"),
     ("pitched", "Pitched"),
@@ -65,6 +53,7 @@ ROOF_GEOMETRIES = [
     ("complex", "Complex"),
     ("unsure", "Unsure"),
 ]
+# TODO: We might re-use this question for expert users at a later time
 STRUCTURE_TYPES = [
     ("wood_frame_light_gauge_steel", "Wood frame or light gauge steel"),
     ("concrete_frame", "Concrete frame"),
@@ -95,8 +84,8 @@ class SurveyV1(BaseSurvey):
     site_obstructions = models.JSONField() # checkbox multiple w specify
     appendages = models.JSONField() # checkbox multiple w specify
     exterior_cladding = models.JSONField() # checkbox multiple w specify
-    facade_condition = models.TextField(blank=True, null=True) # radio
-    window_wall_ratio = models.TextField(blank=True, null=True) # radio
+    facade_condition = models.BooleanField(blank=True, null=True) # radio
+    window_wall_ratio = models.BooleanField(blank=True, null=True) # radio
     large_irregular_windows = models.BooleanField(blank=True, null=True) # radio
     roof_geometry = models.TextField() # radio w specify 
     # structure_type = models.TextField() # radio w specify 
@@ -161,8 +150,8 @@ class SurveyV1Form(ModelForm):
             "site_obstructions": CheckboxRequiredSelectMultiple(choices=SITE_OBSTRUCTIONS, has_specify=True, attrs={"class": "survey-1col"}),
             "appendages": CheckboxRequiredSelectMultiple(choices=APPENDAGES, has_specify=True, attrs={"class": "survey-1col"}),
             "exterior_cladding": CheckboxRequiredSelectMultiple(choices=FACADE_MATERIALS, has_specify=True, attrs={"class": "survey-3col"}),
-            "facade_condition": RadioSelect(choices=FACADE_CONDITIONS, attrs={"class": "survey-1col"}),
-            "window_wall_ratio": RadioSelect(choices=WINDOW_TO_WALL_RATIOS, attrs={"class": "survey-1col"}),
+            "facade_condition": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),
+            "window_wall_ratio": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),
             "large_irregular_windows": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),
             "roof_geometry": RadioWithSpecify(choices=ROOF_GEOMETRIES, attrs={"class": "survey-3col"}),
             "new_or_renovated": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),

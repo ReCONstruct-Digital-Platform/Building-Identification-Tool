@@ -23,8 +23,8 @@
             "on",
             "dfd"
         ],
-        "facade_condition": "poor",
-        "window_wall_ratio": "small",
+        "facade_condition": null,
+        "window_wall_ratio": true,
         "large_irregular_windows": false,
         "roof_geometry": "dfdf",
         "new_or_renovated": null
@@ -52,8 +52,8 @@
         "exterior_cladding": [
             "stone_masonry"
         ],
-        "facade_condition": "fair",
-        "window_wall_ratio": "small",
+        "facade_condition": true,
+        "window_wall_ratio": null,
         "large_irregular_windows": true,
         "roof_geometry": "complex",
         "new_or_renovated": null
