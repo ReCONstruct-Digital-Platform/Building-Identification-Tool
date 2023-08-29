@@ -49,21 +49,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name="surveyv1",
-            name="structure_type",
-        ),
-        migrations.AddField(
-            model_name="surveyv1",
-            name="self_similar_cluster",
-            field=models.BooleanField(null=True),
-        ),
+
         # Method to migrate data while changing field type
         # https://stackoverflow.com/questions/39628637/convert-data-on-alterfield-django-migration
-        # Rename target field to other
-        # Create a new field with same name
-        # Use RunPython to migrate data from old field to new
-        # Remove the old field 
         migrations.RenameField(
             model_name='surveyv1',
             old_name='facade_condition',
@@ -75,11 +63,10 @@ class Migration(migrations.Migration):
             field=models.BooleanField(blank=True, null=True),
         ),
         migrations.RunPython(migrate_facade_condition_to_boolean),
-        migrations.RemoveField(
-            model_name='surveyv1',
-            name='facade_condition_old',
-        ),
-        # Same thing for WWR
+
+        #
+        # Same thing for the Window to Wall Ratio field
+        #
         migrations.RenameField(
             model_name='surveyv1',
             old_name='window_wall_ratio',
@@ -91,8 +78,4 @@ class Migration(migrations.Migration):
             field=models.BooleanField(blank=True, null=True),
         ),
         migrations.RunPython(migrate_window_wall_ratio_to_boolean),
-        migrations.RemoveField(
-            model_name='surveyv1',
-            name='window_wall_ratio_old',
-        ),
     ]
