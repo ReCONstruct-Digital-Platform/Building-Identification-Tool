@@ -19,12 +19,14 @@ class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
     """
     fixtures = ['user.json', 'evalunits.json']
 
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass(headless=True)
 
-    def test_survey_GUI_firefox_should_screnshot_satellite_on_survey_tab_click(self):
+    def test_survey_GUI_firefox_should_screenshot_satellite_on_survey_tab_click(self):
         driver = self.driver
         wait = self.wait 
 
-        driver.get(f"{self.live_server_url}/login?next=")
         self._sign_in('/survey')
 
         # In Selenium we have to wait for the element to appear, otherwise it will
@@ -45,64 +47,82 @@ class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
         self.assertRegex(sat_data.get_attribute('data-url'), 'data:image/png;base64')
 
 
-    def test_survey_GUI_firefox_should_submit_successfully_vanilla(self):
-
+    def test_survey_GUI_firefox_should_show_q13_for_evalunit_2_but_not_for_1(self):
         driver = self.driver
         wait = self.wait 
 
-        self._sign_in('/survey')
-        driver.get(f"{self.live_server_url}/survey/v1/id1")
+        self._sign_in('/survey/v1/id1')
+
+        # In Selenium we have to wait for the element to appear, otherwise it will
+        # click too quickly on the tab, and no screenshot will be taken, since
+        # the satellite map will never have been visible. Waiting for the map outer
+        # element to be visible is not enough, so we wait on 'gmimap1' as well (red pin)
+        wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))   
+
+        # Click the survey tab
+        driver.find_element(By.ID, "nav-survey-tab").click()
+
+        questions = driver.find_elements(By.CSS_SELECTOR, '.q-container')
+
+        # Make sure there are 12 questions
+        self.assertEqual(len(questions), 12)
+
+        driver.get(f"{self.live_server_url}/survey/v1/id2")
+        wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))   
+
+        # Click the survey tab
+        driver.find_element(By.ID, "nav-survey-tab").click()
+        questions = driver.find_elements(By.CSS_SELECTOR, '.q-container')
+
+        # Make sure there are 12 questions
+        self.assertEqual(len(questions), 13)
+
+
+
+    def test_survey_GUI_firefox_should_submit_successfully_vanilla(self):
+        driver = self.driver
+        wait = self.wait 
+
+        self._sign_in('/survey/v1/id1')
+
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
         driver.find_element(By.ID, "nav-survey-tab").click()
 
-        next_eval_unit_id = self._get_next_eval_unit_id_when_there_are_2()
+        # Fill in and submit the form
+        self._fill_and_submit_form()
 
-        # Fill in the form
-        wait.until(EC.presence_of_element_located((By.ID, 'id_has_simple_footprint_0')))
-        wait.until(EC.visibility_of_element_located((By.ID, 'id_has_simple_footprint_0')))
-        driver.find_element(By.ID, "id_has_simple_footprint_0").click()
-        wait.until(EC.presence_of_element_located((By.ID, 'id_has_simple_volume_1')))
-        wait.until(EC.visibility_of_element_located((By.ID, 'id_has_simple_volume_1')))
-        driver.find_element(By.ID, "id_has_simple_volume_1").click()
-        driver.find_element(By.ID, "id_num_storeys_specify").click()
-        driver.find_element(By.ID, "id_num_storeys_specify_value").send_keys('5')
-        driver.find_element(By.ID, "id_num_storeys_unsure").click()
-        driver.find_element(By.ID, "id_has_basement_2").click()
-        driver.find_element(By.ID, "id_site_obstructions_0").click()
-        driver.find_element(By.ID, "id_appendages_specify").click()
-        driver.find_element(By.ID, "id_appendages_specify_value").send_keys('blabla')
-        driver.find_element(By.ID, "id_exterior_cladding_5").click()
-        driver.find_element(By.ID, "id_facade_condition_0").click()
-        driver.find_element(By.ID, "id_window_wall_ratio_2").click()
-        driver.find_element(By.ID, "id_large_irregular_windows_0").click()
-        driver.find_element(By.ID, "id_roof_geometry_3").click()
-        driver.find_element(By.ID, "id_structure_type_specify").click()
-        driver.find_element(By.ID, "id_structure_type_specify_value").send_keys('struct type')
-
-        # Submit the form
-        driver.find_element(By.ID, "btn-submit-vote").click()
         # Make sure we get redirected to the next eval unit
-        wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id{next_eval_unit_id}"))
+        wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id2"))
+
+        # Fill in and submit the form
+        self._fill_and_submit_form(q13=True)
+
+        # Make sure we get redirected to the next eval unit
+        wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id1"))
 
 
     def test_survey_GUI_firefox_should_submit_successfully_when_clicking_on_labels_or_input_fields(self):
         driver = self.driver
         wait = self.wait 
 
-        self._sign_in('/survey')
-        # Test redirect to an eval unit
-        wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
+        self._sign_in('/survey/v1/id1')
 
+        # Test redirect to an eval unit
+        wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id1"))
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
         wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
+
         driver.find_element(By.ID, "nav-survey-tab").click()
 
-        next_eval_unit_id = self._get_next_eval_unit_id_when_there_are_2()
-
         # Fill in the form
+        wait.until(EC.presence_of_element_located((By.ID, 'id_self_similar_cluster_0')))
+        wait.until(EC.visibility_of_element_located((By.ID, 'id_self_similar_cluster_0')))
+        driver.find_element(By.ID, "id_self_similar_cluster_0").click()
+
         wait.until(EC.presence_of_element_located((By.ID, 'id_has_simple_footprint_0')))
         wait.until(EC.visibility_of_element_located((By.ID, 'id_has_simple_footprint_0')))
         driver.find_element(By.ID, "id_has_simple_footprint_0").click()
+
         wait.until(EC.presence_of_element_located((By.ID, 'id_has_simple_volume_1')))
         wait.until(EC.visibility_of_element_located((By.ID, 'id_has_simple_volume_1')))
         driver.find_element(By.ID, "id_has_simple_volume_1").click()
@@ -115,6 +135,7 @@ class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
         # Click on the parent element
         driver.find_element(By.ID, "id_appendages_specify_container").click()
         driver.find_element(By.ID, "id_appendages_specify_value").send_keys('blabla')
+        
         # Here we test clicking on the label of a non-specify field, it should work as well
         checkbox = driver.find_element(By.ID, "id_appendages_0")
         checkbox.find_element(By.XPATH, '..').click()
@@ -124,25 +145,24 @@ class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
         driver.find_element(By.ID, "id_window_wall_ratio_2").click()
         driver.find_element(By.ID, "id_large_irregular_windows_0").click()
         driver.find_element(By.ID, "id_roof_geometry_3").click()
-        # Click on the parent element
-        driver.find_element(By.ID, "id_structure_type_specify_container").click()
-        driver.find_element(By.ID, "id_structure_type_specify_value").send_keys('struct type')
 
-        # Submit the form - will FAIL
+        # Submit the form
         driver.find_element(By.ID, "btn-submit-vote").click()
         # Make sure we get redirected to the next eval unit
-        wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id{next_eval_unit_id}"))
+        wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id2"))
 
 
     def test_survey_GUI_firefox_should_remove_values_when_unselecting_specify_fields(self):
-        # Test that when a user unselects one of the radio specifies
-        # their previously entered values are deleted and the field is disactivated 
+        """
+        Test that when a user unselects one of the radio specifies
+        their previously entered values are deleted and the field is disactivated 
+        """
         driver = self.driver
         wait = self.wait 
 
         # Login and go on the survey
-        self._sign_in('/survey')
-        driver.get(f"{self.live_server_url}/survey/v1/id1")
+        self._sign_in('/survey/v1/id1')
+
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
         wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
         driver.find_element(By.ID, "nav-survey-tab").click()
@@ -162,19 +182,20 @@ class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
         self.assertEqual(specify_radio_elem.get_attribute('checked'), None)
 
         # Test a RadioWithSpecify field
-        specify_radio_elem = driver.find_element(By.ID, "id_structure_type_specify")
+        specify_radio_elem = driver.find_element(By.ID, "id_roof_geometry_specify")
         specify_radio_elem.click()
-        specify_text_input_elem = driver.find_element(By.ID, "id_structure_type_specify_value")
-        specify_text_input_elem.send_keys('struct type')
-        self.assertEqual(specify_text_input_elem.get_attribute('value'), 'struct type')
+        specify_text_input_elem = driver.find_element(By.ID, "id_roof_geometry_specify_value")
+        specify_text_input_elem.send_keys('roof geometry type')
+        self.assertEqual(specify_text_input_elem.get_attribute('value'), 'roof geometry type')
+
         # Clicking the SAME radio field, should do NOTHING
         specify_radio_elem.click()
-        self.assertEqual(specify_text_input_elem.get_attribute('value'), 'struct type')
+        self.assertEqual(specify_text_input_elem.get_attribute('value'), 'roof geometry type')
 
         # Click on another radio
-        driver.find_element(By.ID, "id_structure_type_0").click()   
+        driver.find_element(By.ID, "id_roof_geometry_4").click()   
         # Make sure the number input is disabled and has no value
-        wait.until(EC.element_attribute_to_include((By.ID, "id_structure_type_specify_value"), 'disabled'))
+        wait.until(EC.element_attribute_to_include((By.ID, "id_roof_geometry_specify_value"), 'disabled'))
         self.assertEqual(specify_text_input_elem.get_attribute('value'), '')
         # check that the radio is not checked (returns None instead of false)
         self.assertEqual(specify_radio_elem.get_attribute('checked'), None)
@@ -216,21 +237,23 @@ class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
         driver = self.driver
         wait = self.wait 
 
-        self._sign_in('/survey')
+        self._sign_in('/survey/v1/id1')
         # Test redirect to an eval unit
-        wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
+        wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id1"))
 
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
         wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
         driver.find_element(By.ID, "nav-survey-tab").click()
 
-        m = re.match(rf'{self.live_server_url}/survey/v1/id([0-9])', driver.current_url)
-        eval_unit_id = m.group(1)
-
         # Fill in the form
+        wait.until(EC.presence_of_element_located((By.ID, 'id_self_similar_cluster_0')))
+        wait.until(EC.visibility_of_element_located((By.ID, 'id_self_similar_cluster_0')))
+        driver.find_element(By.ID, "id_self_similar_cluster_0").click()
+
         wait.until(EC.presence_of_element_located((By.ID, 'id_has_simple_footprint_0')))
         wait.until(EC.visibility_of_element_located((By.ID, 'id_has_simple_footprint_0')))
         driver.find_element(By.ID, "id_has_simple_footprint_0").click()
+        
         wait.until(EC.presence_of_element_located((By.ID, 'id_has_simple_volume_1')))
         wait.until(EC.visibility_of_element_located((By.ID, 'id_has_simple_volume_1')))
         driver.find_element(By.ID, "id_has_simple_volume_1").click()
@@ -239,7 +262,7 @@ class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
 
         driver.find_element(By.ID, "id_has_basement_2").click()
         driver.find_element(By.ID, "id_site_obstructions_0").click()
-        
+
         driver.find_element(By.ID, "id_appendages_specify").click()
         driver.find_element(By.ID, "id_appendages_specify_value").send_keys('blabla')
 
@@ -248,13 +271,11 @@ class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
         driver.find_element(By.ID, "id_window_wall_ratio_2").click()
         driver.find_element(By.ID, "id_large_irregular_windows_0").click()
         driver.find_element(By.ID, "id_roof_geometry_3").click()
-        driver.find_element(By.ID, "id_structure_type_specify").click()
-        driver.find_element(By.ID, "id_structure_type_specify_value").send_keys('struct type')
 
         # Submit the form - should not work
         driver.find_element(By.ID, "btn-submit-vote").click()
         # Make sure we stayed at the same URL indicating failure to submit
-        wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id{eval_unit_id}"))
+        wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id1"))
 
 
 
@@ -265,14 +286,18 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
     """
     fixtures = ['user.json', 'evalunits.json']
 
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass(headless=True)
+
 
     def test_survey_GUI_chrome_should_screnshot_satellite_on_survey_tab_click(self):
         driver = self.driver
         wait = self.wait 
 
-        self._sign_in('/survey')
+        self._sign_in('/survey/v1/id1')
         # Wait until weève redirected to an eval unit
-        wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
+        wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id1"))
 
         # In Selenium we have to wait for the element to appear, otherwise it will
         # click too quickly on the tab, and no screenshot will be taken, since
@@ -292,82 +317,26 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         self.assertRegex(sat_data.get_attribute('data-url'), 'data:image/png;base64')
 
 
-    def test_submit_survey_chrome_clicking_on_inputs(self):
+    def test_survey_chrome_GUI_should_submit_successfully_vanilla(self):
         driver = self.driver
         wait = self.wait 
 
-        self._sign_in('/survey')
-        wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
+        self._sign_in('/survey/v1/id1')
 
+        wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id1"))
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
         driver.find_element(By.ID, "nav-survey-tab").click()
 
-        next_eval_unit_id = self._get_next_eval_unit_id_when_there_are_2()
-
-        # Fill in the form
-        # Chrome has a problem where it cant scroll normally like friefox
-        # So we call a scroll into view on each element before clicking on them
-        e = driver.find_element(By.ID, "id_has_simple_footprint_0")
-        driver.execute_script("arguments[0].scrollIntoView();", e)
-        driver.execute_script("arguments[0].click();", e)
-
-        e = driver.find_element(By.ID, "id_has_simple_volume_1")
-        driver.execute_script("arguments[0].scrollIntoView();", e)
-        driver.execute_script("arguments[0].click();", e)
-
-        e = driver.find_element(By.ID, "id_num_storeys_specify")
-        driver.execute_script("arguments[0].scrollIntoView();", e)
-        driver.execute_script("arguments[0].click();", e)
-        e = driver.find_element(By.ID, "id_num_storeys_specify_value")
-        driver.execute_script("arguments[0].value = arguments[1];", e, '5')
-
-        e = driver.find_element(By.ID, "id_has_basement_2")
-        driver.execute_script("arguments[0].scrollIntoView();", e)
-        driver.execute_script("arguments[0].click();", e)
-
-        e = driver.find_element(By.ID, "id_site_obstructions_0")
-        driver.execute_script("arguments[0].scrollIntoView();", e)
-        driver.execute_script("arguments[0].click();", e)
-
-        e = driver.find_element(By.ID, "id_appendages_specify")
-        driver.execute_script("arguments[0].scrollIntoView();", e)
-        driver.execute_script("arguments[0].click();", e)
-        e = driver.find_element(By.ID, "id_appendages_specify_value")
-        driver.execute_script("arguments[0].value = arguments[1];", e, 'blabla')
-
-        e = driver.find_element(By.ID, "id_exterior_cladding_5")
-        driver.execute_script("arguments[0].scrollIntoView();", e)
-        driver.execute_script("arguments[0].click();", e)
-        
-        e = driver.find_element(By.ID, "id_facade_condition_0")
-        driver.execute_script("arguments[0].scrollIntoView();", e)
-        driver.execute_script("arguments[0].click();", e)
-
-        e = driver.find_element(By.ID, "id_window_wall_ratio_2")
-        driver.execute_script("arguments[0].scrollIntoView();", e)
-        driver.execute_script("arguments[0].click();", e)
-
-        e = driver.find_element(By.ID, "id_large_irregular_windows_0")
-        driver.execute_script("arguments[0].scrollIntoView();", e)
-        driver.execute_script("arguments[0].click();", e)
-
-        e = driver.find_element(By.ID, "id_roof_geometry_3")
-        driver.execute_script("arguments[0].scrollIntoView();", e)
-        driver.execute_script("arguments[0].click();", e)
-
-        e = driver.find_element(By.ID, "id_structure_type_specify")
-        driver.execute_script("arguments[0].scrollIntoView();", e)
-        driver.execute_script("arguments[0].click();", e)
-        e = driver.find_element(By.ID, "id_structure_type_specify_value")
-        driver.execute_script("arguments[0].value = arguments[1];", e, 'struct type')
-
-        # Submit the form
-        e = driver.find_element(By.ID, "btn-submit-vote")
-        driver.execute_script("arguments[0].scrollIntoView();", e)
-        driver.execute_script("arguments[0].click();", e)
+        self._fill_and_submit_form()
 
         # Make sure we get redirected to the next eval unit
-        wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id{next_eval_unit_id}"))
+        wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id2"))
+
+        self._fill_and_submit_form(q13=True)
+
+        # We get redirected back to the first evalunit
+        # TODO: Change if we add more eval units to these test cases in the future
+        wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id1"))
 
 
     def test_survey_GUI_chrome_should_submit_when_clicking_on_labels_or_input_fields(self):
@@ -377,16 +346,18 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         driver = self.driver
         wait = self.wait 
 
-        self._sign_in('/survey')
+        self._sign_in('/survey/v1/id1')
 
-        wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
+        wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id1"))
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
         driver.find_element(By.ID, "nav-survey-tab").click()
 
-        next_eval_unit_id = self._get_next_eval_unit_id_when_there_are_2()
-
         # Fill in the form
         # Chrome has a problem where it cant scroll normally like friefox
+        e = driver.find_element(By.ID, "id_self_similar_cluster_1")
+        driver.execute_script("arguments[0].scrollIntoView();", e)
+        driver.execute_script("arguments[0].click();", e)
+
         e = driver.find_element(By.ID, "id_has_simple_footprint_0")
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
@@ -435,17 +406,13 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
 
-        e = driver.find_element(By.ID, "id_roof_geometry_3")
-        driver.execute_script("arguments[0].scrollIntoView();", e)
-        driver.execute_script("arguments[0].click();", e)
-
         # We click on the parent element, which would register the click
         # for both the label and input box. Else Selenium throws an element obscured error
-        e = driver.find_element(By.ID, "id_structure_type_specify_container")
+        e = driver.find_element(By.ID, "id_roof_geometry_specify_container")
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
-        e = driver.find_element(By.ID, "id_structure_type_specify_value")
-        driver.execute_script("arguments[0].value = arguments[1];", e, 'struct type')
+        e = driver.find_element(By.ID, "id_roof_geometry_specify_value")
+        driver.execute_script("arguments[0].value = arguments[1];", e, 'roof type')
 
         # Submit the form
         e = driver.find_element(By.ID, "btn-submit-vote")
@@ -453,7 +420,7 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         driver.execute_script("arguments[0].click();", e)
 
         # Make sure we get redirected to the next eval unit
-        wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id{next_eval_unit_id}"))
+        wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id2"))
 
 
     def test_survey_GUI_chrome_should_remove_values_when_unselecting_specify_fields(self):
@@ -463,9 +430,7 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         wait = self.wait 
 
         # Login and go on the survey
-        self._sign_in('/survey')
-        # Wait until redirect completes
-        wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
+        self._sign_in('/survey/v1/id1')
 
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
         driver.find_element(By.ID, "nav-survey-tab").click()
@@ -489,9 +454,9 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         self.assertEqual(specify_radio_elem.get_attribute('checked'), None)
 
         # Test a RadioWithSpecify field
-        specify_radio_elem = driver.find_element(By.ID, "id_structure_type_specify")
+        specify_radio_elem = driver.find_element(By.ID, "id_roof_geometry_specify")
         specify_radio_elem.click()
-        specify_text_input_elem = driver.find_element(By.ID, "id_structure_type_specify_value")
+        specify_text_input_elem = driver.find_element(By.ID, "id_roof_geometry_specify_value")
         specify_text_input_elem.send_keys('struct type')
         self.assertEqual(specify_text_input_elem.get_attribute('value'), 'struct type')
         # Clicking the same radio should not unselect it
@@ -499,9 +464,9 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         self.assertEqual(specify_text_input_elem.get_attribute('value'), 'struct type')
 
         # Clicking on another radio should unselect it and delte the entered value
-        driver.find_element(By.ID, "id_structure_type_0").click()   
+        driver.find_element(By.ID, "id_roof_geometry_0").click()   
         # Make sure the number input is disabled and has no value
-        wait.until(EC.element_attribute_to_include((By.ID, "id_structure_type_specify_value"), 'disabled'))
+        wait.until(EC.element_attribute_to_include((By.ID, "id_roof_geometry_specify_value"), 'disabled'))
         self.assertEqual(specify_text_input_elem.get_attribute('value'), '')
         # check that the radio is not checked (returns None instead of false)
         self.assertEqual(specify_radio_elem.get_attribute('checked'), None)
@@ -519,6 +484,7 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         self.assertEqual(specify_input_field.get_attribute('value'), 'blabla')
         self.assertEqual(specify_checkbox.get_attribute('checked'), 'true')
         self.assertEqual(specify_input_field.get_attribute('disabled'), None)
+
         # Now clicking it again however should unselect it
         specify_checkbox.click()
         self.assertEqual(specify_input_field.get_attribute('value'), '')
@@ -543,18 +509,19 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         driver = self.driver
         wait = self.wait 
 
-        self._sign_in('/survey')
-        # Test redirect to an eval unit
-        wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id"))
+        self._sign_in('/survey/v1/id1')
 
+        # Test redirect to an eval unit
+        wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id1"))
         wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
         driver.find_element(By.ID, "nav-survey-tab").click()
 
-        m = re.match(rf'{self.live_server_url}/survey/v1/id([0-9])', driver.current_url)
-        eval_unit_id = m.group(1)
-
         # Fill in the form
         # Chrome has a problem where it cant scroll normally like friefox
+        e = driver.find_element(By.ID, "id_self_similar_cluster_0")
+        driver.execute_script("arguments[0].scrollIntoView();", e)
+        driver.execute_script("arguments[0].click();", e)
+
         e = driver.find_element(By.ID, "id_has_simple_footprint_0")
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
@@ -582,6 +549,7 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         driver.execute_script("arguments[0].click();", e)
         e = driver.find_element(By.ID, "id_appendages_specify_value")
         driver.execute_script("arguments[0].value = arguments[1];", e, 'blabla')
+
         # Clicking it again will undo the previous work and make the form invalid!
         e = driver.find_element(By.ID, "id_appendages_specify")
         driver.execute_script("arguments[0].scrollIntoView();", e)
@@ -603,15 +571,11 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
 
-        e = driver.find_element(By.ID, "id_roof_geometry_3")
+        e = driver.find_element(By.ID, "id_roof_geometry_specify")
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
-
-        e = driver.find_element(By.ID, "id_structure_type_specify")
-        driver.execute_script("arguments[0].scrollIntoView();", e)
-        driver.execute_script("arguments[0].click();", e)
-        e = driver.find_element(By.ID, "id_structure_type_specify_value")
-        driver.execute_script("arguments[0].value = arguments[1];", e, 'struct type')
+        e = driver.find_element(By.ID, "id_roof_geometry_specify_value")
+        driver.execute_script("arguments[0].value = arguments[1];", e, 'roof type')
 
         # Submit the form
         e = driver.find_element(By.ID, "btn-submit-vote")
@@ -619,4 +583,4 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         driver.execute_script("arguments[0].click();", e)
 
         # Check that we did NOT get redirected to the next unit
-        wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id{eval_unit_id}"))
+        wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id1"))

@@ -4,6 +4,7 @@
     "pk": 1,
     "fields": {
         "vote": 1,
+        "self_similar_cluster": true,
         "has_simple_footprint": true,
         "has_simple_volume": false,
         "num_storeys": 5,
@@ -26,7 +27,6 @@
         "window_wall_ratio": "small",
         "large_irregular_windows": false,
         "roof_geometry": "dfdf",
-        "structure_type": "d",
         "new_or_renovated": null
     }
 },
@@ -35,6 +35,7 @@
     "pk": 2,
     "fields": {
         "vote": 2,
+        "self_similar_cluster": false,
         "has_simple_footprint": true,
         "has_simple_volume": true,
         "num_storeys": 5,
@@ -55,7 +56,6 @@
         "window_wall_ratio": "small",
         "large_irregular_windows": true,
         "roof_geometry": "complex",
-        "structure_type": "dfdf",
         "new_or_renovated": null
     }
 }

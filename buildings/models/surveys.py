@@ -87,6 +87,7 @@ class BaseSurvey(models.Model):
 
 
 class SurveyV1(BaseSurvey):
+    self_similar_cluster = models.BooleanField(null=True)
     has_simple_footprint = models.BooleanField()
     has_simple_volume = models.BooleanField()
     num_storeys = models.IntegerField(blank=True, null=True)
@@ -98,7 +99,7 @@ class SurveyV1(BaseSurvey):
     window_wall_ratio = models.TextField(blank=True, null=True) # radio
     large_irregular_windows = models.BooleanField(blank=True, null=True) # radio
     roof_geometry = models.TextField() # radio w specify 
-    structure_type = models.TextField() # radio w specify 
+    # structure_type = models.TextField() # radio w specify 
     new_or_renovated = models.BooleanField(blank=True, null=True) # radio
 
 
@@ -112,6 +113,21 @@ class SurveyV1Form(ModelForm):
 
     template_name = "buildings/surveys/survey_v1.html"
     json_fields = ['site_obstructions', 'appendages', 'exterior_cladding']
+    field_ordering = {
+        "self_similar_cluster": 1,
+        "has_simple_footprint": 2,
+        "has_simple_volume": 3,
+        "num_storeys": 4,
+        "has_basement": 5,
+        "site_obstructions": 6,
+        "appendages": 7,
+        "exterior_cladding": 8,
+        "facade_condition": 9,
+        "window_wall_ratio": 10,
+        "large_irregular_windows": 11,
+        "roof_geometry": 12,
+        "new_or_renovated": 13 
+    }
 
     def __init__(self, *data, **kwargs):
         super().__init__(*data, **kwargs)
@@ -131,12 +147,13 @@ class SurveyV1Form(ModelForm):
     class Meta:
         model = SurveyV1
 
-        fields = ["has_simple_footprint", "has_simple_volume", "num_storeys", "has_basement", 
-                  "site_obstructions", "appendages", "exterior_cladding", "facade_condition", 
-                  "window_wall_ratio", "large_irregular_windows", "roof_geometry", "structure_type", 
-                  "new_or_renovated"]
+        fields = ["self_similar_cluster", "has_simple_footprint", "has_simple_volume", 
+                  "num_storeys", "has_basement", "site_obstructions", "appendages", 
+                  "exterior_cladding", "facade_condition", "window_wall_ratio", 
+                  "large_irregular_windows", "roof_geometry", "new_or_renovated"]
         
         widgets = {
+            "self_similar_cluster": RadioSelect(choices=YES_NO, attrs={"class": "survey-1col"}),
             "has_simple_footprint": RadioSelect(choices=YES_NO, attrs={"class": "survey-1col"}),
             "has_simple_volume": RadioSelect(choices=YES_NO, attrs={"class": "survey-1col"}),
             "num_storeys": NumberOrUnsure(attrs={"class": "survey-1col"}),
@@ -148,10 +165,10 @@ class SurveyV1Form(ModelForm):
             "window_wall_ratio": RadioSelect(choices=WINDOW_TO_WALL_RATIOS, attrs={"class": "survey-1col"}),
             "large_irregular_windows": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),
             "roof_geometry": RadioWithSpecify(choices=ROOF_GEOMETRIES, attrs={"class": "survey-3col"}),
-            "structure_type": RadioWithSpecify(choices=STRUCTURE_TYPES, attrs={"class": "survey-2col"}),
             "new_or_renovated": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),
         }
         help_texts = {
+            "self_similar_cluster": _("Does the building appear part of a self-similar cluster?"),
             "has_simple_footprint": _("Does the building have a simple footprint?"),
             "has_simple_volume": _("Does the building have a simple volumetric form?"),
             "num_storeys": _("How many storeys above-ground does the building have?"),
@@ -159,11 +176,10 @@ class SurveyV1Form(ModelForm):
             "site_obstructions": _("Are there obstructions to machine access around the building (within 3m or less)? Select all that apply."),
             "appendages": _("Are there significant appendages to the building faces? Select all that apply."),
             "exterior_cladding": _("What type of exterior cladding does the building appear to have? Select all that apply."),
-            "facade_condition": _("How would you describe the condition of the exterior façades?"),
-            "window_wall_ratio": _("Is there a large proportion of glazing to overall façade area?"),
+            "facade_condition": _("Are the building façades in poor condition and in need of replacement?"),
+            "window_wall_ratio": _("Does glazing make up more than 40% of the total area of all visible façades?"),
             "large_irregular_windows": _("Are there very large and/or irregularly shaped windows?"),
             "roof_geometry": _("What best describes the roof geometry?"),
-            "structure_type": _("(Optional) What type of structure does the building appear to have?"),
             "new_or_renovated": _("Does this building look new and/or recently renovated?"),
         }
 
