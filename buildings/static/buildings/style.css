@@ -527,3 +527,15 @@ tr:hover .delete-row-icon {
 .modal {
   --bs-modal-width: 50%;
 }
+
+.infobox-section {
+  margin-bottom: .5rem;
+}
+
+.infobox-p {
+  margin-bottom: 0;
+}
+
+.infobox-img {
+  margin-top: .5rem;
+}
