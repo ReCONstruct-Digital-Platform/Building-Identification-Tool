@@ -158,16 +158,20 @@ INTERNAL_IPS = (
 
 DATABASES = {
     "default": {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('POSTGRES_NAME'),
-        'USER': env('POSTGRES_USER'),
-        'PASSWORD': env('POSTGRES_PW'),
-        'HOST': env('POSTGRES_HOST'),
-        'PORT': env('POSTGRES_PORT'),
-        'TEST': {
-            'TEMPLATE': 'template0', 
-        }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'bitdb_20230830.sqlite',
     }
+    # "default": {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': env('POSTGRES_NAME'),
+    #     'USER': env('POSTGRES_USER'),
+    #     'PASSWORD': env('POSTGRES_PW'),
+    #     'HOST': env('POSTGRES_HOST'),
+    #     'PORT': env('POSTGRES_PORT'),
+    #     'TEST': {
+    #         'TEMPLATE': 'template0', 
+    #     }
+    # }
 }
 
 # https://docs.djangoproject.com/en/4.2/topics/auth/customizing/#extending-the-existing-user-model
