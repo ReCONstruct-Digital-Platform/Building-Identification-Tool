@@ -4,7 +4,7 @@
 <fieldset class="q-container">
   <legend class="q-header">
     <strong>Q{{form.field_ordering.self_similar_cluster}}: {{ form.self_similar_cluster.help_text }}</strong>
-    {% include 'buildings/utils/info_modal_button.html' with modal_id="self_similar_cluster" %}
+    {% include 'buildings/utils/info_modal_button.html' with modal_id=form.self_similar_cluster.name %}
   </legend>
   {{ form.self_similar_cluster }}
 </fieldset>
@@ -12,7 +12,7 @@
 <fieldset class="q-container">
   <legend class="q-header">
     <strong>Q{{form.field_ordering.has_simple_footprint}}: {{ form.has_simple_footprint.help_text }}</strong>
-    {% include 'buildings/utils/info_modal_button.html' with modal_id="has_simple_footprint" %}
+    {% include 'buildings/utils/info_modal_button.html' with modal_id=form.has_simple_footprint.name %}
   </legend>
   {{ form.has_simple_footprint }}
 </fieldset>
@@ -113,15 +113,59 @@
 
 
 <!-- Information Modals -->
-<div class="modal fade" id="has_simple_footprint" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+
+
+<div class="modal fade" id="{{ form.self_similar_cluster.name }}" tabindex="-1" aria-labelledby="{{ form.self_similar_cluster.name }}_label" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+        <h1 class="modal-title fs-5" id="{{ form.self_similar_cluster.name }}_label">
+          Q{{form.field_ordering.self_similar_cluster}}: Self-Similar Clusters
+        </h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        Can put arbitrary content in here, including images, links, etc!
+        <div>
+          <p>
+            A building is part of a <strong>self-similar cluster</strong> if it close to other buildings built at the same time, 
+            following the same construction methods, and using the same materials. 
+            Most of the time, they will seem virtually identical copies.
+          </p>
+          <p>
+            This is important for retrofits as a good candidate building part of a cluster creates economies of scale which 
+            makes retrofitting the whole cluster more attractive than retrofitting a single building.
+          </p>
+          <p>
+            Note: Presence of the <span class="badge text-bg-info">Multiple Addresses</span> tag makes this more likely
+            as the evaluation unit could contain multiple buildings.
+          </p>
+          <div>
+            <strong>
+              Example 1:
+            </strong>
+            <p>
+              We can see from the streetview that there is an almost identical building to the right.
+              The satellite view gives a bigger picture where wee see that there seems to be a 5 building cluster.
+            </p>
+            <img width="500" src="{% static 'images/survey_info/q1_selfsimilar/selfsimilar_sv.jpg' %}" alt="A streetview of a building part of a self-similar cluster">
+            <br>
+            <img width="500" src="{% static 'images/survey_info/q1_selfsimilar/selfsimilar_sat.jpg' %}" alt="A satellite view of a building part of a self-similar cluster">
+          </div>
+
+          <div>
+            <strong>
+              Example 2:
+            </strong>
+            <p>
+              Again, it is clear from the streetview image that there are multiple similar buildings.
+              The satellite view shows a cluster of 4 (or 8) buildings.
+            </p>
+            <img width="500" src="{% static 'images/survey_info/q1_selfsimilar/selfsimilar_sv_2.jpg' %}" alt="A streetview of a building part of a self-similar cluster">
+            <br>
+            <img width="500" src="{% static 'images/survey_info/q1_selfsimilar/selfsimilar_sat_2.jpg' %}" alt="A satellite view of a building part of a self-similar cluster"/>
+          </div>
+          
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
