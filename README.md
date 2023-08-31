@@ -55,6 +55,8 @@ python -m venv .venv
 # activate your new virtual environment, you'll see (.venv) appear to the left of your terminal prompt
 source .venv/bin/activate
 
+# Ask someone for a .env file with secrets
+
 # Install project dependencies
 pip install -r requirements.txt
 
@@ -104,7 +106,7 @@ Note that you can set the pixel width (or the height, or both) of the image in t
 
 ### Collecting examples
 
-This version of the DB has the same data as the real BTI version, you can use either to collect examples.
+This version of the DB has the same data as the real BIT version, you can use either to collect examples.
 Keep track of the IDs when taking pictures.
 
 
