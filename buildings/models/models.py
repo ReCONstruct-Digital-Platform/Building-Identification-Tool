@@ -75,15 +75,15 @@ class User(AbstractUser):
 SQL_RANDOM_UNVOTED_ID = f"""
     SELECT buildings_evalunit.id FROM buildings_evalunit 
     LEFT OUTER JOIN buildings_vote ON (buildings_evalunit.id = buildings_vote.eval_unit_id)
-    WHERE buildings_vote.eval_unit_id IS NULL AND buildings_evalunit.associated IS NOT NULL 
-    ORDER BY RANDOM() LIMIT 1;
+    WHERE buildings_vote.eval_unit_id IS NULL
+    AND buildings_evalunit.cubf != 1000 ORDER BY RANDOM() LIMIT 1;
 """
 
 SQL_RANDOM_UNVOTED_ID_WITH_EXCLUDE = f"""
     SELECT buildings_evalunit.id FROM buildings_evalunit 
     LEFT OUTER JOIN buildings_vote ON (buildings_evalunit.id = buildings_vote.eval_unit_id)
     WHERE buildings_vote.eval_unit_id IS NULL AND buildings_evalunit.id != %s
-    AND buildings_evalunit.associated IS NOT NULL 
+    AND buildings_evalunit.cubf != 1000
     ORDER BY RANDOM() LIMIT 1;
 """
 

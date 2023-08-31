@@ -65,6 +65,14 @@
             Aggregated MURB
           </div>
           {% endif %}
+          {% if eval_unit.cubf != 1000 %}
+          <div class="badge text-bg-secondary">
+            Possible Metal Prefab
+          </div> 
+          <div class="badge text-bg-light">
+            CUBF {{ eval_unit.cubf }}: {{ cubf_resolved }}
+          </div> 
+          {% endif %}
         </div>
       </div>
       <div class="building-info-col ms-5">
