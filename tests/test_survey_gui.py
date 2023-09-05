@@ -402,12 +402,14 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         # element to be visible is not enough, so we wait on 'gmimap1' as well (red pin)
         wait.until(EC.visibility_of_element_located((By.ID, 'nav-survey-tab')))
         wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
+        # This is a proxy to know when the satellite map is visible
+        wait.until(EC.visibility_of_element_located((By.ID, 'gmimap1')))
 
         # For some reason, the test starts with jobs in the DB already
         # (Presumably from other tests - so delete them here)
         # Assert no pending jobs in DB
         UploadImageJob.objects.all().delete()
-        time.sleep(1)
+        time.sleep(2)
         self.assertEqual(UploadImageJob.objects.count(), 0)
 
         # Click on the screenshot button, it should pop up a toast
