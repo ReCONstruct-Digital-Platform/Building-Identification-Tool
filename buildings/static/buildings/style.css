@@ -519,3 +519,8 @@ tr:hover .delete-row-icon {
   'GRAD' 0,
   'opsz' 48
 }
+
+#screenshot-toast {
+  background: #31d161;
+  color: white;
+}
