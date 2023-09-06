@@ -309,7 +309,7 @@ function initMaps() {
   const svService = new google.maps.StreetViewService();
 
   // If we have already seen the evaluation unit, get the latest user defined view
-  const latestViewData = JSON.parse(document.getElementById('latest_view_data').textContent);
+  const latestViewData = JSON.parse(document.getElementById('latest_view_data_value').textContent);
 
   // Latest view data includes a panorama ID and marker coords
   if (latestViewData) {

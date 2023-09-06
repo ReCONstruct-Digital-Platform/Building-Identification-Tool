@@ -71,24 +71,22 @@ async function screenshot(element_id) {
 }
 
 
-async function screenshotAndUpload(event) {
+/*
+* Screenshot only the streetview. Called when the screenshot button is clicked.
+*/
+async function screenshotStreetview(event) {
     event.preventDefault();
-    // Attempt to get the satellite screenshot from this element
-    let satelliteDataUrl = $("#sat_data").attr("data-url");
+
+    const toastElement = document.getElementById('screenshot-toast');
+    const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastElement); 
     
-    // If not found, screenshot it now
-    if (!satelliteDataUrl) {
-        console.log('Need to screenshot satellite');
-        satelliteDataUrl = await screenshot('satmap');
-    }
     // Screenshot the streetview as well
     const imgData = {
         streetview: await screenshot('streetview'),
-        satellite: satelliteDataUrl,
     }
 
     // Get the upload url from the page and POST the data
-    const url = $("#upload_url").attr("data-url");
+    const url = document.getElementById("upload_url").getAttribute("data-url");
 
     fetch(url, {
         method: "POST",
@@ -100,7 +98,12 @@ async function screenshotAndUpload(event) {
           "X-CSRFToken": getCookie('csrftoken'), // So django accepts the request
         },
         body: JSON.stringify(imgData), 
-      });
+    }).then((resp) => {
+        if (resp.status === 200) {
+            document.getElementById('sv_uploaded').setAttribute('data-uploaded', 'true');
+            toastBootstrap.show();
+        }
+    });
 }
 
 
@@ -155,27 +158,106 @@ function getCookie(name) {
     return cookieValue;
 }
 
-// This function dynamically sets the height of the right panel (satellite view and survey)
+/* 
+* This function dynamically sets the height of the right panel (satellite view and survey)
+*/
 function setUpScrollHeightObserver() {
-    const targetNode = document.getElementById('streetview');
+    const svElement = document.getElementById('streetview');
+    const tabElement = document.getElementById('nav-tab');
 
     const observer = new MutationObserver(() => {
-        const svHeight = $('#streetview').height();
-        const tabHeight = $('#nav-tab').height();
+        const svHeight = svElement.offsetHeight;
+        const tabHeight = tabElement.offsetHeight;
         const textHeight = svHeight - tabHeight ;
         document.getElementById("tab-content-container").style.height = textHeight + "px";
     })
-    observer.observe(targetNode, {childList: true, subtree: true});
+    observer.observe(svElement, {childList: true, subtree: true});
 }
 
+function getDifference(a, b)
+{
+    var i = 0;
+    var j = 0;
+    var result = "";
+
+    while (j < b.length)
+    {
+        if (a[i] != b[j] || i == a.length)
+            result += b[j];
+        else
+            i++;
+        j++;
+    }
+    return result;
+}
+
+/**
+ * Called when the user switches from satellite view to the survey.
+ * If the satellite view has changed since the last time this happened,
+ * upload the new view to the image store.
+ */
+function satelliteImageMutationCallback(mutationList, _) {
+    const target = document.getElementById('sat_data');
+    const uploadURL = document.getElementById("upload_url").getAttribute("data-url");
+
+    for (const mutation of mutationList) {
+        const oldValue = mutation.oldValue;
+        const currentValue = target.getAttribute('data-url');
+        
+        if (oldValue !== currentValue) {
+            
+            // console.log('currentValue != oldValue');
+            // console.log(getDifference(oldValue, currentValue));
+
+            // Upload new satellite image
+            fetch(uploadURL, {
+                method: "POST",
+                mode: "same-origin", 
+                cache: "no-cache", 
+                credentials: "same-origin", 
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-CSRFToken": getCookie('csrftoken'), // So django accepts the request
+                },
+                body: JSON.stringify(currentValue),
+            }).then((resp) => {
+                if (resp.status === 200) {
+                    console.log('Satellite img uploaded successfully');
+                } 
+                else {
+                    console.log(`Problem uploading screenshot ${resp}`);
+                }
+            });
+        }
+    }
+};
+
+/**
+ * Setup the satellite image observer to upload new satellite views to backend
+ */
+function setUpSatelliteImageObserver() {
+    const targetNode = document.getElementById('sat_data');
+    const observer = new MutationObserver(satelliteImageMutationCallback);
+    observer.observe(targetNode, {attributes: true, attributeOldValue: true});
+}
 
 
 function setUpButtons() {
     // Screenshot functionality
-    $('#btn-screenshot').click(screenshotAndUpload);
+    const screenshotButton = document.getElementById('btn-screenshot');
+    screenshotButton.addEventListener('click', (e) => {
+        screenshotStreetview(e);
+    });
+    document.addEventListener('keyup', (e) => {
+        if (e.code === 'Space') {
+            console.log('spacebar pressed');
+            screenshotStreetview(e);
+        }
+    }, false);
+
 
     // No building button
-    $('#btn-no-building').click((e) => {
+    document.getElementById('btn-no-building').addEventListener('click', (e) => {
         e.preventDefault();
         
         const form = document.getElementById('building-submission-form');
@@ -187,7 +269,7 @@ function setUpButtons() {
         form.appendChild(no_building_input);
         try {
             const latest_view_data = getLatestViewData();
-            document.querySelector('#latest_view_data').value = JSON.stringify(latest_view_data);
+            document.getElementById('latest_view_data').value = JSON.stringify(latest_view_data);
         }
         catch (error) {
             console.error(error);
@@ -199,9 +281,10 @@ function setUpButtons() {
 
     // When user submits form, upload both current streetview and sat views
     // then continue with default behaviour
-    $('#btn-submit-vote').click(async (e) => {
+    document.getElementById('btn-submit-vote').addEventListener('click', async (e) => {
         e.preventDefault();
-        form = $('#building-submission-form')[0];
+
+        const form = document.getElementById('building-submission-form');
         
         // Check form inputs are valid
         if (!form.checkValidity()) {
@@ -213,22 +296,32 @@ function setUpButtons() {
             form.removeChild(tmpSubmit);
         }
         else {
-            // screenshot the streetview
-            await screenshotAndUpload(e);
-            // Set the latest view data
-            $('#latest_view_data').val(JSON.stringify(getLatestViewData()));
+            // Check if the user previously screenshotted a streetview
+            // If not, we'll save the current streetview now
+            const sv_uploaded = document.getElementById('sv_uploaded');
+            if (sv_uploaded.getAttribute('data-uploaded') !== 'true') {
+                console.log('No SV screenshots taken by user, will take one now.')
+                await screenshotStreetview(e);
+            }
+            // Set the latest view data in the form
+            const latest_view_data =  JSON.stringify(getLatestViewData());
+            document.getElementById('latest_view_data').value = latest_view_data;
             form.submit();
         }
     });
 }
 
+/**
+ * This saves the a screenshot of the satellite view to a hidden element.
+ * A mutation observer on that element will check if the new screenshot is 
+ * different from the previous value and upload it to the image store if it is.
+ */
 function satelliteTabScreenshotOnHide() {
     // The hide.bs.tab event fires when the tab is to be hidden
-    $('#nav-satellite-tab').on('hide.bs.tab', async () => {
-        // We save a screenshot of its current version to upload later
-        console.log('screenshoting satellite');
+    document.getElementById('nav-satellite-tab').addEventListener(
+      'hide.bs.tab', async () => {
         const dataUrl = await screenshot('satmap');
-        $('#sat_data').attr('data-url', dataUrl);
+        document.getElementById('sat_data').setAttribute('data-url', dataUrl);
     });
 }
 
@@ -239,4 +332,5 @@ $(document).ready(function() {
     setUpScrollHeightObserver();
     setUpButtons();
     satelliteTabScreenshotOnHide();
+    setUpSatelliteImageObserver();
 });

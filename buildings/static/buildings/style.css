@@ -19,15 +19,30 @@ body {
   max-width: 80%;
 }
 
+.container-fluid {
+  width: 90%;
+}
+
+.container-wide {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+
 @media(max-width: 1400px) {
   .container {
     max-width: 85%;
   }
 }
 
-@media(max-width: 768px) {
+@media(max-width: 868px) {
   .container {
     max-width: 90%;
+  }
+  .container-fluid {
+    width: 100%;
+    margin: 0 0;
+    padding: 0 0;
   }
 }
 
@@ -51,7 +66,7 @@ body {
   border-radius: 50%;
 }
 
-@media(min-width: 768px) {
+@media(min-width: 868px) {
   .dropdown-menu.show {
     right: -10px;
     top: 125%;
@@ -109,7 +124,7 @@ h1, h2, h3, h4, h5, h6, strong {
   border-radius: 10px;
 }
 
-@media(max-width: 768px) {
+@media(max-width: 868px) {
   .activity-tab-content {
     width: 100%;
     display: flex;
@@ -127,7 +142,7 @@ h1, h2, h3, h4, h5, h6, strong {
   justify-content: space-between;
 }
 
-@media(max-width: 768px) {
+@media(max-width: 868px) {
   .spread-apart-container {
     flex-direction: column;
   }
@@ -321,22 +336,71 @@ tr:hover .delete-row-icon {
 
 
 .btn-no-building {
+  white-space: nowrap;
   align-self: center;
 }
 .btn-screenshot {
+  white-space: nowrap;
   align-self: center;
+  margin-left: 1rem;
 }
+
+#screenshot-toast {
+  background: #31d161;
+  color: white;
+}
+
+.top-row-buttons {
+  display: flex;
+  flex-direction: row;
+}
+
+
 
 .building-info {
   width: 70%;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .building-info-col {
   display: flex;
   flex-direction: column;
+  margin-left: 2rem;
+  white-space: nowrap;
 }
+
+.building-nav-left {
+  margin-left: 4rem;
+}
+.building-nav-right {
+  margin-right: 4rem;
+}
+
+@media(max-width: 1303px) {
+  .building-info-col {
+    margin-left: 1rem;
+  }
+  .building-nav-left {
+    margin-left: 2rem;
+  }
+  .building-nav-right {
+    margin-right: 2rem;
+  }
+  .top-row-buttons {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-screenshot {
+    margin-left: 0;
+    margin-top: 0.25rem;
+  }
+}
+
+
+
 
 .survey-top-row {
   display: flex;
@@ -346,13 +410,7 @@ tr:hover .delete-row-icon {
   font-size: medium;
 }
 
-.container-fluid {
-  width: 90%;
-}
-.container-wide {
-  width: 100%;
-  margin-top: 0.5rem;
-}
+
 
 .btn-row {
   display: flex;
@@ -421,12 +479,7 @@ tr:hover .delete-row-icon {
   display: flex;
 }
 
-.building-nav-left {
-  margin-left: 4rem;
-}
-.building-nav-right {
-  margin-right: 4rem;
-}
+
 
 
 .user-stats-container {

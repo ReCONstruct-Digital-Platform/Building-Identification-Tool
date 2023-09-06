@@ -244,10 +244,10 @@ def survey_v1(request, eval_unit_id):
                 log.error(form.errors)
 
     # Fetch the latest view data for the current building if it exists
-    latest_view_data = EvalUnitLatestViewData.objects.get_latest_view_data(eval_unit.id, request.user.id)
+    latest_view_data_value = EvalUnitLatestViewData.objects.get_latest_view_data(eval_unit.id, request.user.id)
 
-    if latest_view_data:
-        latest_view_data = model_to_dict(latest_view_data, exclude=['id', 'user', 'date_added'])
+    if latest_view_data_value:
+        latest_view_data_value = model_to_dict(latest_view_data_value, exclude=['id', 'user', 'date_added'])
 
     # Get the next building 
     next_eval_unit_id = EvalUnit.objects.get_next_unit_to_survey(exclude_id = eval_unit.id, id_only=True)
@@ -258,7 +258,7 @@ def survey_v1(request, eval_unit_id):
         # TODO: Is this the best way to pass API keys to views?
         'key': settings.GOOGLE_MAPS_API_KEY,
         'eval_unit': eval_unit,
-        'latest_view_data': latest_view_data,
+        'latest_view_data_value': latest_view_data_value,
         'next_eval_unit_id': next_eval_unit_id,
         'form': form,
         'previous_no_building_vote': previous_no_building_vote

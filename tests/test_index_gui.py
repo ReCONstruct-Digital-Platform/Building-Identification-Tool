@@ -27,7 +27,7 @@ class FirefoxIndexGUITests(FirefoxSeleniumTestsBase):
     fixtures = ['user.json', 'evalunits.json', 'votes.json', 'survey_v1s.json']
 
 
-    def test_index_GUI_firefox_user_ranking(self):
+    def test_firefox_user_ranking(self):
         driver = self.driver
         wait = self.wait 
 
@@ -61,7 +61,7 @@ class ChromeIndexGUITests(ChromeSeleniumTestsBase):
     fixtures = ['user.json', 'evalunits.json', 'votes.json', 'survey_v1s.json']
 
 
-    def test_index_GUI_chrome_user_ranking(self):
+    def test_chrome_user_ranking(self):
         driver = self.driver
         wait = self.wait 
 
