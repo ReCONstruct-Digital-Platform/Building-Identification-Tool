@@ -20,6 +20,7 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
+from buildings.utils.contants import CUBF_TO_NAME_MAP
 from buildings.utils.utility import print_query_dict, verify_github_signature
 
 from .forms import CreateUserForm
@@ -261,7 +262,8 @@ def survey_v1(request, eval_unit_id):
         'latest_view_data_value': latest_view_data_value,
         'next_eval_unit_id': next_eval_unit_id,
         'form': form,
-        'previous_no_building_vote': previous_no_building_vote
+        'previous_no_building_vote': previous_no_building_vote,
+        'cubf_resolved': CUBF_TO_NAME_MAP[eval_unit.cubf]
     }
     return render(request, 'buildings/survey.html', context)
 
