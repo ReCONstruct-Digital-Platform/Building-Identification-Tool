@@ -219,7 +219,7 @@ function satelliteImageMutationCallback(mutationList, _) {
                   "Content-Type": "application/json",
                   "X-CSRFToken": getCookie('csrftoken'), // So django accepts the request
                 },
-                body: JSON.stringify(currentValue),
+                body: JSON.stringify({'satellite': currentValue})
             }).then((resp) => {
                 if (resp.status === 200) {
                     console.log('Satellite img uploaded successfully');
@@ -248,10 +248,12 @@ function setUpButtons() {
     screenshotButton.addEventListener('click', (e) => {
         screenshotStreetview(e);
     });
-    document.addEventListener('keyup', (e) => {
+    window.addEventListener('keyup', (e) => {
         if (e.code === 'Space') {
             console.log('spacebar pressed');
-            screenshotStreetview(e);
+            if (e.target.nodeName !== 'INPUT') {
+                screenshotStreetview(e);
+            }
         }
     }, false);
 

@@ -96,11 +96,67 @@ class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
         time.sleep(1)
         self.assertEqual(UploadImageJob.objects.count(), 1)
 
-        # Now, press the spacebar, it should do the same as above
+
+    def test_firefox_should_screenshot_streetview_on_spacebar(self):
+        driver = self.driver
+        wait = self.wait 
+
+        self._sign_in('/survey/v1/id1')
+
+        # In Selenium we have to wait for the element to appear, otherwise it will
+        # click too quickly on the tab, and no screenshot will be taken, since
+        # the satellite map will never have been visible. Waiting for the map outer
+        # element to be visible is not enough, so we wait on 'gmimap1' as well (red pin)
+        wait.until(EC.visibility_of_element_located((By.ID, 'nav-survey-tab')))
+        wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
+
+        # Click the survey tab
+        driver.find_element(By.ID, "nav-survey-tab").click()
+        time.sleep(1)
+        
+        # Has normally screenshotted satellite, so delete all jobs
+        UploadImageJob.objects.all().delete()
+        self.assertEqual(UploadImageJob.objects.count(), 0)
+
+        # Now, press the spacebar while entering text in an input
+        # it should do the same as above
         driver.find_element(By.XPATH, '//body').send_keys(Keys.SPACE)
         wait.until(EC.visibility_of_element_located((By.ID, 'screenshot-toast')))
         time.sleep(1)
-        self.assertEqual(UploadImageJob.objects.count(), 2)
+        self.assertEqual(UploadImageJob.objects.count(), 1)
+
+
+    def test_firefox_should_NOT_screenshot_streetview_on_spacebar_while_inputing(self):
+        driver = self.driver
+        wait = self.wait 
+
+        self._sign_in('/survey/v1/id1')
+
+        # In Selenium we have to wait for the element to appear, otherwise it will
+        # click too quickly on the tab, and no screenshot will be taken, since
+        # the satellite map will never have been visible. Waiting for the map outer
+        # element to be visible is not enough, so we wait on 'gmimap1' as well (red pin)
+        wait.until(EC.visibility_of_element_located((By.ID, 'nav-survey-tab')))
+        wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
+
+        # Click the survey tab
+        driver.find_element(By.ID, "nav-survey-tab").click()
+        time.sleep(1)
+
+        # Has normally screenshotted satellite, so delete all jobs
+        UploadImageJob.objects.all().delete()
+        time.sleep(1)
+        self.assertEqual(UploadImageJob.objects.count(), 0)
+
+        # Scroll down and select a text input, sending the space key to it
+        e = driver.find_element(By.ID, "id_site_obstructions_specify_container")
+        driver.execute_script("arguments[0].scrollIntoView();", e)
+        driver.execute_script("arguments[0].click();", e)
+        e = driver.find_element(By.ID, "id_site_obstructions_specify_value")
+        e.send_keys(Keys.SPACE)
+
+        time.sleep(1)
+        self.assertEqual(UploadImageJob.objects.count(), 0) 
 
 
     def test_firefox_should_show_q13_for_evalunit_2_but_not_for_1(self):
@@ -420,11 +476,68 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         time.sleep(1)
         self.assertEqual(UploadImageJob.objects.count(), 1)
 
-        # Now, press the spacebar, it should do the same as above
+
+
+    def test_chrome_should_screenshot_streetview_on_spacebar(self):
+        driver = self.driver
+        wait = self.wait 
+
+        self._sign_in('/survey/v1/id1')
+
+        # In Selenium we have to wait for the element to appear, otherwise it will
+        # click too quickly on the tab, and no screenshot will be taken, since
+        # the satellite map will never have been visible. Waiting for the map outer
+        # element to be visible is not enough, so we wait on 'gmimap1' as well (red pin)
+        wait.until(EC.visibility_of_element_located((By.ID, 'nav-survey-tab')))
+        wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
+
+        # Click the survey tab
+        driver.find_element(By.ID, "nav-survey-tab").click()
+        time.sleep(1)
+        
+        # Has normally screenshotted satellite, so delete all jobs
+        UploadImageJob.objects.all().delete()
+        time.sleep(1)
+        self.assertEqual(UploadImageJob.objects.count(), 0)
+
+        # Now, press the spacebar anywhere on the page
         driver.find_element(By.XPATH, '//body').send_keys(Keys.SPACE)
         wait.until(EC.visibility_of_element_located((By.ID, 'screenshot-toast')))
         time.sleep(1)
-        self.assertEqual(UploadImageJob.objects.count(), 2)
+        self.assertEqual(UploadImageJob.objects.count(), 1)
+
+
+    def test_chrome_should_NOT_screenshot_streetview_on_spacebar_while_inputing(self):
+        driver = self.driver
+        wait = self.wait 
+
+        self._sign_in('/survey/v1/id1')
+
+        # In Selenium we have to wait for the element to appear, otherwise it will
+        # click too quickly on the tab, and no screenshot will be taken, since
+        # the satellite map will never have been visible. Waiting for the map outer
+        # element to be visible is not enough, so we wait on 'gmimap1' as well (red pin)
+        wait.until(EC.visibility_of_element_located((By.ID, 'nav-survey-tab')))
+        wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
+
+        # Click the survey tab
+        driver.find_element(By.ID, "nav-survey-tab").click()
+        time.sleep(1)
+
+        # Has normally screenshotted satellite, so delete all jobs
+        UploadImageJob.objects.all().delete()
+        time.sleep(1)
+        self.assertEqual(UploadImageJob.objects.count(), 0)
+
+        # Scroll down and select a text input, sending the space key to it
+        e = driver.find_element(By.ID, "id_site_obstructions_specify_container")
+        driver.execute_script("arguments[0].scrollIntoView();", e)
+        driver.execute_script("arguments[0].click();", e)
+        e = driver.find_element(By.ID, "id_site_obstructions_specify_value")
+        e.send_keys(Keys.SPACE)
+
+        time.sleep(1)
+        self.assertEqual(UploadImageJob.objects.count(), 0) 
 
 
 

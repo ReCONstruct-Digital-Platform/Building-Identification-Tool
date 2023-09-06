@@ -19,15 +19,14 @@ log = logging.getLogger(__name__)
 # Modify or add new image sizes here
 IMAGE_SIZES = [('l', 1200), ('m', 700), ('s', 300)]
 
+# Each job can have multiple MB image data
+MAX_JOBS_LOADED = 10
 
 def get_pending_jobs():
-    return UploadImageJob.objects.filter(status=UploadImageJob.Status.PENDING).order_by('date_added')
+    return UploadImageJob.objects.filter(status=UploadImageJob.Status.PENDING).order_by('date_added')[:MAX_JOBS_LOADED]
 
 
 def process_job(job: UploadImageJob):
-    # Label the job as in progress
-    job.status = UploadImageJob.Status.IN_PROGRESS
-    job.save()
 
     # Metadata associated with the images
     # Upload date is already available from B2
@@ -49,12 +48,17 @@ def process_job(job: UploadImageJob):
     in_mem_file = None
 
     try:
-        for image_type in ['streetview', 'satellite']:
-            if data_uri := job.job_data[image_type]:
-                data = parse_data_uri(data_uri)
-                image = Image.open(io.BytesIO(data.data))
-                # Convert the image to RGB to save as JPG
-                image = image.convert('RGB')
+        for image_type in job.job_data.keys():
+
+            if image_type not in ['streetview', 'satellite']:
+                print(f'Unknown image type {image_type}! Skipping.')
+                continue
+            
+            data_uri = job.job_data[image_type]
+            data = parse_data_uri(data_uri)
+            image = Image.open(io.BytesIO(data.data))
+            # Convert the image to RGB to save as JPG
+            image = image.convert('RGB')
 
             uuid = UUIDs[image_type]
             log.debug(f'Screenshot {uuid}: Original {image_type} image size: {image.size}')
