@@ -91,6 +91,7 @@ class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
         # Click on the screenshot button, it should pop up a toast
         # and insert a new job for the Streetview image in the DB
         driver.find_element(By.ID, "btn-screenshot").click()
+
         wait.until(EC.visibility_of_element_located((By.ID, 'screenshot-toast')))
         time.sleep(1)
         self.assertEqual(UploadImageJob.objects.count(), 1)
@@ -409,7 +410,7 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         # (Presumably from other tests - so delete them here)
         # Assert no pending jobs in DB
         UploadImageJob.objects.all().delete()
-        time.sleep(2)
+        time.sleep(1)
         self.assertEqual(UploadImageJob.objects.count(), 0)
 
         # Click on the screenshot button, it should pop up a toast

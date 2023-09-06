@@ -37,6 +37,7 @@ class ChromeSeleniumTestsBase(CommonSeleniumTestsBase):
         chrome_svc = chrome.service.Service(log_output=os.devnull)
         chrome_driver = chrome.webdriver.WebDriver(service = chrome_svc, options=chrome_opts)
         chrome_driver.implicitly_wait(10)
+        chrome_driver.maximize_window() # To avoid layout problems
 
         cls.driver = chrome_driver
         cls.wait = WebDriverWait(chrome_driver, 10)
