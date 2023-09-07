@@ -204,11 +204,9 @@
           <div class="infobox-section">
             <em>Definition:</em>
             <p class="infobox-p">
-              A building has a <strong>simple footprint</strong> if its intersection with the ground plane is through
-              one or two simple geometric shapes of the same type
-              (one or two rectangles). A complex footprint consists of shapes that have more than four corners, they
-              could be freeform and irregular
-              shapes or sometimes, a composition of multiple shapes of different types.
+              A building has a <strong>simple footprint</strong> if its intersection with the ground is 
+              through one or two simple geometric shapes (one or two rectangles). A complex footprint can 
+              have many corners, irregular angles, or multiple shapes of different types.  
             </p>
           </div>
         </div>
@@ -236,9 +234,9 @@
           <div class="infobox-section">
             <em>Definition:</em>
             <p class="infobox-p">
-              A <strong>simple volumetric form</strong> is a regular volumetric form (rectangular volume, sphere), or
-              a combination of regular volumetric forms.
-              A complex volumetric form can be any irregular volumes, often consisting of free-flowing curves.
+              A <strong>simple form</strong> is a rectangular volume or a combination of a few rectangular 
+              volumes. A complex volumetric form can be any irregular volumes, often consisting of free-flowing 
+              curves, or of many rectangular volumes creating many angles. 
             </p>
           </div>
           <div class="modal-footer">
@@ -263,6 +261,7 @@
         </div>
         <div class="modal-body">
           Any storey above grade (above the surface of the ground) can be considered as a storey above-ground.
+          The basement is not considered a storey. 
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -285,7 +284,8 @@
           </div>
           <div class="modal-body">
             <p class="infobox-p">
-              A building is likely to have a basement if there are windows between the ground level and the first floor.  
+              Any floor semi or entirely submerged in the ground is a basement. A building is likely to have 
+              a basement if there are windows between the ground level and the first floor.  
             </p>
             <img class="infobox-img" width="500"
             src="{% static 'images\survey_info\q5\q5.jpg' %}  ">  
