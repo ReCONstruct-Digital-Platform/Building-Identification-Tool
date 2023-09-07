@@ -284,7 +284,11 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            A building is likely to have a basement if there are windows between the ground level and the first floor.    
+            <p class="infobox-p">
+              A building is likely to have a basement if there are windows between the ground level and the first floor.  
+            </p>
+            <img class="infobox-img" width="500"
+            src="{% static 'images\survey_info\q5\q5.jpg' %}  ">  
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -356,8 +360,12 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            Coming soon...
+            <p>Coming soon...
+            </p>
+            <img class="infobox-img" width="500"
+            src="{% static 'images\survey_info\q8\q8-01.jpg' %}  ">  
           </div>
+          
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
@@ -391,7 +399,7 @@
 
 
 
-    <!-- Exterior Cladding Question  -->
+    <!-- Glazing Question  -->
     <div class="modal fade" id="{{ form.window_wall_ratio.name }}" tabindex="-1"
       aria-labelledby="{{ form.window_wall_ratio.name }}_label" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
@@ -403,7 +411,10 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            Coming soon...
+            <p>The following diagram illustrates the proportions of glazing relative to the façade area.
+            </p> 
+            <img class="infobox-img" width="500"
+            src="{% static 'images\survey_info\q10-glazing\q10-Glazing.jpg' %}  ">  
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
