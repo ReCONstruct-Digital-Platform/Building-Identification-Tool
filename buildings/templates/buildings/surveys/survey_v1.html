@@ -233,15 +233,13 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <div>
-            <div class="infobox-section">
-              <em>Definition:</em>
-              <p class="infobox-p">
-                A <strong>simple volumetric form</strong> is a regular volumetric form (rectangular volume, sphere), or
-                a combination of regular volumetric forms.
-                A complex volumetric form can be any irregular volumes, often consisting of free-flowing curves.
-              </p>
-            </div>
+          <div class="infobox-section">
+            <em>Definition:</em>
+            <p class="infobox-p">
+              A <strong>simple volumetric form</strong> is a regular volumetric form (rectangular volume, sphere), or
+              a combination of regular volumetric forms.
+              A complex volumetric form can be any irregular volumes, often consisting of free-flowing curves.
+            </p>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -251,26 +249,27 @@
     </div>
   </div>
 
-    <!-- Number of Storeys Question  -->
-    <div class="modal fade" id="{{ form.num_storeys.name }}" tabindex="-1"
-      aria-labelledby="{{ form.num_storeys.name }}_label" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="{{ form.num_storeys.name }}_label">
-              Q{{form.field_ordering.num_storeys}}: Number of Storeys
-            </h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            Any storey above grade (above the surface of the ground) can be considered as a storey above-ground.
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          </div>
+
+  <!-- Number of Storeys Question  -->
+  <div class="modal fade" id="{{ form.num_storeys.name }}" tabindex="-1"
+    aria-labelledby="{{ form.num_storeys.name }}_label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="{{ form.num_storeys.name }}_label">
+            Q{{form.field_ordering.num_storeys}}: Number of Storeys
+          </h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Any storey above grade (above the surface of the ground) can be considered as a storey above-ground.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
+  </div>
 
 
     <!-- Basement Question  -->
