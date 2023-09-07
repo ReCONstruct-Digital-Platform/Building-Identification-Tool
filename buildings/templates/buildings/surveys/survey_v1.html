@@ -48,7 +48,7 @@
   </legend>
 
   {% with initial=form.site_obstructions.initial %}
-    {{ form.site_obstructions }}
+  {{ form.site_obstructions }}
   {% endwith %}
 </fieldset>
 
@@ -113,7 +113,8 @@
 
 
 <!-- Information Modals -->
-<div class="modal fade" id="{{ form.self_similar_cluster.name }}" tabindex="-1" aria-labelledby="{{ form.self_similar_cluster.name }}_label" aria-hidden="true">
+<div class="modal fade" id="{{ form.self_similar_cluster.name }}" tabindex="-1"
+  aria-labelledby="{{ form.self_similar_cluster.name }}_label" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
@@ -125,22 +126,24 @@
       <div class="modal-body">
         <div>
           <div class="infobox-section">
-            <em>Definition:</em> 
+            <em>Definition:</em>
             <p class="infobox-p">
-              A building is part of a <strong>self-similar cluster</strong> if it close to other buildings built at the same time, 
-              following the same construction methods, and using the same materials. 
+              A building is part of a <strong>self-similar cluster</strong> if it close to other buildings built at the
+              same time,
+              following the same construction methods, and using the same materials.
               Most of the time, they will seem virtually identical copies.
             </p>
           </div>
           <div class="infobox-section">
             <em>Importance:</em>
             <p class="infobox-p">
-              This is important for retrofits as a good candidate building part of a cluster creates economies of scale which 
+              This is important for retrofits as a good candidate building part of a cluster creates economies of scale
+              which
               makes retrofitting the whole cluster more attractive than retrofitting a single building.
             </p>
           </div>
           <div class="infobox-section">
-            <em>Note:</em> 
+            <em>Note:</em>
             <p class="infobox-p">
               Presence of the <span class="badge text-bg-info">Multiple Addresses</span> tag makes this more likely
               as the evaluation unit could contain multiple buildings.
@@ -152,8 +155,12 @@
               We can see from the streetview that there is an almost identical building to the right.
               The satellite view gives a bigger picture where wee see that there seems to be a 5 building cluster.
             </p>
-            <img class="infobox-img" width="600" src="{% static 'images/survey_info/q1_selfsimilar/selfsimilar_sv.jpg' %}" alt="A streetview of a building part of a self-similar cluster">
-            <img class="infobox-img" width="600" src="{% static 'images/survey_info/q1_selfsimilar/selfsimilar_sat.jpg' %}" alt="A satellite view of a building part of a self-similar cluster">
+            <img class="infobox-img" width="600"
+              src="{% static 'images/survey_info/q1_selfsimilar/selfsimilar_sv.jpg' %}"
+              alt="A streetview of a building part of a self-similar cluster">
+            <img class="infobox-img" width="600"
+              src="{% static 'images/survey_info/q1_selfsimilar/selfsimilar_sat.jpg' %}"
+              alt="A satellite view of a building part of a self-similar cluster">
           </div>
 
           <div class="infobox-section">
@@ -164,10 +171,14 @@
               Again, it is clear from the streetview image that there are multiple similar buildings.
               The satellite view shows a cluster of 4 (or 8) buildings.
             </p>
-            <img class="infobox-img" width="600" src="{% static 'images/survey_info/q1_selfsimilar/selfsimilar_sv_2.jpg' %}" alt="Another streetview of a building part of a self-similar cluster">
-            <img class="infobox-img" width="600" src="{% static 'images/survey_info/q1_selfsimilar/selfsimilar_sat_2.jpg' %}" alt="Another satellite view of a building part of a self-similar cluster"/>
+            <img class="infobox-img" width="600"
+              src="{% static 'images/survey_info/q1_selfsimilar/selfsimilar_sv_2.jpg' %}"
+              alt="Another streetview of a building part of a self-similar cluster">
+            <img class="infobox-img" width="600"
+              src="{% static 'images/survey_info/q1_selfsimilar/selfsimilar_sat_2.jpg' %}"
+              alt="Another satellite view of a building part of a self-similar cluster" />
           </div>
-          
+
         </div>
       </div>
       <div class="modal-footer">
@@ -178,7 +189,8 @@
 </div>
 
 <!-- Footprint Question Modal -->
-<div class="modal fade" id="{{ form.has_simple_footprint.name }}" tabindex="-1" aria-labelledby="{{ form.has_simple_footprint.name }}_label" aria-hidden="true">
+<div class="modal fade" id="{{ form.has_simple_footprint.name }}" tabindex="-1"
+  aria-labelledby="{{ form.has_simple_footprint.name }}_label" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
@@ -190,256 +202,280 @@
       <div class="modal-body">
         <div>
           <div class="infobox-section">
-            <em>Definition:</em> 
+            <em>Definition:</em>
             <p class="infobox-p">
-        A building has a <strong>simple footprint</strong> if its intersection with the ground plane is through one or two simple geometric shapes of the same type 
-        (one or two rectangles). A complex footprint consists of shapes that have more than four corners, they could be freeform and irregular 
-        shapes or sometimes, a composition of multiple shapes of different types.
-
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<!-- Simple Volume Question  -->
-<div class="modal fade" id="{{ form.has_simple_volume.name }}" tabindex="-1" aria-labelledby="{{ form.has_simple_volume.name }}_label" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="{{ form.has_simple_volume.name }}_label">
-          Q{{form.field_ordering.has_simple_volume}}: Volumetric Shape
-        </h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div>
-          <div class="infobox-section">
-            <em>Definition:</em> 
-            <p class="infobox-p">
-         A <strong>simple volumetric form</strong> is a regular volumetric form (rectangular volume, sphere), or a combination of regular volumetric forms. 
-         A complex volumetric form can be any irregular volumes, often consisting of free-flowing curves.    
-      
+              A building has a <strong>simple footprint</strong> if its intersection with the ground plane is through
+              one or two simple geometric shapes of the same type
+              (one or two rectangles). A complex footprint consists of shapes that have more than four corners, they
+              could be freeform and irregular
+              shapes or sometimes, a composition of multiple shapes of different types.
+            </p>
+          </div>
         </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 
-<!-- Number of Storeys Question  -->
-<div class="modal fade" id="{{ form.num_storeys.name }}" tabindex="-1" aria-labelledby="{{ form.num_storeys.name }}_label" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="{{ form.num_storeys.name }}_label">
-          Q{{form.field_ordering.num_storeys}}: Number of Storeys
-        </h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Any storey above grade (above the surface of the ground) can be considered as a storey above-ground.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<!-- Basement Question  -->
-<div class="modal fade" id="{{ form.has_basement.name }}" tabindex="-1" aria-labelledby="{{ form.has_basement.name }}_label" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="{{ form.has_basement.name }}_label">
-          Q{{form.field_ordering.has_basement}}: Basement
-        </h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Put your content here! You can use any type of tags here. See the code for the self-similar cluster modal for inspiration.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+  <!-- Simple Volume Question  -->
+  <div class="modal fade" id="{{ form.has_simple_volume.name }}" tabindex="-1"
+    aria-labelledby="{{ form.has_simple_volume.name }}_label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="{{ form.has_simple_volume.name }}_label">
+            Q{{form.field_ordering.has_simple_volume}}: Volumetric Shape
+          </h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div>
+            <div class="infobox-section">
+              <em>Definition:</em>
+              <p class="infobox-p">
+                A <strong>simple volumetric form</strong> is a regular volumetric form (rectangular volume, sphere), or
+                a combination of regular volumetric forms.
+                A complex volumetric form can be any irregular volumes, often consisting of free-flowing curves.
+              </p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-
-<!-- Site Obstructions Question  -->
-<div class="modal fade" id="{{ form.site_obstructions.name }}" tabindex="-1" aria-labelledby="{{ form.site_obstructions.name }}_label" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="{{ form.site_obstructions.name }}_label">
-          Q{{form.field_ordering.site_obstructions}}: Site Obstructions
-        </h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Put your content here! You can use any type of tags here. See the code for the self-similar cluster modal for inspiration.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    <!-- Number of Storeys Question  -->
+    <div class="modal fade" id="{{ form.num_storeys.name }}" tabindex="-1"
+      aria-labelledby="{{ form.num_storeys.name }}_label" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="{{ form.num_storeys.name }}_label">
+              Q{{form.field_ordering.num_storeys}}: Number of Storeys
+            </h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Any storey above grade (above the surface of the ground) can be considered as a storey above-ground.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
 
-<!-- Appendages Question  -->
-<div class="modal fade" id="{{ form.appendages.name }}" tabindex="-1" aria-labelledby="{{ form.appendages.name }}_label" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="{{ form.appendages.name }}_label">
-          Q{{form.field_ordering.appendages}}: Appendages
-        </h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Put your content here! You can use any type of tags here. See the code for the self-similar cluster modal for inspiration.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    <!-- Basement Question  -->
+    <div class="modal fade" id="{{ form.has_basement.name }}" tabindex="-1"
+      aria-labelledby="{{ form.has_basement.name }}_label" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="{{ form.has_basement.name }}_label">
+              Q{{form.field_ordering.has_basement}}: Basement
+            </h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Put your content here! You can use any type of tags here. See the code for the self-similar cluster modal
+            for inspiration.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
 
-<!-- Exterior Cladding Question  -->
-<div class="modal fade" id="{{ form.exterior_cladding.name }}" tabindex="-1" aria-labelledby="{{ form.exterior_cladding.name }}_label" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="{{ form.exterior_cladding.name }}_label">
-          Q{{form.field_ordering.exterior_cladding}}: Exterior Cladding
-        </h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Put your content here! You can use any type of tags here. See the code for the self-similar cluster modal for inspiration.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    <!-- Site Obstructions Question  -->
+    <div class="modal fade" id="{{ form.site_obstructions.name }}" tabindex="-1"
+      aria-labelledby="{{ form.site_obstructions.name }}_label" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="{{ form.site_obstructions.name }}_label">
+              Q{{form.field_ordering.site_obstructions}}: Site Obstructions
+            </h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Put your content here! You can use any type of tags here. See the code for the self-similar cluster modal
+            for inspiration.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
 
-<!-- Facade Condition Question  -->
-<div class="modal fade" id="{{ form.facade_condition.name }}" tabindex="-1" aria-labelledby="{{ form.facade_condition.name }}_label" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="{{ form.facade_condition.name }}_label">
-          Q{{form.field_ordering.facade_condition}}: Façade Condition
-        </h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Put your content here! You can use any type of tags here. See the code for the self-similar cluster modal for inspiration.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    <!-- Appendages Question  -->
+    <div class="modal fade" id="{{ form.appendages.name }}" tabindex="-1"
+      aria-labelledby="{{ form.appendages.name }}_label" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="{{ form.appendages.name }}_label">
+              Q{{form.field_ordering.appendages}}: Appendages
+            </h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Put your content here! You can use any type of tags here. See the code for the self-similar cluster modal
+            for inspiration.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
 
-
-<!-- Exterior Cladding Question  -->
-<div class="modal fade" id="{{ form.window_wall_ratio.name }}" tabindex="-1" aria-labelledby="{{ form.window_wall_ratio.name }}_label" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="{{ form.window_wall_ratio.name }}_label">
-          Q{{form.field_ordering.window_wall_ratio}}: Glazing Ratio
-        </h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Put your content here! You can use any type of tags here. See the code for the self-similar cluster modal for inspiration.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    <!-- Exterior Cladding Question  -->
+    <div class="modal fade" id="{{ form.exterior_cladding.name }}" tabindex="-1"
+      aria-labelledby="{{ form.exterior_cladding.name }}_label" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="{{ form.exterior_cladding.name }}_label">
+              Q{{form.field_ordering.exterior_cladding}}: Exterior Cladding
+            </h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Put your content here! You can use any type of tags here. See the code for the self-similar cluster modal
+            for inspiration.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
 
-<!-- Large or Irregular Windows Question  -->
-<div class="modal fade" id="{{ form.large_irregular_windows.name }}" tabindex="-1" aria-labelledby="{{ form.large_irregular_windows.name }}_label" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="{{ form.large_irregular_windows.name }}_label">
-          Q{{form.field_ordering.large_irregular_windows}}: Large or Irregular Windows
-        </h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Put your content here! You can use any type of tags here. See the code for the self-similar cluster modal for inspiration.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    <!-- Facade Condition Question  -->
+    <div class="modal fade" id="{{ form.facade_condition.name }}" tabindex="-1"
+      aria-labelledby="{{ form.facade_condition.name }}_label" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="{{ form.facade_condition.name }}_label">
+              Q{{form.field_ordering.facade_condition}}: Façade Condition
+            </h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Put your content here! You can use any type of tags here. See the code for the self-similar cluster modal
+            for inspiration.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
 
-<!-- Roof Geometry Question  -->
-<div class="modal fade" id="{{ form.roof_geometry.name }}" tabindex="-1" aria-labelledby="{{ form.roof_geometry.name }}_label" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="{{ form.roof_geometry.name }}_label">
-          Q{{form.field_ordering.roof_geometry}}: Roof Geometry
-        </h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Put your content here! You can use any type of tags here. See the code for the self-similar cluster modal for inspiration.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
 
-
-<!-- New or Renovates Question  -->
-<div class="modal fade" id="{{ form.roof_geometry.name }}" tabindex="-1" aria-labelledby="{{ form.roof_geometry.name }}_label" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="{{ form.roof_geometry.name }}_label">
-          Q{{form.field_ordering.roof_geometry}}: New or Renovated Buildings
-        </h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Put your content here! You can use any type of tags here. See the code for the self-similar cluster modal for inspiration.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    <!-- Exterior Cladding Question  -->
+    <div class="modal fade" id="{{ form.window_wall_ratio.name }}" tabindex="-1"
+      aria-labelledby="{{ form.window_wall_ratio.name }}_label" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="{{ form.window_wall_ratio.name }}_label">
+              Q{{form.field_ordering.window_wall_ratio}}: Glazing Ratio
+            </h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Put your content here! You can use any type of tags here. See the code for the self-similar cluster modal
+            for inspiration.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
 
+    <!-- Large or Irregular Windows Question  -->
+    <div class="modal fade" id="{{ form.large_irregular_windows.name }}" tabindex="-1"
+      aria-labelledby="{{ form.large_irregular_windows.name }}_label" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="{{ form.large_irregular_windows.name }}_label">
+              Q{{form.field_ordering.large_irregular_windows}}: Large or Irregular Windows
+            </h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Put your content here! You can use any type of tags here. See the code for the self-similar cluster modal
+            for inspiration.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Roof Geometry Question  -->
+    <div class="modal fade" id="{{ form.roof_geometry.name }}" tabindex="-1"
+      aria-labelledby="{{ form.roof_geometry.name }}_label" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="{{ form.roof_geometry.name }}_label">
+              Q{{form.field_ordering.roof_geometry}}: Roof Geometry
+            </h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Put your content here! You can use any type of tags here. See the code for the self-similar cluster modal
+            for inspiration.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- New or Renovates Question  -->
+    <div class="modal fade" id="{{ form.roof_geometry.name }}" tabindex="-1"
+      aria-labelledby="{{ form.roof_geometry.name }}_label" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="{{ form.roof_geometry.name }}_label">
+              Q{{form.field_ordering.roof_geometry}}: New or Renovated Buildings
+            </h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Put your content here! You can use any type of tags here. See the code for the self-similar cluster modal
+            for inspiration.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
