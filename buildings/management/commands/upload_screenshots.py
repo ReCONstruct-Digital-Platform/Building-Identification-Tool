@@ -110,6 +110,11 @@ def process_job(job: UploadImageJob):
 
 
 class Command(BaseCommand):
+    """
+    This management command is intended to run as an always-on task in PythonAnywhere.com
+    It loops forever, checking for pending image upload jobs in the database.
+    """
+
     help = "Check for pending image upload jobs in the DB and process them"
 
     def handle(self, *args, **options):

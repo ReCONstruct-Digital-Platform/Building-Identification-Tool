@@ -2,6 +2,7 @@
 notes/
 log/
 .vscode/
+output/
 
 **/__pycache__/
 *db.sqlite*
