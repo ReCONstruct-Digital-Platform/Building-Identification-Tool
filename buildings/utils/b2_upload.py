@@ -18,6 +18,7 @@ def get_b2_resource(endpoint, key_id, application_key):
                         aws_secret_access_key=application_key,  # Backblaze applicationKey
                         config=Config(signature_version='s3v4'))
 
+
 def get_b2_client(endpoint, keyID, applicationKey):
         b2_client = boto3.client(service_name='s3',
                                  endpoint_url=endpoint,                # Backblaze endpoint
@@ -25,6 +26,8 @@ def get_b2_client(endpoint, keyID, applicationKey):
                                  aws_secret_access_key=applicationKey) # Backblaze applicationKey
         return b2_client
 
+def get_client():
+    return get_b2_client(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW)
 
 def get_image_bucket():
     return get_b2_resource(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW).Bucket(B2_BUCKET_IMAGES)
@@ -36,7 +39,6 @@ def upload_image(fileobj, file_name, extra_args=None):
         file_name,
         ExtraArgs=extra_args
     )
-
 
 # Upload specified file into the specified bucket
 def upload_file(b2, fileobj, bucket, b2_path, extra_args=None):

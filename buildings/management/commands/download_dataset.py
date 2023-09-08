@@ -1,41 +1,44 @@
 import json
-import os
-import environ
-from pathlib import Path
-import csv
-import logging
-import traceback
 import IPython
+import logging
+import botocore
+import traceback
+from pathlib import Path
 from itertools import chain
+from buildings.utils.b2_upload import get_client
 
-import psycopg2
-import psycopg2.extras
-from time import sleep
-from pprint import pprint
-from functools import reduce
-from django.conf import settings
-from uuid_extensions import uuid7str
-from buildings.models.models import EvalUnit, EvalUnitSatelliteImage, EvalUnitStreetViewImage, UploadImageJob, User
+from buildings.models.models import EvalUnitSatelliteImage, EvalUnitStreetViewImage
 
 from django.core.management.base import BaseCommand
 
-from config.settings import BASE_DIR
-DEFAULT_OUT = BASE_DIR / 'output'
+from config.settings import B2_BUCKET_IMAGES, BASE_DIR
+DEFAULT_OUT = BASE_DIR / 'output' / 'img_dataset'
 
 log = logging.getLogger(__name__)
 
+B2_CLIENT = get_client()
 
 
 class Command(BaseCommand):
     help = "Download the screenshot and survey dataset."
 
     def add_arguments(self, parser):
-        parser.add_argument("output_dir", nargs='?', default=DEFAULT_OUT, type=Path)
+        parser.add_argument("--download-images", action="store_true", default=False)
+        parser.add_argument("--output-dir", nargs='?', default=DEFAULT_OUT, type=Path)
 
     def handle(self, *args, **options):
 
         output_dir: Path = options['output_dir']
         output_dir.mkdir(exist_ok=True, parents=True)
+        
+        # Create all directories for images
+        if options['download_images']: 
+            sv_images_dir = output_dir / 'sv'
+            sat_images_dir = output_dir / 'sat'
+            for sz in ['s', 'm', 'l']:
+                Path(sv_images_dir / sz).mkdir(exist_ok=True, parents=True)
+                Path(sat_images_dir / sz).mkdir(exist_ok=True, parents=True)
+
 
         sv_dataset = {}
         sat_dataset = {}
@@ -44,6 +47,8 @@ class Command(BaseCommand):
         all_images = chain(EvalUnitStreetViewImage.objects.iterator(), EvalUnitSatelliteImage.objects.iterator())
         
         for img in all_images:
+
+            img_type = 'streetview' if isinstance(img, EvalUnitStreetViewImage) else 'satellite'
 
             eval_unit = img.eval_unit
             survey_votes = eval_unit.vote_set.filter(surveyv1__isnull = False)
@@ -54,6 +59,23 @@ class Command(BaseCommand):
             if len(survey_votes) == 0:
                 log.warning(f'No vote associated with img {img.uuid} on unit {img.eval_unit}')
                 continue
+            
+            if options['download_images']:
+                img_dir = sv_images_dir if isinstance(img, EvalUnitStreetViewImage) else sat_images_dir
+
+                for sz in ['s', 'm', 'l']:
+                    file_name = f'{img_dir}/{sz}/{img.uuid}.jpg'
+                    key = f'screenshots/{img_type}/{sz}/{img.uuid}.jpg'
+
+                    try:
+                        with open(file_name, 'wb') as outfile:
+                            B2_CLIENT.download_fileobj(B2_BUCKET_IMAGES, key, outfile)
+                    except botocore.exceptions.ClientError as e:
+                        log.error(e)
+                    except:
+                        log.error(traceback.format_exc())
+                        log.error(f'Could not download {key}')
+                        continue
             
             survey = survey_votes.first().surveyv1
 
@@ -68,7 +90,7 @@ class Command(BaseCommand):
                 # add the survey answer to the img data
                 img_data[field] = value
 
-            if isinstance(img, EvalUnitStreetViewImage):
+            if img_type == 'streetview':
                 # Add the iamge data to the dataset
                 sv_dataset[img.uuid] = img_data
             else:
