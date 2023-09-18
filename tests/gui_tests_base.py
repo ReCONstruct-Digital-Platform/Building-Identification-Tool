@@ -43,7 +43,7 @@ class ChromeSeleniumTestsBase(CommonSeleniumTestsBase):
         cls.wait = WebDriverWait(chrome_driver, 10)
 
 
-    def _fill_and_submit_form(self, q13=False):
+    def _fill_and_submit_form(self):
         driver = self.driver
         wait = self.wait
 
@@ -105,10 +105,9 @@ class ChromeSeleniumTestsBase(CommonSeleniumTestsBase):
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
 
-        if q13:
-            e = driver.find_element(By.ID, "id_new_or_renovated_2")
-            driver.execute_script("arguments[0].scrollIntoView();", e)
-            driver.execute_script("arguments[0].click();", e)
+        e = driver.find_element(By.ID, "id_new_or_renovated_0")
+        driver.execute_script("arguments[0].scrollIntoView();", e)
+        driver.execute_script("arguments[0].click();", e)
 
         # Submit the form
         e = driver.find_element(By.ID, "btn-submit-vote")
@@ -138,7 +137,7 @@ class FirefoxSeleniumTestsBase(CommonSeleniumTestsBase):
         cls.wait = WebDriverWait(firefox_driver, 10)
 
 
-    def _fill_and_submit_form(self, q13=False):
+    def _fill_and_submit_form(self):
         """
         On a survey page, fills in a form and submits
         """
@@ -160,9 +159,7 @@ class FirefoxSeleniumTestsBase(CommonSeleniumTestsBase):
         self.driver.find_element(By.ID, "id_window_wall_ratio_2").click()
         self.driver.find_element(By.ID, "id_large_irregular_windows_0").click()
         self.driver.find_element(By.ID, "id_roof_geometry_3").click()
-
-        if q13:
-            self.driver.find_element(By.ID, "id_new_or_renovated_2").click()
+        self.driver.find_element(By.ID, "id_new_or_renovated_0").click()
 
         # Submit the form
         self.driver.find_element(By.ID, "btn-submit-vote").click()

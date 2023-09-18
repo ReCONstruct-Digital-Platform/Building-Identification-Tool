@@ -43,7 +43,7 @@ class FirefoxIndexGUITests(FirefoxSeleniumTestsBase):
         # Make user2 submit a vote
         driver.get(f"{self.live_server_url}/survey/v1/id2")
 
-        self._fill_and_submit_form(q13=True)
+        self._fill_and_submit_form()
         # Return home and verify that user2 now has more votes that 1
         driver.get(f"{self.live_server_url}/")
         top_users = driver.find_elements(By.XPATH, "//div[@id='leaderboard']/ul[@class='list-group']/li/div/div[@class='vote-user']/strong")
@@ -78,7 +78,7 @@ class ChromeIndexGUITests(ChromeSeleniumTestsBase):
         # Make user2 submit a vote
         driver.get(f"{self.live_server_url}/survey/v1/id2")
 
-        self._fill_and_submit_form(q13=True)
+        self._fill_and_submit_form()
         # Return home and verify that user2 now has more votes that 1
         driver.get(f"{self.live_server_url}/")
 

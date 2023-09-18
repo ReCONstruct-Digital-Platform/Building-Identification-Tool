@@ -1,0 +1,23 @@
+{# Non required version of multi-checkbox select #}
+{% with id=widget.attrs.id %}
+<div id="{{ id }}" class="{{ widget.attrs.class }}" >
+  {% for _, options, _ in widget.optgroups %}
+    {% for option in options %}
+        <label>
+          <input id="{{ option.attrs.id }}" class="me-1" type="{{ option.type }}" name="{{ option.name }}" 
+          value="{{ option.value|stringformat:'s' }}" 
+          {% if option.value in widget.initial %} checked{% endif %}>{{ option.label }}
+        </label>
+    {% endfor %}
+  {% endfor %}
+  {% if widget.has_specify %}
+  <div id="{{ id }}_specify_container" class = "specify">
+    <label onclick="activateSpecifyEntryField('{{ id }}_specify');" >
+      <input id = "{{ id }}_specify" type="{{ widget.input_type }}" class = "me-1" name="{{ widget.name }}" 
+      {% if 'on' in widget.initial %} checked{% endif %}>Other (specify):</label>
+    <input class="ms-1" id="{{ id }}_specify_value" type="text" name="{{ widget.name }}" 
+      {% if 'on' in widget.initial %} value="{{ widget.initial|last }}" {% else %} disabled{% endif %}/>
+  </div>
+  {% endif %}
+</div>
+{% endwith %}
