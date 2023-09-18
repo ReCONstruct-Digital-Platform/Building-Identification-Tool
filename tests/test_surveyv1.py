@@ -23,9 +23,9 @@ class MyTests(TestCase):
             "exterior_cladding": ['concrete'],
             "facade_condition": 'true',
             "window_wall_ratio": 'unsure',
-            "large_irregular_windows": 'False',
+            "large_irregular_windows": ['very_large_windows'],
             "roof_geometry": 'flat',
-            "new_or_renovated": '',
+            "new_or_renovated": 'recently_renovated',
         }
 
     def test_survey_v1_cleaning(self):
@@ -37,14 +37,14 @@ class MyTests(TestCase):
             "has_simple_volume": False,
             "num_storeys": 5,
             "has_basement": None,
-            "site_obstructions": ['trees_or_landscaping', 'buildings', 'on', 'specified'],
+            "site_obstructions": ['trees_or_landscaping', 'buildings', 'specified'],
             "appendages": ['balconies', 'porches_stoops'],
             "exterior_cladding": ['concrete'],
             "facade_condition": True,
             "window_wall_ratio": None,
-            "large_irregular_windows": False,
+            "large_irregular_windows": ['very_large_windows'],
             "roof_geometry": 'flat',
-            "new_or_renovated": None,
+            "new_or_renovated": 'recently_renovated',
         })
 
     def test_form_post_and_initial_fill(self):
@@ -69,12 +69,12 @@ class MyTests(TestCase):
             "has_simple_volume": False,
             "num_storeys": 5,
             "has_basement": None,
-            "site_obstructions": ['trees_or_landscaping', 'buildings', 'on', 'specified'],
+            "site_obstructions": ['trees_or_landscaping', 'buildings', 'specified'],
             "appendages": ['balconies', 'porches_stoops'],
             "exterior_cladding": ['concrete'],
             "facade_condition": True,
             "window_wall_ratio": None,
-            "large_irregular_windows": False,
+            "large_irregular_windows": ['very_large_windows'],
             "roof_geometry": 'flat',
-            "new_or_renovated": None,   
+            "new_or_renovated": 'recently_renovated',   
         })

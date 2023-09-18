@@ -271,18 +271,25 @@ function findPanorama(svService, latestViewData, panoRequest, evalUnitCoord) {
     }
     // Check if we were doing a radius search 
     else if (panoRequest.radius) {
+      
       var radius = panoRequest.radius
-      //Handle other statuses here
-      if (radius > 200) {
+
+      if (radius >= 200) {
         console.log(`Status ${status}: Could not find panorama within ${radius}m! Giving up.`);
         elem = document.createElement('div');
-        elem.innerText = "Could not find Panorama for location";
+        elem.innerText = `Could not find panorama within ${radius}m.`;
         document.getElementById("streetview").appendChild(elem);
         return;
       }
       else {
-        console.log(`Status ${status}: could not find panorama within ${radius}m, trying ${radius+50}m.`)
-        panoRequest.radius += 50;
+        if (panoRequest.radius < 100) {
+          panoRequest.radius += 25;
+        }
+        else {
+          panoRequest.radius += 50;
+        }
+        console.log(`Status ${status}: could not find panorama within ${radius}m, trying ${panoRequest.radius}m.`);
+
         return findPanorama(svService, latestViewData, panoRequest, evalUnitCoord);
       }
     }
@@ -293,7 +300,7 @@ function findPanorama(svService, latestViewData, panoRequest, evalUnitCoord) {
       panoRequest = {
         location: evalUnitCoord,
         preference: google.maps.StreetViewPreference.BEST,
-        radius: 50,
+        radius: 25,
         source: google.maps.StreetViewSource.OUTDOOR
       };
       return findPanorama(svService, latestViewData, panoRequest, evalUnitCoord);
@@ -333,7 +340,7 @@ function initMaps() {
     panoRequest = {
       location: evalUnitCoord,
       preference: google.maps.StreetViewPreference.BEST,
-      radius: 50,
+      radius: 25,
       source: google.maps.StreetViewSource.OUTDOOR
     };
   }

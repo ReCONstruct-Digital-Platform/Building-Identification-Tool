@@ -159,36 +159,6 @@ class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
         self.assertEqual(UploadImageJob.objects.count(), 0) 
 
 
-    def test_firefox_should_show_q13_for_evalunit_2_but_not_for_1(self):
-        driver = self.driver
-        wait = self.wait 
-
-        self._sign_in('/survey/v1/id1')
-
-        # In Selenium we have to wait for the element to appear, otherwise it will
-        # click too quickly on the tab, and no screenshot will be taken, since
-        # the satellite map will never have been visible. Waiting for the map outer
-        # element to be visible is not enough, so we wait on 'gmimap1' as well (red pin)
-        wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))   
-
-        # Click the survey tab
-        driver.find_element(By.ID, "nav-survey-tab").click()
-
-        questions = driver.find_elements(By.CSS_SELECTOR, '.q-container')
-
-        # Make sure there are 12 questions
-        self.assertEqual(len(questions), 12)
-
-        driver.get(f"{self.live_server_url}/survey/v1/id2")
-        wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))   
-
-        # Click the survey tab
-        driver.find_element(By.ID, "nav-survey-tab").click()
-        questions = driver.find_elements(By.CSS_SELECTOR, '.q-container')
-
-        # Make sure there are 12 questions
-        self.assertEqual(len(questions), 13)
-
 
     def test_firefox_should_submit_successfully_vanilla(self):
         driver = self.driver
@@ -206,7 +176,7 @@ class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
         wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id2"))
 
         # Fill in and submit the form
-        self._fill_and_submit_form(q13=True)
+        self._fill_and_submit_form()
 
         # Make sure we get redirected to the next eval unit
         wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id1"))
@@ -256,6 +226,7 @@ class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
         driver.find_element(By.ID, "id_window_wall_ratio_2").click()
         driver.find_element(By.ID, "id_large_irregular_windows_0").click()
         driver.find_element(By.ID, "id_roof_geometry_3").click()
+        driver.find_element(By.ID, "id_new_or_renovated_0").click()
 
         # Submit the form
         driver.find_element(By.ID, "btn-submit-vote").click()
@@ -382,6 +353,7 @@ class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
         driver.find_element(By.ID, "id_window_wall_ratio_2").click()
         driver.find_element(By.ID, "id_large_irregular_windows_0").click()
         driver.find_element(By.ID, "id_roof_geometry_3").click()
+        driver.find_element(By.ID, "id_new_or_renovated_0").click()
 
         # Submit the form - should not work
         driver.find_element(By.ID, "btn-submit-vote").click()
@@ -541,38 +513,6 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
 
 
 
-    def test_chrome_should_show_q13_for_evalunit_2_but_not_for_1(self):
-        driver = self.driver
-        wait = self.wait 
-
-        self._sign_in('/survey/v1/id1')
-
-        # In Selenium we have to wait for the element to appear, otherwise it will
-        # click too quickly on the tab, and no screenshot will be taken, since
-        # the satellite map will never have been visible. Waiting for the map outer
-        # element to be visible is not enough, so we wait on 'gmimap1' as well (red pin)
-        wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))   
-
-        # Click the survey tab
-        driver.find_element(By.ID, "nav-survey-tab").click()
-
-        questions = driver.find_elements(By.CSS_SELECTOR, '.q-container')
-
-        # Make sure there are 12 questions
-        self.assertEqual(len(questions), 12)
-
-        driver.get(f"{self.live_server_url}/survey/v1/id2")
-        wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))   
-
-        # Click the survey tab
-        driver.find_element(By.ID, "nav-survey-tab").click()
-        questions = driver.find_elements(By.CSS_SELECTOR, '.q-container')
-
-        # Make sure there are 12 questions
-        self.assertEqual(len(questions), 13)
-
-
-
     def test_survey_chrome_GUI_should_submit_successfully_vanilla(self):
         driver = self.driver
         wait = self.wait 
@@ -588,7 +528,7 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         # Make sure we get redirected to the next eval unit
         wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id2"))
 
-        self._fill_and_submit_form(q13=True)
+        self._fill_and_submit_form()
 
         # We get redirected back to the first evalunit
         # TODO: Change if we add more eval units to these test cases in the future
@@ -669,6 +609,10 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         driver.execute_script("arguments[0].click();", e)
         e = driver.find_element(By.ID, "id_roof_geometry_specify_value")
         driver.execute_script("arguments[0].value = arguments[1];", e, 'roof type')
+
+        e = driver.find_element(By.ID, "id_new_or_renovated_0")
+        driver.execute_script("arguments[0].scrollIntoView();", e)
+        driver.execute_script("arguments[0].click();", e)
 
         # Submit the form
         e = driver.find_element(By.ID, "btn-submit-vote")
@@ -832,6 +776,10 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         driver.execute_script("arguments[0].click();", e)
         e = driver.find_element(By.ID, "id_roof_geometry_specify_value")
         driver.execute_script("arguments[0].value = arguments[1];", e, 'roof type')
+
+        e = driver.find_element(By.ID, "id_new_or_renovated_0")
+        driver.execute_script("arguments[0].scrollIntoView();", e)
+        driver.execute_script("arguments[0].click();", e)
 
         # Submit the form
         e = driver.find_element(By.ID, "btn-submit-vote")

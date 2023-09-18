@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 from buildings.models.models import EvalUnit, Vote
 
-from buildings.widgets import RadioSelect, NumberOrUnsure, CheckboxRequiredSelectMultiple, RadioWithSpecify
+from buildings.widgets import CheckboxSelectMultipleSpecify, RadioSelect, NumberOrUnsure, CheckboxSelectMultipleSpecifyRequired, RadioWithSpecify
 
 # The first element is the actual value
 # forms will pass it as a string nack to the backend
@@ -23,13 +23,11 @@ YES_NO_UNSURE = [
     (None, "Unsure"),
 ]
 SITE_OBSTRUCTIONS = [
-    ("no_obstructions", "No significant obstructions"),
     ("trees_or_landscaping", "Important trees or landscaping"),
     ("buildings", "Buildings"),
     ("overhead_wires", "Overhead wires, incl. those blocking general access to site"),
 ]
 APPENDAGES = [
-    ("none", "No significant appendages"),
     ("canopies_eaves", "Roof overhangs/eaves"),
     ("balconies", "Balconies"),
     ("porches_stoops", "Porches/stoops"),
@@ -53,6 +51,7 @@ ROOF_GEOMETRIES = [
     ("complex", "Complex"),
     ("unsure", "Unsure"),
 ]
+
 # TODO: We might re-use this question for expert users at a later time
 STRUCTURE_TYPES = [
     ("wood_frame_light_gauge_steel", "Wood frame or light gauge steel"),
@@ -62,6 +61,27 @@ STRUCTURE_TYPES = [
     ("stone_masonry", "Load-bearing stone masonry"),
     ("unsure", "Unsure"),
 ]
+WINDOWS = [
+    ("very_large_windows", "Very large"),
+    ("irregular_windows", "Irregularly shaped"),
+]
+NEW_OR_RENOVATED = [
+    ("newly_built", "Newly built"),
+    ("recently_renovated", "Recently renovated"),
+    ("no", "No"),
+]
+
+
+class JSONFieldForSpecify(models.JSONField):
+    """Field that holds an array of values, including user specified ones.
+    Remove the "on" value that gets inserted when users specify a value
+    """
+    def to_python(self, value):
+        super().to_python(value)
+        # Return an empty list if no input was given.
+        if "on" in value:
+            value.remove("on")
+        return value
 
 
 class BaseSurvey(models.Model):
@@ -81,15 +101,15 @@ class SurveyV1(BaseSurvey):
     has_simple_volume = models.BooleanField()
     num_storeys = models.IntegerField(blank=True, null=True)
     has_basement = models.BooleanField(blank=True, null=True)
-    site_obstructions = models.JSONField() # checkbox multiple w specify
-    appendages = models.JSONField() # checkbox multiple w specify
-    exterior_cladding = models.JSONField() # checkbox multiple w specify
+    site_obstructions = JSONFieldForSpecify(blank=True, null=True) # checkbox multiple w specify not required
+    appendages = JSONFieldForSpecify(blank=True, null=True) # checkbox multiple w specify not required
+    exterior_cladding = JSONFieldForSpecify() # checkbox multiple w specify
     facade_condition = models.BooleanField(blank=True, null=True) # radio
     window_wall_ratio = models.BooleanField(blank=True, null=True) # radio
-    large_irregular_windows = models.BooleanField(blank=True, null=True) # radio
+    large_irregular_windows = models.JSONField(blank=True, null=True) # checkbox multiple not required
     roof_geometry = models.TextField() # radio w specify 
     # structure_type = models.TextField() # radio w specify 
-    new_or_renovated = models.BooleanField(blank=True, null=True) # radio
+    new_or_renovated = models.TextField(blank=True, null=True) # radio
 
 
  
@@ -115,7 +135,7 @@ class SurveyV1Form(ModelForm):
         "window_wall_ratio": 10,
         "large_irregular_windows": 11,
         "roof_geometry": 12,
-        "new_or_renovated": 13 
+        "new_or_renovated": 13,
     }
 
     def __init__(self, *data, **kwargs):
@@ -147,28 +167,28 @@ class SurveyV1Form(ModelForm):
             "has_simple_volume": RadioSelect(choices=YES_NO, attrs={"class": "survey-1col"}),
             "num_storeys": NumberOrUnsure(attrs={"class": "survey-1col"}),
             "has_basement": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),
-            "site_obstructions": CheckboxRequiredSelectMultiple(choices=SITE_OBSTRUCTIONS, has_specify=True, attrs={"class": "survey-1col"}),
-            "appendages": CheckboxRequiredSelectMultiple(choices=APPENDAGES, has_specify=True, attrs={"class": "survey-1col"}),
-            "exterior_cladding": CheckboxRequiredSelectMultiple(choices=FACADE_MATERIALS, has_specify=True, attrs={"class": "survey-3col"}),
+            "site_obstructions": CheckboxSelectMultipleSpecify(choices=SITE_OBSTRUCTIONS, has_specify=True, attrs={"class": "survey-1col"}),
+            "appendages": CheckboxSelectMultipleSpecify(choices=APPENDAGES, has_specify=True, attrs={"class": "survey-1col"}),
+            "exterior_cladding": CheckboxSelectMultipleSpecifyRequired(choices=FACADE_MATERIALS, has_specify=True, attrs={"class": "survey-3col"}),
             "facade_condition": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),
             "window_wall_ratio": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),
-            "large_irregular_windows": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),
+            "large_irregular_windows": CheckboxSelectMultipleSpecify(choices=WINDOWS, attrs={"class": "survey-1col"}),
             "roof_geometry": RadioWithSpecify(choices=ROOF_GEOMETRIES, attrs={"class": "survey-3col"}),
-            "new_or_renovated": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),
+            "new_or_renovated": RadioSelect(choices=NEW_OR_RENOVATED, attrs={"class": "survey-1col"}),
         }
         help_texts = {
             "self_similar_cluster": _("Does the building appear part of a self-similar cluster?"),
             "has_simple_footprint": _("Does the building have a simple footprint?"),
             "has_simple_volume": _("Does the building have a simple volumetric form?"),
             "num_storeys": _("How many storeys above-ground does the building have?"),
-            "has_basement": _("Does the building have a basement?"),
-            "site_obstructions": _("Are there obstructions to machine access around the building (within 3m or less)? Select all that apply."),
-            "appendages": _("Are there significant appendages to the building faces? Select all that apply."),
-            "exterior_cladding": _("What type of exterior cladding does the building appear to have? Select all that apply."),
-            "facade_condition": _("Are the building façades in poor condition and in need of replacement?"),
-            "window_wall_ratio": _("Does glazing make up more than 40% of the total area of all visible façades?"),
+            "has_basement": _("Does the building appear to have a basement?"),
+            "site_obstructions": _("Select any and all obstructions to machine access around the building."),
+            "appendages": _("Select any and all significant appendages to the building faces."),
+            "exterior_cladding": _("Select all types of exterior cladding does the building appear to have."),
+            "facade_condition": _("Are the façades in poor condition and in need of replacement?"),
+            "window_wall_ratio": _("Does glazing make up more than 40% of the total visible façade area?"),
             "large_irregular_windows": _("Are there very large and/or irregularly shaped windows?"),
             "roof_geometry": _("What best describes the roof geometry?"),
-            "new_or_renovated": _("Does this building look new and/or recently renovated?"),
+            "new_or_renovated": _("Does the building look newly built or recently renovated?"),
         }
 
