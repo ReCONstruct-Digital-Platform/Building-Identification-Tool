@@ -266,7 +266,8 @@
         <div class="modal-body">
           <div class="infobox-section">
             <em>Definition:</em>
-            <p>Any storey (floor) above the surface of the ground is a storey above-ground.
+            <p class="infobox-p">
+              Any storey (floor) above the surface of the ground is a storey above-ground.
               The basement is not considered a storey.
             </p>  
           </div>
@@ -327,8 +328,7 @@
                 <p class="infobox-p">
                   Please select any <strong>potential barriers</strong> that would hinder a crane's access to the 
                   building façade, such as: power lines or very large/old trees within 3m of the building, 
-                  or another building less than 3m away. Row homes or other buildings sharing walls with the 
-                  building in question do not count as obstructions.
+                  or another building less than 3m away. 
                 </p>
               </div>
             </div>
@@ -336,7 +336,7 @@
               <em>Relevance:</em>
               <p class="infobox-p">
                 Common retrofit approaches include installing panel solutions by crane, therefore obstructions 
-                may create challenges in the installation process. 
+                may create challenges in the installation process and even make a panelized retrofit infeasible.
               </p>
             </div>
           </div>
@@ -370,10 +370,18 @@
           <div class="infobox-section">
             <em>Relevance:</em>
             <p class="infobox-p">
-              Extruding features on the building increase the complexity of installing panelized retrofit solutions. 
-              In addition, the anchoring structure that connects balconies to the building structure is often a major cause 
-              of <a href="https://passipedia.org/basics/building_physics_-_basics/thermal_bridges/thermal_bridge_definition">thermal bridging</a>. The anchoring structure creates a direct link between the interior and the exterior environment, 
-              enabling heat transfer, which implies that the building is likely to be less energy efficient.  
+              Appendages increase the complexity of doing panelized retrofits, as they will have to be removed in most cases.
+              Regarding balconies, they are often a major cause of 
+              <a href="https://passipedia.org/basics/building_physics_-_basics/thermal_bridges/thermal_bridge_definition">
+                thermal bridging </a> which leads to heat loss and energy inefficiency.
+            </p>
+          </div>
+          <div lass="infobox-section">
+            <em>Note:</em>
+             <p class="infobox-p">
+              Considering most people are attached to their balconies and they have to be removed for panelized retrofits, they
+              could be a source of conflict and work against the project starting. Balconies can always be added back over the panels,
+              but at a higher project cost.
             </p>
           </div>
           </div>
@@ -443,7 +451,8 @@
               <em>Relevance:</em>
               <p class="infobox-p">
                 Buildings with façades in poor condition are already in need of renovation at which point a 
-                panelized retrofit can be done at little extra cost, and added benefits.
+                panelized retrofit can be done at little extra cost, and provide additional benefits. We call these 
+                "anyway" retrofits.
               </p>
             </div>
           </div>
@@ -471,15 +480,25 @@
             <div class="infobox-section">
               <p class="infobox-p">
                 The following diagram illustrates proportions of glazing (fenestration) relative to the façade area.
+              </p>
+            </div>
+            <div class="infobox-section">
+              <p class="infobox-p">
+                <em>Relevance:</em>
+                A large glazing area is synonymous with large heating losses in a lot of cases, so targeting these buildings
+                for panelized retrofits makes sense. Windows are most often replaced in a panelized retrofit, where they can 
+                be ugraded to more energy efficient models.
               </p> 
+            </div>
+            <div class="infobox-section">
               <p class="infobox-p">
                 <em>Note:</em>
                 Please check all visible façades to answer this question. 
               </p> 
-            <img class="infobox-img img-fluid" 
-              loading="lazy" 
-              src="{% static 'images\survey_info\q10-glazing\q10-Glazing.jpg' %}">  
-          </div>   
+              <img class="infobox-img img-fluid" 
+                loading="lazy" 
+                src="{% static 'images\survey_info\q10-glazing\q10-Glazing.jpg' %}">  
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -514,12 +533,13 @@
             <div class="infobox-section">
               <em>Relevance:</em>
               <p class="infobox-p">
-                Very large windows contribute significantly to heat and cooling loss, therefore buildings with 
-                large windows are likely to be energy inefficient, and therefore good candidates for retrofits. 
+                Very large windows contribute significantly to heating and cooling loss, therefore buildings with 
+                large windows are likely to be energy inefficient, and therefore good candidates for retrofits.
               </p>
               <p class="infobox-p">
                 Irregularly shaped windows make a prefabricated panelized retrofit more difficult as panels need to 
-                be cut to shape.
+                be cut to shape. Additionally, they make the replication and scaling up of solutions infeasible since
+                panels must be addapted to the specific window. 
               </p>
             </div>
             <div class="infobox-section">
@@ -560,7 +580,7 @@
               </p>
             </div>
             <div class="infobox-section">
-              <em>Relevance to Retrofits:</em>
+              <em>Relevance:</em>
               <p class="infobox-p">
                 Complex roof geometries increase the complexity of retrofit strategies in their analysis, design and 
                 installation processes.  
@@ -581,7 +601,7 @@
 
 
     <!-- Q13 New or Renovates Question  -->
-    <div class="modal fade" id="{{ form.roof_geometry.name }}" tabindex="-1"
+    <div class="modal fade" id="{{ form.new_or_renovated.name }}" tabindex="-1"
       aria-labelledby="{{ form.roof_geometry.name }}_label" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -592,8 +612,22 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            Put your content here! You can use any type of tags here. See the code for the self-similar cluster modal
-            for inspiration.
+            <div class="infobox-section">
+              <em>Definition:</em>
+              <p>
+                If the building was built after the year 2000 or visually appears to be in exceptionally 
+                good condition with evidence of recent renovation, we can assume it has been recently renovated.   
+              </p> 
+            </div>
+            <div class="infobox-section">
+              <em>Relevance:</em>
+              <p class="infobox-p">
+                New and renovated buildings are very poor candidates for retrofits since they are already in good 
+                condition and are likely to have decent energy performance. Retrofitting these buildings is most 
+                likely unjustifiable from a business/value case perspective, considering building investments are 
+                made with a 30-40y horizon.
+              </p>
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
