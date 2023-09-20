@@ -14,6 +14,8 @@ from django.db import transaction
 from django.contrib import messages 
 from django.http import HttpResponse
 from django.core.paginator import Paginator
+from django.db.models import Avg, Count, Sum
+from django.db.models.functions import Round
 from django.forms.models import model_to_dict
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST   
@@ -27,7 +29,7 @@ from .forms import CreateUserForm
 from .models.surveys import SurveyV1Form
 from config.settings import WEBHOOK_SECRET, BASE_DIR
 from .models.models import (
-    EvalUnit, EvalUnitLatestViewData, NoBuildingFlag, UploadImageJob, User, Vote
+    EvalUnit, EvalUnitLatestViewData, HLMBuilding, NoBuildingFlag, UploadImageJob, User, Vote
 )
 import logging
 
@@ -155,6 +157,16 @@ def survey_v1(request, eval_unit_id):
 
     eval_unit = get_object_or_404(EvalUnit, pk=eval_unit_id)
 
+    hlms = None
+    hlm_info = None
+    avg_disrepair = None
+
+    if eval_unit.associated is not None and 'hlm' in eval_unit.associated:
+        hlms = HLMBuilding.objects.filter(eval_unit=eval_unit).order_by('street_num')
+        if len(hlms) > 0:
+            hlm_info = hlms.aggregate(num_hlms=Count('*'), total_dwellings=Sum('num_dwellings'), avg_ivp=Round(Avg('ivp'), precision=1))
+            avg_disrepair = HLMBuilding.get_disrepair_state(hlm_info['avg_ivp'])
+
     # Fetch any previous survey v1 entry for this building
     # If none exist, initialize a survey with the building and user ids
     # TODO: This might become slow once there are many Votes
@@ -256,14 +268,16 @@ def survey_v1(request, eval_unit_id):
     form = SurveyV1Form(instance=prev_survey_instance)
 
     context = {
-        # TODO: Is this the best way to pass API keys to views?
         'key': settings.GOOGLE_MAPS_API_KEY,
         'eval_unit': eval_unit,
         'latest_view_data_value': latest_view_data_value,
         'next_eval_unit_id': next_eval_unit_id,
         'form': form,
         'previous_no_building_vote': previous_no_building_vote,
-        'cubf_resolved': CUBF_TO_NAME_MAP[eval_unit.cubf]
+        'cubf_resolved': CUBF_TO_NAME_MAP[eval_unit.cubf],
+        'hlms': hlms,
+        'hlm_info': hlm_info,
+        'avg_disrepair': avg_disrepair,
     }
     return render(request, 'buildings/survey.html', context)
 
@@ -328,10 +342,12 @@ def upload_imgs(request, eval_unit_id):
     """
     We'll process the image uploading asynchronously using a PythonAnywhere (PA) Always-on Task
     We have to do this because PA doesn't support laucnhing background threads.
-    If we switch to another VPS, we should implement the backgruond thread solution
+    If we switch to another VPS, we should implement the background thread solution
     https://blog.pythonanywhere.com/198/
     https://www.pythonanywhere.com/forums/topic/3627/
     """
+    if settings.DEBUG:
+        return HttpResponse('debug mode job not created')
     data = json.loads(request.body)
     eval_unit = get_object_or_404(EvalUnit, pk=eval_unit_id)
     UploadImageJob(eval_unit=eval_unit, user=request.user, job_data=data, status=UploadImageJob.Status.PENDING).save()

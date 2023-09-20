@@ -57,7 +57,7 @@
           {% endif %}
           {% if eval_unit.associated and "hlm" in eval_unit.associated %}
           <div class="badge text-bg-success">
-            HLM
+            HLM ({{ hlm_info.num_hlms }})
           </div>
           {% endif %}
           <!-- Aggregated MURBs are the only eval units with an ID ending in 9999 -->
@@ -94,13 +94,18 @@
         </div>
         <div>
           {% if eval_unit.max_floors %}
-          Num floors: 
+          Max floors: 
             {{ eval_unit.max_floors }}
           {% endif %}
         </div>
       </div>
 
       <div class="building-info-col">
+        {% if hlms %}
+        <div>
+          Avg disrepair: {% include "buildings/utils/disrepair_state_badge.html" with state=avg_disrepair ivp=hlm_info.avg_ivp %}
+        </div>
+        {% endif %}
         <div>
           {% if eval_unit.phys_link %}
             {{ eval_unit.phys_link | title }}
@@ -176,6 +181,9 @@
         <div class="nav nav-tabs" id="nav-tab" role="tablist">
           <button id="nav-satellite-tab" class="nav-link active" data-bs-toggle="tab" data-bs-target="#nav-satellite" type="button" role="tab" aria-controls="nav-satellite" aria-selected="true" >Satellite</button>
           <button id="nav-survey-tab" class="nav-link" data-bs-toggle="tab" data-bs-target="#nav-survey" type="button" role="tab" aria-controls="nav-survey" aria-selected="false">Survey</button>
+          {% if hlms %}
+          <button id="nav-hlms-tab" class="nav-link" data-bs-toggle="tab" data-bs-target="#nav-hlms" type="button" role="tab" aria-controls="nav-hlms" aria-selected="false">HLMs</button>
+          {% endif %}
         </div>
       </nav>
 
@@ -222,12 +230,55 @@
                   <input id="btn-submit-vote" class="btn btn-main btn-vote me-5" type="submit" value="Submit">
               </div>
             </form>
+          </div>
+        </div>
+        
+        {% if hlms %}
+        <!-- Associated data -->
+        <div id="nav-hlms" class="tab-pane" role="tabpanel" aria-labelledby="nav-hlms-tab">
 
+          <!--below is the first scrolling survey -->
+          <div id="scroll">
+
+            <table class="table table-striped table-hover table-responsive">
+              <thead>
+                <tr>
+                    <th scope="col">Address</th>
+                    <th scope="col">Dwellings</th>
+                    <th scope="col">Floors</th>
+                    <th scope="col">Disrepair</th>
+                  </tr>
+              </thead>
+              <tbody>
+                {% for a in hlms %}
+                <tr>
+                  <td>{{ a.street_num }} {{ a.street_name }}</td>
+                  <td>{{ a.num_dwellings }}</td>
+                  <td>{{ a.num_floors }}</td>
+                  <td>
+                    {% include "buildings/utils/disrepair_state_badge.html" with state=a.disrepair_state ivp=a.ivp %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+              {% if  hlms|length > 1 %}
+              <tfoot class="table-group-divider">
+                <tr>
+                  <td>Total: {{ hlm_info.num_hlms }}</td>
+                  <td>{{ hlm_info.total_dwellings }}</td>
+                  <td></td>
+                  <td>{% include "buildings/utils/disrepair_state_badge.html" with state=avg_disrepair ivp=hlm_info.avg_ivp %}</td>
+                </tr>
+              </tfoot>
+              {% endif %}
+            </table>
+          </div>
         </div>
-        </div>
+        {% endif %}
+      </div>
     </div>
-  </div>
 
+  </div>
 </section>
 
 <input type="hidden" id="sv_uploaded" data-uploaded="" />

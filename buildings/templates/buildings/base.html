@@ -35,14 +35,11 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
         
         {% if not debug %}
-        <!-- Toggle JS console.log -->
+        <!-- Toggle JS console.debug for production -->
         <!-- https://stackoverflow.com/questions/49808734/toggle-javascript-debug-in-django-template -->
         <script>
-            window.console = (function(){
-                var c = {}; c.log = c.warn = c.debug = c.info = c.error = c.time = c.dir = c.profile = c.clear = c.exception = c.trace = c.assert = function(s){};
-                return c;
-            })();
-            </script>
+            var console = console || {}; console.debug = function(){};
+        </script>
         {% endif %}
         
         <header>

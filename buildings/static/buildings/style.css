@@ -355,8 +355,6 @@ tr:hover .delete-row-icon {
   flex-direction: row;
 }
 
-
-
 .building-info {
   width: 70%;
   display: flex;
@@ -480,8 +478,6 @@ tr:hover .delete-row-icon {
 }
 
 
-
-
 .user-stats-container {
   font-size: large;
 }
@@ -495,7 +491,7 @@ tr:hover .delete-row-icon {
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .tab-pane {
@@ -587,4 +583,21 @@ tr:hover .delete-row-icon {
 
 .infobox-img {
   margin-top: .5rem;
+}
+
+.disrepair-badge-A {
+  background-color: #198754;
+}
+.disrepair-badge-B {
+  background-color: #b1ce3c;
+}
+.disrepair-badge-C {
+  background-color: #ffd147;
+}
+.disrepair-badge-D {
+  background-color: #E86430;
+}
+.disrepair-badge-E {
+  --bs-badge-padding-x: 0.75em;
+  background-color: #de2235;
 }

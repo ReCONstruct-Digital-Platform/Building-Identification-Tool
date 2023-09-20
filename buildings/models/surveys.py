@@ -69,7 +69,6 @@ WINDOWS = [
 NEW_OR_RENOVATED = [
     ("newly_built", "Newly built"),
     ("recently_renovated", "Recently renovated"),
-    ("no", "No"),
 ]
 
 
@@ -109,7 +108,7 @@ class SurveyV1(BaseSurvey):
     window_wall_ratio = models.BooleanField(blank=True, null=True) # radio
     large_irregular_windows = models.JSONField(blank=True, null=True) # checkbox multiple not required
     roof_geometry = models.TextField() # radio w specify 
-    new_or_renovated = models.TextField(blank=True, null=True) # radio
+    new_or_renovated = models.JSONField(blank=True, null=True) # radio
     # structure_type = models.TextField() # radio w specify 
 
 
@@ -175,7 +174,7 @@ class SurveyV1Form(ModelForm):
             "window_wall_ratio": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),
             "large_irregular_windows": CheckboxSelectMultipleSpecify(choices=WINDOWS, attrs={"class": "survey-1col"}),
             "roof_geometry": RadioWithSpecify(choices=ROOF_GEOMETRIES, attrs={"class": "survey-3col"}),
-            "new_or_renovated": RadioSelect(choices=NEW_OR_RENOVATED, attrs={"class": "survey-1col"}),
+            "new_or_renovated": CheckboxSelectMultipleSpecify(choices=NEW_OR_RENOVATED, attrs={"class": "survey-1col"}),
         }
         help_texts = {
             "self_similar_cluster": _("Is the building part of a self-similar cluster? If so, how many buildings are in the cluster?"),

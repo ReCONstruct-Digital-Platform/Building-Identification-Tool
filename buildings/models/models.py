@@ -409,6 +409,19 @@ class HLMBuilding(models.Model):
     category = models.TextField()
     building_id = models.IntegerField()
 
+    @classmethod
+    def get_disrepair_state(cls, ivp):
+        if ivp <= 5:
+            return 'A'
+        elif ivp <= 10:
+            return 'B'
+        elif ivp <= 15:
+            return 'C'
+        elif ivp <= 30.2:
+            return 'D'
+        else:
+            return 'E'
+
 
 class UploadImageJob(models.Model):
     class Status(models.TextChoices):
