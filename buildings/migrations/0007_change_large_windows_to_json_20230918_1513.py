@@ -33,7 +33,7 @@ def migrate_new_or_renovated_from_boolean_to_TextField(apps, _):
         elif old_value is True:
             new_value = 'recently_renovated'
 
-        s.large_irregular_windows = new_value
+        s.new_or_renovated = new_value
         s.save()
 
 

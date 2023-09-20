@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 from buildings.models.models import EvalUnit, Vote
 
-from buildings.widgets import CheckboxSelectMultipleSpecify, RadioSelect, NumberOrUnsure, CheckboxSelectMultipleSpecifyRequired, RadioWithSpecify
+from buildings.widgets import CheckboxSelectMultipleSpecify, RadioSelect, NumberOrUnsure, CheckboxSelectMultipleSpecifyRequired, RadioWithSpecify, SelfSimilarClusterWidget
 
 # The first element is the actual value
 # forms will pass it as a string nack to the backend
@@ -46,7 +46,8 @@ FACADE_MATERIALS = [
 ]
 ROOF_GEOMETRIES = [
     ("flat", "Flat"),
-    ("pitched", "Pitched"),
+    ("pitch_low", "Low Pitched"),
+    ("pitch_high", "High Pitched"),
     ("curved", "Curved"),
     ("complex", "Complex"),
     ("unsure", "Unsure"),
@@ -96,7 +97,7 @@ class BaseSurvey(models.Model):
 
 
 class SurveyV1(BaseSurvey):
-    self_similar_cluster = models.BooleanField(null=True)
+    self_similar_cluster = models.IntegerField(blank=True, null=True)
     has_simple_footprint = models.BooleanField()
     has_simple_volume = models.BooleanField()
     num_storeys = models.IntegerField(blank=True, null=True)
@@ -108,8 +109,8 @@ class SurveyV1(BaseSurvey):
     window_wall_ratio = models.BooleanField(blank=True, null=True) # radio
     large_irregular_windows = models.JSONField(blank=True, null=True) # checkbox multiple not required
     roof_geometry = models.TextField() # radio w specify 
-    # structure_type = models.TextField() # radio w specify 
     new_or_renovated = models.TextField(blank=True, null=True) # radio
+    # structure_type = models.TextField() # radio w specify 
 
 
  
@@ -162,7 +163,7 @@ class SurveyV1Form(ModelForm):
                   "large_irregular_windows", "roof_geometry", "new_or_renovated"]
         
         widgets = {
-            "self_similar_cluster": RadioSelect(choices=YES_NO, attrs={"class": "survey-1col"}),
+            "self_similar_cluster": SelfSimilarClusterWidget(attrs={"class": "survey-1col"}),
             "has_simple_footprint": RadioSelect(choices=YES_NO, attrs={"class": "survey-1col"}),
             "has_simple_volume": RadioSelect(choices=YES_NO, attrs={"class": "survey-1col"}),
             "num_storeys": NumberOrUnsure(attrs={"class": "survey-1col"}),
@@ -177,7 +178,7 @@ class SurveyV1Form(ModelForm):
             "new_or_renovated": RadioSelect(choices=NEW_OR_RENOVATED, attrs={"class": "survey-1col"}),
         }
         help_texts = {
-            "self_similar_cluster": _("Does the building appear part of a self-similar cluster?"),
+            "self_similar_cluster": _("Is the building part of a self-similar cluster? If so, how many buildings are in the cluster?"),
             "has_simple_footprint": _("Does the building have a simple footprint?"),
             "has_simple_volume": _("Does the building have a simple volumetric form?"),
             "num_storeys": _("How many storeys above-ground does the building have?"),

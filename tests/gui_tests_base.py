@@ -53,7 +53,7 @@ class ChromeSeleniumTestsBase(CommonSeleniumTestsBase):
         # Fill in the form
         # Chrome has a problem where it cant scroll normally like friefox
         # So we call a scroll into view on each element before clicking on them
-        e = driver.find_element(By.ID, "id_self_similar_cluster_1")
+        e = driver.find_element(By.ID, "id_self_similar_cluster_no")
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
 
@@ -145,7 +145,7 @@ class FirefoxSeleniumTestsBase(CommonSeleniumTestsBase):
         self.wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
         self.driver.find_element(By.ID, "nav-survey-tab").click()
         # Fill in each field
-        self.driver.find_element(By.ID, "id_self_similar_cluster_1").click()
+        self.driver.find_element(By.ID, "id_self_similar_cluster_no").click()
         self.driver.find_element(By.ID, "id_has_simple_footprint_0").click()
         self.driver.find_element(By.ID, "id_has_simple_volume_1").click()
         self.driver.find_element(By.ID, "id_num_storeys_specify").click()
