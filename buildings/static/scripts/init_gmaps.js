@@ -44,7 +44,7 @@ function generateOptionsAndReturnClosestPano(panoArray, selectedDate) {
     option.innerText = date.toLocaleDateString('en-US', { year:"numeric", month:"long"});
     
     if (!date) {
-      console.log('Could not get date from element: ', el);
+      console.debug('Could not get date from element: ', el);
     }
     
     // Keep track of the smallest absolute difference between dates
@@ -70,7 +70,7 @@ function generateOptionsAndReturnClosestPano(panoArray, selectedDate) {
 
 /*
 * Function to hide certain things on the streetview as they get loaded in
-* You can console.log() all the mutations first to know which ones to select.
+* You can console.debug() all the mutations first to know which ones to select.
 *
 * Also find the Pegman and register a drag and drop listener 
 */
@@ -103,7 +103,7 @@ function mutationObserverCallback(mutationList, _) {
 
 function printMutationsCallback(mutationList, _) {
   for (const mutation of mutationList) {
-    console.log(mutation)
+    console.debug(mutation)
   }
 };
 
@@ -113,15 +113,16 @@ function sleep(time) {
 
 
 function findPanorama(svService, latestViewData, panoRequest, evalUnitCoord) {
-  console.log(`Searching for panorama: ${JSON.stringify(panoRequest)}`);
-
   // Send a request to the panorama service
   svService.getPanorama(panoRequest, function(panoData, status) 
   {
     if (status === google.maps.StreetViewStatus.OK) 
     {
-      console.log(`Status ${status}: panorama found.`);
-      console.log(JSON.stringify(panoData));
+      if (panoRequest.radius) {
+        console.debug(`Status ${status}: panorama found within ${panoRequest.radius}m`);
+      } else{
+        console.debug(`Status ${status}: panorama ${panoRequest.pano} found`);
+      }
       let heading, zoom, pitch;
       
       if (latestViewData) {
@@ -207,25 +208,25 @@ function findPanorama(svService, latestViewData, panoRequest, evalUnitCoord) {
       // Custom event launched when pegman is dropped and we need a manual pano set
       sv.addListener('manual_pano_set', () => {
         sleep(0).then(() => {
-          console.log(`detected manual pano set needed to ${window.shouldBePano}`);
+          console.debug(`detected manual pano set needed to ${window.shouldBePano}`);
           sv.setPano(window.shouldBePano);
         })
       });
 
       // 
       sv.addListener('pano_changed', () => {
-        console.log('pano_changed');
+        console.debug('pano_changed');
         let panoId = sv.getPano();
       
         if (window.doingManualPanoSet) {
           window.doingManualPanoSet = false;
-          console.log(`Manual set extra event on ${window.lastPanoChanged}, triggering manual_pano_set event!`);
+          console.debug(`Manual set extra event on ${window.lastPanoChanged}, triggering manual_pano_set event!`);
           // trigger custom event
           return google.maps.event.trigger(sv, 'manual_pano_set');
         }
         // Skip duplicate events
         if (window.lastPanoChanged === panoId ) {
-          console.log(`Extra event on ${window.lastPanoChanged}, returning!`)
+          console.debug(`Extra event on ${window.lastPanoChanged}, returning!`)
           return;
         }
         
@@ -233,26 +234,26 @@ function findPanorama(svService, latestViewData, panoRequest, evalUnitCoord) {
         svService.getPanorama({pano: panoId}, function(panoData, status) 
         {
           if (status === google.maps.StreetViewStatus.OK) {
-            console.log(`Current pano: ${window.lastPanoChanged} - (${window.lastSVImageDate})`)
-            console.log(`Pano changed to: ${panoId} - (${panoData.imageDate})`);
+            console.debug(`Current pano: ${window.lastPanoChanged} - (${window.lastSVImageDate})`)
+            console.debug(`Pano changed to: ${panoId} - (${panoData.imageDate})`);
             
             if (panoData.imageDate !== window.lastSVImageDate) {
               if (window.pegmanDropped) {
                 window.pegmanDropped = false;
-                console.log("Pegman dropped and new pano date not equal to last.")
+                console.debug("Pegman dropped and new pano date not equal to last.")
                 // Need to manually set
                 var {options, closestPanoByDate} = generateOptionsAndReturnClosestPano(panoData.time, window.lastSVImageDate);
-                console.log(`should be pano ${closestPanoByDate}`);
+                console.debug(`should be pano ${closestPanoByDate}`);
                 window.doingManualPanoSet = true;
                 window.shouldBePano = closestPanoByDate;
               }
             }
-            console.log(`Generating options for new pano ${panoData.imageDate}`);
+            console.debug(`Generating options for new pano ${panoData.imageDate}`);
             var {options} = generateOptionsAndReturnClosestPano(panoData.time, panoData.imageDate);
             document.getElementById('time-travel-select').replaceChildren(...options);
             // save the current image date for next time
             window.lastSVImageDate = panoData.imageDate;
-            console.log(`Setting last pano to ${panoId}`);
+            console.debug(`Setting last pano to ${panoId}`);
             window.lastPanoChanged = panoId;
           }
         });
@@ -275,7 +276,7 @@ function findPanorama(svService, latestViewData, panoRequest, evalUnitCoord) {
       var radius = panoRequest.radius
 
       if (radius >= 200) {
-        console.log(`Status ${status}: Could not find panorama within ${radius}m! Giving up.`);
+        console.debug(`Status ${status}: Could not find panorama within ${radius}m! Giving up.`);
         elem = document.createElement('div');
         elem.innerText = `Could not find panorama within ${radius}m.`;
         document.getElementById("streetview").appendChild(elem);
@@ -288,14 +289,14 @@ function findPanorama(svService, latestViewData, panoRequest, evalUnitCoord) {
         else {
           panoRequest.radius += 50;
         }
-        console.log(`Status ${status}: could not find panorama within ${radius}m, trying ${panoRequest.radius}m.`);
+        console.debug(`Status ${status}: could not find panorama within ${radius}m, trying ${panoRequest.radius}m.`);
 
         return findPanorama(svService, latestViewData, panoRequest, evalUnitCoord);
       }
     }
     // Else we were doing an ID search - switch to radius search
     else {
-      console.log(`Could not find panorama id ${panoRequest.pano}. Switching to radius search.`);
+      console.debug(`Could not find pano ${panoRequest.pano}. Switching to radius search.`);
       // Making a radius search request
       panoRequest = {
         location: evalUnitCoord,
