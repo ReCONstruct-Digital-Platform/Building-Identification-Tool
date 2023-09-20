@@ -4,14 +4,13 @@
     "pk": 1,
     "fields": {
         "vote": 1,
-        "self_similar_cluster": true,
+        "self_similar_cluster": null,
         "has_simple_footprint": true,
         "has_simple_volume": false,
         "num_storeys": 5,
         "has_basement": false,
         "site_obstructions": [
             "trees_or_landscaping",
-            "on",
             "df"
         ],
         "appendages": [
@@ -20,14 +19,13 @@
         "exterior_cladding": [
             "plaster",
             "stone_masonry",
-            "on",
             "dfd"
         ],
         "facade_condition": null,
         "window_wall_ratio": true,
         "large_irregular_windows": false,
         "roof_geometry": "dfdf",
-        "new_or_renovated": null
+        "new_or_renovated": ["newly_built"]
     }
 },
 {
@@ -35,14 +33,13 @@
     "pk": 2,
     "fields": {
         "vote": 2,
-        "self_similar_cluster": false,
+        "self_similar_cluster": 5,
         "has_simple_footprint": true,
         "has_simple_volume": true,
         "num_storeys": 5,
         "has_basement": true,
         "site_obstructions": [
             "overhead_wires",
-            "on",
             "fdbsf"
         ],
         "appendages": [

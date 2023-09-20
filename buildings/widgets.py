@@ -70,6 +70,29 @@ class NumberOrUnsure(widgets.RadioSelect):
         return context
 
 
+class SelfSimilarClusterWidget(widgets.RadioSelect):
+    '''
+    TODO: Refactor this and the NumberOrUnsure field together
+    '''
+    template_name = "buildings/forms/widgets/self_similar_cluster.html"
+
+    class Media:
+        js = [
+            "scripts/specify.js",
+        ]
+
+    def __init__(self, attrs=None, **kwargs):
+        super().__init__(attrs=attrs, **kwargs)
+        self.initial = None # filled in by the form __init__()
+        self.was_filled = None # filled in by the form __init__()
+    
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        context["widget"]["initial"] = self.initial
+        context["widget"]["was_filled"] = self.was_filled
+        return context
+
+
 class CheckboxSelectMultipleSpecifyRequired(widgets.CheckboxSelectMultiple):
     '''
     Radio select with a number input

@@ -13,7 +13,7 @@ class MyTests(TestCase):
         self.eval_unit = EvalUnit.objects.create(id='id1', lat=1.0, lng=1.5, muni='mtl', address='123 a st', mat18='fsd', cubf=1000, associated={'hlm': ['hlm1']})
         self.eval_unit2 = EvalUnit.objects.create(id='id2', lat=1.0, lng=1.5, muni='mtl', address='4656 a st', mat18='fsdfsd', cubf=1000, const_yr = 1234, associated={'hlm': ['hlm1']})
         self.form_data = {
-            "self_similar_cluster": 'True',
+            "self_similar_cluster": '5',
             "has_simple_footprint": 'True',
             "has_simple_volume": 'False',
             "num_storeys": 5,
@@ -32,7 +32,7 @@ class MyTests(TestCase):
         form = SurveyV1Form(data=self.form_data)
         self.assertTrue(form.is_valid())
         self.assertDictEqual(form.cleaned_data, {
-            "self_similar_cluster": True,
+            "self_similar_cluster": 5,
             "has_simple_footprint": True,
             "has_simple_volume": False,
             "num_storeys": 5,
@@ -64,7 +64,7 @@ class MyTests(TestCase):
         self.assertDictEqual(form_as_dict, {
             "id": 1,
             "vote": vote_id,
-            "self_similar_cluster": True,
+            "self_similar_cluster": 5,
             "has_simple_footprint": True,
             "has_simple_volume": False,
             "num_storeys": 5,

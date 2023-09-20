@@ -110,7 +110,7 @@
 
 
 <!-- Information Modals -->
-<div class="modal fade" id="{{ form.self_similar_cluster.name }}" tabindex="-1"
+<div class="modal fade" id="{{ form.self_similar_cluster.name }}_info" tabindex="-1"
   aria-labelledby="{{ form.self_similar_cluster.name }}_label" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
@@ -118,7 +118,7 @@
         <h1 class="modal-title fs-5" id="{{ form.self_similar_cluster.name }}_label">
           Q{{form.field_ordering.self_similar_cluster}}: Self-Similar Clusters
         </h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button id="{{ form.self_similar_cluster.name }}_info_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div>
@@ -126,17 +126,15 @@
             <em>Definition:</em>
             <p class="infobox-p">
               A building is part of a <strong>self-similar cluster</strong> if it close to other buildings built at the
-              same time,
-              following the same construction methods, and using the same materials.
+              same time, following the same construction methods, and using the same materials.
               Most of the time, they will seem virtually identical copies.
             </p>
           </div>
           <div class="infobox-section">
             <em>Relevance:</em>
             <p class="infobox-p">
-              This is important for retrofits as a good candidate building part of a cluster creates economies of scale
-              which
-              makes retrofitting the whole cluster more attractive than retrofitting a single building.
+              This is important for the value case of retrofits, as a multi-building project has economies of scale
+              which makes retrofitting a cluster more attractive than retrofitting a single building.
             </p>
           </div>
           <div class="infobox-section">
@@ -153,12 +151,12 @@
               The satellite view gives a bigger picture where wee see that there seems to be a 5 building cluster.
             </p>
             <img class="infobox-img img-fluid"
-              src="{% static 'images/survey_info/q1/selfsimilar_sv.jpg' %}"
+              src="{% static 'images/survey_info/q1_cluster/selfsimilar_sv.jpg' %}"
               alt="A streetview of a building part of a self-similar cluster"
               loading="lazy"
             >
             <img class="infobox-img img-fluid"
-              src="{% static 'images/survey_info/q1/selfsimilar_sat.jpg' %}"
+              src="{% static 'images/survey_info/q1_cluster/selfsimilar_sat.jpg' %}"
               alt="A satellite view of a building part of a self-similar cluster"
               loading="lazy"
             >
@@ -173,12 +171,12 @@
               The satellite view shows a cluster of 4 (or 8) buildings.
             </p>
             <img class="infobox-img img-fluid"
-              src="{% static 'images/survey_info/q1/selfsimilar_sv_2.jpg' %}"
+              src="{% static 'images/survey_info/q1_cluster/selfsimilar_sv_2.jpg' %}"
               alt="Another streetview of a building part of a self-similar cluster"
               loading="lazy"
             >
             <img class="infobox-img img-fluid"
-              src="{% static 'images/survey_info/q1/selfsimilar_sat_2.jpg' %}"
+              src="{% static 'images/survey_info/q1_cluster/selfsimilar_sat_2.jpg' %}"
               alt="Another satellite view of a building part of a self-similar cluster" 
               loading="lazy"
             >
@@ -193,7 +191,7 @@
 </div>
 
 <!-- Q2 Footprint Question Modal -->
-<div class="modal fade" id="{{ form.has_simple_footprint.name }}" tabindex="-1"
+<div class="modal fade" id="{{ form.has_simple_footprint.name }}_info" tabindex="-1"
   aria-labelledby="{{ form.has_simple_footprint.name }}_label" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
@@ -201,7 +199,7 @@
         <h1 class="modal-title fs-5" id="{{ form.has_simple_footprint.name }}_label">
           Q{{form.field_ordering.has_simple_footprint}}: Building Footprint
         </h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button id="{{ form.has_simple_footprint.name }}_info_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div>
@@ -211,6 +209,12 @@
               A building has a <strong>simple footprint</strong> if its intersection with the ground is 
               through one or two simple geometric shapes (one or two rectangles). A complex footprint can 
               have many corners, irregular angles, or multiple shapes of different types.  
+            </p>
+          </div>
+          <div class="infobox-section">
+            <em>Note:</em>
+            <p class="infobox-p">
+              This is usually more readily visible from the satellite view of the building.
             </p>
           </div>
         </div>
@@ -224,7 +228,7 @@
 
 
   <!-- Q3 Simple Volume Question  -->
-  <div class="modal fade" id="{{ form.has_simple_volume.name }}" tabindex="-1"
+  <div class="modal fade" id="{{ form.has_simple_volume.name }}_info" tabindex="-1"
     aria-labelledby="{{ form.has_simple_volume.name }}_label" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content">
@@ -232,7 +236,7 @@
           <h1 class="modal-title fs-5" id="{{ form.has_simple_volume.name }}_label">
             Q{{form.field_ordering.has_simple_volume}}: Volumetric Shape
           </h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button id="{{ form.has_simple_volume.name }}_info_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="infobox-section">
@@ -253,7 +257,7 @@
 
 
   <!-- Q4 Number of Storeys Question  -->
-  <div class="modal fade" id="{{ form.num_storeys.name }}" tabindex="-1"
+  <div class="modal fade" id="{{ form.num_storeys.name }}_info" tabindex="-1"
     aria-labelledby="{{ form.num_storeys.name }}_label" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content">
@@ -261,7 +265,7 @@
           <h1 class="modal-title fs-5" id="{{ form.num_storeys.name }}_label">
             Q{{form.field_ordering.num_storeys}}: Number of Storeys
           </h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button id="{{ form.num_storeys.name }}_info_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="infobox-section">
@@ -281,7 +285,7 @@
 
 
     <!-- Q5 Basement Question  -->
-    <div class="modal fade" id="{{ form.has_basement.name }}" tabindex="-1"
+    <div class="modal fade" id="{{ form.has_basement.name }}_info" tabindex="-1"
       aria-labelledby="{{ form.has_basement.name }}_label" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -289,7 +293,7 @@
             <h1 class="modal-title fs-5" id="{{ form.has_basement.name }}_label">
               Q{{form.field_ordering.has_basement}}: Basement
             </h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button  id="{{ form.has_basement.name }}_info_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div class="infobox-section">
@@ -298,8 +302,9 @@
                 Any floor partly or entirely submerged in the ground is a basement. A building is likely to have 
                 a basement if there are windows between the ground level and the first floor. 
               </p>
-              <img class="infobox-img img-fluid" loading="lazy" 
-                src="{% static 'images\survey_info\q5\q5.jpg' %}  ">  
+              <img class="infobox-img img-fluid" 
+                loading="lazy" 
+                src="{% static 'images/survey_info/q5_basement/q5_basement.jpg' %}">  
             </div>
           </div>
           <div class="modal-footer">
@@ -311,7 +316,7 @@
 
 
     <!-- Q6 Site Obstructions Question  -->
-    <div class="modal fade" id="{{ form.site_obstructions.name }}" tabindex="-1"
+    <div class="modal fade" id="{{ form.site_obstructions.name }}_info" tabindex="-1"
       aria-labelledby="{{ form.site_obstructions.name }}_label" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -319,7 +324,7 @@
             <h1 class="modal-title fs-5" id="{{ form.site_obstructions.name }}_label">
               Q{{form.field_ordering.site_obstructions}}: Site Obstructions
             </h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button id="{{ form.site_obstructions.name }}_info_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div>
@@ -349,7 +354,7 @@
 
 
     <!-- Q7 Appendages Question  -->
-    <div class="modal fade" id="{{ form.appendages.name }}" tabindex="-1"
+    <div class="modal fade" id="{{ form.appendages.name }}_info" tabindex="-1"
       aria-labelledby="{{ form.appendages.name }}_label" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -357,7 +362,7 @@
             <h1 class="modal-title fs-5" id="{{ form.appendages.name }}_label">
               Q{{form.field_ordering.appendages}}: Appendages
             </h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button id="{{ form.appendages.name }}_info_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div class="infobox-section">
@@ -367,23 +372,32 @@
                 or decorative protrusions.
               </p>
             </div>
-          <div class="infobox-section">
-            <em>Relevance:</em>
-            <p class="infobox-p">
-              Appendages increase the complexity of doing panelized retrofits, as they will have to be removed in most cases.
-              Regarding balconies, they are often a major cause of 
-              <a href="https://passipedia.org/basics/building_physics_-_basics/thermal_bridges/thermal_bridge_definition">
-                thermal bridging </a> which leads to heat loss and energy inefficiency.
-            </p>
-          </div>
-          <div lass="infobox-section">
-            <em>Note:</em>
-             <p class="infobox-p">
-              Considering most people are attached to their balconies and they have to be removed for panelized retrofits, they
-              could be a source of conflict and work against the project starting. Balconies can always be added back over the panels,
-              but at a higher project cost.
-            </p>
-          </div>
+            <div class="infobox-section">
+              <em>Relevance:</em>
+              <p class="infobox-p">
+                Appendages increase the complexity of doing panelized retrofits, as they will have to be removed in most cases.
+                Regarding balconies, they are often a major cause of 
+                <a href="https://passipedia.org/basics/building_physics_-_basics/thermal_bridges/thermal_bridge_definition">
+                  thermal bridging </a> which leads to heat loss and energy inefficiency.
+              </p>
+            </div>
+            <div lass="infobox-section">
+              <em>Note:</em>
+              <p class="infobox-p">
+                Considering most people are attached to their balconies and they have to be removed for panelized retrofits, they
+                could be a source of conflict and work against the project starting. Balconies can always be added back over the panels,
+                but at a higher project cost.
+              </p>
+            </div>
+            <div class="infobox-section mt-1">
+              <strong>Example:</strong>
+              <p class="infobox-p">
+                The following building has a lot of appendages, including balconies, eaves, porches.
+              </p>
+              <img class="infobox-img img-fluid" 
+                loading="lazy" 
+                src="{% static 'images/survey_info/q7_appendages/weird_appendages.png' %}">  
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -394,7 +408,7 @@
 
 
     <!-- Q8 Exterior Cladding Question  -->
-    <div class="modal fade" id="{{ form.exterior_cladding.name }}" tabindex="-1"
+    <div class="modal fade" id="{{ form.exterior_cladding.name }}_info" tabindex="-1"
       aria-labelledby="{{ form.exterior_cladding.name }}_label" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -402,14 +416,14 @@
             <h1 class="modal-title fs-5" id="{{ form.exterior_cladding.name }}_label">
               Q{{form.field_ordering.exterior_cladding}}: Exterior Cladding
             </h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button id="{{ form.exterior_cladding.name }}_info_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div class="infobox-section">
               <em>Definition:</em>
               <img class="infobox-img img-fluid"
               loading="lazy" 
-              src="{% static 'images\survey_info\q8\q8-01.jpg' %}  ">  
+              src="{% static 'images/survey_info/q8_cladding/q8_cladding.jpg' %}  ">  
             </div>
             <div class="infobox-section">
               <em>Relevance:</em>
@@ -428,7 +442,7 @@
 
 
     <!-- Q9 Facade Condition Question  -->
-    <div class="modal fade" id="{{ form.facade_condition.name }}" tabindex="-1"
+    <div class="modal fade" id="{{ form.facade_condition.name }}_info" tabindex="-1"
       aria-labelledby="{{ form.facade_condition.name }}_label" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -436,7 +450,7 @@
             <h1 class="modal-title fs-5" id="{{ form.facade_condition.name }}_label">
               Q{{form.field_ordering.facade_condition}}: Façade Condition
             </h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button id="{{ form.facade_condition.name }}_info_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div class="infobox-section">
@@ -466,7 +480,7 @@
 
 
     <!-- Q10 Glazing Question  -->
-    <div class="modal fade" id="{{ form.window_wall_ratio.name }}" tabindex="-1"
+    <div class="modal fade" id="{{ form.window_wall_ratio.name }}_info" tabindex="-1"
       aria-labelledby="{{ form.window_wall_ratio.name }}_label" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -474,7 +488,7 @@
             <h1 class="modal-title fs-5" id="{{ form.window_wall_ratio.name }}_label">
               Q{{form.field_ordering.window_wall_ratio}}: Glazing Ratio
             </h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button  id="{{ form.window_wall_ratio.name }}_info_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div class="infobox-section">
@@ -497,7 +511,7 @@
               </p> 
               <img class="infobox-img img-fluid" 
                 loading="lazy" 
-                src="{% static 'images\survey_info\q10-glazing\q10-Glazing.jpg' %}">  
+                src="{% static 'images/survey_info/q10_glazing/q10_glazing.jpg' %}">  
             </div>
           </div>
           <div class="modal-footer">
@@ -509,7 +523,7 @@
 
 
     <!-- Q11 Large or Irregular Windows Question  -->
-    <div class="modal fade" id="{{ form.large_irregular_windows.name }}" tabindex="-1"
+    <div class="modal fade" id="{{ form.large_irregular_windows.name }}_info" tabindex="-1"
       aria-labelledby="{{ form.large_irregular_windows.name }}_label" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -517,7 +531,7 @@
             <h1 class="modal-title fs-5" id="{{ form.large_irregular_windows.name }}_label">
               Q{{form.field_ordering.large_irregular_windows}}: Large or Irregular Windows
             </h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button id="{{ form.large_irregular_windows.name }}_info_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div class="infobox-section">
@@ -547,7 +561,15 @@
               <img 
                 class="infobox-img img-fluid" 
                 loading="lazy" 
-                src="{% static 'images\survey_info\q11-largewindow\q11-largeirregularwindows.jpg' %}">  
+                src="{% static 'images/survey_info/q11_largewindow/q11_examples.jpg' %}">  
+            </div>
+            <div class="infobox-section">
+              <strong>Example of large and irregular windows:</strong>
+              <p class="infobox-p">The following building has both irregular (the small round ones and those with a rounded top) and large windows.</p>
+              <img 
+                class="infobox-img img-fluid" 
+                loading="lazy" 
+                src="{% static 'images/survey_info/q11_largewindow/q11_irregular.jpg' %}">  
             </div>
           </div>
           
@@ -560,7 +582,7 @@
 
 
     <!-- Q12 Roof Geometry Question  -->
-    <div class="modal fade" id="{{ form.roof_geometry.name }}" tabindex="-1"
+    <div class="modal fade" id="{{ form.roof_geometry.name }}_info" tabindex="-1"
       aria-labelledby="{{ form.roof_geometry.name }}_label" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -568,29 +590,38 @@
             <h1 class="modal-title fs-5" id="{{ form.roof_geometry.name }}_label">
               Q{{form.field_ordering.roof_geometry}}: Roof Geometry
             </h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button id="{{ form.roof_geometry.name }}_info_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div class="infobox-section">
               <em>Definition:</em>
-              <p>
+              <p class="infobox-p">
                 A pitched roof is a roof with a single slope (shed), or two slopes meeting (gable roof), 
                 or 4 slopes all meeting (pyramid). Whereas a complex roof may have multiple pitches and one 
                 or more other gables, or irregular shapes. 
+              </p>
+              <p class="infobox-p">
+                If a roof is pitched, it will have a pitch angle. A <strong>high pitch</strong> roof is anyone above a 6/12 in the roof pitch angle
+                diagram below, otherwise it is considered <strong>low pitch</strong>
               </p>
             </div>
             <div class="infobox-section">
               <em>Relevance:</em>
               <p class="infobox-p">
-                Complex roof geometries increase the complexity of retrofit strategies in their analysis, design and 
-                installation processes.  
+                Complex and high pitch roofs increase the complexity of retrofit strategies in their analysis, design and 
+                installation processes, even making certain projects infeasible.
               </p>
             </div>
             <div class="infobox-section">
               <strong>Roof typologies:</strong>
-            <img class="infobox-img img-fluid" loading="lazy" 
-            src="{% static 'images\survey_info\q12-rooftypes\q12-rooftypes.jpg' %}  ">
-          </div>
+              <img class="infobox-img img-fluid" loading="lazy" 
+                src="{% static 'images/survey_info/q12_rooftypes/q12_rooftypes.jpg' %}">
+            </div>
+            <div class="infobox-section">
+              <strong>Pitch angles:</strong>
+              <img class="infobox-img img-fluid" loading="lazy" 
+              src="{% static 'images/survey_info/q12_rooftypes/q12_pitches.jpg' %}">
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -601,7 +632,7 @@
 
 
     <!-- Q13 New or Renovates Question  -->
-    <div class="modal fade" id="{{ form.new_or_renovated.name }}" tabindex="-1"
+    <div class="modal fade" id="{{ form.new_or_renovated.name }}_info" tabindex="-1"
       aria-labelledby="{{ form.roof_geometry.name }}_label" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -609,7 +640,7 @@
             <h1 class="modal-title fs-5" id="{{ form.roof_geometry.name }}_label">
               Q{{form.field_ordering.roof_geometry}}: New or Renovated Buildings
             </h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button id="{{ form.new_or_renovated.name }}_info_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div class="infobox-section">

@@ -9,6 +9,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.remote_connection import LOGGER
 from buildings.models.models import UploadImageJob
+from buildings.models.surveys import SurveyV1Form
 LOGGER.setLevel(logging.WARNING)
 
 from tests.gui_tests_base import ChromeSeleniumTestsBase, FirefoxSeleniumTestsBase
@@ -63,7 +64,7 @@ class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
         driver.find_element(By.ID, "nav-satellite-tab").click()
         wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
         driver.find_element(By.ID, "nav-survey-tab").click()
-        wait.until(EC.visibility_of_element_located((By.ID, 'id_self_similar_cluster_0')))
+        wait.until(EC.visibility_of_element_located((By.ID, 'id_self_similar_cluster_specify_value')))
         time.sleep(1)
         self.assertEqual(UploadImageJob.objects.count(), 1)
 
@@ -182,6 +183,32 @@ class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
         wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id1"))
 
 
+    def test_firefox_modals_should_open_on_info_button_click(self):
+        driver = self.driver
+        wait = self.wait 
+
+        self._sign_in('/survey/v1/id1')
+
+        wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
+        wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
+        driver.find_element(By.ID, "nav-survey-tab").click()
+
+        survey = SurveyV1Form()
+
+        fields = list(survey.field_ordering.keys())
+
+        for field in fields:
+            wait.until(EC.element_to_be_clickable((By.ID, f"{field}_info_btn")))
+            driver.find_element(By.ID, f"{field}_info_btn").click()
+            wait.until(EC.visibility_of_element_located((By.ID, f'{field}_info')))
+            time.sleep(0.25)
+            wait.until(EC.visibility_of_element_located((By.ID, f"{field}_info_close")))
+            wait.until(EC.element_to_be_clickable((By.ID, f"{field}_info_close")))
+            driver.find_element(By.ID, f"{field}_info_close").click()
+            wait.until_not((EC.visibility_of_element_located((By.CLASS_NAME, 'modal-backdrop'))))
+
+
+
     def test_firefox_should_submit_successfully_when_clicking_on_labels_or_input_fields(self):
         driver = self.driver
         wait = self.wait 
@@ -196,9 +223,10 @@ class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
         driver.find_element(By.ID, "nav-survey-tab").click()
 
         # Fill in the form
-        wait.until(EC.presence_of_element_located((By.ID, 'id_self_similar_cluster_0')))
-        wait.until(EC.visibility_of_element_located((By.ID, 'id_self_similar_cluster_0')))
-        driver.find_element(By.ID, "id_self_similar_cluster_0").click()
+        wait.until(EC.presence_of_element_located((By.ID, 'id_self_similar_cluster_specify_value')))
+        wait.until(EC.visibility_of_element_located((By.ID, 'id_self_similar_cluster_specify_value')))
+        driver.find_element(By.ID, "id_self_similar_cluster_specify_container").click()
+        driver.find_element(By.ID, "id_self_similar_cluster_specify_value").send_keys('15')
 
         wait.until(EC.presence_of_element_located((By.ID, 'id_has_simple_footprint_0')))
         wait.until(EC.visibility_of_element_located((By.ID, 'id_has_simple_footprint_0')))
@@ -328,9 +356,9 @@ class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
         driver.find_element(By.ID, "nav-survey-tab").click()
 
         # Fill in the form
-        wait.until(EC.presence_of_element_located((By.ID, 'id_self_similar_cluster_0')))
-        wait.until(EC.visibility_of_element_located((By.ID, 'id_self_similar_cluster_0')))
-        driver.find_element(By.ID, "id_self_similar_cluster_0").click()
+        wait.until(EC.visibility_of_element_located((By.ID, 'id_self_similar_cluster_specify')))
+        driver.find_element(By.ID, "id_self_similar_cluster_specify").click()
+        driver.find_element(By.ID, "id_self_similar_cluster_specify_value").send_keys('6')
 
         wait.until(EC.presence_of_element_located((By.ID, 'id_has_simple_footprint_0')))
         wait.until(EC.visibility_of_element_located((By.ID, 'id_has_simple_footprint_0')))
@@ -414,7 +442,7 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         driver.find_element(By.ID, "nav-satellite-tab").click()
         wait.until(EC.visibility_of_element_located((By.ID, 'satmap')))
         driver.find_element(By.ID, "nav-survey-tab").click()
-        wait.until(EC.visibility_of_element_located((By.ID, 'id_self_similar_cluster_0')))
+        wait.until(EC.visibility_of_element_located((By.ID, 'id_self_similar_cluster_specify')))
         time.sleep(1)
         self.assertEqual(UploadImageJob.objects.count(), 1)
 
@@ -550,7 +578,7 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
 
         # Fill in the form
         # Chrome has a problem where it cant scroll normally like friefox
-        e = driver.find_element(By.ID, "id_self_similar_cluster_1")
+        e = driver.find_element(By.ID, "id_self_similar_cluster_no")
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
 
@@ -718,9 +746,11 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
 
         # Fill in the form
         # Chrome has a problem where it cant scroll normally like friefox
-        e = driver.find_element(By.ID, "id_self_similar_cluster_0")
+        e = driver.find_element(By.ID, "id_self_similar_cluster_specify")
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
+        e = driver.find_element(By.ID, "id_self_similar_cluster_specify_value")
+        driver.execute_script("arguments[0].value = arguments[1];", e, '60')
 
         e = driver.find_element(By.ID, "id_has_simple_footprint_0")
         driver.execute_script("arguments[0].scrollIntoView();", e)
