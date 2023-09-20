@@ -299,7 +299,7 @@ function findPanorama(svService, latestViewData, panoRequest, evalUnitCoord) {
       // Making a radius search request
       panoRequest = {
         location: evalUnitCoord,
-        preference: google.maps.StreetViewPreference.BEST,
+        preference: google.maps.StreetViewPreference.NEAREST,
         radius: 25,
         source: google.maps.StreetViewSource.OUTDOOR
       };
@@ -339,7 +339,7 @@ function initMaps() {
 
     panoRequest = {
       location: evalUnitCoord,
-      preference: google.maps.StreetViewPreference.BEST,
+      preference: google.maps.StreetViewPreference.NEAREST,
       radius: 25,
       source: google.maps.StreetViewSource.OUTDOOR
     };

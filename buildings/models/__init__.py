@@ -5,7 +5,8 @@ from .models import (
     EvalUnit, 
     EvalUnitLatestViewData, 
     EvalUnitSatelliteImage,
-    EvalUnitStreetViewImage, 
+    EvalUnitStreetViewImage,
+    HLMBuilding,
     NoBuildingFlag,
     Vote,
     User

@@ -47,7 +47,7 @@ CUBF_TO_NAME_MAP = {
     7431:	"Plage",
     7432:	"Piscine intérieure et activités connexes",
     7433:	"Piscine extérieure et activités connexes",
-    7441:	"Marina, port de plaisance et quai d'embarquement pour croisière (excluant les traversiers)",
+    7441:	"Marina, port de plaisance et quai d'embarquement pour croisière",
     7442:	"Rampe d'accès et stationnement",
     7443:	"Station-service pour le nautisme",
     7444:	"Club et écoles d'activités et de sécurité nautiques",
