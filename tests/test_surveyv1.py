@@ -24,7 +24,7 @@ class MyTests(TestCase):
             "facade_condition": 'true',
             "window_wall_ratio": 'unsure',
             "large_irregular_windows": ['very_large_windows'],
-            "roof_geometry": 'flat',
+            "roof_geometry": ['flat'],
             "new_or_renovated": ['recently_renovated'],
         }
 
@@ -43,7 +43,7 @@ class MyTests(TestCase):
             "facade_condition": True,
             "window_wall_ratio": None,
             "large_irregular_windows": ['very_large_windows'],
-            "roof_geometry": 'flat',
+            "roof_geometry": ['flat'],
             "new_or_renovated": ['recently_renovated'],
         })
 
@@ -75,6 +75,6 @@ class MyTests(TestCase):
             "facade_condition": True,
             "window_wall_ratio": None,
             "large_irregular_windows": ['very_large_windows'],
-            "roof_geometry": 'flat',
+            "roof_geometry": ['flat'],
             "new_or_renovated": ['recently_renovated'],   
         })

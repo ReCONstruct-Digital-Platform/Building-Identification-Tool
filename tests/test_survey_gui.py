@@ -292,20 +292,20 @@ class FirefoxSurveyGUITests(FirefoxSeleniumTestsBase):
         self.assertEqual(specify_radio_elem.get_attribute('checked'), None)
 
         # Test a RadioWithSpecify field
-        specify_radio_elem = driver.find_element(By.ID, "id_roof_geometry_specify")
+        specify_radio_elem = driver.find_element(By.ID, "id_self_similar_cluster_specify")
         specify_radio_elem.click()
-        specify_text_input_elem = driver.find_element(By.ID, "id_roof_geometry_specify_value")
-        specify_text_input_elem.send_keys('roof geometry type')
-        self.assertEqual(specify_text_input_elem.get_attribute('value'), 'roof geometry type')
+        specify_text_input_elem = driver.find_element(By.ID, "id_self_similar_cluster_specify_value")
+        specify_text_input_elem.send_keys('5')
+        self.assertEqual(specify_text_input_elem.get_attribute('value'), '5')
 
         # Clicking the SAME radio field, should do NOTHING
         specify_radio_elem.click()
-        self.assertEqual(specify_text_input_elem.get_attribute('value'), 'roof geometry type')
+        self.assertEqual(specify_text_input_elem.get_attribute('value'), '5')
 
         # Click on another radio
-        driver.find_element(By.ID, "id_roof_geometry_4").click()   
+        driver.find_element(By.ID, "id_self_similar_cluster_no").click()   
         # Make sure the number input is disabled and has no value
-        wait.until(EC.element_attribute_to_include((By.ID, "id_roof_geometry_specify_value"), 'disabled'))
+        wait.until(EC.element_attribute_to_include((By.ID, "id_self_similar_cluster_specify_value"), 'disabled'))
         self.assertEqual(specify_text_input_elem.get_attribute('value'), '')
         # check that the radio is not checked (returns None instead of false)
         self.assertEqual(specify_radio_elem.get_attribute('checked'), None)
@@ -632,11 +632,9 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
 
         # We click on the parent element, which would register the click
         # for both the label and input box. Else Selenium throws an element obscured error
-        e = driver.find_element(By.ID, "id_roof_geometry_specify_container")
+        e = driver.find_element(By.ID, "id_roof_geometry_0")
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
-        e = driver.find_element(By.ID, "id_roof_geometry_specify_value")
-        driver.execute_script("arguments[0].value = arguments[1];", e, 'roof type')
 
         e = driver.find_element(By.ID, "id_new_or_renovated_0")
         driver.execute_script("arguments[0].scrollIntoView();", e)
@@ -682,19 +680,19 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         self.assertEqual(specify_radio_elem.get_attribute('checked'), None)
 
         # Test a RadioWithSpecify field
-        specify_radio_elem = driver.find_element(By.ID, "id_roof_geometry_specify")
+        specify_radio_elem = driver.find_element(By.ID, "id_self_similar_cluster_specify")
         specify_radio_elem.click()
-        specify_text_input_elem = driver.find_element(By.ID, "id_roof_geometry_specify_value")
-        specify_text_input_elem.send_keys('struct type')
-        self.assertEqual(specify_text_input_elem.get_attribute('value'), 'struct type')
+        specify_text_input_elem = driver.find_element(By.ID, "id_self_similar_cluster_specify_value")
+        specify_text_input_elem.send_keys('5')
+        self.assertEqual(specify_text_input_elem.get_attribute('value'), '5')
         # Clicking the same radio should not unselect it
         specify_radio_elem.click()
-        self.assertEqual(specify_text_input_elem.get_attribute('value'), 'struct type')
+        self.assertEqual(specify_text_input_elem.get_attribute('value'), '5')
 
         # Clicking on another radio should unselect it and delte the entered value
-        driver.find_element(By.ID, "id_roof_geometry_0").click()   
+        driver.find_element(By.ID, "id_self_similar_cluster_no").click()   
         # Make sure the number input is disabled and has no value
-        wait.until(EC.element_attribute_to_include((By.ID, "id_roof_geometry_specify_value"), 'disabled'))
+        wait.until(EC.element_attribute_to_include((By.ID, "id_self_similar_cluster_specify_value"), 'disabled'))
         self.assertEqual(specify_text_input_elem.get_attribute('value'), '')
         # check that the radio is not checked (returns None instead of false)
         self.assertEqual(specify_radio_elem.get_attribute('checked'), None)
@@ -801,11 +799,9 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
 
-        e = driver.find_element(By.ID, "id_roof_geometry_specify")
+        e = driver.find_element(By.ID, "id_roof_geometry_0")
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
-        e = driver.find_element(By.ID, "id_roof_geometry_specify_value")
-        driver.execute_script("arguments[0].value = arguments[1];", e, 'roof type')
 
         e = driver.find_element(By.ID, "id_new_or_renovated_0")
         driver.execute_script("arguments[0].scrollIntoView();", e)

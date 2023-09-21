@@ -107,8 +107,8 @@ class SurveyV1(BaseSurvey):
     facade_condition = models.BooleanField(blank=True, null=True) # radio
     window_wall_ratio = models.BooleanField(blank=True, null=True) # radio
     large_irregular_windows = models.JSONField(blank=True, null=True) # checkbox multiple not required
-    roof_geometry = models.TextField() # radio w specify 
-    new_or_renovated = models.JSONField(blank=True, null=True) # radio
+    roof_geometry = models.JSONField(blank=True, null=True)
+    new_or_renovated = models.JSONField(blank=True, null=True)
     # structure_type = models.TextField() # radio w specify 
 
 
@@ -173,7 +173,7 @@ class SurveyV1Form(ModelForm):
             "facade_condition": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),
             "window_wall_ratio": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),
             "large_irregular_windows": CheckboxSelectMultipleSpecify(choices=WINDOWS, attrs={"class": "survey-1col"}),
-            "roof_geometry": RadioWithSpecify(choices=ROOF_GEOMETRIES, attrs={"class": "survey-3col"}),
+            "roof_geometry": CheckboxSelectMultipleSpecifyRequired(choices=ROOF_GEOMETRIES, attrs={"class": "survey-3col"}),
             "new_or_renovated": CheckboxSelectMultipleSpecify(choices=NEW_OR_RENOVATED, attrs={"class": "survey-1col"}),
         }
         help_texts = {
@@ -188,7 +188,7 @@ class SurveyV1Form(ModelForm):
             "facade_condition": _("Are the façades in poor condition and in need of replacement?"),
             "window_wall_ratio": _("Does glazing make up more than 40% of the total visible façade area?"),
             "large_irregular_windows": _("Are there very large and/or irregularly shaped windows?"),
-            "roof_geometry": _("What best describes the roof geometry?"),
+            "roof_geometry": _("Select all that describes the roof geometry?"),
             "new_or_renovated": _("Does the building look newly built or recently renovated?"),
         }
 
