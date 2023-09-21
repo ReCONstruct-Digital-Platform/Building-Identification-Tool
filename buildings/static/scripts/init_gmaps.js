@@ -275,7 +275,7 @@ function findPanorama(svService, latestViewData, panoRequest, evalUnitCoord) {
       
       var radius = panoRequest.radius
 
-      if (radius >= 200) {
+      if (radius >= 100) {
         console.debug(`Status ${status}: Could not find panorama within ${radius}m! Giving up.`);
         elem = document.createElement('div');
         elem.innerText = `Could not find panorama within ${radius}m.`;
@@ -283,12 +283,7 @@ function findPanorama(svService, latestViewData, panoRequest, evalUnitCoord) {
         return;
       }
       else {
-        if (panoRequest.radius < 100) {
-          panoRequest.radius += 25;
-        }
-        else {
-          panoRequest.radius += 50;
-        }
+        panoRequest.radius += 25;
         console.debug(`Status ${status}: could not find panorama within ${radius}m, trying ${panoRequest.radius}m.`);
 
         return findPanorama(svService, latestViewData, panoRequest, evalUnitCoord);
