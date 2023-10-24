@@ -5,7 +5,8 @@ from hashlib import md5
 from django.conf import settings
 from django.db.models.query import QuerySet
 from django.utils import timezone
-from django.db import models, connection
+from django.db import connection
+from django.contrib.gis.db import models
 from django.db.models import Q, Count, Avg, TextField
 from django.db.models.functions import Cast, Coalesce
 from django.utils.translation import gettext_lazy as _
@@ -212,6 +213,7 @@ class EvalUnit(models.Model):
     id = models.TextField(primary_key=True)
     lat = models.FloatField()
     lng = models.FloatField()
+    point = models.PointField(null=True)
     muni = models.TextField()
     muni_code = models.TextField(null=True, blank=True)
     arrond = models.TextField(null=True, blank=True)
@@ -255,6 +257,11 @@ class EvalUnit(models.Model):
     # Override the objects attribute of the model
     # in order to implement custom search functionality
     objects = EvalUnitManager.from_queryset(EvalUnitQuerySet)()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["point"], name="point_geo_idx"),
+        ]
 
     def num_votes(self):
         return len(self.vote_set)
