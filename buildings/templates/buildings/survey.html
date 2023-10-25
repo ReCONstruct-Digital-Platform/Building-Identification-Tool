@@ -3,32 +3,6 @@
 {% block content %}
 {% load humanize %}
 
-<!-- Will be filled in with the latest view data from the backend -->
-{{ latest_view_data_value | json_script:"latest_view_data_value" }}
-
-<!-- Hack to augment the creation of all WebGL contexts with preserveDrawingBuffer=true -->
-<!-- This is done so we can take a screenshot with html2canvas -->
-<!-- https://stackoverflow.com/questions/26783586/canvas-todataurl-returns-blank-image  -->
-<script>
-  HTMLCanvasElement.prototype.getContext = function(origFn) {
-    return function(type, attributes) {
-      if (type === 'webgl') {
-        attributes = Object.assign({}, attributes, {
-          preserveDrawingBuffer: true,
-        });
-      }
-      return origFn.call(this, type, attributes);
-    };
-  }(HTMLCanvasElement.prototype.getContext);
-</script>
-
-<script src="{% static 'scripts/survey.js' %}"></script>
-<script src="{% static 'scripts/html2canvas.min.js' %}"></script>
-<script src="{% static 'scripts/init_gmaps.js' %}" 
-  data-eval-unit-lat="{{ eval_unit.lat }}"
-  data-eval-unit-lng="{{ eval_unit.lng }}"
-  data-gmaps-api-key="{{ key }}"></script>
-
 <link rel="stylesheet" type="text/css" href="{% static 'buildings/style.css'%}"> 
 
 <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
@@ -165,7 +139,7 @@
           <div id="time-travel-container" class="time-travel-container">
             <label class='time-travel-label'>
               Time Travel
-              <select id="time-travel-select" class='time-travel-select mt-1' onchange="timeTravel(this.value)"> 
+              <select id="time-travel-select" class='time-travel-select mt-1' onchange="window.sv.setPano(this.value)"> 
               </select>
             </label>
           </div>
@@ -191,7 +165,7 @@
 
         <!-- Satellite view -->
         <div id="nav-satellite" class="tab-pane active" role="tabpanel" aria-labelledby="nav-satellite-tab">
-          <div id="satmap">
+          <div id="satellite">
           </div>
         </div>
 
@@ -286,5 +260,38 @@
 <input type="hidden" id="sat_data" data-url="" />
 
 <div id="test-screenshots-container"></div>
+
+<!-- A way to pass data from backend to scripts -->
+{{ eval_unit_coords | json_script:"eval_unit_coords" }}
+{{ latest_view_data_value | json_script:"latest_view_data_value" }}
+
+<!-- Google Maps SDK Bootstrap Loader -->
+<!-- https://developers.google.com/maps/documentation/javascript/load-maps-js-api#dynamic-library-import -->
+<script>
+  (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+    key: "{{ key }}",
+    v: "3.53",
+  });
+</script>
+<script src="{% static 'scripts/gmaps.js' %}"></script>
+
+<!-- Hack to augment the creation of all WebGL contexts with preserveDrawingBuffer=true -->
+<!-- This is done so we can take a screenshot with html2canvas -->
+<!-- https://stackoverflow.com/questions/26783586/canvas-todataurl-returns-blank-image  -->
+<script>
+  HTMLCanvasElement.prototype.getContext = function(origFn) {
+    return function(type, attributes) {
+      if (type === 'webgl') {
+        attributes = Object.assign({}, attributes, {
+          preserveDrawingBuffer: true,
+        });
+      }
+      return origFn.call(this, type, attributes);
+    };
+  }(HTMLCanvasElement.prototype.getContext);
+</script>
+<script src="{% static 'scripts/survey.js' %}"></script>
+<script src="{% static 'scripts/html2canvas.min.js' %}"></script>
+
 
 {% endblock content %}

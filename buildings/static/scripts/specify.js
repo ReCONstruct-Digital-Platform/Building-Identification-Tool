@@ -1,5 +1,5 @@
 function turnOffSpecify(id) {
-  console.log('turning off specify')
+  console.debug('turning off specify')
   document.getElementById(id).disabled = true;
   document.getElementById(id).required = false;
   document.getElementById(id).value = "";
