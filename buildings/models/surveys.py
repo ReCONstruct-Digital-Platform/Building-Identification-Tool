@@ -2,14 +2,16 @@ import logging
 from pprint import pprint
 
 from django.db import models
-from django.conf import settings
-from django.utils import timezone
 from django.forms import ModelForm
 from django.utils.translation import gettext_lazy as _
 
-from buildings.models.models import EvalUnit, Vote
+from buildings.models.models import Vote
 
-from buildings.widgets import CheckboxSelectMultipleSpecify, RadioSelect, NumberOrUnsure, CheckboxSelectMultipleSpecifyRequired, RadioWithSpecify, SelfSimilarClusterWidget
+from buildings.widgets import (
+    MultiCheckboxSpecify, RadioSelect, NumberOrUnsure, 
+    MultiCheckboxSpecifyRequired, SelfSimilarClusterWidget
+)
+
 
 # The first element is the actual value
 # forms will pass it as a string nack to the backend
@@ -167,14 +169,14 @@ class SurveyV1Form(ModelForm):
             "has_simple_volume": RadioSelect(choices=YES_NO, attrs={"class": "survey-1col"}),
             "num_storeys": NumberOrUnsure(attrs={"class": "survey-1col"}),
             "has_basement": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),
-            "site_obstructions": CheckboxSelectMultipleSpecify(choices=SITE_OBSTRUCTIONS, has_specify=True, attrs={"class": "survey-1col"}),
-            "appendages": CheckboxSelectMultipleSpecify(choices=APPENDAGES, has_specify=True, attrs={"class": "survey-1col"}),
-            "exterior_cladding": CheckboxSelectMultipleSpecifyRequired(choices=FACADE_MATERIALS, has_specify=True, attrs={"class": "survey-3col"}),
+            "site_obstructions": MultiCheckboxSpecify(choices=SITE_OBSTRUCTIONS, has_specify=True, attrs={"class": "survey-1col"}),
+            "appendages": MultiCheckboxSpecify(choices=APPENDAGES, has_specify=True, attrs={"class": "survey-1col"}),
+            "exterior_cladding": MultiCheckboxSpecifyRequired(choices=FACADE_MATERIALS, has_specify=True, attrs={"class": "survey-3col"}),
             "facade_condition": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),
             "window_wall_ratio": RadioSelect(choices=YES_NO_UNSURE, attrs={"class": "survey-1col"}),
-            "large_irregular_windows": CheckboxSelectMultipleSpecify(choices=WINDOWS, attrs={"class": "survey-1col"}),
-            "roof_geometry": CheckboxSelectMultipleSpecifyRequired(choices=ROOF_GEOMETRIES, attrs={"class": "survey-3col"}),
-            "new_or_renovated": CheckboxSelectMultipleSpecify(choices=NEW_OR_RENOVATED, attrs={"class": "survey-1col"}),
+            "large_irregular_windows": MultiCheckboxSpecify(choices=WINDOWS, attrs={"class": "survey-1col"}),
+            "roof_geometry": MultiCheckboxSpecifyRequired(choices=ROOF_GEOMETRIES, attrs={"class": "survey-3col"}),
+            "new_or_renovated": MultiCheckboxSpecify(choices=NEW_OR_RENOVATED, attrs={"class": "survey-1col"}),
         }
         help_texts = {
             "self_similar_cluster": _("Is the building part of a self-similar cluster? If so, how many buildings are in the cluster?"),
