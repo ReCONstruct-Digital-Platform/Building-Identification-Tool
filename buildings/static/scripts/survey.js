@@ -46,17 +46,18 @@ async function screenshot(element_id) {
                 // The following hides unwanted controls, copyrights, pins etc. on the maps and streetview canvases
                 let condition = el.classList.contains("gmnoprint") || el.classList.contains("gm-style-cc") 
                 || el.id === 'gmimap1' || el.tagName === 'BUTTON' || el.classList.contains("gm-iv-address")
+                || el.getAttribute('title') === "Open this area in Google Maps (opens a new window)"
                 || el.id === 'time-travel-container';
 
                 // Addtionally remove the red pin for the streetview (but keep it for satellite)
                 if (element_id === 'streetview') {
-                    condition ||= el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3_hdpi.png'
-                    || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3.png';
+                    return condition 
+                        ||= el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3_hdpi.png'
+                        || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3.png';
                 }
                 else {
-                    condition ||= el.getAttribute('style') === "position: absolute; left: 0px; top: 0px; z-index: 1;";
+                    return condition ||= el.getAttribute('style') === "position: absolute; left: 0px; top: 0px; z-index: 1;";
                 }
-                return condition; 
             },
         }
     ).then(canvas => {
@@ -71,8 +72,8 @@ async function screenshot(element_id) {
 }
 
 
-/*
-* Screenshot only the streetview. Called when the screenshot button is clicked.
+/**
+* Screenshot the streetview. Called when the screenshot button is clicked.
 */
 async function screenshotStreetview(event) {
     event.preventDefault();
@@ -158,7 +159,7 @@ function getCookie(name) {
     return cookieValue;
 }
 
-/* 
+/** 
 * This function dynamically sets the height of the right panel (satellite view and survey)
 */
 function setUpScrollHeightObserver() {
@@ -174,72 +175,6 @@ function setUpScrollHeightObserver() {
     observer.observe(svElement, {childList: true, subtree: true});
 }
 
-function getDifference(a, b)
-{
-    var i = 0;
-    var j = 0;
-    var result = "";
-
-    while (j < b.length)
-    {
-        if (a[i] != b[j] || i == a.length)
-            result += b[j];
-        else
-            i++;
-        j++;
-    }
-    return result;
-}
-
-/**
- * Called when the user switches from satellite view to the survey.
- * If the satellite view has changed since the last time this happened,
- * upload the new view to the image store.
- */
-function satelliteImageMutationCallback(mutationList, _) {
-    const target = document.getElementById('sat_data');
-    const uploadURL = document.getElementById("upload_url").getAttribute("data-url");
-
-    for (const mutation of mutationList) {
-        const oldValue = mutation.oldValue;
-        const currentValue = target.getAttribute('data-url');
-        
-        if (oldValue !== currentValue) {
-            
-            // console.log('currentValue != oldValue');
-            // console.log(getDifference(oldValue, currentValue));
-
-            // Upload new satellite image
-            fetch(uploadURL, {
-                method: "POST",
-                mode: "same-origin", 
-                cache: "no-cache", 
-                credentials: "same-origin", 
-                headers: {
-                  "Content-Type": "application/json",
-                  "X-CSRFToken": getCookie('csrftoken'), // So django accepts the request
-                },
-                body: JSON.stringify({'satellite': currentValue})
-            }).then((resp) => {
-                if (resp.status === 200) {
-                    console.log('Satellite img uploaded successfully');
-                } 
-                else {
-                    console.log(`Problem uploading screenshot ${resp}`);
-                }
-            });
-        }
-    }
-};
-
-/**
- * Setup the satellite image observer to upload new satellite views to backend
- */
-function setUpSatelliteImageObserver() {
-    const targetNode = document.getElementById('sat_data');
-    const observer = new MutationObserver(satelliteImageMutationCallback);
-    observer.observe(targetNode, {attributes: true, attributeOldValue: true});
-}
 
 
 function setUpButtons() {
@@ -250,7 +185,7 @@ function setUpButtons() {
     });
     window.addEventListener('keyup', (e) => {
         if (e.code === 'Space') {
-            console.log('spacebar pressed');
+            console.debug('spacebar pressed');
             if (e.target.nodeName !== 'INPUT') {
                 screenshotStreetview(e);
             }
@@ -313,18 +248,122 @@ function setUpButtons() {
     });
 }
 
+
 /**
- * This saves the a screenshot of the satellite view to a hidden element.
- * A mutation observer on that element will check if the new screenshot is 
- * different from the previous value and upload it to the image store if it is.
+ * Handle the stored satellite image upload to the backend.
+ * If the new image has not changed from the previous one, 
+ * or all form fileds are empty, do not upload.
+ */
+function uploadSatelliteImage(target, uploadURL, oldValue) {
+    const currentValue = target.getAttribute('data-url');
+
+    if (allInputsEmpty())
+        return console.debug('No input filled yet, do not screenshot satellite.')
+
+    if (oldValue === currentValue)
+        return console.debug("Satellite image hasn't changed, do not upload.")
+       
+    // Upload new satellite image
+    fetch(uploadURL, {
+        method: "POST",
+        mode: "same-origin", 
+        cache: "no-cache", 
+        credentials: "same-origin", 
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie('csrftoken'), // So django accepts the request
+        },
+        body: JSON.stringify({'satellite': currentValue})
+    }).then((resp) => {
+        if (resp.status === 200) {
+            console.debug('Satellite img uploaded successfully');
+        } 
+        else {
+            console.debug(`Problem uploading screenshot ${resp}`);
+        }
+    });
+}
+
+/**
+ * Called when the user switches from satellite view to the survey.
+ * If the satellite view has changed since the last time this happened,
+ * upload the new view to the image store.
+ */
+function satelliteImageMutationCallback(mutationList, _) {
+    const target = document.getElementById('sat_data');
+    const uploadURL = document.getElementById("upload_url").getAttribute("data-url");
+
+    for (const mutation of mutationList) {
+        uploadSatelliteImage(target, uploadURL, mutation.oldValue);
+    }
+}
+
+/**
+ * Check if all the survey inputs are empty.
+ * Used to decide if we want to screenshot the satellite.
+ */
+function allInputsEmpty() {
+    let allEmpty = true;
+    document.querySelectorAll('input').forEach((input) => {
+        if ((input.type === 'radio' || input.type === 'checkbox') && input.checked)
+            return allEmpty = false;
+        if ((input.type === 'number' || input.type === 'text') && input.value !== '') 
+            return allEmpty = false;
+    });
+    return allEmpty;
+}
+
+/**
+ * Setup the satellite image observer to upload new satellite views to backend
+ */
+function setUpSatelliteImageObserver() {
+    const targetNode = document.getElementById('sat_data');
+    const observer = new MutationObserver(satelliteImageMutationCallback);
+    observer.observe(targetNode, {attributes: true, attributeOldValue: true});
+}
+
+
+/**
+ * Setup an event listener to take a screenshot of the satellite view
+ * and save it in a hidden element on the page.
+ * A mutation observer on the storage element will handle uploading it. 
  */
 function satelliteTabScreenshotOnHide() {
     // The hide.bs.tab event fires when the tab is to be hidden
     document.getElementById('nav-satellite-tab').addEventListener(
       'hide.bs.tab', async () => {
-        const dataUrl = await screenshot('satmap');
+        const dataUrl = await screenshot('satellite');
         document.getElementById('sat_data').setAttribute('data-url', dataUrl);
     });
+}
+
+
+/**
+ * Used to detect when the form is first starting to be filled
+ * and trigger a satellite screenshot upload at that point.
+ * This is to avoid uploading useless satellite screenshots when
+ * a user is not actively filling the survey but changes tabs.
+ */
+function setUpInitialSurveyMutationChecker() {
+    const form = document.getElementById('building-submission-form');
+    const observer = new MutationObserver(async (mutationList, observer) => {
+        for (const mutation of mutationList) {
+            if (mutation.target.nodeName === 'INPUT') {
+                if (!allInputsEmpty()) {
+                    console.debug('Detected form input mutation, with some inputs filled. Trigerring upload.')
+                    const target = document.getElementById('sat_data');
+                    const uploadURL = document.getElementById("upload_url").getAttribute("data-url");
+                    uploadSatelliteImage(target, uploadURL, "dummy old value");
+                    // Only execute this observer the first time an input is changed
+                    observer.disconnect();
+                    // don't process any other accompagnying mutations
+                    // e.g. on radio + text/number inputs
+                    return;
+                }
+            }
+        }
+    });
+    observer.observe(form, {subtree: true, attributes: true});
 }
 
 
@@ -335,4 +374,5 @@ $(document).ready(function() {
     setUpButtons();
     satelliteTabScreenshotOnHide();
     setUpSatelliteImageObserver();
+    setUpInitialSurveyMutationChecker();
 });

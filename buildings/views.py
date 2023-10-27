@@ -270,6 +270,10 @@ def survey_v1(request, eval_unit_id):
     context = {
         'key': settings.GOOGLE_MAPS_API_KEY,
         'eval_unit': eval_unit,
+        'eval_unit_coords': {
+            'lat': eval_unit.lat,
+            'lng': eval_unit.lng,
+        },
         'latest_view_data_value': latest_view_data_value,
         'next_eval_unit_id': next_eval_unit_id,
         'form': form,
