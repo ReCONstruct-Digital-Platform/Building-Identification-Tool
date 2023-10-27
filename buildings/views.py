@@ -267,6 +267,17 @@ def survey_v1(request, eval_unit_id):
 
     form = SurveyV1Form(instance=prev_survey_instance)
 
+    from django.db import connection
+    import IPython
+
+    lot_geojson = None
+    with connection.cursor() as cursor:
+        cursor.execute("select st_asgeojson(r.*) from (select l.gid, l.usag_predo, l.sup_totale, l.nb_logemen, st_simplify(l.geom, 0.00001, true) from buildings_evalunit as e join lots as l on st_contains(l.geom, e.point) where e.id = %s) as r;", [eval_unit_id])
+        row = cursor.fetchone()
+        lot_geojson = json.loads(row[0])
+        # IPython.embed()
+
+
     context = {
         'key': settings.GOOGLE_MAPS_API_KEY,
         'eval_unit': eval_unit,
@@ -274,6 +285,7 @@ def survey_v1(request, eval_unit_id):
             'lat': eval_unit.lat,
             'lng': eval_unit.lng,
         },
+        'geojson': lot_geojson,
         'latest_view_data_value': latest_view_data_value,
         'next_eval_unit_id': next_eval_unit_id,
         'form': form,

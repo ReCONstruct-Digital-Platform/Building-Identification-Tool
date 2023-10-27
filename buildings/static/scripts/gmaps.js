@@ -152,6 +152,78 @@ function sleep(time) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
 
+const selectedLot = {
+  feature: {},
+}
+
+function onClick(e) {
+  if (e.feature.getProperty('clicked') === 'true') {
+      e.feature.setProperty('clicked', 'false');
+      deletePoints(e.feature);
+  }
+  else {
+      // If another feature is currently clicked
+      if (Object.keys(selectedLot.feature).length) {
+          selectedLot.feature.setProperty('clicked', 'false');
+          deletePoints(selectedLot.feature);
+      }
+      e.feature.setProperty('clicked', 'true');
+      showLotPoints(e.feature);
+      selectedLot.feature = e.feature;
+  }
+}
+
+function styleFeatures(feature) {
+
+  return {
+      fillColor: "#55eb34",
+      fillOpacity: 0.35,
+      strokeColor: "#2dbf0d",
+      strokeWeight: 1,
+  }
+}
+
+async function deletePoints(feature) {
+  feature.getProperty('points').forEach((marker) => {
+      marker.setMap(null);
+  })
+  feature.getProperty('points').length = 0;
+}
+
+async function showLotPoints(feature) {
+  const { Marker } = await google.maps.importLibrary("marker");
+
+  const svgMarker = {
+      path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+      fillColor: "#55eb34",
+      strokeColor: "#2dbf0d",
+      fillOpacity: 0.8,
+      strokeWeight: 1,
+      rotation: 0,
+      scale: 4,
+    };
+
+  if (!feature.getProperty('points')) {
+      feature.setProperty('points', []);
+  }
+
+  const addPoint = (coords) => {
+      console.debug(`creating point at ${coords}`)
+      feature.getProperty('points').push(new Marker({
+          position: coords,
+          map: window.map,
+          icon: svgMarker,
+      }))
+      feature.getProperty('points').push(new Marker({
+          position: coords,
+          map: window.sv,
+          icon: svgMarker,
+      }))
+  }
+  feature.getGeometry().forEachLatLng(addPoint);
+}
+
+
 async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoord) {
   const { Map } = await google.maps.importLibrary("maps");
   const { event } = await google.maps.importLibrary("core");
@@ -239,6 +311,17 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
       window.m_marker = m_marker;
       window.lastPanoDate = data.imageDate;
       window.lastPanoId = data.location.pano;
+
+      
+      const lotShape = JSON.parse(document.getElementById("geojson").textContent);
+        // load the data
+      map.data.addGeoJson(lotShape);
+      map.data.setStyle(styleFeatures)
+      map.data.addListener("mouseover", e => e.feature.setProperty("state", "hover"));
+      map.data.addListener("mouseout", e => e.feature.removeProperty("state"));
+      map.data.forEach(showLotPoints);
+
+      // map.data.addListener("click", onClick);
       
       // Generate the initial time travel dropdown
       const { options } = generateTimeTravelOptions(data.time, data.imageDate);
