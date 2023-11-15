@@ -3,11 +3,12 @@ import json
 import requests
 import traceback
 
+import IPython
 from pprint import pprint
 from datetime import datetime
 from ipaddress import ip_address, ip_network
 from render_block import render_block_to_string
-
+from django.db import connection
 from django.views import generic 
 from django.conf import settings
 from django.db import transaction
@@ -24,6 +25,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
 from buildings.utils.contants import CUBF_TO_NAME_MAP
 from buildings.utils.utility import print_query_dict, verify_github_signature
+from django.contrib.gis.db.models.functions import AsGeoJSON
+from django.core.serializers import serialize
 
 from .forms import CreateUserForm
 from .models.surveys import SurveyV1Form
@@ -267,16 +270,23 @@ def survey_v1(request, eval_unit_id):
 
     form = SurveyV1Form(instance=prev_survey_instance)
 
+    # Load the lot polygon
+    # https://django.readthedocs.io/en/stable/ref/contrib/gis/functions.html
+    # https://django.readthedocs.io/en/stable/ref/contrib/gis/serializers.html
+    # eval_unit.geom = eval_unit.geom.simplify(0.000005)
+    # lot_geojson = json.loads(serialize('geojson', [eval_unit], geometry_field='geom', fields=[]))
+
     from django.db import connection
-    import IPython
 
     lot_geojson = None
     with connection.cursor() as cursor:
-        cursor.execute("select st_asgeojson(r.*) from (select l.gid, l.usag_predo, l.sup_totale, l.nb_logemen, st_simplify(l.geom, 0.00001, true) from buildings_evalunit as e join lots as l on st_contains(l.geom, e.point) where e.id = %s) as r;", [eval_unit_id])
+        cursor.execute(f"select st_asgeojson(st_simplify(geom, 0.000005, true)) from evalunits where id = %s", [eval_unit_id])       
         row = cursor.fetchone()
-        lot_geojson = json.loads(row[0])
-        # IPython.embed()
-
+        lot_geometry = json.loads(row[0])
+        lot_geojson = {
+            'type': 'Feature',
+            'geometry': lot_geometry
+        }
 
     context = {
         'key': settings.GOOGLE_MAPS_API_KEY,

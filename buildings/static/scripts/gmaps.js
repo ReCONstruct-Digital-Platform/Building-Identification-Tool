@@ -281,8 +281,23 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
       });
       map.setStreetView(sv);
 
+      // Remove layers from the map, to reduce clutterness
+      map.setOptions({
+        tilt: 0,
+        styles: [
+          {
+            featureType: "poi",
+            stylers: [{ visibility: "off" }],
+          },
+          {
+            featureType: "transit",
+            elementType: "labels.icon",
+            stylers: [{ visibility: "off" }],
+          },
+        ]
+      })
 
-      // init markers
+      // 
       const sv_marker = new Marker({
         position: evalUnitCoord,
         map: sv,
@@ -314,6 +329,8 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
 
       
       const lotShape = JSON.parse(document.getElementById("geojson").textContent);
+      console.debug(lotShape);
+      
         // load the data
       map.data.addGeoJson(lotShape);
       map.data.setStyle(styleFeatures)

@@ -24,6 +24,41 @@ STRING_QUERIES_TO_FILTER = {
     "q_cubf": "cubf_str__icontains",
 }
 
+SQL_RANDOM_UNVOTED_ID = f"""
+    SELECT evalunits.id FROM evalunits 
+    LEFT OUTER JOIN buildings_vote ON (evalunits.id = buildings_vote.eval_unit_id)
+    WHERE buildings_vote.eval_unit_id IS NULL AND evalunits.associated IS NOT NULL 
+    ORDER BY RANDOM() LIMIT 1;
+"""
+
+SQL_RANDOM_UNVOTED_ID_WITH_EXCLUDE = f"""
+    SELECT evalunits.id FROM evalunits 
+    LEFT OUTER JOIN buildings_vote ON (evalunits.id = buildings_vote.eval_unit_id)
+    WHERE buildings_vote.eval_unit_id IS NULL AND evalunits.id != %s
+    AND evalunits.associated IS NOT NULL 
+    ORDER BY RANDOM() LIMIT 1;
+"""
+
+# The limit parameter gives the number of eval units from which we will randomly pick
+# ideally we want it somewaht large (though not too much that the query is expensive)
+# but it can't be less than the number of eval units minus 1, else the query won't work
+SQL_RANDOM_LEAST_VOTED_ID = f"""
+    SELECT sub.id FROM 
+        (SELECT evalunits.id FROM evalunits 
+        LEFT OUTER JOIN buildings_vote ON (evalunits.id = buildings_vote.eval_unit_id) 
+        GROUP BY evalunits.id ORDER BY COUNT(buildings_vote.id) ASC limit %s) 
+    AS sub ORDER BY RANDOM() LIMIT 1;
+"""
+
+SQL_RANDOM_LEAST_VOTED_ID_WITH_EXCLUDE = f"""
+    SELECT sub.id FROM 
+        (SELECT evalunits.id FROM evalunits 
+        LEFT OUTER JOIN buildings_vote ON (evalunits.id = buildings_vote.eval_unit_id) 
+        WHERE evalunits.id != %s 
+        GROUP BY evalunits.id ORDER BY COUNT(buildings_vote.id) ASC limit %s) 
+    AS sub ORDER BY RANDOM() LIMIT 1;
+"""
+
 class UserQuerySet(models.QuerySet):
 
     def get_top_n(self, n) -> QuerySet:
@@ -71,42 +106,6 @@ class User(AbstractUser):
         digest = md5(self.email.encode('utf-8')).hexdigest()
         return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
 
-
-
-SQL_RANDOM_UNVOTED_ID = f"""
-    SELECT buildings_evalunit.id FROM buildings_evalunit 
-    LEFT OUTER JOIN buildings_vote ON (buildings_evalunit.id = buildings_vote.eval_unit_id)
-    WHERE buildings_vote.eval_unit_id IS NULL AND buildings_evalunit.associated IS NOT NULL 
-    ORDER BY RANDOM() LIMIT 1;
-"""
-
-SQL_RANDOM_UNVOTED_ID_WITH_EXCLUDE = f"""
-    SELECT buildings_evalunit.id FROM buildings_evalunit 
-    LEFT OUTER JOIN buildings_vote ON (buildings_evalunit.id = buildings_vote.eval_unit_id)
-    WHERE buildings_vote.eval_unit_id IS NULL AND buildings_evalunit.id != %s
-    AND buildings_evalunit.associated IS NOT NULL 
-    ORDER BY RANDOM() LIMIT 1;
-"""
-
-# The limit parameter gives the number of eval units from which we will randomly pick
-# ideally we want it somewaht large (though not too much that the query is expensive)
-# but it can't be less than the number of eval units minus 1, else the query won't work
-SQL_RANDOM_LEAST_VOTED_ID = f"""
-    SELECT sub.id FROM 
-        (SELECT buildings_evalunit.id FROM buildings_evalunit 
-        LEFT OUTER JOIN buildings_vote ON (buildings_evalunit.id = buildings_vote.eval_unit_id) 
-        GROUP BY buildings_evalunit.id ORDER BY COUNT(buildings_vote.id) ASC limit %s) 
-    AS sub ORDER BY RANDOM() LIMIT 1;
-"""
-
-SQL_RANDOM_LEAST_VOTED_ID_WITH_EXCLUDE = f"""
-    SELECT sub.id FROM 
-        (SELECT buildings_evalunit.id FROM buildings_evalunit 
-        LEFT OUTER JOIN buildings_vote ON (buildings_evalunit.id = buildings_vote.eval_unit_id) 
-        WHERE buildings_evalunit.id != %s 
-        GROUP BY buildings_evalunit.id ORDER BY COUNT(buildings_vote.id) ASC limit %s) 
-    AS sub ORDER BY RANDOM() LIMIT 1;
-"""
 
 class EvalUnitQuerySet(models.QuerySet):
     # We implement this ourselves, not an override of a QuerySet method
@@ -207,7 +206,7 @@ class EvalUnit(models.Model):
     """
     Model representing an evaluation unit of the QC property assessment roll.
     An evaluation unit can be composed of one or more buildings, and
-    has a primary land-use code (CUBF) describing its primary use.
+    has a land-use code (CUBF) describing its primary use.
     """
     # 23 character unique ID
     id = models.TextField(primary_key=True)
@@ -253,6 +252,7 @@ class EvalUnit(models.Model):
     # (e.g. HLMs) associated with this evaluation unit.
     associated = models.JSONField(null=True, blank=True)
     date_added = models.DateTimeField('date added', default=timezone.now)
+    geom = models.MultiPolygonField(null=True)
 
     # Override the objects attribute of the model
     # in order to implement custom search functionality
@@ -262,6 +262,8 @@ class EvalUnit(models.Model):
         indexes = [
             models.Index(fields=["point"], name="point_geo_idx"),
         ]
+
+        db_table = 'evalunits'
 
     def num_votes(self):
         return len(self.vote_set)
@@ -396,11 +398,18 @@ class HLMBuilding(models.Model):
     """
     Model representing an HLM building.
     """
+    class Meta:
+        db_table = 'hlms'
+
     id = models.IntegerField(primary_key=True)
+    lat = models.FloatField(null=True)
+    lng = models.FloatField(null=True)
+    point = models.PointField(null=True)
     eval_unit = models.ForeignKey(EvalUnit, on_delete=models.CASCADE)
     project_id = models.IntegerField()
     organism = models.TextField()
     service_center = models.TextField()
+    address = models.TextField(null=True)
     street_num = models.TextField()
     street_name = models.TextField()
     muni = models.TextField()
