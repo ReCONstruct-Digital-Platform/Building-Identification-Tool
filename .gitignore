@@ -3,6 +3,9 @@ notes/
 log/
 .vscode/
 output/
+data/*
+!data/public
+
 
 **/__pycache__/
 *db.sqlite*
