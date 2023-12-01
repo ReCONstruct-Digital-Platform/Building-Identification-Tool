@@ -264,6 +264,7 @@
 <!-- A way to pass data from backend to scripts -->
 {{ eval_unit_coords | json_script:"eval_unit_coords" }}
 {{ latest_view_data_value | json_script:"latest_view_data_value" }}
+{{ geojson | json_script:"geojson" }}
 
 <!-- Google Maps SDK Bootstrap Loader -->
 <!-- https://developers.google.com/maps/documentation/javascript/load-maps-js-api#dynamic-library-import -->

@@ -21,7 +21,7 @@ jobs:
       # Label used to access the service container
       postgres:
         # Docker Hub image
-        image: postgres
+        image: postgis/postgis:16-3.4
         # Provide the password for postgres
         env:
           POSTGRES_PASSWORD: postgres
@@ -49,18 +49,21 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         sudo apt-get update
-        sudo apt-get install --yes --no-install-recommends postgresql-client
+        sudo apt-get install -y --no-install-recommends postgresql-client
+        sudo apt-get install -y binutils libproj-dev gdal-bin
         psql postgresql://postgres:postgres@localhost:5432 -c "CREATE USER bitdbuser WITH PASSWORD 'password';"
         psql postgresql://postgres:postgres@localhost:5432 -c "ALTER ROLE bitdbuser SET client_encoding TO 'utf8';"
         psql postgresql://postgres:postgres@localhost:5432 -c "ALTER ROLE bitdbuser SET default_transaction_isolation TO 'read committed';"
         psql postgresql://postgres:postgres@localhost:5432 -c "ALTER ROLE bitdbuser SET timezone TO 'UTC';"
         psql postgresql://postgres:postgres@localhost:5432 -c "GRANT ALL ON SCHEMA public TO bitdbuser;"
-        psql postgresql://postgres:postgres@localhost:5432 -c "ALTER USER bitdbuser CREATEDB;"
+        psql postgresql://postgres:postgres@localhost:5432 -c "ALTER USER bitdbuser SUPERUSER;"
 
     - name: Run All Tests
       env: 
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        GOOGLE_SIGNING_SECRET: ${{ secrets.GOOGLE_SIGNING_SECRET }}
+        MAPBOX_TOKEN: ${{ secrets.MAPBOX_TOKEN }}
         B2_KEYID_RW: ${{ secrets.B2_KEYID_RW }}
         B2_APPKEY_RW: ${{ secrets.B2_APPKEY_RW }}
         B2_ENDPOINT: ${{ secrets.B2_ENDPOINT }}

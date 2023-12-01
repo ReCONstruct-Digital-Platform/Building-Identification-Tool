@@ -3,11 +3,12 @@ import json
 import requests
 import traceback
 
+import IPython
 from pprint import pprint
 from datetime import datetime
 from ipaddress import ip_address, ip_network
 from render_block import render_block_to_string
-
+from django.db import connection
 from django.views import generic 
 from django.conf import settings
 from django.db import transaction
@@ -22,8 +23,10 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
-from buildings.utils.contants import CUBF_TO_NAME_MAP
+from buildings.utils.constants import CUBF_TO_NAME_MAP
 from buildings.utils.utility import print_query_dict, verify_github_signature
+from django.contrib.gis.db.models.functions import AsGeoJSON
+from django.core.serializers import serialize
 
 from .forms import CreateUserForm
 from .models.surveys import SurveyV1Form
@@ -39,7 +42,7 @@ log = logging.getLogger(__name__)
 def index(request):
     template = 'buildings/index.html'
 
-    total_votes = Vote.objects.count()
+    total_votes = Vote.objects.count() or 1
     latest_votes = Vote.objects.order_by('-date_modified').all()
 
     num_user_votes = Vote.objects.filter(user = request.user).count()
@@ -161,11 +164,11 @@ def survey_v1(request, eval_unit_id):
     hlm_info = None
     avg_disrepair = None
 
-    if eval_unit.associated is not None and 'hlm' in eval_unit.associated:
-        hlms = HLMBuilding.objects.filter(eval_unit=eval_unit).order_by('street_num')
-        if len(hlms) > 0:
-            hlm_info = hlms.aggregate(num_hlms=Count('*'), total_dwellings=Sum('num_dwellings'), avg_ivp=Round(Avg('ivp'), precision=1))
-            avg_disrepair = HLMBuilding.get_disrepair_state(hlm_info['avg_ivp'])
+    # if eval_unit.associated is not None and 'hlm' in eval_unit.associated:
+    hlms = HLMBuilding.objects.filter(eval_unit=eval_unit).order_by('street_num')
+    if len(hlms) > 0:
+        hlm_info = hlms.aggregate(num_hlms=Count('*'), total_dwellings=Sum('num_dwellings'), avg_ivp=Round(Avg('ivp'), precision=1))
+        avg_disrepair = HLMBuilding.get_disrepair_state(hlm_info['avg_ivp'])
 
     # Fetch any previous survey v1 entry for this building
     # If none exist, initialize a survey with the building and user ids
@@ -267,6 +270,25 @@ def survey_v1(request, eval_unit_id):
 
     form = SurveyV1Form(instance=prev_survey_instance)
 
+    # Load the lot polygon
+    # https://django.readthedocs.io/en/stable/ref/contrib/gis/functions.html
+    # https://django.readthedocs.io/en/stable/ref/contrib/gis/serializers.html
+    # eval_unit.geom = eval_unit.geom.simplify(0.000005)
+    # lot_geojson = json.loads(serialize('geojson', [eval_unit], geometry_field='geom', fields=[]))
+
+    from django.db import connection
+
+    lot_geojson = None
+    with connection.cursor() as cursor:
+        cursor.execute(f"select st_asgeojson(st_simplify(lot_geom, 0.000005, true)) from evalunits where id = %s", [eval_unit_id])       
+        row = cursor.fetchone()
+        # If we get a result
+        if row and row[0]:
+            lot_geojson = {
+                'type': 'Feature',
+                'geometry': json.loads(row[0]) 
+            }
+
     context = {
         'key': settings.GOOGLE_MAPS_API_KEY,
         'eval_unit': eval_unit,
@@ -274,6 +296,7 @@ def survey_v1(request, eval_unit_id):
             'lat': eval_unit.lat,
             'lng': eval_unit.lng,
         },
+        'geojson': lot_geojson,
         'latest_view_data_value': latest_view_data_value,
         'next_eval_unit_id': next_eval_unit_id,
         'form': form,

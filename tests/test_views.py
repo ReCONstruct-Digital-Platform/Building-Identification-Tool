@@ -9,8 +9,8 @@ class LoginViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = User.objects.create_user(username='testuser', password='testpw')
-        cls.eval_unit = EvalUnit.objects.create(id='id1', lat=1.0, lng=1.5, muni='mtl', address='123 a st', mat18='fsd', cubf=1000, associated={'hlm': ['hlm1']})
-        cls.eval_unit2 = EvalUnit.objects.create(id='id2', lat=1.0, lng=1.5, muni='mtl', address='123 a st', mat18='fsd', cubf=1000, associated={'hlm': ['hlm1']})
+        cls.eval_unit = EvalUnit.objects.create(id='id1', lat=1.0, lng=1.5, muni='mtl', year=2005, address='123 a st', mat18='fsd', cubf=1000, associated={'hlm': ['hlm1']})
+        cls.eval_unit2 = EvalUnit.objects.create(id='id2', lat=1.0, lng=1.5, muni='mtl',year=2005,  address='123 a st', mat18='fsd', cubf=1000, associated={'hlm': ['hlm1']})
         cls.client = Client()
         
     def test_redirect_if_not_logged_in(self):
@@ -41,8 +41,8 @@ class SurveyViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = User.objects.create_user(username='testuser', password='testpw')
-        cls.eval_unit = EvalUnit.objects.create(id='id1', lat=1.0, lng=1.5, muni='mtl', address='123 a st', mat18='fsd', cubf=1000, associated={'hlm': ['hlm1']})
-        cls.eval_unit2 = EvalUnit.objects.create(id='id2', lat=1.0, lng=1.5, muni='mtl', address='123 a st', mat18='fsd', cubf=1000, associated={'hlm': ['hlm1']})
+        cls.eval_unit = EvalUnit.objects.create(id='id1', lat=1.0, lng=1.5, muni='mtl', year=2005, address='123 a st', mat18='fsd', cubf=1000, associated={'hlm': ['hlm1']})
+        cls.eval_unit2 = EvalUnit.objects.create(id='id2', lat=1.0, lng=1.5, muni='mtl', year=2005, address='123 a st', mat18='fsd', cubf=1000, associated={'hlm': ['hlm1']})
         cls.client = Client()
 
     def test_get_survey_home(self):

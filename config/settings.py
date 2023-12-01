@@ -32,6 +32,7 @@ env = environ.Env(
     POSTGRES_PW=(str, ''),
     POSTGRES_HOST=(str, ''),
     POSTGRES_PORT=(int, ''),
+    GDAL_LIBRARY_PATH=(str, ''),
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -49,6 +50,8 @@ SECRET_KEY = env('SECRET_KEY')
 WEBHOOK_SECRET = env('WEBHOOK_SECRET')
 
 GOOGLE_MAPS_API_KEY = env('GOOGLE_MAPS_API_KEY')
+GOOGLE_SIGNING_SECRET = env('GOOGLE_SIGNING_SECRET')
+MAPBOX_TOKEN = env('MAPBOX_TOKEN')
 
 ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 
@@ -57,6 +60,8 @@ CSRF_TRUSTED_ORIGINS = env('CSRF_TRUSTED_ORIGINS')
 CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE')
 
 SESSION_COOKIE_SECURE = env('SESSION_COOKIE_SECURE')
+
+GDAL_LIBRARY_PATH = env('GDAL_LIBRARY_PATH')
 
 # Backblaze B2 variables
 B2_KEYID_RW = env('B2_KEYID_RW')
@@ -111,6 +116,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.gis",
     "django_htmx",
     'django.contrib.humanize',
 ]
@@ -158,7 +164,7 @@ INTERNAL_IPS = (
 
 DATABASES = {
     "default": {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': env('POSTGRES_NAME'),
         'USER': env('POSTGRES_USER'),
         'PASSWORD': env('POSTGRES_PW'),

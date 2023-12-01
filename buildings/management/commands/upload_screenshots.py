@@ -1,3 +1,7 @@
+"""
+This management command is intended to run as an always-on task on pythonanywhere.com
+It loops forever, checking for pending image upload jobs and processing them.
+"""
 import io
 import json
 import logging
@@ -9,10 +13,8 @@ from functools import reduce
 from w3lib.url import parse_data_uri
 from uuid_extensions import uuid7str
 from buildings.utils import b2_upload
-from buildings.models.models import EvalUnit, EvalUnitSatelliteImage, EvalUnitStreetViewImage, UploadImageJob, User
-
-
 from django.core.management.base import BaseCommand
+from buildings.models.models import EvalUnit, EvalUnitSatelliteImage, EvalUnitStreetViewImage, UploadImageJob, User
 
 log = logging.getLogger(__name__)
 
