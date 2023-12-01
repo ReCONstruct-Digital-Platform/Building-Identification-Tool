@@ -397,7 +397,7 @@ def geocode_and_crossref_HLMs(work_split):
 
 
 
-def is_streetview_imagery_available(lat, lng, radius=25):
+def is_streetview_imagery_available(lat, lng, radius=100):
     """
     Query the Google Streetview Metadata API to 
     know if streetview imagery is available at the 
