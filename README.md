@@ -1,44 +1,58 @@
 # ReCONstruct building identification tool
 
-The goal of this tool is to provide a convenient way for users to rate the retrofit potential of buildings.
-
-We first geocode addresses, then provide a live streetview of them. A first version had users determine the facade materials of buildings, with a 1-5 certainty rating, and could add new materials and add a note about the building, containing additional information.
-
-The latest version focuses on identifying pre-fabricated metal buildings. The set of conditions will then be extended in a future version to further refine the selection.  
+The goal of this tool is to provide a convenient interface for users to remotely survey buildings and evaluate their deep energy retrofit potential. Our data is currently only for buildings in Quebec, with a foucs on HLMs and prefabrivated metal buildings.
 
 ![image](assets/screenshot1.JPG)
 
 # Installation
 
-## 0. Get a Google Maps API key
-
-This project makes use of the google maps API. To run it locally, you will need to obtain an authorization key.
-Ask us for one from ReCONstruct, or set up your own by following the instructions [here](https://developers.google.com/maps/documentation/javascript/cloud-setup). (You will need to input a credit card, but local development and testing should come out at less than $5-10).
-
-Once you have a key, set the `GOOGLE_MAPS_API_KEY` variable to it in the file `config/settings.py`.
-
-## 1. (Optional) Create a virtual environment for the project
+## 0. (Optional) Create a virtual environment for the project
 Virtual environments (venv for short) hold all dependencies for your project, and allow avoiding package version conflicts at the system level.
 Each project has its specific dependency package versions installed in its virtual environment. 
-This comes at the cost of disk space to store potential duplicate packages, for porject who would use the same ones. 
-```
+This comes at the cost of disk space to store potential duplicate packages, for porject who would use the same ones.
+
+```bash
 python -m venv .venv        # Will create the virtual environment in the '.venv' folder
 .venv\Scripts\activate      # On Windows
 source .venv/bin/activate   # On Linux/Mac
 ```
 
-## 2. Install dependencies
-```
+## 1. Install dependencies and prepare environment
+```bash
 pip install -r requirements.txt
+# The .env file will hold all your secret keys
+cp .env.dist .env
 ```
 
-## 3. Create the database and fill it with data
+## 2. Get API keys for services
+
+This project makes use of the google maps and mapbox APIs. To run it locally, you will need to obtain authorization keys for to these services:
+- [Google maps API](https://developers.google.com/maps/documentation/javascript/cloud-setup). You will need to input a credit card, but Google provides $200 USD in credits
+- [Mapbox API](https://account.mapbox.com/auth/signup/). The free tier should be sufficient to start.
+
+Additionally, we use a [Backblaze B2](https://www.backblaze.com/get-started) as a cloud object store. As it is S3 compatible, you can likely easily swap it for an [S3 bucket](https://aws.amazon.com/pm/serv-s3/) or a [MinIO](https://github.com/minio/minio/) instance locally. 
+
+Once you have obtained all the above keys, fill in the following values in the `.env` file:
+
+```conf
+GOOGLE_MAPS_API_KEY=xxxx
+GOOGLE_SIGNING_SECRET=xxxx
+MAPBOX_TOKEN=xxxx
+
+B2_KEYID_RW=xxxx
+B2_APPKEY_RW=xxxx
+B2_ENDPOINT=xxxx
+B2_BUCKET_IMAGES=xxxx
+```
+
+
+## 3. Setup the Database
 
 ### Step 1:
 
-Download and install [PostgreSQL](https://www.postgresql.org/) and the [PostGIS extension](https://postgis.net/documentation/getting_started), used for geospatial work. This code may work with other SQL databases, but was only tested with Postgres.
+Download and install [PostgreSQL](https://www.postgresql.org/) as well as the [PostGIS extension](https://postgis.net/documentation/getting_started) used for geospatial work. 
 
-Make sure `psql` and `shp2pgsql` are on your path. You should be able to use the `psql` command to connect to postgres like so:
+Make sure `psql` and `shp2pgsql` are on your PATH. You should be able to use the `psql` command to connect to postgres like so:
 ```bash
 psql -U postgres
 ```
@@ -69,8 +83,8 @@ Django will user these credentials to access the DB.
 POSTGRES_NAME=bitdb
 POSTGRES_USER=bitdbuser
 POSTGRES_PW=password
-POSTGRES_HOST=localhost # DB is running locally
-POSTGRES_PORT=5432 # default port number for postgres
+POSTGRES_HOST=localhost 
+POSTGRES_PORT=5432
 ``` 
 
 ### Step 3:
@@ -79,7 +93,7 @@ Run the Django migrations, this will create all tables for our application in th
 python manage.py migrate
 ```
 
-### Step 4: Setting up the Database
+### Step 4: Fill up the database
 
 The database setup pipelines consists of the following steps:
 - Import and process the roll XML files. These contain all the evaluation units in Quebec.
