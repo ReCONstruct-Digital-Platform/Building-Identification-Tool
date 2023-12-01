@@ -61,6 +61,8 @@ jobs:
       env: 
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        GOOGLE_SIGNING_SECRET: ${{ secrets.GOOGLE_SIGNING_SECRET }}
+        MAPBOX_TOKEN: ${{ secrets.MAPBOX_TOKEN }}
         B2_KEYID_RW: ${{ secrets.B2_KEYID_RW }}
         B2_APPKEY_RW: ${{ secrets.B2_APPKEY_RW }}
         B2_ENDPOINT: ${{ secrets.B2_ENDPOINT }}
