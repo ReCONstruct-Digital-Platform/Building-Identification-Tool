@@ -56,7 +56,7 @@ jobs:
         psql postgresql://postgres:postgres@localhost:5432 -c "ALTER ROLE bitdbuser SET default_transaction_isolation TO 'read committed';"
         psql postgresql://postgres:postgres@localhost:5432 -c "ALTER ROLE bitdbuser SET timezone TO 'UTC';"
         psql postgresql://postgres:postgres@localhost:5432 -c "GRANT ALL ON SCHEMA public TO bitdbuser;"
-        psql postgresql://postgres:postgres@localhost:5432 -c "ALTER USER bitdbuser CREATEDB;"
+        psql postgresql://postgres:postgres@localhost:5432 -c "ALTER USER bitdbuser SUPERUSER;"
 
     - name: Run All Tests
       env: 
