@@ -48,8 +48,6 @@ B2_BUCKET_IMAGES=xxxx
 
 ## 3. Setup the Database
 
-### Step 1:
-
 Download and install [PostgreSQL](https://www.postgresql.org/) as well as the [PostGIS extension](https://postgis.net/documentation/getting_started) used for geospatial work. 
 
 Make sure `psql` and `shp2pgsql` are on your PATH. You should be able to use the `psql` command to connect to postgres like so:
@@ -57,9 +55,6 @@ Make sure `psql` and `shp2pgsql` are on your PATH. You should be able to use the
 psql -U postgres
 ```
 
-
-
-### Step 2:
 
 Create a PostgreSQL DB and user, and activate the postgis extension.
 ```sql
@@ -87,13 +82,12 @@ POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 ``` 
 
-### Step 3:
 Run the Django migrations, this will create all tables for our application in the DB.
 ```bash
 python manage.py migrate
 ```
 
-### Step 4: Fill up the database
+## 4: Fill up the database
 
 The database setup pipelines consists of the following steps:
 - Import and process the roll XML files. These contain all the evaluation units in Quebec.
@@ -102,7 +96,7 @@ The database setup pipelines consists of the following steps:
 - Aggregate individually listed condos into single entries representing their building.
 - Import the HLM dataset and map it to evaluation units.
 
-The entire process takes around 6.5 hours!
+The entire process should take around 6 hours or more and requires an internet connection.
 
 ```bash
 python manage.py setup_database
