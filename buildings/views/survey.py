@@ -6,8 +6,6 @@ import traceback
 import IPython
 from pprint import pprint
 from datetime import datetime
-from ipaddress import ip_address, ip_network
-from render_block import render_block_to_string
 from django.db import connection
 from django.views import generic 
 from django.conf import settings
@@ -17,21 +15,21 @@ from django.http import HttpResponse
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count, Sum
 from django.db.models.functions import Round
+from ipaddress import ip_address, ip_network
 from django.forms.models import model_to_dict
+from render_block import render_block_to_string
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST   
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
-from buildings.utils.constants import CUBF_TO_NAME_MAP
-from buildings.utils.utility import print_query_dict, verify_github_signature
-from django.contrib.gis.db.models.functions import AsGeoJSON
-from django.core.serializers import serialize
+from buildings.utils.utility import verify_github_signature
 
-from .forms import CreateUserForm
-from .models.surveys import SurveyV1Form
+from buildings.forms import CreateUserForm
+from buildings.models.surveys import SurveyV1Form
 from config.settings import WEBHOOK_SECRET, BASE_DIR
-from .models.models import (
+from buildings.utils.constants import CUBF_TO_NAME_MAP
+from buildings.models.models import (
     EvalUnit, EvalUnitLatestViewData, HLMBuilding, NoBuildingFlag, UploadImageJob, User, Vote
 )
 import logging
@@ -68,7 +66,7 @@ def index(request):
         "top_3_total_votes": top_3_total_votes,
         "top_3_vote_percentage": top_3_vote_percentage
     }
-
+    # This returns partial HTML content only for the activity tab
     if request.htmx:
         rendered_content = render_block_to_string(
             template, "activity-tab-content", context=context, request=request
@@ -150,6 +148,7 @@ def all_buildings(request):
 
 @login_required(login_url='buildings:login')
 def survey(_):
+    #TODO: Split this into HLMs and Metal Buildings
     random_unscored_unit = EvalUnit.objects.get_next_unit_to_survey()
     eval_unit_id = random_unscored_unit.id
     return redirect('buildings:survey_v1', eval_unit_id=eval_unit_id)
@@ -276,8 +275,6 @@ def survey_v1(request, eval_unit_id):
     # eval_unit.geom = eval_unit.geom.simplify(0.000005)
     # lot_geojson = json.loads(serialize('geojson', [eval_unit], geometry_field='geom', fields=[]))
 
-    from django.db import connection
-
     lot_geojson = None
     with connection.cursor() as cursor:
         cursor.execute(f"select st_asgeojson(st_simplify(lot_geom, 0.000005, true)) from evalunits where id = %s", [eval_unit_id])       
@@ -315,7 +312,6 @@ class EvalUnitDetailView(generic.DetailView):
     """
     model = EvalUnit
     template_name = 'buildings/detail.html'
-
 
 
 def register(request):

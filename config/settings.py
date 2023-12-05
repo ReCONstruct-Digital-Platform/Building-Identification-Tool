@@ -33,6 +33,7 @@ env = environ.Env(
     POSTGRES_HOST=(str, ''),
     POSTGRES_PORT=(int, ''),
     GDAL_LIBRARY_PATH=(str, ''),
+    NPM_BIN_PATH=(str, '/usr/local/bin/npm')
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -119,7 +120,15 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "django_htmx",
     'django.contrib.humanize',
+    'tailwind',
+    'theme',
+    'django_browser_reload',
+
 ]
+
+TAILWIND_APP_NAME = 'theme'
+
+NPM_BIN_PATH = env('NPM_BIN_PATH')
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -130,6 +139,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
+    "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
