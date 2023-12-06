@@ -1,6 +1,7 @@
 {% extends 'buildings/base.html' %}
 
 {% block content %}
+
 {% load humanize %}
 
 <link rel="stylesheet" type="text/css" href="{% static 'buildings/style.css'%}"> 
@@ -261,6 +262,12 @@
 
 <div id="test-screenshots-container"></div>
 
+
+{% endblock content %}
+
+{% block page_scripts %}
+{% load static %}
+
 <!-- A way to pass data from backend to scripts -->
 {{ eval_unit_coords | json_script:"eval_unit_coords" }}
 {{ latest_view_data_value | json_script:"latest_view_data_value" }}
@@ -294,5 +301,4 @@
 <script src="{% static 'scripts/survey.js' %}"></script>
 <script src="{% static 'scripts/html2canvas.min.js' %}"></script>
 
-
-{% endblock content %}
+{% endblock page_scripts %}

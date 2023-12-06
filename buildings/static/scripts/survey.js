@@ -366,8 +366,7 @@ function setUpInitialSurveyMutationChecker() {
     observer.observe(form, {subtree: true, attributes: true});
 }
 
-
-$(document).ready(function() {
+document.addEventListener("DOMContentLoaded", function() {
     setUpSurveyNavigation();
     setUpDragBar();
     setUpScrollHeightObserver();

@@ -13,7 +13,7 @@ function turnOnSpecify(id) {
 // UX improvement: automatically check the radio/checkbox when user clicks 
 // on a specify input field or label. And unselect when label clicked again.
 // TODO: This code is kinda ugly, probably a cleaner way to make this work
-$(document).ready(() => {
+document.addEventListener("DOMContentLoaded", () => {
   // Catch the click on the parent
   // https://stackoverflow.com/questions/3100319/event-on-a-disabled-input#answer-32925830 
   $("input[id$='_specify_value']").parent().click((e) => {
@@ -69,6 +69,5 @@ $(document).ready(() => {
       // the other checkboxes required or not as necessary
       markCheckboxesNotRequired(specify_check.attr('name'));
     }
-  }
-  );
+  });
 });
