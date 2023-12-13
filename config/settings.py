@@ -215,6 +215,8 @@ LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "America/Montreal"
 
+# Internationalization allows multiple languages
+# https://docs.djangoproject.com/en/4.2/topics/i18n/translation/
 USE_I18N = True
 
 USE_TZ = True

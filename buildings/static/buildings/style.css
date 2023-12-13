@@ -1,13 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
 body {
     background-color: #fafafa;
     color: #333333;
     height: 100vh;
     display: flex;
     flex-flow: column;
+    font-family: Inter, sans-serif;
 }
 
 .main {
-  background:url('imgs/wave-haikei.svg');
+  /* background:url('imgs/wave-haikei.svg'); */
   background-repeat: no-repeat;
   background-position: 80% 0%;
   background-size: cover;
@@ -167,7 +169,7 @@ h1, h2, h3, h4, h5, h6, strong {
 
 /* mouse over link */
 a:hover {
-  color: lightblue;
+  color: #72a5c9;
 }
 
 label {
@@ -185,13 +187,10 @@ input[type='number']{
 
 input[disabled] {pointer-events:none}
 
-.navbar {
-  --bs-navbar-padding-y: 0.25rem;
-}
 
 .user-card {
   width: 350px;
-  background: rgba(255, 255, 255, .7);
+  /* background: rgba(255, 255, 255, .7); */
   margin-top: auto;
   margin-bottom: auto;
   position: relative;
@@ -225,18 +224,6 @@ input[disabled] {pointer-events:none}
 }
 
 .btn-vote {
-  align-self: center;
-}
-
-.form-error, 
-.msg-error {
-  padding: 5px;
-  margin: 5px;
-  color: red;
-}
-
-.msg-container {
-  display: flex;
   align-self: center;
 }
 
@@ -600,4 +587,61 @@ tr:hover .delete-row-icon {
 .disrepair-badge-E {
   --bs-badge-padding-x: 0.75em;
   background-color: #de2235;
+}
+
+@keyframes jumbo {
+  from {
+      background-position: 50% 20%, 50% 50%;
+  }
+  to {
+      background-position: 350% 350%, 350% 150%;
+  }
+}
+
+.jumbo {
+  --stripes: repeating-linear-gradient(
+      100deg,
+      #fff 0%,
+      #fff 7%,
+      transparent 10%,
+      transparent 12%,
+      #fff 16%
+  );
+  --stripesDark: repeating-linear-gradient(
+      100deg,
+      #000 0%,
+      #000 7%,
+      transparent 10%,
+      transparent 12%,
+      #000 16%
+  );
+  --rainbow: repeating-linear-gradient(
+      100deg,
+      #5f788a 10%,
+      #379feb 15%,
+      #6f788a 20%,
+      #379aeb 25%,
+      #5f788a 30%
+  );
+  background-image: var(--stripes), var(--rainbow);
+  background-size: 100%, 100%;
+  background-position: 50% 50%, 100% 50%;
+
+  filter: blur(130px) invert(100%) saturate(120%);
+
+  -webkit-mask-image: radial-gradient(ellipse 100% 100% at 75% 10%, black 10%, transparent 70%);
+  mask-image: radial-gradient(ellipse 100% 100% at 75% 10%, black 10%, transparent 70%);
+
+  pointer-events: none;
+}
+
+.jumbo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--stripes), var(--rainbow);
+  background-size: 200%, 100%;
+  animation: jumbo 120s linear infinite;
+  background-attachment: fixed;
+  mix-blend-mode: exclusion;
 }

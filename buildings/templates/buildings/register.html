@@ -1,66 +1,75 @@
-
-
 {% extends "buildings/base.html" %}
 {% block content %}
 
-<div class="container h-100 container">
-    <div class="d-flex justify-content-center h-100">
-        <div class="user-card">
-            <div class="d-flex justify-content-center mb-4">
-                <h3 id="form-title mb-2">Register</h3>
-            </div>
+<div class="h-full">
+  <div class="flex flex-col justify-center h-full">
+    <div class="flex flex-col align-self-center rounded-xl w-[375px] p-7 bg-white/[0.65] shadow-lg">
 
-            <div class="d-flex justify-content-center">    
-                <form method="POST" action="">
-                    {% csrf_token %}
-                    <div class="input-group mb-2">
-                        <span class="input-group-text">
-                            {% include 'buildings/icons/person.svg' %}
-                        </span>
-                        {{ form.username }}
-                    </div>
-                    {% for error in form.username.errors %}
-                        <div class='form-error'>{{ error }}</div>
-                    {% endfor %}
-                    <div class="input-group mb-2">
-                        <span class="input-group-text">
-                            {% include 'buildings/icons/mail.svg' %}
-                        </span>
-                        {{ form.email }}
-                    </div>
-                    {% for error in form.email.errors %}
-                        <div class='form-error'>{{ error }}</div>
-                    {% endfor %} 
-                    <div class="input-group mb-2">
-                        <span class="input-group-text">
-                            {% include 'buildings/icons/key.svg' %}
-                        </span>
-                        {{ form.password1 }}
-                    </div>
-                    {% for error in form.password1.errors %}
-                        <div class='form-error'>{{ error }}</div>
-                    {% endfor %}
-                    <div class="input-group mb-2">
-                        <span class="input-group-text">
-                            {% include 'buildings/icons/key.svg' %}
-                        </span>
-                        {{ form.password2 }}
-                    </div>
-                    {% for error in form.password2.errors %}
-                        <div class='form-error'>{{ error }}</div>
-                    {% endfor %}
-                    <div class="d-flex justify-content-center mt-3">
-                        <input class="btn btn-main btn-login" type="submit" value="Register">
-                    </div>
-                </form>
+      <div class="flex justify-center mb-3">
+        <h3 class="text-xl w-full text-center font-bold">Register an account</h3>
+      </div>
+
+      <div class="mx-auto w-full max-w-xs">
+        <form class="space-y-6" method="POST" action="#">
+          {% csrf_token %}
+
+					<div class="flex flex-col">
+						<label for="username" class="block text-sm font-medium leading-6 text-gray-900">Username</label>
+            {% if 'username' in form.errors %}
+            <div class='text-sm text-red-500'>{{ form.errors.username }}</div>
+            {% endif %}
+						<div class="mt-2">
+							<input id="username" name="username" type="text" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset 
+										focus:ring-teal-600 sm:text-sm sm:leading-6">
+						</div>
+					</div>
+					<div>
+						<label for="email" class="block text-sm font-medium leading-6 text-gray-900">Email</label>
+            {% if 'email' in form.errors %}
+            <div class='text-sm text-red-500'>{{ form.errors.email }}</div>
+            {% endif %}
+						<div class="mt-2">
+							<input id="email" name="email" type="email" required 
+              class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
+						</div>
+					</div>
+          <div>
+            <div class="flex items-center justify-between">
+              <label for="password1" class="block text-sm font-medium leading-6 text-gray-900">Password</label>
             </div>
-           
-            <div class="mt-4">
-                <div class="d-flex justify-content-center links">
-                    Already have an account? <a href="{% url 'buildings:login' %}" class="ms-2">Login</a>
-                </div>
+            {% if 'password1' in form.errors %}
+            <div class='text-sm text-red-500'>{{ form.errors.password1 }}</div>
+            {% endif %}
+            <div class="mt-2">
+            <input id="password1" name="password1" type="password" autocomplete="new-password" required
+              class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
             </div>
-        </div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between">
+              <label for="password2" class="block text-sm font-medium leading-6 text-gray-900">Confirm password</label>
+            </div>
+            {% if 'password2' in form.errors %}
+            <div class='text-sm text-red-500'>{{ form.errors.password2 }}</div>
+            {% endif %}
+            <div class="mt-2">
+            <input id="password2" name="password2" type="password" autocomplete="new-password" required
+              class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
+            </div>
+          </div>
+          <div>
+						<button type="submit"
+							class="flex w-full justify-center rounded-md bg-teal-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">Register</button>
+					</div>
+        </form>
+      </div>
     </div>
+		<p class="mt-8 text-center text-sm text-gray-500">
+			Already have an account?
+			<a href="{% url 'buildings:login' %}"
+				class="font-semibold leading-6 text-teal-600 hover:text-teal-500">Sign in<span>&nbsp;&rarr;</span></a>
+		</p>
+
+  </div>
 </div>
 {% endblock content %}

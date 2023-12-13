@@ -1,20 +1,85 @@
 {% extends "buildings/base.html" %}
 
 {% block content %}
-	<div class="container h-100">
-		<div class="d-flex justify-content-center h-100">
-			<div class="user-card">
-				<div class="d-flex justify-content-center mb-4">
-					<h3 id="form-title">Login</h3>
-				</div>
+<div class="h-full">
+
+	<div class="flex flex-col justify-center h-full">
+
+		<div class="flex flex-col justify-center align-self-center rounded-xl w-[375px] p-7 bg-white/[0.65] shadow-lg">
+
+			<div class="mx-auto w-full max-w-sm">
+				<svg class="mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="42" height="42"
+					fill="currentColor">
+					<title>home-search-icon</title>
+					<path
+						d="M19.31 18.9C19.75 18.21 20 17.38 20 16.5C20 14 18 12 15.5 12S11 14 11 16.5 13 21 15.5 21C16.37 21 17.19 20.75 17.88 20.32L21 23.39L22.39 22L19.31 18.9M15.5 19C14.12 19 13 17.88 13 16.5S14.12 14 15.5 14 18 15.12 18 16.5 16.88 19 15.5 19M5 20V12H2L12 3L22 12H20.18C19 10.77 17.34 10 15.5 10C11.92 10 9 12.92 9 16.5C9 17.79 9.38 19 10.03 20H5Z" />
+				</svg>
+				<h3 class="text-xl font-md w-full text-center font-bold">Sign in to your account</h3>
+			</div>
+
+			{% if messages %}
+			<div class="flex justify-center mt-2 -mb-5">
+				{% for message in messages %}
+				<div {% if message.tags %} class="text-center text-red-500" {% endif %}>{{ message }}</div>
+				{% endfor %}
+			</div>
+			{% endif %}
+
+			<div class="mx-auto w-full max-w-xs">
+				<form class="space-y-6" action="#" method="POST">
+					{% csrf_token %}
+					<div>
+						<label for="username" class="block text-sm font-medium leading-6 text-gray-900">Username</label>
+						<div class="mt-2">
+							<input id="username" name="username" type="text" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset 
+										focus:ring-teal-600 sm:text-sm sm:leading-6">
+						</div>
+					</div>
+
+					<div>
+						<div class="flex items-center justify-between">
+							<label for="password" class="block text-sm font-medium leading-6 text-gray-900">Password</label>
+							<div class="text-sm">
+								<a href="#" class="font-semibold text-teal-600 hover:text-teal-500">Forgot password?</a>
+							</div>
+						</div>
+						<div class="mt-2">
+							<input id="password" name="password" type="password" autocomplete="current-password" required
+								class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
+						</div>
+					</div>
+
+					<div>
+						<button type="submit"
+							class="flex w-full justify-center rounded-md bg-teal-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">Sign
+							in</button>
+					</div>
+				</form>
+			</div>
+		</div>
+		
+		<p class="mt-8 text-center text-sm text-gray-500">
+			Don't have an account?
+			<a href="{% url 'buildings:register' %}"
+				class="font-semibold leading-6 text-teal-600 hover:text-teal-500">Sign up<span>&nbsp;&rarr;</span></a>
+		</p>
+	</div>
+</div>
+
+<!-- 
+		<div class="flex justify-center h-full overflow-hidden">
+			<div class="flex flex-col grow-0 justify-center align-self-center 
+				rounded-xl w-[350px] p-3 bg-zinc-50/[.6] text-zinc-800 shadow-lg">
 				
-				<div class="msg-container">
+				<h3 class="text-xl font-md w-full text-center mb-3">Log in</h3>
+
+				<div class="flex align-self-center">
 					{% for message in messages %}
 					<div {% if message.tags %} class="msg-{{ message.tags }}"{% endif %}>{{ message }}</div>
 					{% endfor %}
 				</div>
 				
-				<div class="d-flex justify-content-center">
+				<div class="flex justify-center">
 					<form method="POST" action="">
 						{% csrf_token %}
 						<div class="input-group mb-3">
@@ -30,20 +95,19 @@
 							<input type="password" name="password" placeholder="Password" class="form-control" >
 						</div>
 
-						<div class="d-flex justify-content-center mt-3">
-							<input class="btn btn-main btn-login" type="submit" value="Login">
+						<div class="flex justify-center mt-3">
+							<input class="w-full p-2 bg-teal-500 hover:bg-teal-600 text-slate-100 hover:text-slate-50 rounded-md" type="submit" value="Login">
 						</div>
 					</form>
 				</div>
                 
-
-				<div class="mt-4">
-					<div class="d-flex justify-content-center links">
-						Don't have an account? <a href="{% url 'buildings:register' %}" class="ms-2">Sign Up</a>
-					</div>
-			
+				<div class="mt-4 flex flex-column justify-center items-center">
+					<div>Don't have an account?</div>
+					<a href="{% url 'buildings:register' %}" class="ms-2 text-lg">Sign up <span>&rarr;</span></a>
 				</div>
+
 			</div>
-		</div>
-	</div>
+		</div> -->
+
+
 {% endblock content %}

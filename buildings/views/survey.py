@@ -320,16 +320,20 @@ def register(request):
     
     if request.method == 'POST':
         form = CreateUserForm(request.POST)
+        print(form)
         if form.is_valid():
             # This will create the user
             user = form.save()
             messages.success(request, f'Account created for {user.username}')
             return redirect('buildings:login')
+        else:
+            # IPython.embed()
+            print(form.errors)
+            return render(request, 'buildings/register.html', {'form': form})
     else:
         form = CreateUserForm()
 
-    context = {'form': form}
-    return render(request, 'buildings/register.html', context)
+    return render(request, 'buildings/register.html', {'form': form})
 
 
 def login_page(request):

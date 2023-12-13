@@ -45,9 +45,20 @@
             {% include 'buildings/navbar.html' %}
         </header>
 
-        <main role="main" class="main">
+        <main role="main" class="relative h-full overflow-hidden">
+            <div class="absolute inset-0 -z-10 overflow-hidden">
+                <div class="jumbo transform-gpu absolute -inset-[10px] opacity-50"></div>
+            </div>
             {% block content %}
             {% endblock %}
+            <div
+            class="absolute inset-x-0 top-[calc(90%)] -z-10 transform-gpu overflow-hidden blur-[94px] sm:top-[calc(100%-17rem)]"
+            aria-hidden="true">
+            <div
+              class="relative aspect-[1155/678] w-[30.125rem] -translate-x-1/2 bg-gradient-to-tr from-[#5f788a] to-[#379aeb] opacity-30 sm:left-[calc(0%+15rem)] sm:w-[72.1875rem]"
+              style="clip-path: polygon(4.1% 44.1%, 100% 6.6%, 97.5% 2.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%)">
+            </div>
+          </div>
         </main>
         
         <script src="https://unpkg.com/htmx.org@1.8.6"></script>
