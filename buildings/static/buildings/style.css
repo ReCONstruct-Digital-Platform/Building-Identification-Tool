@@ -9,7 +9,6 @@ body {
 }
 
 .main {
-  /* background:url('imgs/wave-haikei.svg'); */
   background-repeat: no-repeat;
   background-position: 80% 0%;
   background-size: cover;
@@ -47,7 +46,6 @@ body {
     padding: 0 0;
   }
 }
-
 
 /* Navbar */
 .navbar-brand {
@@ -165,11 +163,6 @@ h1, h2, h3, h4, h5, h6, strong {
   display: flex;
   align-items: baseline;
   margin-bottom: 0.5rem;
-}
-
-/* mouse over link */
-a:hover {
-  color: #72a5c9;
 }
 
 label {

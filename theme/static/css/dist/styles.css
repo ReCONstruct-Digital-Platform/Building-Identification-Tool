@@ -830,6 +830,10 @@ select {
   inset-inline-end: 0px !important;
 }
 
+.top-36 {
+  top: 9rem !important;
+}
+
 .top-\[calc\(90\%\)\] {
   top: calc(90%) !important;
 }
@@ -867,6 +871,10 @@ select {
   margin-bottom: -1.25rem !important;
 }
 
+.-ms-8 {
+  margin-inline-start: -2rem !important;
+}
+
 .mb-1 {
   margin-bottom: 0.25rem !important;
 }
@@ -891,16 +899,8 @@ select {
   margin-inline-end: 0.75rem !important;
 }
 
-.me-4 {
-  margin-inline-end: 1rem !important;
-}
-
 .me-5 {
   margin-inline-end: 1.25rem !important;
-}
-
-.me-auto {
-  margin-inline-end: auto !important;
 }
 
 .ml-1 {
@@ -931,6 +931,10 @@ select {
   margin-top: 0.25rem !important;
 }
 
+.mt-10 {
+  margin-top: 2.5rem !important;
+}
+
 .mt-2 {
   margin-top: 0.5rem !important;
 }
@@ -939,8 +943,8 @@ select {
   margin-top: 0.75rem !important;
 }
 
-.mt-4 {
-  margin-top: 1rem !important;
+.mt-6 {
+  margin-top: 1.5rem !important;
 }
 
 .mt-8 {
@@ -1055,6 +1059,18 @@ select {
   height: 100vh !important;
 }
 
+.h-\[340px\] {
+  height: 340px !important;
+}
+
+.h-\[371px\] {
+  height: 371px !important;
+}
+
+.h-\[396px\] {
+  height: 396px !important;
+}
+
 .w-6 {
   width: 1.5rem !important;
 }
@@ -1063,12 +1079,12 @@ select {
   width: 30.125rem !important;
 }
 
-.w-\[350px\] {
-  width: 350px !important;
-}
-
 .w-\[375px\] {
   width: 375px !important;
+}
+
+.w-\[400px\] {
+  width: 400px !important;
 }
 
 .w-auto {
@@ -1077,10 +1093,6 @@ select {
 
 .w-full {
   width: 100% !important;
-}
-
-.max-w-2xl {
-  max-width: 42rem !important;
 }
 
 .max-w-6xl {
@@ -1107,10 +1119,6 @@ select {
   flex-grow: 1 !important;
 }
 
-.grow-0 {
-  flex-grow: 0 !important;
-}
-
 .-translate-x-1\/2 {
   --tw-translate-x: -50% !important;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y)) !important;
@@ -1122,6 +1130,22 @@ select {
 
 .transform-gpu {
   transform: translate3d(var(--tw-translate-x), var(--tw-translate-y), 0) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y)) !important;
+}
+
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+}
+
+.grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+.grid-rows-1 {
+  grid-template-rows: repeat(1, minmax(0, 1fr)) !important;
+}
+
+.flex-row {
+  flex-direction: row !important;
 }
 
 .flex-col {
@@ -1136,6 +1160,10 @@ select {
   align-items: center !important;
 }
 
+.justify-end {
+  justify-content: flex-end !important;
+}
+
 .justify-center {
   justify-content: center !important;
 }
@@ -1144,10 +1172,24 @@ select {
   justify-content: space-between !important;
 }
 
+.justify-around {
+  justify-content: space-around !important;
+}
+
+.space-y-5 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0 !important;
+  margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse))) !important;
+  margin-bottom: calc(1.25rem * var(--tw-space-y-reverse)) !important;
+}
+
 .space-y-6 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-y-reverse: 0 !important;
   margin-top: calc(1.5rem * calc(1 - var(--tw-space-y-reverse))) !important;
   margin-bottom: calc(1.5rem * var(--tw-space-y-reverse)) !important;
+}
+
+.justify-self-start {
+  justify-self: start !important;
 }
 
 .overflow-hidden {
@@ -1194,11 +1236,6 @@ select {
   background-color: rgb(56 59 67 / var(--tw-bg-opacity)) !important;
 }
 
-.bg-teal-500 {
-  --tw-bg-opacity: 1 !important;
-  background-color: rgb(55 149 138 / var(--tw-bg-opacity)) !important;
-}
-
 .bg-teal-600 {
   --tw-bg-opacity: 1 !important;
   background-color: rgb(45 127 120 / var(--tw-bg-opacity)) !important;
@@ -1212,8 +1249,8 @@ select {
   background-color: rgb(255 255 255 / 0.65) !important;
 }
 
-.bg-zinc-50\/\[\.6\] {
-  background-color: rgb(250 250 250 / .6) !important;
+.bg-white\/\[0\.75\] {
+  background-color: rgb(255 255 255 / 0.75) !important;
 }
 
 .bg-gradient-to-tr {
@@ -1244,10 +1281,6 @@ select {
 
 .p-2\.5 {
   padding: 0.625rem !important;
-}
-
-.p-3 {
-  padding: 0.75rem !important;
 }
 
 .p-7 {
@@ -1289,10 +1322,6 @@ select {
   padding-bottom: 8rem !important;
 }
 
-.pb-2 {
-  padding-bottom: 0.5rem !important;
-}
-
 .pb-4 {
   padding-bottom: 1rem !important;
 }
@@ -1321,11 +1350,6 @@ select {
 .text-5xl {
   font-size: 3rem !important;
   line-height: 1 !important;
-}
-
-.text-lg {
-  font-size: 1.125rem !important;
-  line-height: 1.75rem !important;
 }
 
 .text-sm {
@@ -1402,11 +1426,6 @@ select {
   color: rgb(239 68 68 / var(--tw-text-opacity)) !important;
 }
 
-.text-slate-100 {
-  --tw-text-opacity: 1 !important;
-  color: rgb(225 231 234 / var(--tw-text-opacity)) !important;
-}
-
 .text-teal-600 {
   --tw-text-opacity: 1 !important;
   color: rgb(45 127 120 / var(--tw-text-opacity)) !important;
@@ -1415,11 +1434,6 @@ select {
 .text-white {
   --tw-text-opacity: 1 !important;
   color: rgb(255 255 255 / var(--tw-text-opacity)) !important;
-}
-
-.text-zinc-800 {
-  --tw-text-opacity: 1 !important;
-  color: rgb(39 39 42 / var(--tw-text-opacity)) !important;
 }
 
 .underline {
@@ -1502,19 +1516,24 @@ select {
   color: rgb(127 148 142 / var(--tw-text-opacity)) !important;
 }
 
+.invalid\:ring-2:invalid {
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000) !important;
+}
+
+.invalid\:ring-inset:invalid {
+  --tw-ring-inset: inset !important;
+}
+
+.invalid\:ring-red-500:invalid {
+  --tw-ring-opacity: 1 !important;
+  --tw-ring-color: rgb(239 68 68 / var(--tw-ring-opacity)) !important;
+}
+
 .hover\:bg-teal-500:hover {
   --tw-bg-opacity: 1 !important;
   background-color: rgb(55 149 138 / var(--tw-bg-opacity)) !important;
-}
-
-.hover\:bg-teal-600:hover {
-  --tw-bg-opacity: 1 !important;
-  background-color: rgb(45 127 120 / var(--tw-bg-opacity)) !important;
-}
-
-.hover\:text-slate-50:hover {
-  --tw-text-opacity: 1 !important;
-  color: rgb(243 245 246 / var(--tw-text-opacity)) !important;
 }
 
 .hover\:text-teal-500:hover {

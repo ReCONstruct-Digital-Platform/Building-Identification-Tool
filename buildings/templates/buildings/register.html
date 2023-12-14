@@ -1,75 +1,267 @@
 {% extends "buildings/base.html" %}
 {% block content %}
 
-<div class="h-full">
-  <div class="flex flex-col justify-center h-full">
-    <div class="flex flex-col align-self-center rounded-xl w-[375px] p-7 bg-white/[0.65] shadow-lg">
+<div class="relative h-full flex flex-col top-36">
+
+  <form id="register-form" class="flex justify-center">
+
+    <fieldset id="fs1" class="relative rounded-xl w-[375px] p-7 bg-white/[0.75] shadow-lg">
 
       <div class="flex justify-center mb-3">
         <h3 class="text-xl w-full text-center font-bold">Register an account</h3>
       </div>
 
-      <div class="mx-auto w-full max-w-xs">
-        <form class="space-y-6" method="POST" action="#">
-          {% csrf_token %}
+      <div class="mx-auto w-full max-w-xs space-y-5">
 
-					<div class="flex flex-col">
-						<label for="username" class="block text-sm font-medium leading-6 text-gray-900">Username</label>
-            {% if 'username' in form.errors %}
-            <div class='text-sm text-red-500'>{{ form.errors.username }}</div>
-            {% endif %}
-						<div class="mt-2">
-							<input id="username" name="username" type="text" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset 
-										focus:ring-teal-600 sm:text-sm sm:leading-6">
-						</div>
-					</div>
-					<div>
-						<label for="email" class="block text-sm font-medium leading-6 text-gray-900">Email</label>
-            {% if 'email' in form.errors %}
-            <div class='text-sm text-red-500'>{{ form.errors.email }}</div>
-            {% endif %}
-						<div class="mt-2">
-							<input id="email" name="email" type="email" required 
-              class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
-						</div>
-					</div>
-          <div>
-            <div class="flex items-center justify-between">
-              <label for="password1" class="block text-sm font-medium leading-6 text-gray-900">Password</label>
-            </div>
-            {% if 'password1' in form.errors %}
-            <div class='text-sm text-red-500'>{{ form.errors.password1 }}</div>
-            {% endif %}
-            <div class="mt-2">
-            <input id="password1" name="password1" type="password" autocomplete="new-password" required
-              class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
-            </div>
+        <div class="flex flex-col">
+          <div class="flex items-center justify-between">
+            <label for="email" class="block text-sm font-medium leading-6 text-gray-900">
+              {{ form.email.label }}
+            </label>
+            <div id="email-errors" class='text-sm text-red-500'>{{ form.errors.email }}</div>
           </div>
-          <div>
-            <div class="flex items-center justify-between">
-              <label for="password2" class="block text-sm font-medium leading-6 text-gray-900">Confirm password</label>
-            </div>
-            {% if 'password2' in form.errors %}
-            <div class='text-sm text-red-500'>{{ form.errors.password2 }}</div>
-            {% endif %}
-            <div class="mt-2">
-            <input id="password2" name="password2" type="password" autocomplete="new-password" required
-              class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
-            </div>
+          <div class="mt-1">
+            {{ form.email }}
           </div>
-          <div>
-						<button type="submit"
-							class="flex w-full justify-center rounded-md bg-teal-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">Register</button>
-					</div>
-        </form>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between">
+            <label for="password1" class="block text-sm font-medium leading-6 text-gray-900">
+              {{ form.password1.label }}
+            </label>
+            <div id="password1-errors" class='text-sm text-red-500'>{{ form.errors.password1 }}</div>
+          </div>
+          <div class="mt-1 flex flex-row items-center">
+            {{ form.password1 }}
+            <i class="far fa-eye-slash -ms-8" id="togglePassword1"></i>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between">
+            <label for="password2" class="block text-sm font-medium leading-6 text-gray-900">
+              {{ form.password2.label }}
+            </label>
+            <div id="password2-errors" class='text-sm text-red-500'>{{ form.errors.password2 }}</div>
+          </div>
+          <div class="mt-1 flex items-center">
+            {{ form.password2 }}
+            <i class="far fa-eye-slash -ms-8" id="togglePassword2"></i>
+          </div>
+        </div>
+
+        <div>
+          <div class="mt-8 w-full flex justify-end">
+            <button id="next"
+              class="next flex items-center justify-center text-center w-full rounded-md bg-teal-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">Next<i
+                class="fas fa-chevron-right ms-3"></i>
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
-		<p class="mt-8 text-center text-sm text-gray-500">
-			Already have an account?
-			<a href="{% url 'buildings:login' %}"
-				class="font-semibold leading-6 text-teal-600 hover:text-teal-500">Sign in<span>&nbsp;&rarr;</span></a>
-		</p>
+    </fieldset>
 
-  </div>
+    <!-- We put the inline display none style here instead of using the hidden tailwind class -->
+    <fieldset id="fs2" class="relative rounded-xl w-[375px] p-7 bg-white/[0.75] shadow-lg hidden">
+
+      <div class="grid grid-rows-1 grid-cols-3 w-full mb-3">
+        <button id="previous"
+          class="font-semibold text-teal-600 hover:text-teal-500 flex items-center justify-self-start grid-cols-1">
+          <i class="fas fa-chevron-left me-2"></i>Back</button>
+      </div>
+      <div class="mx-auto w-full max-w-xs space-y-5">
+
+        <div class="flex flex-col">
+
+          <div class="flex items-center justify-between">
+            <label for="username" class="block text-sm font-medium leading-6 text-gray-900">{{ form.username.label }}</label>
+            <div id="username-errors" class='text-sm text-red-500'>{{ form.errors.username }}</div>
+          </div>
+          <div class="mt-1">
+            {{ form.username }}
+          </div>
+          <div class="mt-1 block text-sm font-medium leading-6 text-gray-500">(Will be public)</div>
+        </div>
+
+        <div class="flex flex-col">
+
+          <div class="flex items-center justify-between">
+            <label for="username" class="flex items-center text-sm font-medium leading-6 text-gray-900">
+              {{ form.knowledge_level.label }}
+              <div id="username-errors" class='text-sm text-red-500'>{{ form.errors.username }}</div>
+          </div>
+          <div class="mt-1">
+            {{ form.knowledge_level }}
+          </div>
+        </div>
+
+        <div>
+          <div class="mt-8 w-full flex justify-end">
+            <button id="submit"
+              class="next flex items-center justify-center text-center w-full rounded-md bg-teal-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">Submit
+            </button>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+  </form>
+
+  <p class="text-center text-sm text-gray-500 mt-6">
+    Already have an account?
+    <a href="{% url 'buildings:login' %}" class="font-semibold leading-6 text-teal-600 hover:text-teal-500">Sign
+      in<span>&nbsp;&rarr;</span></a>
+  </p>
 </div>
+
+<script>
+  // Client-side form validation and pagination
+  const form = document.getElementById('register-form');
+  const fs1 = document.getElementById('fs1');
+  const fs2 = document.getElementById('fs2');
+  const username = document.getElementById('id_username');
+  const email = document.getElementById('id_email');
+  const password1 = document.getElementById('id_password1');
+  const password2 = document.getElementById('id_password2');
+  const togglePassword1 = document.getElementById('togglePassword1');
+  const togglePassword2 = document.getElementById('togglePassword2');
+  const submitButton = document.getElementById('submit');
+  const nextButton = document.getElementById('next');
+  const previousButton = document.getElementById('previous');
+
+
+  nextButton.addEventListener('click', e => {
+    e.preventDefault();
+    // Verify that the fields of fieldset 1 are all valid
+    // By triggering the blur event on all inputs, we
+    // activate the inputs's validity checking code that we defined 
+    const inputs = fs1.querySelectorAll('input');
+    var allValid = true;
+    for (input of inputs) {
+      input.dispatchEvent(new Event('blur'));
+      allValid = allValid && input.checkValidity();
+    }
+    if (!allValid) return;
+    fs1.classList.toggle('hidden');
+    fs2.classList.toggle('hidden');
+  });
+
+  // Users are allowed to go back to the first page
+  // of the form without checking the vaidity of second page inputs 
+  previousButton.addEventListener('click', e => {
+    e.preventDefault();
+    fs1.classList.toggle('hidden');
+    fs2.classList.toggle('hidden');
+  });
+
+  // Here we'll check the validity of the form for submission
+  submitButton.addEventListener('click', e => {
+    e.preventDefault();
+    if (form.reportValidity()) {
+      form.submit();
+    }
+  });
+
+  togglePassword1.addEventListener('click', (e) => {
+    e.preventDefault();
+    const type = password1.getAttribute('type') === 'password' ? 'text' : 'password';
+    password1.setAttribute('type', type);
+    // toggle the eye / eye slash icon
+    togglePassword1.classList.toggle('fa-eye-slash');
+    togglePassword1.classList.toggle('fa-eye');
+  });
+
+  togglePassword2.addEventListener('click', (e) => {
+    e.preventDefault();
+    const type = password2.getAttribute('type') === 'password' ? 'text' : 'password';
+    password2.setAttribute('type', type);
+    // toggle the eye / eye slash icon
+    togglePassword2.classList.toggle('fa-eye-slash');
+    togglePassword2.classList.toggle('fa-eye');
+  });
+
+  // Since required HTML5 form fields initialize as invalid
+  // and I find it to be a bad UX, we dynamically add the invalid
+  // styles on 'blur' event == when field loses focus
+  // https://stackoverflow.com/questions/9594088/html5-form-validation-default-invalid-is-this-normal-behavior
+  //
+  // We'll also use the form validation API to display errors within the form nicely
+  // https://developer.mozilla.org/en-US/docs/Learn/Forms/Form_validation#validating_forms_using_javascript
+
+  email.addEventListener('blur', e => {
+    if (!email.classList.contains("invalid:ring-2")) {
+      email.classList.add("invalid:ring-2", "invalid:ring-inset", "invalid:ring-red-500");
+    }
+    if (!email.checkValidity()) {
+      if (email.validity.typeMismatch) {
+        document.getElementById('email-errors').innerText = 'Invalid email';
+      }
+      if (email.validity.valueMissing) {
+        document.getElementById('email-errors').innerText = 'Cannot be empty';
+      }
+    } else {
+      document.getElementById('email-errors').innerText = '';
+    }
+  });
+
+  password1.addEventListener('blur', e => {
+    if (!password1.classList.contains("invalid:ring-2")) {
+      password1.classList.add("invalid:ring-2", "invalid:ring-inset", "invalid:ring-red-500");
+    }
+    if (!password1.checkValidity()) {
+      if (password1.validity.valueMissing) {
+        document.getElementById('password1-errors').innerText = 'Cannot be empty';
+      }
+      if (password1.validity.tooShort) {
+        const minLength = password1.getAttribute('minlength');
+        document.getElementById('password1-errors').innerText = `Must be at least ${minLength} characters`;
+      }
+    } else {
+      document.getElementById('password1-errors').innerText = '';
+    }
+  });
+
+  // Check if password2 == password1
+  password2.addEventListener('blur', e => {
+    if (!password2.classList.contains("invalid:ring-2")) {
+      password2.classList.add("invalid:ring-2", "invalid:ring-inset", "invalid:ring-red-500");
+    }
+
+    if (!password2.checkValidity()) {
+      if (password2.validity.valueMissing) {
+        document.getElementById('password2-errors').innerText = 'Cannot be empty';
+      }
+    }
+    else {
+      if (password2.value !== password1.value) {
+        password2.vali
+        document.getElementById('password2-errors').innerText = 'Passwords must match';
+      } else {
+        password2.setCustomValidity('');
+        document.getElementById('password2-errors').innerText = '';
+      }
+    }
+  });
+
+  username.addEventListener('blur', e => {
+    if (!username.classList.contains("invalid:ring-2")) {
+      username.classList.add("invalid:ring-2", "invalid:ring-inset", "invalid:ring-red-500");
+    }
+
+    if (!username.checkValidity()) {
+      if (username.validity.tooShort) {
+        const minLength = username.getAttribute('minlength');
+        document.getElementById('username-errors').innerText = `Must be at least ${minLength} characters`;
+      }
+      if (username.validity.valueMissing) {
+        document.getElementById('username-errors').innerText = 'Cannot be empty';
+      }
+    }
+    else {
+      document.getElementById('username-errors').innerText = '';
+    }
+  });
+
+</script>
+
 {% endblock content %}

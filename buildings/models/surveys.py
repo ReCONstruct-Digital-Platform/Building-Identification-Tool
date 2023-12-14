@@ -188,7 +188,7 @@ class SurveyV1Form(ModelForm):
             "appendages": _("Select any and all significant appendages to the building faces."),
             "exterior_cladding": _("Select all types of exterior cladding does the building appear to have."),
             "facade_condition": _("Are the façades in poor condition and in need of replacement?"),
-            "window_wall_ratio": _("Does glazing make up more than 40% of the total visible façade area?"),
+            "window_wall_ratio": _("Does glazing make up more than 40%% of the total visible façade area?"),
             "large_irregular_windows": _("Are there very large and/or irregularly shaped windows?"),
             "roof_geometry": _("Select all that describes the roof geometry?"),
             "new_or_renovated": _("Does the building look newly built or recently renovated?"),

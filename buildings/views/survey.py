@@ -25,7 +25,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
 from buildings.utils.utility import verify_github_signature
 
-from buildings.forms import CreateUserForm
+from buildings.forms import CreateUserForm, LoginUserForm
 from buildings.models.surveys import SurveyV1Form
 from config.settings import WEBHOOK_SECRET, BASE_DIR
 from buildings.utils.constants import CUBF_TO_NAME_MAP
@@ -314,6 +314,35 @@ class EvalUnitDetailView(generic.DetailView):
     template_name = 'buildings/detail.html'
 
 
+def login_page(request):
+    if request.user.is_authenticated:
+        return redirect('buildings:index')
+    
+    if request.method == 'POST':
+        user = authenticate(request, 
+                            username=request.POST.get('username'), 
+                            password=request.POST.get('password'))
+
+        if user:
+            login(request, user)
+            if request.GET and 'next' in request.GET:
+                return redirect(request.GET['next'])
+            else:
+                return redirect('buildings:index')
+        else:
+            messages.error(request, "Username or password incorrect")
+            return render(request, 'buildings/login.html', 
+                          {'form': LoginUserForm(request.POST)})
+    else:
+        form = LoginUserForm()
+    return render(request, 'buildings/login.html', {'form': form})
+
+
+def logout_page(request):
+    logout(request)
+    return redirect('buildings:login')
+
+
 def register(request):
     if request.user.is_authenticated:
         return redirect('buildings:index')
@@ -335,33 +364,6 @@ def register(request):
 
     return render(request, 'buildings/register.html', {'form': form})
 
-
-def login_page(request):
-    if request.user.is_authenticated:
-        return redirect('buildings:index')
-    
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        
-        user = authenticate(request, username=username, password=password)
-
-        if user:
-            login(request, user)
-            if request.GET and 'next' in request.GET:
-                return redirect(request.GET['next'])
-            else:
-                return redirect('buildings:index')
-        else:
-            messages.error(request, "Username or password incorrect")
-            return render(request, 'buildings/login.html')
-
-    return render(request, 'buildings/login.html')
-
-
-def logout_page(request):
-    logout(request)
-    return redirect('buildings:login')
 
 
 @require_POST
