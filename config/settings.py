@@ -130,6 +130,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    "mailer",
 ]
 
 TAILWIND_APP_NAME = 'theme'
@@ -249,6 +250,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Max request size increased to 16MB to upload images
 DATA_UPLOAD_MAX_MEMORY_SIZE = 16_777_216
 
+# https://github.com/pinax/django-mailer/blob/master/docs/usage.rst#usage
+EMAIL_BACKEND = "mailer.backend.DbBackend"
+MAILER_EMPTY_QUEUE_SLEEP = 5
 # Email config given by the domain provider
 EMAIL_HOST = env('EMAIL_HOST')
 EMAIL_PORT = env('EMAIL_PORT')

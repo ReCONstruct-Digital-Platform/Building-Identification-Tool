@@ -830,10 +830,6 @@ select {
   inset-inline-end: 0px !important;
 }
 
-.top-36 {
-  top: 9rem !important;
-}
-
 .top-\[calc\(90\%\)\] {
   top: calc(90%) !important;
 }
