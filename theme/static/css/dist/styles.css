@@ -931,10 +931,6 @@ select {
   margin-top: 0.25rem !important;
 }
 
-.mt-10 {
-  margin-top: 2.5rem !important;
-}
-
 .mt-2 {
   margin-top: 0.5rem !important;
 }
@@ -1059,18 +1055,6 @@ select {
   height: 100vh !important;
 }
 
-.h-\[340px\] {
-  height: 340px !important;
-}
-
-.h-\[371px\] {
-  height: 371px !important;
-}
-
-.h-\[396px\] {
-  height: 396px !important;
-}
-
 .w-6 {
   width: 1.5rem !important;
 }
@@ -1081,10 +1065,6 @@ select {
 
 .w-\[375px\] {
   width: 375px !important;
-}
-
-.w-\[400px\] {
-  width: 400px !important;
 }
 
 .w-auto {
@@ -1172,10 +1152,6 @@ select {
   justify-content: space-between !important;
 }
 
-.justify-around {
-  justify-content: space-around !important;
-}
-
 .space-y-5 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-y-reverse: 0 !important;
   margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse))) !important;
@@ -1212,6 +1188,10 @@ select {
 
 .rounded-md {
   border-radius: 0.375rem !important;
+}
+
+.rounded-sm {
+  border-radius: 0.125rem !important;
 }
 
 .rounded-xl {
@@ -1406,6 +1386,10 @@ select {
   letter-spacing: 0em !important;
 }
 
+.tracking-wide {
+  letter-spacing: 0.025em !important;
+}
+
 .text-gray-500 {
   --tw-text-opacity: 1 !important;
   color: rgb(104 120 118 / var(--tw-text-opacity)) !important;
@@ -1446,6 +1430,10 @@ select {
 
 .line-through {
   text-decoration-line: line-through !important;
+}
+
+.accent-teal-600 {
+  accent-color: #2d7f78 !important;
 }
 
 .opacity-30 {
@@ -1544,6 +1532,10 @@ select {
 .hover\:text-teal-700:hover {
   --tw-text-opacity: 1 !important;
   color: rgb(37 96 91 / var(--tw-text-opacity)) !important;
+}
+
+.focus\:accent-teal-700:focus {
+  accent-color: #25605b !important;
 }
 
 .focus\:ring-2:focus {

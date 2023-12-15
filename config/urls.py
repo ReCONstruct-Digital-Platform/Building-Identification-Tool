@@ -16,10 +16,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
+from django.views.i18n import JavaScriptCatalog
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
     path("", include('buildings.urls')),
+    path("admin/", admin.site.urls),
+    path('accounts/', include('allauth.urls')),
     path("__reload__/", include("django_browser_reload.urls")),
+    path("jsi18n/", JavaScriptCatalog.as_view(), name="javascript-catalog"),
     path("favicon.ico", RedirectView.as_view(url='/static/images/favicon.ico')), # hack to get favicon - how to do this properly??
 ]

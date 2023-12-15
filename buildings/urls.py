@@ -14,20 +14,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from . import views
-from django.urls import path
+from django.urls import path, reverse_lazy, include
 
 # This sets the application namespace
 app_name = 'buildings'
 
 urlpatterns = [
     path('', views.survey.index, name="index"),
-    # path('all_buildings', views.all_buildings, name='all_buildings'),
-    path('survey', views.survey.survey, name="survey"),
+    path('survey/', views.survey.survey, name="survey"),
     path('survey/v1/<str:eval_unit_id>', views.survey.survey_v1, name="survey_v1"),
-    path('register', views.survey.register, name="register"),
-    path('login', views.survey.login_page, name="login"),
-    path('logout', views.survey.logout_page, name="logout"),
     path('upload_imgs/<str:eval_unit_id>', views.survey.upload_imgs, name="upload_imgs"),
-    path('redeploy_server', views.survey.redeploy_server, name="redeploy_server"),
-    path('explore', views.explore.index, name="explore"),
+    path('redeploy_server/', views.survey.redeploy_server, name="redeploy_server"),
+    path('explore/', views.explore.index, name="explore"),
 ]

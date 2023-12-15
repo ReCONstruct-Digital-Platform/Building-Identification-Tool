@@ -33,7 +33,11 @@ env = environ.Env(
     POSTGRES_HOST=(str, ''),
     POSTGRES_PORT=(int, ''),
     GDAL_LIBRARY_PATH=(str, ''),
-    NPM_BIN_PATH=(str, '/usr/local/bin/npm')
+    NPM_BIN_PATH=(str, '/usr/local/bin/npm'),
+    EMAIL_HOST=(str, ''),
+    EMAIL_PORT=(str, ''),
+    EMAIL_HOST_USER=(str, ''),
+    EMAIL_HOST_PASSWORD=(str, ''),
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -123,7 +127,9 @@ INSTALLED_APPS = [
     'tailwind',
     'theme',
     'django_browser_reload',
-
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
 ]
 
 TAILWIND_APP_NAME = 'theme'
@@ -140,14 +146,19 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
 
+APPEND_SLASH = True
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [
+            BASE_DIR / 'templates'
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -162,6 +173,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = "config.wsgi.application"
 
@@ -205,8 +217,16 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
-]
+] if not DEBUG else []
 
+
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by email
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
@@ -228,3 +248,30 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Max request size increased to 16MB to upload images
 DATA_UPLOAD_MAX_MEMORY_SIZE = 16_777_216
+
+# Email config given by the domain provider
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_PORT = env('EMAIL_PORT')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD= env('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL=env('EMAIL_HOST_USER')
+EMAIL_USE_TLS=True
+
+# Override the default allauth forms here
+ACCOUNT_FORMS = {
+    'login': 'buildings.forms.LoginUserForm',
+    'signup': 'buildings.forms.CreateUserForm',
+    'reset_password': 'buildings.forms.PasswordResetForm',
+    'reset_password_from_key': 'buildings.forms.ResetPasswordKeyForm',
+    'add_email': 'allauth.account.forms.AddEmailForm',
+    'change_password': 'allauth.account.forms.ChangePasswordForm',
+    'set_password': 'allauth.account.forms.SetPasswordForm',
+    'user_token': 'allauth.account.forms.UserTokenForm',
+}
+
+ACCOUNT_LOGIN_ATTEMPTS_LIMIT = not DEBUG
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
+
+LOGIN_REDIRECT_URL = '/'

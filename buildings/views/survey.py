@@ -36,7 +36,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
-@login_required(login_url='buildings:login')
+@login_required(login_url='account_login')
 def index(request):
     template = 'buildings/index.html'
 
@@ -110,7 +110,7 @@ def _validate_query(query):
     return query
 
 
-@login_required(login_url='buildings:login')
+@login_required(login_url='account_login')
 def all_buildings(request):
     # Get all the query elements and assemble them in a query dictionary
     query = _populate_query(request)
@@ -146,7 +146,7 @@ def all_buildings(request):
 
 
 
-@login_required(login_url='buildings:login')
+@login_required(login_url='account_login')
 def survey(_):
     #TODO: Split this into HLMs and Metal Buildings
     random_unscored_unit = EvalUnit.objects.get_next_unit_to_survey()
@@ -154,7 +154,7 @@ def survey(_):
     return redirect('buildings:survey_v1', eval_unit_id=eval_unit_id)
 
 
-@login_required(login_url='buildings:login')
+@login_required(login_url='account_login')
 def survey_v1(request, eval_unit_id):
 
     eval_unit = get_object_or_404(EvalUnit, pk=eval_unit_id)
@@ -349,14 +349,12 @@ def register(request):
     
     if request.method == 'POST':
         form = CreateUserForm(request.POST)
-        print(form)
         if form.is_valid():
             # This will create the user
             user = form.save()
             messages.success(request, f'Account created for {user.username}')
             return redirect('buildings:login')
         else:
-            # IPython.embed()
             print(form.errors)
             return render(request, 'buildings/register.html', {'form': form})
     else:

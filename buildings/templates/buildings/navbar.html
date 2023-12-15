@@ -48,12 +48,12 @@
       </a>
       <ul class="dropdown-menu">
         <li><a class="dropdown-item" href="#">Profile</a></li>
-        <li><a class="dropdown-item" href="{% url 'buildings:logout' %}">Sign out</a></li>
+        <li><a class="dropdown-item" href="{% url 'account_logout' %}">Sign out</a></li>
       </ul>
     </div>
     {% else %}
     <div class="hidden lg:flex lg:flex-1 lg:justify-end">
-      <a href="#" class="text-sm leading-6 text-gray-900 hover:text-teal-700 font-semibold">Sign in<span
+      <a href="{% url 'account_login' %}" class="text-sm leading-6 text-gray-900 hover:text-teal-700 font-semibold">Sign in<span
           aria-hidden="true">&nbsp;&rarr;</span></a>
     </div>
     {% endif %}

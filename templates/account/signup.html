@@ -1,14 +1,15 @@
 {% extends "buildings/base.html" %}
+{% load i18n %}
 {% block content %}
 
-<div class="relative h-full flex flex-col top-36">
+<div class="h-full flex flex-col justify-center items-center">
 
-  <form id="register-form" class="flex justify-center">
-
+  <form id="register-form" class="flex justify-center" action="" method="POST">
+    {% csrf_token %}
     <fieldset id="fs1" class="relative rounded-xl w-[375px] p-7 bg-white/[0.75] shadow-lg">
 
       <div class="flex justify-center mb-3">
-        <h3 class="text-xl w-full text-center font-bold">Register an account</h3>
+        <h3 class="text-xl w-full text-center font-bold">{% trans "Register an account" %}</h3>
       </div>
 
       <div class="mx-auto w-full max-w-xs space-y-5">
@@ -54,8 +55,9 @@
         <div>
           <div class="mt-8 w-full flex justify-end">
             <button id="next"
-              class="next flex items-center justify-center text-center w-full rounded-md bg-teal-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">Next<i
-                class="fas fa-chevron-right ms-3"></i>
+              class="next flex items-center justify-center text-center w-full rounded-md bg-teal-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
+              {% trans "Next" %}
+              <i class="fas fa-chevron-right ms-3"></i>
             </button>
           </div>
         </div>
@@ -68,7 +70,7 @@
       <div class="grid grid-rows-1 grid-cols-3 w-full mb-3">
         <button id="previous"
           class="font-semibold text-teal-600 hover:text-teal-500 flex items-center justify-self-start grid-cols-1">
-          <i class="fas fa-chevron-left me-2"></i>Back</button>
+          <i class="fas fa-chevron-left me-2"></i>{% trans "Back" %}</button>
       </div>
       <div class="mx-auto w-full max-w-xs space-y-5">
 
@@ -81,7 +83,7 @@
           <div class="mt-1">
             {{ form.username }}
           </div>
-          <div class="mt-1 block text-sm font-medium leading-6 text-gray-500">(Will be public)</div>
+          <div class="mt-1 block text-sm font-medium leading-6 text-gray-500">({% trans "Will be public" %})</div>
         </div>
 
         <div class="flex flex-col">
@@ -98,8 +100,11 @@
 
         <div>
           <div class="mt-8 w-full flex justify-end">
-            <button id="submit"
-              class="next flex items-center justify-center text-center w-full rounded-md bg-teal-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">Submit
+            <!-- Never give a submit button the id 'submit' -->
+            <!-- https://stackoverflow.com/questions/833032/submit-is-not-a-function-error-in-javascript -->
+            <button id="submitButton" type="submit"
+              class="next flex items-center justify-center text-center w-full rounded-md bg-teal-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
+              {% trans "Submit" %}
             </button>
           </div>
         </div>
@@ -108,14 +113,15 @@
   </form>
 
   <p class="text-center text-sm text-gray-500 mt-6">
-    Already have an account?
-    <a href="{% url 'buildings:login' %}" class="font-semibold leading-6 text-teal-600 hover:text-teal-500">Sign
-      in<span>&nbsp;&rarr;</span></a>
+    {% trans "Already have an account?" %}
+    <a href="{% url 'account_login' %}" class="font-semibold leading-6 text-teal-600 hover:text-teal-500">
+      {% trans "Sign in" %} <span>&nbsp;&rarr;</span></a>
   </p>
 </div>
 
 <script>
   // Client-side form validation and pagination
+  // TODO: Translate the JS text using django JS translation
   const form = document.getElementById('register-form');
   const fs1 = document.getElementById('fs1');
   const fs2 = document.getElementById('fs2');
@@ -125,7 +131,7 @@
   const password2 = document.getElementById('id_password2');
   const togglePassword1 = document.getElementById('togglePassword1');
   const togglePassword2 = document.getElementById('togglePassword2');
-  const submitButton = document.getElementById('submit');
+  const submitButton = document.getElementById('submitButton');
   const nextButton = document.getElementById('next');
   const previousButton = document.getElementById('previous');
 
@@ -194,10 +200,10 @@
     }
     if (!email.checkValidity()) {
       if (email.validity.typeMismatch) {
-        document.getElementById('email-errors').innerText = 'Invalid email';
+        document.getElementById('email-errors').innerText = gettext('Invalid email');
       }
       if (email.validity.valueMissing) {
-        document.getElementById('email-errors').innerText = 'Cannot be empty';
+        document.getElementById('email-errors').innerText = gettext('Cannot be empty');
       }
     } else {
       document.getElementById('email-errors').innerText = '';
@@ -210,11 +216,11 @@
     }
     if (!password1.checkValidity()) {
       if (password1.validity.valueMissing) {
-        document.getElementById('password1-errors').innerText = 'Cannot be empty';
+        document.getElementById('password1-errors').innerText = gettext('Cannot be empty');
       }
       if (password1.validity.tooShort) {
         const minLength = password1.getAttribute('minlength');
-        document.getElementById('password1-errors').innerText = `Must be at least ${minLength} characters`;
+        document.getElementById('password1-errors').innerText = gettext(`Must be at least ${minLength} characters`);
       }
     } else {
       document.getElementById('password1-errors').innerText = '';
@@ -229,17 +235,22 @@
 
     if (!password2.checkValidity()) {
       if (password2.validity.valueMissing) {
-        document.getElementById('password2-errors').innerText = 'Cannot be empty';
+        document.getElementById('password2-errors').innerText = gettext('Cannot be empty');
+        return;
+      }
+      // Reset the custom validity set if the values are not equal
+      if (password2.validity.customError) {
+        if (password1.value === password2.value) {
+          password2.setCustomValidity('');
+          document.getElementById('password2-errors').innerText = '';
+          return;
+        }
       }
     }
-    else {
-      if (password2.value !== password1.value) {
-        password2.vali
-        document.getElementById('password2-errors').innerText = 'Passwords must match';
-      } else {
-        password2.setCustomValidity('');
-        document.getElementById('password2-errors').innerText = '';
-      }
+    // If valid the first time, values might not be equal
+    if (password2.value !== password1.value) {
+      password2.setCustomValidity(gettext('Passwords must match'));
+      document.getElementById('password2-errors').innerText = gettext('Passwords must match');
     }
   });
 
@@ -251,10 +262,10 @@
     if (!username.checkValidity()) {
       if (username.validity.tooShort) {
         const minLength = username.getAttribute('minlength');
-        document.getElementById('username-errors').innerText = `Must be at least ${minLength} characters`;
+        document.getElementById('username-errors').innerText = gettext(`Must be at least ${minLength} characters`);
       }
       if (username.validity.valueMissing) {
-        document.getElementById('username-errors').innerText = 'Cannot be empty';
+        document.getElementById('username-errors').innerText = gettext('Cannot be empty');
       }
     }
     else {

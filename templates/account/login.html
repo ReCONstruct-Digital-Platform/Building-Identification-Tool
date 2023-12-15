@@ -1,0 +1,98 @@
+{% extends "buildings/base.html" %}
+{% load i18n %}
+{% block content %}
+<div class="h-full flex flex-col justify-center items-center">
+	<div class="flex flex-col rounded-xl w-[375px] p-7 bg-white/[0.65] shadow-lg">
+
+		<div class="mx-auto w-full max-w-sm">
+			<svg class="mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="42" height="42"
+				fill="currentColor">
+				<title>home-search-icon</title>
+				<path
+					d="M19.31 18.9C19.75 18.21 20 17.38 20 16.5C20 14 18 12 15.5 12S11 14 11 16.5 13 21 15.5 21C16.37 21 17.19 20.75 17.88 20.32L21 23.39L22.39 22L19.31 18.9M15.5 19C14.12 19 13 17.88 13 16.5S14.12 14 15.5 14 18 15.12 18 16.5 16.88 19 15.5 19M5 20V12H2L12 3L22 12H20.18C19 10.77 17.34 10 15.5 10C11.92 10 9 12.92 9 16.5C9 17.79 9.38 19 10.03 20H5Z" />
+			</svg>
+			<h3 class="text-xl font-md w-full text-center font-bold">
+        {% trans "Sign in to your account" %}
+      </h3>
+		</div>
+
+    {% if form.errors %}
+    <div class="flex flex-col justify-center mt-2 -mb-5">
+    
+      {% for field in form %}
+      {% for error in field.errors %}
+      <div class="text-center text-red-500">
+        {{ error|escape }}
+      </div>
+      {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+      <div class="text-center text-red-500">
+        {{ error|escape }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+		<div class="mx-auto w-full max-w-xs">
+			<form class="space-y-6" action="" method="POST">
+				{% csrf_token %}
+				<div>
+					<label for="username" class="block text-sm font-medium leading-6 text-gray-900 mb-1">
+						{{ form.login.label}}
+					</label>
+						{{ form.login }}
+				</div>
+
+				<div>
+					<div class="flex items-center justify-between">
+						<label for="password" class="block text-sm font-medium leading-6 text-gray-900">
+							{{ form.password.label }}
+						</label>
+						<div class="text-sm">
+							<a href="{% url 'account_reset_password' %}" class="font-semibold text-teal-600 hover:text-teal-500">
+                {% trans "Forgot password?" %}</a>
+						</div>
+					</div>
+					<div class="mt-1 flex items-center">
+						{{ form.password }}
+						<i class="far fa-eye-slash -ms-8" id="togglePassword"></i>
+					</div>
+          <div class="mt-3 text-sm flex items-center">
+            <div class="me-2">
+              {{ form.remember.label }}
+            </div>
+            {{ form.remember }}
+          </div>
+				</div>
+				<div>
+					<button type="submit"
+						class="flex w-full justify-center rounded-md bg-teal-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
+            {% trans "Sign in" %}</button>
+				</div>
+			</form>
+		</div>
+	</div>
+  <p class="relative mt-6 text-center text-sm text-gray-500">
+    {% trans "Don't have an account?" %}
+    <a href="{% url 'account_signup' %}" class="font-semibold leading-6 text-teal-600 hover:text-teal-500">
+      {% trans "Sign up" %} <span>&nbsp;&rarr;</span></a>
+  </p>
+
+</div>
+
+<script>
+	const passwordInput = document.getElementById('id_password');
+	const togglePassword = document.getElementById('togglePassword');
+	togglePassword.addEventListener('click', (e) => {
+		e.preventDefault();
+		const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+		passwordInput.setAttribute('type', type);
+		// toggle the eye / eye slash icon
+		togglePassword.classList.toggle('fa-eye-slash');
+		togglePassword.classList.toggle('fa-eye');
+	});
+</script>
+
+
+{% endblock content %}
