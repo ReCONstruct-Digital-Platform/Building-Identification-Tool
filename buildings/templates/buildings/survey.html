@@ -13,7 +13,7 @@
 </svg>
 
 <section class="container-wide">
-  <div class="survey-top-row">
+  <div class="survey-top-row" style="display: none">
     <div class="building-nav building-nav-left">
       <a id="prev-building-link">&laquo;&laquo; Prev</a>
     </div>
@@ -131,16 +131,133 @@
   </div>
 </section>
 
+<!-- Space for the navbar -->
+<div class="mt-[56px]"></div>
+
 <section class="container-wide">
   <!--overall container-->
-  <div class="streetview-and-map-container">
+  <div id="streetview-and-map-container" class="streetview-and-map-container">
 
-    <div id="streetview-container" class="streetview-container ms-3">
+    <div id="streetview-container" class="streetview-container ms-2">
       <div id="streetview">
+
+
+        <div id="unit-info" class="unit-info">
+          <div class="building-info text-xs text-white flex flex-col py-[6px] px-[8px] rounded-r-sm">
+            <div class="flex flex-col">
+                <div class="font-semibold">
+                  {{ eval_unit.address }}
+                </div>
+                <div class="text-[11px] text-gray-100">
+                  {{ eval_unit.muni }}, QC
+                </div>
+              <div class="building-badges">
+                {% if eval_unit.num_adr_inf and eval_unit.num_adr_sup %}
+                <div class="badge text-bg-info">
+                  Multiple Addresses
+                </div>
+                {% endif %}
+                {% if eval_unit.associated and "hlm" in eval_unit.associated %}
+                <div class="badge text-bg-success">
+                  HLM ({{ hlm_info.num_hlms }})
+                </div>
+                {% endif %}
+                <!-- Aggregated MURBs are the only eval units with an ID ending in 9999 -->
+                {% if eval_unit.id|slice:"-4:" == "9999" %}
+                <div class="badge text-bg-primary">
+                  Aggregated MURB
+                </div>
+                {% endif %}
+                {% if eval_unit.cubf != 1000 %}
+                <div class="badge text-bg-secondary">
+                  Possible Metal Prefab
+                </div> 
+                <div class="badge text-bg-light">
+                  CUBF {{ eval_unit.cubf }}: {{ cubf_resolved }}
+                </div> 
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="flex mt-2 space-x-3">
+
+            <div class="flex flex-col items-start">
+              <div>
+                {% if eval_unit.num_dwelling %}
+                  Dwellings: 
+                    {{ eval_unit.num_dwelling }}
+                {% endif %}
+              </div>
+              <div>
+                {% if eval_unit.const_yr %}
+                  Built in:
+                    {{ eval_unit.const_yr }}
+                  {% if eval_unit.const_yr_real == 'E' %}
+                  (est.)
+                  {% endif %}
+                {% endif %}
+              </div>
+              <div>
+                {% if eval_unit.max_floors %}
+                Max floors: 
+                  {{ eval_unit.max_floors }}
+                {% endif %}
+              </div>
+            </div>
+      
+            <div class="flex flex-col items-start">
+              {% if hlms %}
+              <div>
+                Avg disrepair: {% include "buildings/utils/disrepair_state_badge.html" with state=avg_disrepair ivp=hlm_info.avg_ivp %}
+              </div>
+              {% endif %}
+              <div>
+                {% if eval_unit.phys_link %}
+                  {{ eval_unit.phys_link | title }}
+                {% endif %}
+              </div>
+              <div>
+                {% if eval_unit.floor_area %}
+                Floor area:
+                {{ eval_unit.floor_area|intcomma }} m<sup>2</sup>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+      
+            <!-- <div class="mt-2">
+              <button id="btn-no-building" type="button" class="flex items-center bg-red-500 hover:bg-red-600 px-2 py-2 text-white rounded-md space-x-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 2 16 17" fill="currentColor" class="bi bi-exclamation-triangle-fill">
+                  <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                </svg>
+                <p>
+                  Flag Problem
+                </p>
+              </button>
+            </div> -->
+      
+            <div class="toast-container position-absolute bottom-0 end-0 ms-3 p-2">
+              <div id="screenshot-toast" class="toast align-items-center border-0" 
+                role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="2500">
+                <div class="flex">
+                  <div class="toast-body flex align-items-center">
+                    <svg width="25px" height="25px" class="bi flex-shrink-0 me-2" role="img" aria-label="Success:"><use xlink:href="#check-circle-fill"/></svg>
+                    Screenshot taken! 
+                  </div>
+                  <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+              </div>
+            </div>
+      
+          </div>
+        </div>
+
           <div id="time-travel-container" class="time-travel-container">
             <label class='time-travel-label'>
               Time Travel
-              <select id="time-travel-select" class='time-travel-select mt-1' onchange="window.sv.setPano(this.value)"> 
+              <select id="time-travel-select" 
+              class='block text-black text-xs h-[25px] py-0 ps-2 mt-1' 
+              onchange="window.sv.setPano(this.value)"> 
               </select>
             </label>
           </div>
@@ -149,37 +266,50 @@
 
     <div id="dragbar"></div>
 
-    <div id="map-and-survey-container" class="map-and-survey-container me-3" style = 'min-width: 33%' >
+    <div id="map-and-survey-container w-[33%] max-w-[600px]" class="map-and-survey-container me-3" style = 'min-width: 33%'>
 
       <!-- Tabs -->
       <nav>
         <div class="nav nav-tabs" id="nav-tab" role="tablist">
-          <button id="nav-satellite-tab" class="nav-link active" data-bs-toggle="tab" data-bs-target="#nav-satellite" type="button" role="tab" aria-controls="nav-satellite" aria-selected="true" >Satellite</button>
-          <button id="nav-survey-tab" class="nav-link" data-bs-toggle="tab" data-bs-target="#nav-survey" type="button" role="tab" aria-controls="nav-survey" aria-selected="false">Survey</button>
+          <button 
+          id="nav-satellite-tab" 
+          class="nav-link bg-gray-100 hover:bg-gray-50 text-gray-900" 
+          data-bs-toggle="tab" data-bs-target="#nav-satellite" type="button" role="tab" aria-controls="nav-satellite" aria-selected="true" >Satellite</button>
+          <button 
+          id="nav-survey-tab" 
+          class="nav-link active bg-gray-100 hover:bg-gray-50 text-gray-900"  
+          data-bs-toggle="tab" data-bs-target="#nav-survey" type="button" role="tab" aria-controls="nav-survey" aria-selected="false">Survey</button>
           {% if hlms %}
-          <button id="nav-hlms-tab" class="nav-link" data-bs-toggle="tab" data-bs-target="#nav-hlms" type="button" role="tab" aria-controls="nav-hlms" aria-selected="false">HLMs</button>
+          <button 
+          id="nav-hlms-tab" 
+          class="nav-link bg-gray-100 hover:bg-gray-50 text-gray-900"  
+          data-bs-toggle="tab" data-bs-target="#nav-hlms" type="button" role="tab" aria-controls="nav-hlms" aria-selected="false">HLMs</button>
           {% endif %}
+
+          <div class="absolute right-[17px] mt-1 px-1 py-1 text-gray-900 bg-gray-100 rounded-md hover:bg-gray-50">
+            <a id="next" href="{% url 'buildings:survey_v1' next_eval_unit_id %}">Next &gt;&gt;</a>
+          </div>
         </div>
       </nav>
 
       <div id="tab-content-container" class="tab-content">
 
         <!-- Satellite view -->
-        <div id="nav-satellite" class="tab-pane active" role="tabpanel" aria-labelledby="nav-satellite-tab">
+        <div id="nav-satellite" class="tab-pane" role="tabpanel" aria-labelledby="nav-satellite-tab">
           <div id="satellite">
           </div>
         </div>
 
         <!-- Survey -->
-        <div id="nav-survey" class="tab-pane" role="tabpanel" aria-labelledby="nav-survey-tab">
+        <div id="nav-survey" class="tab-pane active" role="tabpanel" aria-labelledby="nav-survey-tab">
 
           <!--below is the first scrolling survey -->
           <div id="scroll">
 
             <div class="text-center pt-3">
-              <h5>
+              <!-- <h5>
                 <strong>Building Identification Survey</strong>
-              </h5>
+              </h5> -->
               {% if form.was_filled %}
                 <div style="background: lightgreen">
                   Survey was previously submitted - Submit again to overwrite your answers.  
@@ -191,9 +321,10 @@
                 </div>
               {% endif %}
             </div>
-            <hr />
 
-            <form id="building-submission-form" action="{% url 'buildings:survey_v1' eval_unit.id %}" method="post">
+            <form id="building-submission-form" 
+            class="mt-2"
+            action="{% url 'buildings:survey_v1' eval_unit.id %}" method="post">
               {% csrf_token %}
 
               {% include "buildings/surveys/survey_v1.html" with form=form eval_unit=eval_unit %}

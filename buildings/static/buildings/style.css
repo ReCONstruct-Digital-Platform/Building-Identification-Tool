@@ -104,6 +104,7 @@ h1, h2, h3, h4, h5, h6, strong {
 .activity-nav-item .nav-link:hover {
   color: #1e2225;
 }
+
 .activity-nav-item .nav-link.active {
   font-weight: 500;
 }
@@ -336,18 +337,22 @@ tr:hover .delete-row-icon {
 }
 
 .building-info {
-  width: 70%;
+  font-family: Roboto,Arial,sans-serif;
+  position: absolute;
+  background-color: rgba(34, 34, 34, 0.8);
   display: flex;
-  align-items: center;
+  align-items: start;
   flex-wrap: wrap;
+  z-index: 1990;
+  margin-top: 10px;
 }
 
-.building-info-col {
+/* .building-info-col {
   display: flex;
   flex-direction: column;
   margin-left: 2rem;
   white-space: nowrap;
-}
+} */
 
 .building-nav-left {
   margin-left: 4rem;
@@ -366,11 +371,7 @@ tr:hover .delete-row-icon {
   .building-nav-right {
     margin-right: 2rem;
   }
-  .top-row-buttons {
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
+
   .btn-screenshot {
     margin-left: 0;
     margin-top: 0.25rem;
@@ -396,17 +397,10 @@ tr:hover .delete-row-icon {
 }
 
 .streetview-and-map-container {
-  height: 85vh;
   width: 100%;
   display: flex;
   flex-direction: row;
   justify-content: center;
-}
-
-@media(max-height: 980px) {
-  .streetview-and-map-container {
-    height: 80vh;
-  }
 }
 
 .streetview-container {
@@ -427,10 +421,11 @@ tr:hover .delete-row-icon {
 }
 
 #dragbar {
-  height:100%;
-  width: 7px;
+  height: 80%;
+  width: 6px;
   cursor: col-resize;
-  background: linear-gradient(#a8adb0, #b5babe) no-repeat center/1px 100%;
+  align-self: center;
+  background: linear-gradient(#525354, #8c8f91) no-repeat center/1px 100%;
 }
 
 #streetview {
@@ -531,8 +526,8 @@ tr:hover .delete-row-icon {
 }
 
 .time-travel-select {
-  display: block;
-  height: 25px;
+  /* display: block; */
+  /* height: 25px; */
 }
 
 .desc { display: none; }
@@ -638,3 +633,18 @@ tr:hover .delete-row-icon {
   background-attachment: fixed;
   mix-blend-mode: exclusion;
 }
+
+#nav-tab.nav-tabs > button.nav-link.active {
+  background-color: rgb(255, 255, 255) !important;
+  border-color: rgb(255, 255, 255);
+}
+
+
+/* #building-submission-form input[type="radio"] {
+  color: rgb(45, 127, 120); 
+  accent-color: rgb(45, 127, 120);
+}
+
+#building-submission-form input[type="radio"]:focus {
+  border-color: rgb(45, 127, 120); 
+} */

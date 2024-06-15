@@ -2,8 +2,8 @@
 <div id="{{ id }}" class="{{ widget.attrs.class }}" >
   {% for _, options, _ in widget.optgroups %}
     {% for option in options %}
-        <label>
-          <input id="{{ option.attrs.id }}" class="me-1" type="{{ option.type }}" name="{{ option.name }}" 
+        <label class="flex">
+          <input id="{{ option.attrs.id }}" class="{{ widget.attrs.checkbox_class }}" type="checkbox" name="{{ option.name }}" 
           onclick='markCheckboxesNotRequired("{{ option.name }}")' value="{{ option.value|stringformat:'s' }}" 
           {% if option.value in widget.initial %} checked{% endif %}
           {% if widget.initial|length == 0 %} required{% endif %}>{{ option.label }}
@@ -11,12 +11,12 @@
     {% endfor %}
   {% endfor %}
   {% if widget.has_specify %}
-  <div id="{{ id }}_specify_container" class = "specify">
-    <label onclick="markCheckboxesNotRequired('{{ widget.name }}'); activateSpecifyEntryField('{{ id }}_specify');" >
-      <input id = "{{ id }}_specify" type="{{ widget.input_type }}" class = "me-1" name="{{ widget.name }}" 
+  <div id="{{ id }}_specify_container" class="flex items-center">
+    <label class="flex items-center" onclick="markCheckboxesNotRequired('{{ widget.name }}'); activateSpecifyEntryField('{{ id }}_specify');" >
+      <input id = "{{ id }}_specify" type="checkbox" class = "{{ widget.attrs.checkbox_class }}" name="{{ widget.name }}" 
       {% if 'on' in widget.initial %} checked{% endif %} 
       {% if widget.initial|length == 0 %}required{%endif%}>Other (specify):</label>
-    <input class="ms-1" id="{{ id }}_specify_value" type="text" name="{{ widget.name }}" 
+    <input class="{{ widget.attrs.specify_class }}" id="{{ id }}_specify_value" type="text" name="{{ widget.name }}" 
       {% if 'on' in widget.initial %} value="{{ widget.initial|last }}" {% else %} disabled{% endif %}/>
   </div>
   {% endif %}

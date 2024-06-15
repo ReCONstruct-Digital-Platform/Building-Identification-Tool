@@ -11,6 +11,7 @@ from pathlib import Path
 import urllib.parse as urlparse
 from django.http import QueryDict
 
+from config.settings import URL_STREETVIEW_METADATA, GOOGLE_SIGNING_SECRET
 
 def print_query_dict(data: QueryDict):
     print('QueryDict: {')
@@ -40,6 +41,30 @@ def get_DB_conn(connection_string, dict_cursor=True):
     else:
         cursor = conn.cursor()
     return conn, cursor
+
+class NetworkError(Exception):
+    pass
+
+def is_streetview_imagery_available(lat, lng, radius=100):
+    """
+    Query the Google Streetview Metadata API to 
+    know if streetview imagery is available at the 
+    location within the given radius.
+    These API calls are free.
+    See https://developers.google.com/maps/documentation/streetview/metadata
+    """
+    url = f'{URL_STREETVIEW_METADATA}&location={lat},{lng}&radius={radius}'
+    url = sign_url(url, GOOGLE_SIGNING_SECRET)
+    r = requests.get(url)
+
+    if r.status_code == 200:
+        data = r.json()
+        if data['status'] != 'ZERO_RESULTS':
+            return True
+    else:
+        raise NetworkError('HTTP error')
+
+    return False
 
 
 def verify_github_signature(payload_body, secret_token, signature_header):

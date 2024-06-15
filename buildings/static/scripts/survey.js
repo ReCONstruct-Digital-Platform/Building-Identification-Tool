@@ -366,7 +366,16 @@ function setUpInitialSurveyMutationChecker() {
     observer.observe(form, {subtree: true, attributes: true});
 }
 
+function setStreetviewAndMapContainerHeight() {
+    const container = document.getElementById('streetview-and-map-container');
+    const headerHeight = document.getElementById('header').offsetHeight;
+    const windowHeight = window.innerHeight;
+    // Leave some space at the bottom
+    container.style.height = `${Math.floor(691 * 0.99)}px`
+}
+
 document.addEventListener("DOMContentLoaded", function() {
+    setStreetviewAndMapContainerHeight();
     setUpSurveyNavigation();
     setUpDragBar();
     setUpScrollHeightObserver();

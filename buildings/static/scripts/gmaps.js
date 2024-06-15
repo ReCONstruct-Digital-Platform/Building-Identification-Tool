@@ -71,6 +71,7 @@ function generateTimeTravelOptions(panoArray, targetDate) {
   panoArray.reverse().forEach((el) => {
     let option = document.createElement("option");
     option.value = option.id = el["pano"];
+    option.classList.add("appearance-none");
 
     const date = el[dateKey];
     if (!date) {
@@ -144,7 +145,8 @@ function attachEventsToPegman(mutationList, _) {
  */
 function printMutationsCallback(mutationList, _) {
   for (const mutation of mutationList) {
-    console.debug(mutation);
+    if (mutation.target.classList.contains('gm-iv-address'))
+      mutation.target.style.display = 'none';
   }
 }
 
@@ -208,7 +210,7 @@ async function showLotPoints(feature) {
   }
 
   const addPoint = (coords) => {
-      console.debug(`creating point at ${coords}`)
+      // console.debug(`creating point at ${coords}`)
       feature.getProperty('points').push(new Marker({
           position: coords,
           map: window.map,
@@ -351,7 +353,9 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
       const observer = new MutationObserver(attachEventsToPegman);
       const config = { attributes: true, subtree: true };
       observer.observe(document.getElementById("satellite"), config);
-
+      const printObserver = new MutationObserver(printMutationsCallback);
+      printObserver.observe(document.getElementById("streetview"), config);
+      
       // Custom event launched when pegman is dropped and we need a manual pano set
       sv.addListener("pano_change_needed", () => {
         sleep(0).then(() => {

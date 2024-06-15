@@ -89,18 +89,22 @@ python manage.py migrate
 
 ## 4: Fill up the database
 
-The database setup pipelines consists of the following steps:
+The database setup pipelines consists of the following steps, each defined in a management command under `buildings.management.commands`:
 - Import and process the roll XML files. These contain all the evaluation units in Quebec.
 - Import and process the roll SHP files which gives us the lat/lng coordinates for each evaluation unit.
 - Import and process the lot SHP. This gives us the polygon for each lot.
 - Aggregate individually listed condos into single entries representing their building.
 - Import the HLM dataset and map it to evaluation units.
 
-The entire process should take around 6 hours or more and requires an internet connection.
+The entire process takes around 6 hours or more and requires an internet connection.
 
 ```bash
 python manage.py setup_database
 ```
+
+You may run into some exceptions. If that's the case, you can comment out parts of the process in `setup_database.py` or the parts that haven't run in individual scripts.
+For example, the full `parse_roll_xml` command sometimes throws an error after finishing parsing
+
 
 
 ### Alternatively, import test database

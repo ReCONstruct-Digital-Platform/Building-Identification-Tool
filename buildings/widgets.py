@@ -2,6 +2,10 @@ from django.forms import widgets
 import logging
 from pprint import pprint
 
+TW_RADIO_CLASS = """me-2 border-0 text-teal-600 accent-teal-600 focus:accent-teal-700 shadow-sm ring-1 focus:ring-2 focus:ring-teal-600"""
+
+TW_SPECIFY_CLASS = """ms-1 specify rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
+
 class RadioSelect(widgets.RadioSelect):
     '''
     Radio select with CSS styling included
@@ -12,6 +16,7 @@ class RadioSelect(widgets.RadioSelect):
         super().__init__(attrs=attrs, **kwargs)
         self.initial = None # filled in by the form __init__()
         self.was_filled = None # filled in by the form __init__()
+        self.attrs['radio_class'] = TW_RADIO_CLASS
 
     # Add attributes you want available in the template to the context
     def get_context(self, name, value, attrs):
@@ -35,7 +40,9 @@ class RadioWithSpecify(RadioSelect):
     def __init__(self, attrs=None, **kwargs):
         super().__init__(attrs=attrs, **kwargs)
         self.initial = None # filled in by the form __init__()
-
+        self.attrs['option_class'] = TW_RADIO_CLASS
+        self.attrs['specify_class'] = TW_SPECIFY_CLASS
+    
     # Add attributes you want available in the template to the context
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
@@ -62,7 +69,9 @@ class NumberOrUnsure(widgets.RadioSelect):
         super().__init__(attrs=attrs, **kwargs)
         self.initial = None # filled in by the form __init__()
         self.was_filled = None # filled in by the form __init__()
-    
+        self.attrs['radio_class'] = TW_RADIO_CLASS
+        self.attrs['specify_class'] = TW_SPECIFY_CLASS
+
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
         context["widget"]["initial"] = self.initial
@@ -85,6 +94,8 @@ class SelfSimilarClusterWidget(widgets.RadioSelect):
         super().__init__(attrs=attrs, **kwargs)
         self.initial = None # filled in by the form __init__()
         self.was_filled = None # filled in by the form __init__()
+        self.attrs['radio_class'] = TW_RADIO_CLASS
+        self.attrs['specify_class'] = TW_SPECIFY_CLASS
     
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
@@ -107,6 +118,8 @@ class MultiCheckboxSpecify(widgets.CheckboxSelectMultiple):
         self.initial = [] # will be filled in in the form __init__()
         self.has_specify = has_specify
         self.input_type = input_type
+        self.attrs['checkbox_class'] = TW_RADIO_CLASS
+        self.attrs['specify_class'] = TW_SPECIFY_CLASS
 
     # Add attributes you want available in the template to the context
     def get_context(self, name, value, attrs):
@@ -122,7 +135,10 @@ class MultiCheckboxSpecifyRequired(MultiCheckboxSpecify):
     '''
     template_name = "buildings/forms/widgets/multi_checkbox_required.html"
 
-
+    def __init__(self, attrs=None, **kwargs):
+        super().__init__(attrs=attrs, **kwargs)
+        self.attrs['checkbox_class'] = TW_RADIO_CLASS
+        self.attrs['specify_class'] = TW_SPECIFY_CLASS
     
 
 

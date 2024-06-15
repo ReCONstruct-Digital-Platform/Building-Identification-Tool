@@ -31,13 +31,13 @@ from multiprocessing import Pool
 
 from django.db import connection
 from django.core.management.base import BaseCommand
-from buildings.management.commands.aggregate_murbs import split_list_in_n, get_DB_conn
+from buildings.utils.utility import split_list_in_n, get_DB_conn, is_streetview_imagery_available
 
-from config.settings import BASE_DIR, GOOGLE_MAPS_API_KEY, GOOGLE_SIGNING_SECRET, MAPBOX_TOKEN
+from config.settings import BASE_DIR, GOOGLE_MAPS_API_KEY, MAPBOX_TOKEN
 
 from buildings.utils.constants import * 
 from buildings.models import HLMBuilding, EvalUnit
-from buildings.utils.utility import sign_url, download_file
+from buildings.utils.utility import download_file
 
 DEFAULT_OUT = BASE_DIR / 'data' 
 
@@ -56,8 +56,6 @@ WAY_LINK_VALS = list(WAY_LINKS.values())
 CARDINAL_POINT_VALS = [c.lower() for c in CARDINAL_POINTS.values()]
 
 URL_MAPBOX_V6 = f"https://api.mapbox.com/search/geocode/v6/forward"
-URL_STREETVIEW_METADATA = f"https://maps.googleapis.com/maps/api/streetview/metadata?key={GOOGLE_MAPS_API_KEY}"
-
 
 SQL_UPSERT_HLM = f"""INSERT INTO {HLM_TABLE}
         (id, lat, lng, point, eval_unit_id, streetview_available, project_id, organism, service_center, address, 
@@ -80,7 +78,7 @@ SQL_UPSERT_HLM = f"""INSERT INTO {HLM_TABLE}
 
 
 class Command(BaseCommand):
-    help = "Download the roll data and fill the database"
+    help = "Download the HLMs and crossreference them with the EvalUnits."
 
     def add_arguments(self, parser):
         parser.add_argument('-o', '--output-folder', 
@@ -231,105 +229,43 @@ def geocode_and_crossref_HLMs(work_split):
                 continue
             muni_clean = hlm['muni'].replace('\'', '\'\'')
 
-            # Take SHQ file street names and find their equivalent in the roll
-            resolved_street_name = resolve_street_name(hlm['street_name'], muni_clean, HLM_ROLL_STREET_NAME_MAP)
-            if resolved_street_name:
-                hlm['street_name'] = resolved_street_name
+            # The street names are cutoff after 21 characters in the SHQ CSV
+            # for entries with 21 characters, resolve the street name by doing a
+            # fuzzy search with the roll DB. This is not a perfect process!
+            if len(hlm['street_name']) == 21:
+                # Take SHQ file street names and find their equivalent in the roll
+                resolved_street_name = resolve_street_name(hlm['street_name'], muni_clean, HLM_ROLL_STREET_NAME_MAP)
+
+                if resolved_street_name:
+                    hlm['street_name'] = resolved_street_name
             
-            # Geocode the HLM using Mapbox API
-            point = None
-            mapbox_resp = mapbox_query_v6(hlm, MAPBOX_TOKEN)
-            mapbox_api_calls += 1
-
-            if mapbox_resp.ok:
-                mapbox_result = mapbox_resp.json()
-
-                if len(mapbox_result['features']) > 0:
-                    match_confidence = mapbox_result['features'][0]['properties']['match_code']['confidence']
-
-                    if match_confidence in ['medium', 'high', 'exact']:
-
-                        point = mapbox_result['features'][0]['geometry']
-                        hlm['lng'] = point['coordinates'][0]
-                        hlm['lat'] = point['coordinates'][1]
-
-                        # Save the "official" data returned as it's more likely correct
-                        # and better formatted than the cutoff HLM data or the no-accent roll data
-                        if 'context' in mapbox_result['features'][0]['properties'] and 'address' in mapbox_result['features'][0]['properties']['context']:
-                            hlm['address'] = mapbox_result['features'][0]['properties']['context']['address']['name']
-                            hlm['street_name'] = mapbox_result['features'][0]['properties']['context']['address']['street_name']
-                            hlm['street_num'] = mapbox_result['features'][0]['properties']['context']['address']['address_number']
-
-            # If no match was found, or the match confidence is weak,
-            # we try again with the Google geocoding API
-            if point is None:
-                gmaps_query = ' '.join([hlm['street_num'], hlm['street_name'], hlm['muni'], 'QC', hlm['postal_code']])
-
-                geocode_result = gmaps.geocode(gmaps_query)
-
-                if len(geocode_result) == 0:
-                    # Could not geocode using google maps
-                    continue
-
-                geocode_result = geocode_result[0]
+            # Geocode the HLM 
+            # We try Google first as it's better than Mapbox from my experience, 
+            # at least with HLMs in less populated regions of Quebec
+            # we fall back to using mapbox, though its unlikely Mpabox will have a good result
+            # if Google did not find it already
+            point = geocode_with_gmaps(hlm, gmaps)
+            
+            if point:
                 google_api_calls += 1
 
-                if 'location_type' in geocode_result['geometry'] and geocode_result['geometry']['location_type'] in ['ROOFTOP', 'RANGE_INTERPOLATED']:
-                    for component in geocode_result['address_components']:
-                        if 'street_number' in component['types']:
-                            hlm['street_num'] = component['long_name']
-                        
-                        if 'route' in component['types']:
-                            hlm['street_name'] = component['long_name']
-                    
-                    hlm['address'] =  hlm['street_num'] + ' ' + hlm['street_name']
-                    hlm['lng'] = geocode_result['geometry']['location']['lng']
-                    hlm['lat'] = geocode_result['geometry']['location']['lat']
-
-                    point = {
-                        'type': 'Point',
-                        'coordinates': [hlm['lng'], hlm['lat']]
-                    }
-
-                elif 'partial_match' in geocode_result and geocode_result['partial_match'] is True:
-                    continue
-                else:
-                    # Check the returned data for a street number
-                    # If absent, it has matched a street or other and we should discard
-                    for component in geocode_result['address_components']:
-                        if 'street_number' in component['types']:
-                            hlm['street_num'] = component['long_name']
-                        
-                        if 'route' in component['types']:
-                            hlm['street_name'] = component['long_name']
-
-                    if hlm['street_num'] is None:
-                        continue
-
-                    hlm['address'] =  hlm['street_num'] + ' ' + hlm['street_name']
-                    hlm['lng'] = geocode_result['geometry']['location']['lng']
-                    hlm['lat'] = geocode_result['geometry']['location']['lat']
-
-                    point = {
-                        'type': 'Point',
-                        'coordinates': [hlm['lng'], hlm['lat']]
-                    }
+            # If no match was found, or the match confidence is weak,
+            # we try again with the Mapbox geocoding API
+            else:
+                point = geocode_with_mapbox(hlm)
             
             # Now that we have a point, we attempt to
             # fetch the lot that contains the point.
             if point:
+                mapbox_api_calls += 1
                 # First verify that streetview imagery is available at the point
                 hlm['streetview_available'] = is_streetview_imagery_available(point['coordinates'][1], point['coordinates'][0])
 
-                # We filter out the CUBFs related to public ways, parcs, water bodies and forests
-                # an original version forces CUBF to be 1000 (residential), but some lots have a different
-                # primary use while still being the real lot of the HLM
+                # We filter out the CUBFs related to parcs
+                # the deocoded pin could be there but it's unlikely to be the HLM
                 cursor.execute(f"""SELECT id FROM {EVALUNIT_TABLE} 
                                WHERE ST_Intersects(lot_geom, ST_GeomFromGeoJson(%s)) 
-                               AND cubf NOT BETWEEN 4000 AND 4999 
-                               AND cubf NOT BETWEEN 7600 AND 7699
-                               AND cubf NOT BETWEEN 9200 AND 9399;
-                               """, (json.dumps(point),))
+                               AND cubf != 7611;""", (json.dumps(point),))
 
                 if res := cursor.fetchone():
                     hlm['eval_unit_id'] = res['id']
@@ -340,21 +276,64 @@ def geocode_and_crossref_HLMs(work_split):
 
                 
                 # Search by proximity to the HLM point
+                # We'll go through 5 and verify if the street numbers are the same
+                # as sometimes we end up on the wrong side of the street!
                 # https://postgis.net/documentation/faq/radius-search/
-                cursor.execute(f"""SELECT id FROM {EVALUNIT_TABLE} 
+                cursor.execute(f"""SELECT id, num_adr_inf, num_adr_sup FROM {EVALUNIT_TABLE} 
                                WHERE ST_DWITHIN(lot_geom, ST_SETSRID(ST_GeomFromGeoJSON(%s), 4326), 0.001)
-                               AND cubf NOT BETWEEN 4000 AND 4999 
-                               AND cubf NOT BETWEEN 7600 AND 7699 
-                               AND cubf NOT BETWEEN 9200 AND 9399 
+                               AND cubf != 7611 
                                ORDER BY ST_DISTANCE(lot_geom, ST_SETSRID(ST_GeomFromGeoJSON(%s), 4326)) 
-                               ASC LIMIT 1;""", (json.dumps(point), json.dumps(point),))
+                               ASC LIMIT 5;""", (json.dumps(point), json.dumps(point),))
                 
-                if res := cursor.fetchone():
-                    hlm['eval_unit_id'] = res['id']
-                    cursor.execute(SQL_UPSERT_HLM, hlm)
-                    conn.commit()
-                    num_found += 1
-                    continue
+                # We go over the top 5 closest lots 3 times, in order of decending match quality
+                # As soon as we find a match we break out of the loops 
+                found = False
+                if results := cursor.fetchall():
+                    # Street number could have a second string part
+                    street_num, _ = separate_num_adr(hlm['street_num'])
+                    # Try 1: Match on the (inferior) street number
+                    for res in results:
+                        if res['num_adr_inf'] == street_num:
+                            hlm['eval_unit_id'] = res['id']
+                            cursor.execute(SQL_UPSERT_HLM, hlm)
+                            conn.commit()
+                            num_found += 1
+                            found = True
+                            break
+                    
+                    if found: continue
+
+                    # Try 2: If the eval units have a superior street number,
+                    # find the unit such that the hlm's street number is contained
+                    # within the range AND of the same parity as the inferior street number
+                    # This is a heuristic for being on the same side of the street
+                    for res in results:
+                        num_adr_inf, _ = separate_num_adr(res['num_adr_inf'])
+                        num_adr_sup, _ = separate_num_adr(res['num_adr_sup'])
+                        
+                        if num_adr_sup and num_adr_inf <street_num < num_adr_sup:
+                            if (num_adr_inf % 2 == 0 and street_num % 2 == 0) or (num_adr_inf % 2 == 1 and street_num % 2 == 1):
+                                hlm['eval_unit_id'] = res['id']
+                                cursor.execute(SQL_UPSERT_HLM, hlm)
+                                conn.commit()
+                                num_found += 1
+                                found = True
+                                break
+
+                    if found: continue
+
+                    # Try 3: Match on the eval units such that the hlm street
+                    # number is within the range without caring about parity. 
+                    for res in results:
+                        num_adr_inf, _ = separate_num_adr(res['num_adr_inf'])
+                        num_adr_sup, _ = separate_num_adr(res['num_adr_sup'])
+
+                        if num_adr_sup and num_adr_inf < street_num < num_adr_sup:
+                            hlm['eval_unit_id'] = res['id']
+                            cursor.execute(SQL_UPSERT_HLM, hlm)
+                            conn.commit()
+                            num_found += 1
+                            continue
 
 
                 # Final attempt, just match the addresses with evalunits table, we get a few this way
@@ -368,9 +347,6 @@ def geocode_and_crossref_HLMs(work_split):
                     num_found += 1
                     continue
 
-                # Could have a final final attempt with the check for inclusion
-                # between inferior and superior street numbers
-
         except KeyboardInterrupt:
             return {
                 'num_found': num_found,
@@ -382,6 +358,7 @@ def geocode_and_crossref_HLMs(work_split):
         except:
             exc = traceback.format_exc()
             print(exc)
+            IPython.embed()
             print(row)
             conn.reset()
             continue
@@ -396,26 +373,83 @@ def geocode_and_crossref_HLMs(work_split):
     }
 
 
+def geocode_with_gmaps(hlm, gmaps):
+    gmaps_query = ' '.join([hlm['street_num'], hlm['street_name'], hlm['muni'], 'QC', hlm['postal_code']])
+    geocode_result = gmaps.geocode(gmaps_query)
 
-def is_streetview_imagery_available(lat, lng, radius=100):
-    """
-    Query the Google Streetview Metadata API to 
-    know if streetview imagery is available at the 
-    location within the given radius.
-    These API calls are free.
-    See https://developers.google.com/maps/documentation/streetview/metadata
-    """
-    url = f'{URL_STREETVIEW_METADATA}&location={lat},{lng}&radius={radius}'
-    url = sign_url(url, GOOGLE_SIGNING_SECRET)
-    r = requests.get(url)
+    if len(geocode_result) == 0:
+        # Could not geocode using google maps
+        return None
 
-    if r.status_code == 200:
-        data = r.json()
-        if data['status'] != 'ZERO_RESULTS':
-            return True
+    geocode_result = geocode_result[0]
 
-    return False
+    if 'location_type' in geocode_result['geometry'] and geocode_result['geometry']['location_type'] in ['ROOFTOP', 'RANGE_INTERPOLATED']:
+        for component in geocode_result['address_components']:
+            if 'street_number' in component['types']:
+                hlm['street_num'] = component['long_name']
+            
+            if 'route' in component['types']:
+                hlm['street_name'] = component['long_name']
+        
+        hlm['address'] =  hlm['street_num'] + ' ' + hlm['street_name']
+        hlm['lng'] = geocode_result['geometry']['location']['lng']
+        hlm['lat'] = geocode_result['geometry']['location']['lat']
 
+        return {
+            'type': 'Point',
+            'coordinates': [hlm['lng'], hlm['lat']]
+        }
+    
+    # If we only have a partial match, return early
+    elif 'partial_match' in geocode_result and geocode_result['partial_match'] is True:
+        return None
+    else:
+        # Check the returned data for a street number
+        # If absent, it has matched a street or other and we should discard
+        for component in geocode_result['address_components']:
+            if 'street_number' in component['types']:
+                hlm['street_num'] = component['long_name']
+            
+            if 'route' in component['types']:
+                hlm['street_name'] = component['long_name']
+
+        if hlm['street_num'] is None:
+            return None
+
+        hlm['address'] = hlm['street_num'] + ' ' + hlm['street_name']
+        hlm['lng'] = geocode_result['geometry']['location']['lng']
+        hlm['lat'] = geocode_result['geometry']['location']['lat']
+
+        return {
+            'type': 'Point',
+            'coordinates': [hlm['lng'], hlm['lat']]
+        }
+
+
+def geocode_with_mapbox(hlm):
+
+    mapbox_resp = mapbox_query_v6(hlm, MAPBOX_TOKEN)
+
+    if mapbox_resp.ok:
+        mapbox_result = mapbox_resp.json()
+
+        if len(mapbox_result['features']) > 0:
+            match_confidence = mapbox_result['features'][0]['properties']['match_code']['confidence']
+
+            if match_confidence in ['high', 'exact']:
+                point = mapbox_result['features'][0]['geometry']
+                hlm['lng'] = point['coordinates'][0]
+                hlm['lat'] = point['coordinates'][1]
+
+                # Save the "official" data returned as it's more likely correct
+                # and better formatted than the cutoff HLM data or the no-accent roll data
+                if 'context' in mapbox_result['features'][0]['properties'] and 'address' in mapbox_result['features'][0]['properties']['context']:
+                    hlm['address'] = mapbox_result['features'][0]['properties']['context']['address']['name']
+                    hlm['street_name'] = mapbox_result['features'][0]['properties']['context']['address']['street_name']
+                    hlm['street_num'] = mapbox_result['features'][0]['properties']['context']['address']['address_number']
+                
+                return point
+    return None
 
 def parse_HLM_csv_row(row):
 
@@ -484,7 +518,9 @@ def create_hlms_table_if_not_exists():
 
 
 def sanitize_street_name(street_name):
-    # remove any kind of way type, link and cardinal direction from the street name
+    """
+    Remove any kind of way type, link and cardinal direction from the street name
+    """
     street_name = street_name.lower()
 
     for way_type in WAY_TYPE_VALS:
@@ -508,6 +544,10 @@ def sanitize_street_name(street_name):
 
 
 def separate_num_adr(street_designation: str):
+
+    if street_designation is None:
+        return None, None
+    
     if street_designation.isdigit():
         return int(street_designation), None
     
@@ -582,14 +622,16 @@ def resolve_street_name(hlm_street_name, muni_clean, HLM_ROLL_STREET_NAME_MAP):
     # Try to match the street_name as is
     cursor.execute(f"""SELECT street_name 
                     FROM {EVALUNIT_TABLE} WHERE muni = '{muni_clean}' 
-                    AND lower(street_name) like lower('{hlm_street_name}%') LIMIT 1;""")
+                    AND lower(street_name) like lower('%{hlm_street_name}%') LIMIT 1;""")
 
     if res := cursor.fetchone():
         HLM_ROLL_STREET_NAME_MAP[hlm_street_name] = res['street_name']
         return res['street_name']
     
+    # Remove all way types, directions, etc. from the street name
+    # and try matching again
     street_name = sanitize_street_name(hlm_street_name)
-    # Try to match the street_name as is
+
     cursor.execute(f"""SELECT street_name 
                 FROM {EVALUNIT_TABLE} WHERE muni = '{muni_clean}' 
                 AND lower(street_name) like lower('%{street_name}%') LIMIT 1;""")
@@ -617,7 +659,7 @@ def mapbox_query_v6(hlm, mapbox_token):
     params = {
         'access_token': mapbox_token,
         'limit': '1',
-        'proximity': "-72.9722258594702,46.46566109584455",
+        'proximity': "-72.9722258594702,46.46566109584455", # hardcoded mtl
         "types": "address",
         "autocomplete": "false",
         "address_number": hlm['street_num'],
@@ -626,8 +668,4 @@ def mapbox_query_v6(hlm, mapbox_token):
     }
     
     return requests.get(URL_MAPBOX_V6, params=params)
-
-
-
-
 

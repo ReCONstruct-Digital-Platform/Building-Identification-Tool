@@ -44,7 +44,7 @@ env = environ.Env(
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Take environment variables from .env file
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'), overwrite=True)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
@@ -57,6 +57,7 @@ WEBHOOK_SECRET = env('WEBHOOK_SECRET')
 GOOGLE_MAPS_API_KEY = env('GOOGLE_MAPS_API_KEY')
 GOOGLE_SIGNING_SECRET = env('GOOGLE_SIGNING_SECRET')
 MAPBOX_TOKEN = env('MAPBOX_TOKEN')
+URL_STREETVIEW_METADATA = f"https://maps.googleapis.com/maps/api/streetview/metadata?key={GOOGLE_MAPS_API_KEY}"
 
 ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 

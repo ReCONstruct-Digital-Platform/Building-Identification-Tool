@@ -434,6 +434,8 @@ class EvalUnitSatelliteImage(models.Model):
 class HLMBuilding(models.Model):
     """
     Model representing an HLM building.
+    The data was obtained after a freedom of information type request to the SHQ
+    and is saved here https://f005.backblazeb2.com/file/bit-data-public/hlms.csv
     """
     class Meta:
         db_table = 'hlms'
@@ -475,7 +477,29 @@ class HLMBuilding(models.Model):
             return 'D'
         else:
             return 'E'
+        
 
+class PotentialMetalBuilding(models.Model):
+    """
+    Holds the results of the VQA experiment identifying potential metal buildings.
+    
+    Eval units with certain CUBFs designating parks, community centers, etc.
+    were considerd likely to contain metal prefab buildings. However, due to their CUBFs,
+    they also could contain no building at all, or non-metal buildings.
+    We estimated the probability of a building being present and of a metal building
+    being present using Visual Question Answering models.
+    """
+    class Meta:
+        db_table = 'metal'
+
+    # Here the PK is also a FK as its the same eval unit ID
+    id = models.OneToOneField(
+        EvalUnit, 
+        primary_key=True,
+        db_column="id",
+        on_delete=models.CASCADE) 
+    p_bldg = models.FloatField()
+    p_metal = models.FloatField()
 
 class UploadImageJob(models.Model):
     class Status(models.TextChoices):
@@ -493,3 +517,10 @@ class UploadImageJob(models.Model):
 
     def __str__(self):
         return f"Job {self.id}: {self.status}"
+    
+class CUBF(models.Model):
+    class Meta:
+        db_table = 'cubf'
+
+    cubf = models.IntegerField(primary_key=True)
+    desc = models.TextField()
