@@ -262,7 +262,7 @@ EMAIL_HOST_PASSWORD= env('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL=env('EMAIL_HOST_USER')
 EMAIL_USE_TLS=True
 
-# Override the default allauth forms here
+# Override the default allauth forms here+
 ACCOUNT_FORMS = {
     'login': 'buildings.forms.LoginUserForm',
     'signup': 'buildings.forms.CreateUserForm',

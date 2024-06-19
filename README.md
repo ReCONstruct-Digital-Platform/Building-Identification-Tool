@@ -137,4 +137,14 @@ python manage.py shell
 <br>
  
 
+# Development
 
+In addition to running the server, you will need to run tailwind.
+```
+python .\manage.py tailwind start
+```
+
+If you want to test the email functionality, run runmailer_pg. We are using `django-mailer`` for emails: https://pypi.org/project/django-mailer/1.2/
+```
+python .\manage.py runmailer_pg
+```

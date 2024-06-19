@@ -629,7 +629,7 @@ tr:hover .delete-row-icon {
   inset: 0;
   background-image: var(--stripes), var(--rainbow);
   background-size: 200%, 100%;
-  animation: jumbo 120s linear infinite;
+  animation: jumbo 240s linear infinite;
   background-attachment: fixed;
   mix-blend-mode: exclusion;
 }
