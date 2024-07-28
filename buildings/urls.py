@@ -21,7 +21,7 @@ app_name = 'buildings'
 
 urlpatterns = [
     path('', views.index, name="index"),
-    # path('all_buildings', views.all_buildings, name='all_buildings'),
+    path('all_buildings', views.all_buildings, name='all_buildings'),
     path('survey', views.survey, name="survey"),
     path('survey/v1/<str:eval_unit_id>', views.survey_v1, name="survey_v1"),
     path('register', views.register, name="register"),

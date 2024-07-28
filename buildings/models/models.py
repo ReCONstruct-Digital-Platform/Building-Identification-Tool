@@ -230,6 +230,37 @@ class EvalUnitQuerySet(models.QuerySet):
         return EvalUnit.objects.get(pk=id)
     
 
+
+
+class EvalUnitLot(models.Model):
+    class Meta:
+        db_table = 'lots'
+        indexes = [
+            models.Index(fields=["id_provinc"], name="idx_id_provinc"),
+        ]
+
+    gid = models.TextField(primary_key=True)
+    objectid = models.BigIntegerField(blank=True, null=True)
+    co_mrc = models.TextField(blank=True, null=True)
+    code_mun = models.TextField(blank=True, null=True)
+    arrond = models.TextField(blank=True, null=True)
+    anrole = models.TextField(blank=True, null=True)
+    usag_predo = models.TextField(blank=True, null=True)
+    no_lot = models.TextField(blank=True, null=True)
+    nb_poly_lo = models.FloatField(blank=True, null=True)
+    utilisatio = models.TextField(blank=True, null=True)
+    id_provinc = models.TextField(null=False) # reverse foreign key to lot IDs, used when populating but not when fetching thereafter
+    sup_totale = models.FloatField(blank=True, null=True)
+    descriptio = models.TextField(blank=True, null=True)
+    nb_logemen = models.BigIntegerField(blank=True, null=True)
+    nb_locaux = models.BigIntegerField(blank=True, null=True)
+    shape_leng = models.FloatField(blank=True, null=True)
+    shape_area = models.FloatField(blank=True, null=True)
+    dat_acqui = models.DateField(blank=True, null=True)
+    dat_charg = models.DateField(blank=True, null=True)
+    geom = models.MultiPolygonField(null=True, spatial_index=True)
+
+
     
 class EvalUnitManager(models.Manager):
     def get_queryset(self):
@@ -249,8 +280,7 @@ class EvalUnit(models.Model):
     lat = models.FloatField(null=True)
     lng = models.FloatField(null=True)
     point = models.PointField(null=True, spatial_index=True)
-    lot_id = models.TextField(null=True)
-    lot_geom = models.MultiPolygonField(null=True, spatial_index=True)
+    lot = models.ForeignKey(EvalUnitLot, to_field="gid", on_delete=models.CASCADE, null=True, blank=True)
     year = models.SmallIntegerField()
     muni = models.TextField()
     muni_code = models.TextField(null=True, blank=True)

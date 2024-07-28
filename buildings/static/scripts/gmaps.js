@@ -327,7 +327,6 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
       window.lastPanoDate = data.imageDate;
       window.lastPanoId = data.location.pano;
 
-      
       const lotShape = JSON.parse(document.getElementById("geojson").textContent);
       console.debug(lotShape);
       

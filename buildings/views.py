@@ -27,6 +27,7 @@ from buildings.utils.constants import CUBF_TO_NAME_MAP
 from buildings.utils.utility import print_query_dict, verify_github_signature
 from django.contrib.gis.db.models.functions import AsGeoJSON
 from django.core.serializers import serialize
+from django.db import connection
 
 from .forms import CreateUserForm
 from .models.surveys import SurveyV1Form
@@ -157,7 +158,6 @@ def survey(_):
 
 @login_required(login_url='buildings:login')
 def survey_v1(request, eval_unit_id):
-
     eval_unit = get_object_or_404(EvalUnit, pk=eval_unit_id)
 
     hlms = None
@@ -276,18 +276,20 @@ def survey_v1(request, eval_unit_id):
     # eval_unit.geom = eval_unit.geom.simplify(0.000005)
     # lot_geojson = json.loads(serialize('geojson', [eval_unit], geometry_field='geom', fields=[]))
 
-    from django.db import connection
+    # lot_geojson = None
+    # with connection.cursor() as cursor:
+    #     cursor.execute(f"select st_asgeojson(st_simplify(lot_geom, 0.000005, true)) from evalunits where id = %s", [eval_unit_id])       
+    #     row = cursor.fetchone()
+    #     # If we get a result
+    #     if row and row[0]:
+    #         print(cursor.mogrify(f"select st_asgeojson(st_simplify(lot_geom, 0.000005, true)) from evalunits where id = %s", [eval_unit_id]))
+    #         print(row)
+    #         lot_geojson = {
+    #             'type': 'Feature',
+    #             'geometry': json.loads(row[0]) 
+    #         }
 
-    lot_geojson = None
-    with connection.cursor() as cursor:
-        cursor.execute(f"select st_asgeojson(st_simplify(lot_geom, 0.000005, true)) from evalunits where id = %s", [eval_unit_id])       
-        row = cursor.fetchone()
-        # If we get a result
-        if row and row[0]:
-            lot_geojson = {
-                'type': 'Feature',
-                'geometry': json.loads(row[0]) 
-            }
+    lot_geojson = json.loads(serialize("geojson", [eval_unit.lot], geometry_field="geom", fields=["gid"])) if eval_unit.lot else None
 
     context = {
         'key': settings.GOOGLE_MAPS_API_KEY,
