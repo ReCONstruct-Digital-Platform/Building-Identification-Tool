@@ -86,8 +86,8 @@
             {% for building in page_obj %}
             <tr class="mb-2">
                 <th scope="row"><a href="{% url 'buildings:survey_v1' building.id %}" class="row-link">{{ building.id }}</a></th>
-                <td><a href="{% url 'buildings:survey_v1' building.id %}" tabindex="-1" class="row-link">{{ building.formatted_address }}</a></td>
-                <td><a href="{% url 'buildings:survey_v1' building.id %}" tabindex="-1" class="row-link">{{ building.locality }}</a></td>
+                <td><a href="{% url 'buildings:survey_v1' building.id %}" tabindex="-1" class="row-link">{{ building.address }}</a></td>
+                <td><a href="{% url 'buildings:survey_v1' building.id %}" tabindex="-1" class="row-link">{{ building.muni }}</a></td>
                 <td><a href="{% url 'buildings:survey_v1' building.id %}" tabindex="-1" class="row-link">{{ building.region }}</a></td>
                 <td><a href="{% url 'buildings:survey_v1' building.id %}" tabindex="-1" class="row-link">{{ building.cubf }}</a></td>
                 <td><a href="{% url 'buildings:survey_v1' building.id %}" tabindex="-1" class="row-link">{{ building.date_added }}</a></td>

@@ -126,7 +126,7 @@ def all_buildings(request):
     log.debug(f'Ordering: {ordering}, direction: {direction}')
     qs = EvalUnit.objects.search(query=query, ordering=ordering)
 
-    paginator = Paginator(qs, 25) # Show 25 contacts per page.
+    paginator = Paginator(qs, 25) # Show 25 per page.
 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)

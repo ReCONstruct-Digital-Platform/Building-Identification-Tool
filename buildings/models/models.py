@@ -318,7 +318,7 @@ class EvalUnit(models.Model):
     @classmethod
     def _get_proper_field_name(self, field):
         if field in [None, 'None']:
-            return "num_votes"
+            return "address"
         
         field = field.lower()
         if field == "address":
@@ -331,7 +331,7 @@ class EvalUnit(models.Model):
         #     return 'avg_score'
         else:
             # If the field is not valid, default to address
-            return "num_votes"
+            return "address"
 
     @classmethod
     def get_ordering(cls, order_by, direction):

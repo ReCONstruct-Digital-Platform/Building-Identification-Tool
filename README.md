@@ -82,6 +82,9 @@ POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 ``` 
 
+Additionally, to support the django GIS extension, you will need to download some more utilies.
+On Windows, download and install OSGeo4W. Follow the instructions and install in the default `C:\OsGeo4W` folder. You should get the necessary utilities.
+
 Run the Django migrations, this will create all tables for our application in the DB.
 ```bash
 python manage.py migrate
@@ -131,3 +134,16 @@ python manage.py shell
 
 
 <br>
+
+
+# Development
+
+In addition to running the server, you will need to run tailwind.
+```
+python .\manage.py tailwind start
+```
+
+If you want to test the email functionality, run runmailer_pg. We are using `django-mailer`` for emails: https://pypi.org/project/django-mailer/1.2/
+```
+python .\manage.py runmailer_pg
+```

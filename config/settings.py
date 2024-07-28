@@ -33,6 +33,7 @@ env = environ.Env(
     POSTGRES_HOST=(str, ''),
     POSTGRES_PORT=(int, ''),
     GDAL_LIBRARY_PATH=(str, ''),
+    GEOS_LIBRARY_PATH=(str, ''),
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -62,6 +63,7 @@ CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE')
 SESSION_COOKIE_SECURE = env('SESSION_COOKIE_SECURE')
 
 GDAL_LIBRARY_PATH = env('GDAL_LIBRARY_PATH')
+GEOS_LIBRARY_PATH = env('GEOS_LIBRARY_PATH')
 
 # Backblaze B2 variables
 B2_KEYID_RW = env('B2_KEYID_RW')
