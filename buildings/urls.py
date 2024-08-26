@@ -24,6 +24,7 @@ urlpatterns = [
     path('survey/', views.survey.survey, name="survey"),
     path('survey/v1/<str:eval_unit_id>', views.survey.survey_v1, name="survey_v1"),
     path('upload_imgs/<str:eval_unit_id>', views.survey.upload_imgs, name="upload_imgs"),
-    path('redeploy_server/', views.survey.redeploy_server, name="redeploy_server"),
+    # path('redeploy_server/', views.survey.redeploy_server, name="redeploy_server"),
     path('explore/', views.explore.index, name="explore"),
+    path('ping/', views.survey.ping, name="ping")
 ]

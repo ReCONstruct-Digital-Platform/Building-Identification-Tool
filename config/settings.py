@@ -12,10 +12,13 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import os
 import environ
 from pathlib import Path
+import boto3
 
 # Initialise environment variables and defaults
+# These are secondary to any OS environment variables
 env = environ.Env(
-    DEBUG=(bool, True),
+    STAGE=(str, "dev"),
+    DEBUG=(bool, False),
     ALLOWED_HOSTS=([str], ['127.0.0.1']),
     CSRF_TRUSTED_ORIGINS=([str], ['http://localhost']),
     CSRF_COOKIE_SECURE=(bool, True),
@@ -38,48 +41,154 @@ env = environ.Env(
     EMAIL_PORT=(str, ''),
     EMAIL_HOST_USER=(str, ''),
     EMAIL_HOST_PASSWORD=(str, ''),
+    IS_DOCKER_CONTAINER=(bool, False)
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+ENV_FILE_PATH = BASE_DIR / '.env'
+IS_DOCKER_CONTAINER = env('IS_DOCKER_CONTAINER', bool, False)
 
-# Take environment variables from .env file
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'), overwrite=True)
+# Take environment variables from .env file if it exists
+# Will not exist in production, which will have environment variables pre-loaded
+if ENV_FILE_PATH.exists():
+    environ.Env.read_env(ENV_FILE_PATH)
+
+STAGE = env('STAGE')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY')
+
+if "staging" in STAGE or "prod" in STAGE:
+    # Just in case it's on in prod
+    DEBUG = False
+    REGION = env('AWS_REGION', str)
+
+    # Secrets
+    SECRET_KEY = env('SECRET_KEY')
+    GOOGLE_SIGNING_SECRET = env('GOOGLE_SIGNING_SECRET')
+    GOOGLE_MAPS_API_KEY = env('GOOGLE_MAPS_API_KEY')
+    MAPBOX_TOKEN = env('MAPBOX_TOKEN')
+    B2_KEYID_RW = env('B2_KEYID_RW')
+    B2_APPKEY_RW = env('B2_APPKEY_RW')
+    EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+
+    # Database
+    # We use RDS in prod and staging, but can connect to local DB in dev
+    DB_HOST = env('DB_HOST')
+    DB_PORT = env('DB_PORT')
+    DB_USER = env('DB_USER')
+    DB_NAME = env('DB_NAME')
+
+    # Hosts
+    HOST_NAMES = env('HOST_NAMES')
+    ALLOWED_HOSTS = HOST_NAMES.split(',')
+    ALLOWED_HOSTS.append('127.0.0.1')
+
+    # Needed for the load balancer's health checks
+    # https://medium.com/django-unleashed/djangos-allowed-hosts-in-aws-ecs-369959f2c2ab
+    from socket import gethostbyname, gethostname
+    ALLOWED_HOSTS.append(gethostbyname(gethostname()))
+
+    # Set to https://{domain_name}
+    CSRF_TRUSTED_ORIGINS = env('CSRF_TRUSTED_ORIGINS')
+    # https://docs.djangoproject.com/en/5.0/ref/settings/#csrf-cookie-secure
+    CSRF_COOKIE_SECURE = True
+    # https://docs.djangoproject.com/en/5.0/ref/settings/#session-cookie-secure
+    SESSION_COOKIE_SECURE = True
+
+    client = boto3.client('rds', region_name=REGION)
+    token = client.generate_db_auth_token(DBHostname=DB_HOST, Port=DB_PORT, DBUsername=DB_USER, Region=REGION)
+    
+    sts_client = boto3.client('sts', region_name=REGION)
+    caller_identity = sts_client.get_caller_identity()
+
+    print(f"Caller identity: {caller_identity}")
+
+    cert_path = Path("/code/config/certs/global-bundle.pem")
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.contrib.gis.db.backends.postgis',
+            'NAME': DB_NAME,
+            'USER': DB_USER,
+            'PASSWORD': token,
+            'HOST': DB_HOST,
+            'PORT': DB_PORT,
+            # https://stackoverflow.com/questions/70673258/connect-django-postgres-to-aws-rds-over-ssl
+            'OPTIONS': {
+                'sslmode': 'verify-full',
+                'sslrootcert': cert_path
+            },
+            'TEST': {
+                'TEMPLATE': 'template0', 
+            }
+        },
+    }
+
+    # S3 Storage for collect static
+    STATICFILES_DIRS = [os.path.join(BASE_DIR,'buildings/static/'),]
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+    AWS_STORAGE_BUCKET_NAME = env('STATIC_BUCKET_NAME')
+    AWS_S3_REGION_NAME = REGION
+    AWS_LOCATION = 'static'
+    AWS_S3_CUSTOM_DOMAIN = ALLOWED_HOSTS[0] # Picking the first host as the custom domain
+    STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
+
+# We'll default to local DB. Ideally stage should be labelled "dev"
+else:
+    # Secrets
+    SECRET_KEY = env('SECRET_KEY')
+    GOOGLE_SIGNING_SECRET = env('GOOGLE_SIGNING_SECRET')
+    GOOGLE_MAPS_API_KEY = env('GOOGLE_MAPS_API_KEY')
+    MAPBOX_TOKEN = env('MAPBOX_TOKEN')
+    B2_KEYID_RW = env('B2_KEYID_RW')
+    B2_APPKEY_RW = env('B2_APPKEY_RW')
+    EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+
+    # Hosts
+    ALLOWED_HOSTS = env('ALLOWED_HOSTS')
+
+    # Static files (CSS, JavaScript, Images)
+    # https://docs.djangoproject.com/en/4.1/howto/static-files/
+    STATIC_URL = env('STATIC_URL')
+    STATIC_ROOT = env('STATIC_ROOT')
+    
+    
+    CSRF_TRUSTED_ORIGINS = env('CSRF_TRUSTED_ORIGINS')
+    CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE')
+    SESSION_COOKIE_SECURE = env('SESSION_COOKIE_SECURE')
+
+
+    DATABASES = {
+        "default": {
+            'ENGINE': 'django.contrib.gis.db.backends.postgis',
+            'NAME': env('POSTGRES_NAME'),
+            'USER': env('POSTGRES_USER'),
+            'PASSWORD': env('POSTGRES_PW'),
+            'HOST': 'host.docker.internal' if IS_DOCKER_CONTAINER else env('POSTGRES_HOST'),
+            'PORT': env('POSTGRES_PORT'),
+            'TEST': {
+                'TEMPLATE': 'template0', 
+            }
+        }
+    }
+
 
 WEBHOOK_SECRET = env('WEBHOOK_SECRET')
 
-GOOGLE_MAPS_API_KEY = env('GOOGLE_MAPS_API_KEY')
-GOOGLE_SIGNING_SECRET = env('GOOGLE_SIGNING_SECRET')
-MAPBOX_TOKEN = env('MAPBOX_TOKEN')
 URL_STREETVIEW_METADATA = f"https://maps.googleapis.com/maps/api/streetview/metadata?key={GOOGLE_MAPS_API_KEY}"
 
-ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 
-CSRF_TRUSTED_ORIGINS = env('CSRF_TRUSTED_ORIGINS')
-
-CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE')
-
-SESSION_COOKIE_SECURE = env('SESSION_COOKIE_SECURE')
-
-GDAL_LIBRARY_PATH = env('GDAL_LIBRARY_PATH')
+if not IS_DOCKER_CONTAINER:
+    GDAL_LIBRARY_PATH = env('GDAL_LIBRARY_PATH')
 
 # Backblaze B2 variables
-B2_KEYID_RW = env('B2_KEYID_RW')
-B2_APPKEY_RW = env('B2_APPKEY_RW')
 B2_ENDPOINT = env('B2_ENDPOINT')
 B2_BUCKET_IMAGES = env('B2_BUCKET_IMAGES')
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.1/howto/static-files/
-STATIC_URL = env('STATIC_URL')
-
-STATIC_ROOT = env('STATIC_ROOT')
 
 # See https://docs.djangoproject.com/en/4.2/topics/logging/#configuring-logging
 LOGGING = {
@@ -132,6 +241,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     "mailer",
+    'storages',
 ]
 
 TAILWIND_APP_NAME = 'theme'
@@ -183,22 +293,6 @@ INTERNAL_IPS = (
     '127.0.0.1',
 )
 
-# Database
-# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': env('POSTGRES_NAME'),
-        'USER': env('POSTGRES_USER'),
-        'PASSWORD': env('POSTGRES_PW'),
-        'HOST': env('POSTGRES_HOST'),
-        'PORT': env('POSTGRES_PORT'),
-        'TEST': {
-            'TEMPLATE': 'template0', 
-        }
-    }
-}
 
 # https://docs.djangoproject.com/en/4.2/topics/auth/customizing/#extending-the-existing-user-model
 AUTH_USER_MODEL = "buildings.User"
@@ -258,7 +352,6 @@ MAILER_EMPTY_QUEUE_SLEEP = 5
 EMAIL_HOST = env('EMAIL_HOST')
 EMAIL_PORT = env('EMAIL_PORT')
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD= env('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL=env('EMAIL_HOST_USER')
 EMAIL_USE_TLS=True
 

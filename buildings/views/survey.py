@@ -27,7 +27,7 @@ from buildings.utils.utility import verify_github_signature
 
 from buildings.forms import CreateUserForm, LoginUserForm
 from buildings.models.surveys import SurveyV1Form
-from config.settings import WEBHOOK_SECRET, BASE_DIR
+# from config.settings import WEBHOOK_SECRET, BASE_DIR
 from buildings.utils.constants import CUBF_TO_NAME_MAP
 from buildings.models.models import (
     EvalUnit, EvalUnitLatestViewData, HLMBuilding, NoBuildingFlag, UploadImageJob, User, Vote
@@ -363,6 +363,8 @@ def register(request):
     return render(request, 'buildings/register.html', {'form': form})
 
 
+def ping(_):
+    return HttpResponse('OK')
 
 @require_POST
 def upload_imgs(request, eval_unit_id):
@@ -381,75 +383,75 @@ def upload_imgs(request, eval_unit_id):
     return HttpResponse('Ok')
 
 
-@csrf_exempt
-@require_POST
-def redeploy_server(request):
-    """
-    Github webhook endpoint to redeploy the server on PythonAnywhere.com
-    """
-    if request.method != 'POST':
-        return HttpResponse(status=403, reason="Invalid method")
+# @csrf_exempt
+# @require_POST
+# def redeploy_server(request):
+#     """
+#     Github webhook endpoint to redeploy the server on PythonAnywhere.com
+#     """
+#     if request.method != 'POST':
+#         return HttpResponse(status=403, reason="Invalid method")
     
-    # Verify if request came from one of GitHub's IP addresses
-    forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    client_ip_address = ip_address(forwarded_for)
-    whitelist = requests.get('https://api.github.com/meta').json()['hooks']
+#     # Verify if request came from one of GitHub's IP addresses
+#     forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+#     client_ip_address = ip_address(forwarded_for)
+#     whitelist = requests.get('https://api.github.com/meta').json()['hooks']
 
-    for valid_ip in whitelist:
-        if client_ip_address in ip_network(valid_ip):
-            break
-    else:
-        return HttpResponse(status=403, reason=f"POST to /redeploy_server came from unauthorized IP: {client_ip_address}")
+#     for valid_ip in whitelist:
+#         if client_ip_address in ip_network(valid_ip):
+#             break
+#     else:
+#         return HttpResponse(status=403, reason=f"POST to /redeploy_server came from unauthorized IP: {client_ip_address}")
     
-    # Verify the secret
-    secret = WEBHOOK_SECRET
-    x_hub_signature = request.headers.get('x-hub-signature-256')
+#     # Verify the secret
+#     secret = WEBHOOK_SECRET
+#     x_hub_signature = request.headers.get('x-hub-signature-256')
 
-    if not verify_github_signature(request.body, secret, x_hub_signature):
-        log.warning(f'Wrong x-hub-signature!')
-        return HttpResponse(status=403, reason="x-hub-signature-256 header is missing!")
+#     if not verify_github_signature(request.body, secret, x_hub_signature):
+#         log.warning(f'Wrong x-hub-signature!')
+#         return HttpResponse(status=403, reason="x-hub-signature-256 header is missing!")
     
-    # Check that this is a push event as we only want those to trigger a webhook
-    # Another event would indicate misconfiguration of webhooks in GitHub
-    event = request.headers.get('X-GitHub-Event')
-    if event != 'push':
-        return HttpResponse(status=204, reason=f"Webhook event was not 'push' but {event}")
+#     # Check that this is a push event as we only want those to trigger a webhook
+#     # Another event would indicate misconfiguration of webhooks in GitHub
+#     event = request.headers.get('X-GitHub-Event')
+#     if event != 'push':
+#         return HttpResponse(status=204, reason=f"Webhook event was not 'push' but {event}")
     
-    # All is good for now, get the body and check which branch was pushed
-    body = json.loads(request.body)
+#     # All is good for now, get the body and check which branch was pushed
+#     body = json.loads(request.body)
 
-    # We only want to redeploy when the main branch was pushed to
-    ref = body['ref']
-    if ref != 'refs/heads/main':
-        return HttpResponse(f"Branch {ref} was pushed to. Ignore.")
+#     # We only want to redeploy when the main branch was pushed to
+#     ref = body['ref']
+#     if ref != 'refs/heads/main':
+#         return HttpResponse(f"Branch {ref} was pushed to. Ignore.")
 
-    # If the main branch was pushed to, pull the newest version
-    repo = git.Repo(BASE_DIR)
+#     # If the main branch was pushed to, pull the newest version
+#     repo = git.Repo(BASE_DIR)
 
-    # Check if there are current uncommited changes which could make the pull failed
-    # If there are, we stash the changes incase they were important but do not re-apply them
-    stashed = False
-    if repo.is_dirty():
-        log.warn(f'Repository is dirty. Stashing changes')
-        repo.git.stash('save')
-        stashed = True
+#     # Check if there are current uncommited changes which could make the pull failed
+#     # If there are, we stash the changes incase they were important but do not re-apply them
+#     stashed = False
+#     if repo.is_dirty():
+#         log.warn(f'Repository is dirty. Stashing changes')
+#         repo.git.stash('save')
+#         stashed = True
 
-    # If we're not on the main branch, switch to it
-    if repo.active_branch != repo.refs.main:
-        log.warning('Repository is not on main branch')
-        repo.git.checkout('main')
+#     # If we're not on the main branch, switch to it
+#     if repo.active_branch != repo.refs.main:
+#         log.warning('Repository is not on main branch')
+#         repo.git.checkout('main')
     
-    origin = repo.remotes.origin
+#     origin = repo.remotes.origin
 
-    try:
-        origin.pull()
-    except:
-        log.error(traceback.format_exc())
-        return HttpResponse(status=500, reason=f'Caught an exception while pulling. See server logs for details.')
+#     try:
+#         origin.pull()
+#     except:
+#         log.error(traceback.format_exc())
+#         return HttpResponse(status=500, reason=f'Caught an exception while pulling. See server logs for details.')
     
-    if stashed:
-        return HttpResponse("Updated deployed version to new main branch. Some changes were stashed!")
+#     if stashed:
+#         return HttpResponse("Updated deployed version to new main branch. Some changes were stashed!")
     
-    return HttpResponse("All good!")
+#     return HttpResponse("All good!")
 
 
