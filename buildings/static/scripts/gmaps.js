@@ -134,40 +134,7 @@ function attachEventsToPegman(mutationList, _) {
             window.pegmanDropped = true;
           }
         }
-        // else if (mutation.oldValue === "true") {
-        //   console.debug("pegman drag ended 1")
-        //   window.pegmanDropped = true;
-        // }
       }
-
-      //   // Without this, we easily get hundreds of listeners attached
-      //   if (mutation.target.getAttribute("listenersSet") === "true") {
-      //     console.debug("pegman event listeners already set")
-      //     return;
-      //   }
-      //   console.debug("Attaching events on pegman");
-      //   // Save a reference for later
-      //   window.pegman = mutation.target.getElementsByTagName('img')[0]
-      //   window.pegmanDiv = mutation.target;
-
-      //   // console.log(window.pegman)
-
-      //   // Add event listeners to the element
-      //   window.pegman.addEventListener("mousedown", () => {
-      //     console.debug("mousedown on pegman")
-      //     window.pegmanDropped = false;
-      //     window.pegmanMousedown = true;
-      //   });
-      //   window.pegman.addEventListener("mouseup", () => {
-      //     console.debug("mouseup on pegman");
-
-      //     if (window.pegmanMousedown) {
-      //       console.debug('pegman dropped');
-      //       window.pegmanMousedown = false;
-      //       window.pegmanDropped = true;
-      //     }
-      //   });
-      //   mutation.target.setAttribute("listenersSet", "true");
     }
   }
 }
@@ -332,7 +299,6 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
         ]
       })
 
-      // 
       const sv_marker = new Marker({
         position: evalUnitCoord,
         map: sv,
