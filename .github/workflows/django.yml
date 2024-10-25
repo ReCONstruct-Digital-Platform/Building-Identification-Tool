@@ -9,12 +9,11 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
       matrix:
-        python-version: ['3.10', '3.9']
+        python-version: ['3.10']
 
     # Service containers to run with `runner-job`
     services:
@@ -58,7 +57,7 @@ jobs:
         psql postgresql://postgres:postgres@localhost:5432 -c "GRANT ALL ON SCHEMA public TO bitdbuser;"
         psql postgresql://postgres:postgres@localhost:5432 -c "ALTER USER bitdbuser SUPERUSER;"
 
-    - name: Run All Tests
+    - name: Run Tests
       env: 
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
@@ -73,5 +72,40 @@ jobs:
         POSTGRES_PW: password
         POSTGRES_HOST: localhost
         POSTGRES_PORT: 5432
-      run: |
-        python manage.py test
+      run: python manage.py test
+
+  deploy:
+    name: "Deploy to staging"
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
+    steps:
+      - name: \[staging\] Configure SSH credentials
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_KEY" > ~/.ssh/staging.key
+          chmod 600 ~/.ssh/staging.key
+          cat >>~/.ssh/config <<END
+          Host staging
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/staging.key
+            StrictHostKeyChecking no
+          END
+        env:
+          SSH_USER: ${{ secrets.PA_SSH_USER }}
+          SSH_KEY: ${{ secrets.PA_SSH_KEY }}
+          SSH_HOST: ${{ secrets.PA_SSH_HOST }}
+      - name: \[staging\] Check out source
+        run: |
+          ssh staging \\
+            'cd /home/lhovon/staging_bit && \\
+            git stash push -m "local_changes_$(date +%s)" && \\
+            git fetch &&\\
+            git reset --hard origin/main'
+      - name: \[staging\] Run migrations
+        run: ssh staging '/home/lhovon/.virtualenvs/stagingbitvenv/bin/python manage.py migrate'
+      - name: \[staging\] Collectstatic
+        run: ssh staging '/home/lhovon/.virtualenvs/stagingbitvenv/bin/python manage.py collectstatic'
+      - name: \[staging\] Restart server
+        run: ssh staging 'touch /var/www/bit-staging-lhovon_pythonanywhere_com_wsgi.py'
