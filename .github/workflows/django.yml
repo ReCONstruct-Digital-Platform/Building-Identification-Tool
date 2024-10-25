@@ -1,27 +1,22 @@
-name: Django CI
+name: Build, Test and Deploy
 
 on:
   push:
     branches: '*'
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "staging" ]
   workflow_dispatch:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 4
-      matrix:
-        python-version: ['3.10', '3.9']
-
     # Service containers to run with `runner-job`
     services:
       # Label used to access the service container
       postgres:
         # Docker Hub image
-        image: postgis/postgis:16-3.4
+        # Matches Pythonanywhere versions of Postgres 12.2 and PostGIS 3.0
+        image: postgis/postgis:12-3.0-alpine
         # Provide the password for postgres
         env:
           POSTGRES_PASSWORD: postgres
@@ -39,10 +34,10 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v3
 
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python 3.10
       uses: actions/setup-python@v3
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: '3.10'
 
     - name: Install Dependencies
       run: |
@@ -58,7 +53,7 @@ jobs:
         psql postgresql://postgres:postgres@localhost:5432 -c "GRANT ALL ON SCHEMA public TO bitdbuser;"
         psql postgresql://postgres:postgres@localhost:5432 -c "ALTER USER bitdbuser SUPERUSER;"
 
-    - name: Run All Tests
+    - name: Run Tests
       env: 
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
@@ -73,5 +68,66 @@ jobs:
         POSTGRES_PW: password
         POSTGRES_HOST: localhost
         POSTGRES_PORT: 5432
-      run: |
-        python manage.py test
+      run: python manage.py test
+
+  deploy:
+    name: "Deploy to staging"
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
+    steps:
+      - name: (STAGING) Configure SSH credentials
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_KEY" > ~/.ssh/staging.key
+          chmod 600 ~/.ssh/staging.key
+          cat >>~/.ssh/config <<END
+          Host staging
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/staging.key
+            StrictHostKeyChecking no
+          END
+        env:
+          SSH_USER: ${{ secrets.PA_SSH_USER }}
+          SSH_KEY: ${{ secrets.PA_SSH_KEY }}
+          SSH_HOST: ${{ secrets.PA_SSH_HOST }}
+      - name: (STAGING) Check out source
+        run: ssh staging 'cd /home/lhovon/staging_bit && git stash push -m "local_changes_$(date +%s)" && git fetch && git reset --hard origin/staging'
+      - name: (STAGING) Run migrations
+        run: ssh staging 'cd /home/lhovon/staging_bit && /home/lhovon/.virtualenvs/stagingbitvenv/bin/python manage.py migrate'
+      - name: (STAGING) Collectstatic
+        run: ssh staging 'cd /home/lhovon/staging_bit && /home/lhovon/.virtualenvs/stagingbitvenv/bin/python manage.py collectstatic --no-input'
+      - name: (STAGING) Restart server
+        run: ssh staging 'touch /var/www/bit-staging-lhovon_pythonanywhere_com_wsgi.py'
+
+  prod-deploy:
+    name: "Deploy to PROD"
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: (PROD) Configure SSH credentials
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_KEY" > ~/.ssh/prod.key
+          chmod 600 ~/.ssh/prod.key
+          cat >>~/.ssh/config <<END
+          Host prod
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/prod.key
+            StrictHostKeyChecking no
+          END
+        env:
+          SSH_USER: ${{ secrets.PA_SSH_USER }}
+          SSH_KEY: ${{ secrets.PA_SSH_KEY }}
+          SSH_HOST: ${{ secrets.PA_SSH_HOST }}
+      - name: (PROD) Check out source
+        run: ssh prod 'cd /home/lhovon/prod_bit && git stash push -m "local_changes_$(date +%s)" && git fetch && git reset --hard origin/main'
+      - name: (PROD) Run migrations
+        run: ssh prod 'cd /home/lhovon/prod_bit && /home/lhovon/.virtualenvs/bitvenv/bin/python manage.py migrate'
+      - name: (PROD) Collectstatic
+        run: ssh prod 'cd /home/lhovon/prod_bit && /home/lhovon/.virtualenvs/bitvenv/bin/python manage.py collectstatic --no-input'
+      - name: (PROD) Restart server
+        run: ssh prod 'touch /var/www/lhovon_pythonanywhere_com_wsgi.py'
