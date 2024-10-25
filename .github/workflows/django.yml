@@ -10,17 +10,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 4
-      matrix:
-        python-version: ['3.10']
-
     # Service containers to run with `runner-job`
     services:
       # Label used to access the service container
       postgres:
         # Docker Hub image
-        image: postgis/postgis:16-3.4
+        # Matches Pythonanywhere versions of Postgres 12.2 and PostGIS 3.0
+        image: postgis/postgis:12-3.0-alpine
         # Provide the password for postgres
         env:
           POSTGRES_PASSWORD: postgres
@@ -38,10 +34,10 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v3
 
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python 3.10
       uses: actions/setup-python@v3
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: 3.10
 
     - name: Install Dependencies
       run: |
@@ -99,8 +95,8 @@ jobs:
       - name: (STAGING) Check out source
         run: ssh staging 'cd /home/lhovon/staging_bit && git stash push -m "local_changes_$(date +%s)" && git fetch && git reset --hard origin/staging'
       - name: (STAGING) Run migrations
-        run: ssh staging '/home/lhovon/.virtualenvs/stagingbitvenv/bin/python manage.py migrate'
+        run: ssh staging 'cd /home/lhovon/staging_bit && /home/lhovon/.virtualenvs/stagingbitvenv/bin/python manage.py migrate'
       - name: (STAGING) Collectstatic
-        run: ssh staging '/home/lhovon/.virtualenvs/stagingbitvenv/bin/python manage.py collectstatic'
+        run: ssh staging 'cd /home/lhovon/staging_bit && /home/lhovon/.virtualenvs/stagingbitvenv/bin/python manage.py collectstatic'
       - name: (STAGING) Restart server
         run: ssh staging 'touch /var/www/bit-staging-lhovon_pythonanywhere_com_wsgi.py'
