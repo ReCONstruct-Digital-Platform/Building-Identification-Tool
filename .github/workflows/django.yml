@@ -1,10 +1,10 @@
-name: Django CI
+name: Build, Test and Deploy
 
 on:
   push:
     branches: '*'
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "staging" ]
   workflow_dispatch:
 
 jobs:
@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
     steps:
-      - name: \[staging\] Configure SSH credentials
+      - name: (STAGING) Configure SSH credentials
         run: |
           mkdir -p ~/.ssh/
           echo "$SSH_KEY" > ~/.ssh/staging.key
@@ -96,16 +96,11 @@ jobs:
           SSH_USER: ${{ secrets.PA_SSH_USER }}
           SSH_KEY: ${{ secrets.PA_SSH_KEY }}
           SSH_HOST: ${{ secrets.PA_SSH_HOST }}
-      - name: \[staging\] Check out source
-        run: |
-          ssh staging \\
-            'cd /home/lhovon/staging_bit && \\
-            git stash push -m "local_changes_$(date +%s)" && \\
-            git fetch &&\\
-            git reset --hard origin/main'
-      - name: \[staging\] Run migrations
+      - name: (STAGING) Check out source
+        run: ssh staging 'cd /home/lhovon/staging_bit && git stash push -m "local_changes_$(date +%s)" && git fetch && git reset --hard origin/staging'
+      - name: (STAGING) Run migrations
         run: ssh staging '/home/lhovon/.virtualenvs/stagingbitvenv/bin/python manage.py migrate'
-      - name: \[staging\] Collectstatic
+      - name: (STAGING) Collectstatic
         run: ssh staging '/home/lhovon/.virtualenvs/stagingbitvenv/bin/python manage.py collectstatic'
-      - name: \[staging\] Restart server
+      - name: (STAGING) Restart server
         run: ssh staging 'touch /var/www/bit-staging-lhovon_pythonanywhere_com_wsgi.py'
