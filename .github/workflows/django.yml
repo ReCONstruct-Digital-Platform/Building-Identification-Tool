@@ -97,6 +97,37 @@ jobs:
       - name: (STAGING) Run migrations
         run: ssh staging 'cd /home/lhovon/staging_bit && /home/lhovon/.virtualenvs/stagingbitvenv/bin/python manage.py migrate'
       - name: (STAGING) Collectstatic
-        run: ssh staging 'cd /home/lhovon/staging_bit && /home/lhovon/.virtualenvs/stagingbitvenv/bin/python manage.py collectstatic'
+        run: ssh staging 'cd /home/lhovon/staging_bit && /home/lhovon/.virtualenvs/stagingbitvenv/bin/python manage.py collectstatic --no-input'
       - name: (STAGING) Restart server
         run: ssh staging 'touch /var/www/bit-staging-lhovon_pythonanywhere_com_wsgi.py'
+
+  prod-deploy:
+    name: "Deploy to PROD"
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: (PROD) Configure SSH credentials
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_KEY" > ~/.ssh/prod.key
+          chmod 600 ~/.ssh/prod.key
+          cat >>~/.ssh/config <<END
+          Host prod
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/prod.key
+            StrictHostKeyChecking no
+          END
+        env:
+          SSH_USER: ${{ secrets.PA_SSH_USER }}
+          SSH_KEY: ${{ secrets.PA_SSH_KEY }}
+          SSH_HOST: ${{ secrets.PA_SSH_HOST }}
+      - name: (PROD) Check out source
+        run: ssh prod 'cd /home/lhovon/prod_bit && git stash push -m "local_changes_$(date +%s)" && git fetch && git reset --hard origin/main'
+      - name: (PROD) Run migrations
+        run: ssh prod 'cd /home/lhovon/prod_bit && /home/lhovon/.virtualenvs/bitvenv/bin/python manage.py migrate'
+      - name: (PROD) Collectstatic
+        run: ssh prod 'cd /home/lhovon/prod_bit && /home/lhovon/.virtualenvs/bitvenv/bin/python manage.py collectstatic --no-input'
+      - name: (PROD) Restart server
+        run: ssh prod 'touch /var/www/lhovon_pythonanywhere_com_wsgi.py'
