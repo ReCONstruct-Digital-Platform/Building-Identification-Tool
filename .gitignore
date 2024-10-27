@@ -5,6 +5,7 @@ log/
 output/
 data/*
 !data/public
+.idea/
 
 
 **/__pycache__/

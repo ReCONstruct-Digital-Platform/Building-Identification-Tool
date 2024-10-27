@@ -71,6 +71,7 @@ function generateTimeTravelOptions(panoArray, targetDate) {
   panoArray.reverse().forEach((el) => {
     let option = document.createElement("option");
     option.value = option.id = el["pano"];
+    option.classList.add("appearance-none");
 
     const date = el[dateKey];
     if (!date) {
@@ -142,9 +143,10 @@ function attachEventsToPegman(mutationList, _) {
 /**
  * Use this to print all the mutations for debugging etc.
  */
-function printMutationsCallback(mutationList, _) {
+function hideGmapsInfoboxMutationCallback(mutationList, _) {
   for (const mutation of mutationList) {
-    console.debug(mutation);
+    if (mutation.target.classList.contains('gm-iv-address'))
+      mutation.target.style.display = 'none';
   }
 }
 
@@ -345,7 +347,6 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
       // Set the time travel select visible only once the streetview is loaded
       // Otherwise it shows on the side of the screen before ending in the right place
       document.getElementById("time-travel-select").append(...options);
-      document.getElementById("time-travel-container").style.display = "flex";
 
       // Register a mutation observer to attach events to the pegman
       const observer = new MutationObserver(attachEventsToPegman);
@@ -374,7 +375,12 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
         ) {
           window.shouldBePano = undefined
         }
+
+        document.getElementById("sv-top-right-controls-container").style.display = "flex";
       });
+
+      const hideGmapsInfoboxObserver = new MutationObserver(hideGmapsInfoboxMutationCallback);
+      hideGmapsInfoboxObserver.observe(document.getElementById("streetview"), config);
 
       // Custom event launched when pegman is dropped and we need a manual pano set
       sv.addListener("pano_change_needed", () => {

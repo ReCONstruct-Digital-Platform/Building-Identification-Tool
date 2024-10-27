@@ -2,9 +2,11 @@ import os
 import time
 import heapq
 import shutil
+from xml.sax import SAXParseException
 import django
 import IPython
 import traceback
+import pandas as pd
 
 from tqdm import tqdm
 from pathlib import Path
@@ -15,7 +17,7 @@ from multiprocessing import Pool
 from xml.dom.pulldom import parse
 from django.core.management.base import BaseCommand
 
-from buildings.models import EvalUnit
+from buildings.models import EvalUnit, CUBF
 from buildings.utils.utility import sizeof_fmt, download_file
 from buildings.utils.constants import * 
 
@@ -23,6 +25,13 @@ from config.settings import BASE_DIR
 
 DEFAULT_OUT = BASE_DIR / 'data' 
 
+# A subset of all CUBFs that includes residential units and 
+# units likely to contain metal prefab buildings.
+# If this list evolves in the future, we could rerun this command with 
+# only the new CUBFs - the rest of the workflow would have to be adapted slightly.
+CUBFS_TO_KEEP = set([
+    1000, 1511, 1512, 1521, 1522, 1541, 1543, 1551, 1553, 1590, 2799, 5001, 5010, 5712, 5811, 5812, 6241, 6299, 6379, 6411, 6419, 6516, 6519, 6531, 6532, 6534, 6539, 6541, 6542, 6643, 6713, 6722, 6811, 6812, 6812, 6813, 6814, 6815, 6816, 6816, 6821, 6823, 6911, 6994, 6997, 6999, 7116, 7219, 7221, 7222, 7223, 7224, 7225, 7229, 7233, 7239, 7290, 7311, 7312, 7313, 7314, 7392, 7393, 7394, 7395, 7396, 7397, 7399, 7411, 7412, 7413, 7414, 7415, 7416, 7417, 7418, 7419, 7421, 7422, 7423, 7424, 7425, 7425, 7429, 7431, 7432, 7433, 7441, 7442, 7443, 7444, 7445, 7446, 7447, 7448, 7449, 7451, 7452, 7459, 7491, 7492, 7493, 7499, 7611, 9100, 9530
+])
 
 class Command(BaseCommand):
     help = "Download the roll data and fill the database"
@@ -65,17 +74,21 @@ class Command(BaseCommand):
         
         t0 = datetime.now()
 
+        if not list(data_folder.glob('**/CUBF_MEFQ.xlsx')) or download_data:
+            download_file('https://www.mamh.gouv.qc.ca/fileadmin/publications/evaluation_fonciere/manuel_evaluation_fonciere/CUBF_MEFQ.xlsx', data_folder)
+        process_cubfs(data_folder)
+
         # If the folder is empty
         if not list(data_folder.glob('**/*.xml')) or download_data:
             download_file("https://donneesouvertes.affmunqc.net/role/Roles_Donnees_Ouvertes_2022.zip", data_folder, unzip=True)
 
         try:
-            results = launch_jobs(data_folder, num_workers, test=test)
+            launch_jobs(data_folder, num_workers, test=test)
             self.stdout.write(
                 self.style.SUCCESS(f'\nFinished parsing XMLs in {datetime.now() - t0} s')
             )
             self.stdout.write(
-                self.style.SUCCESS(f'Total units parsed: {sum(results)}')
+                self.style.SUCCESS(f'Total units saved: {EvalUnit.objects.count()}')
             )
             num_deleted = delete_units_without_street_numbers()
             self.stdout.write(
@@ -91,11 +104,19 @@ class Command(BaseCommand):
                 shutil.rmtree(data_folder)
 
 
+def process_cubfs(data_folder):
+    file = next(data_folder.glob('**/CUBF_MEFQ.xlsx'))
+    df = pd.read_excel(file, skiprows=[0])
+    for _, row in df.iterrows():
+        if len(str(row['CUBF'])) == 4:
+            cubf = CUBF(cubf=row['CUBF'], desc=row['DESCRIPTION'])
+            cubf.save()
+    
 
 def delete_units_without_street_numbers():
     """
-    Remove units that are missing inferior and superior street numbers.
-    These are usually for streets or other strucutres we're not very interested in.
+    Remove units that are missing inferior and superior street numbers,
+    i.e. they refer to a street or other structure that we're not interested in.
     """
     count = EvalUnit.objects.filter(Q(num_adr_inf=None) & Q(num_adr_sup=None)).count()
     EvalUnit.objects.filter(Q(num_adr_inf=None) & Q(num_adr_sup=None)).delete()
@@ -112,10 +133,7 @@ def launch_jobs(data_folder: Path, num_workers: int, test: bool = False):
     # Doesn't work without the initializer function
     # https://stackoverflow.com/questions/73295496/django-how-can-i-use-multiprocessing-in-a-management-command
     with Pool(processes=num_workers, initializer=django.setup) as pool:
-        results = pool.map(parse_xmls, splits)
-    
-    return results
-
+        pool.map(parse_xmls, splits)
 
 
 def split_xmls_between_workers(data_folder: Path, num_workers: int, test: bool = False):
@@ -126,7 +144,7 @@ def split_xmls_between_workers(data_folder: Path, num_workers: int, test: bool =
     """
 
     size_per_file = {}
-    for xml_file in data_folder.iterdir():
+    for xml_file in data_folder.glob('**/*.xml'):
         size_per_file[xml_file] = xml_file.stat().st_size
 
     # For the real run, sort the files by size in descending order
@@ -181,97 +199,113 @@ def parse_xmls(work_split):
                         unit='iB', unit_scale=True, unit_divisor=1024, leave=False)
 
     for xml_file in xml_files:
+        try:
+            # We use a streaming XML API for memory efficiency
+            # Reading the whole file to build a BeautifulSoup object from it was too much
+            event_stream = parse(str(xml_file))
+            last_offset = 0
 
-        # We use a streaming XML API for memory efficiency
-        # Reading the whole file to build a BeautifulSoup object from it was too much
-        event_stream = parse(str(xml_file))
-        last_offset = 0
-        
-
-        # Get the municipal code and year entered first
-        # Those are applicable to the whole document
-        for i, (evt, node) in enumerate(event_stream):
-            if evt == 'START_ELEMENT':
-                if node.tagName == 'RLM01A':
-                    event_stream.expandNode(node)
-                    muni_code = node.childNodes[0].nodeValue
-
-                if node.tagName == 'RLM02A':
-                    event_stream.expandNode(node)
-                    year_entered = node.childNodes[0].nodeValue
-                    break
-        
-        current_units = []
-        
-        # Go through all the RLUEx tags - each represents a unit
-        for i, (evt, node) in enumerate(event_stream):
-
-            try:
+            # Get the municipal code and year entered first
+            # Those are applicable to the whole document
+            for i, (evt, node) in enumerate(event_stream):
                 if evt == 'START_ELEMENT':
-                    if node.tagName == 'RLUEx':
-                        # Parse until the closing tag
+                    if node.tagName == 'RLM01A':
                         event_stream.expandNode(node)
-                        unit_xml = BeautifulSoup(node.toxml(), 'lxml')
-                        # First get the MAT18 to create the provincial ID
-                        mat18 = get_mat18(unit_xml)
-                        id = muni_code + mat18
+                        muni_code = node.childNodes[0].nodeValue
 
-                        # Check if the unit already exists before doing any more work
-                        if EvalUnit.objects.filter(id=id).first():
+                    if node.tagName == 'RLM02A':
+                        event_stream.expandNode(node)
+                        year_entered = node.childNodes[0].nodeValue
+                        break
+            
+            current_units = []
+            
+            # Go through all the RLUEx tags - each represents a unit
+            for j, (evt, node) in enumerate(event_stream):
 
-                            if i % 5_000 == 0:
-                                current_offset = event_stream.stream.tell()
-                                if current_offset != last_offset:
-                                    offset_delta = current_offset - last_offset
-                                    progress_bar.update(offset_delta)
-                                    last_offset = current_offset
-                            continue
-                        
-                        # Start filling the unit values
-                        unit_data = {}
-                        unit_data['id'] = id
-                        unit_data['muni'] = MUNICIPALITIES[f'RL{muni_code}']
-                        unit_data['muni_code'] = muni_code
-                        unit_data['year'] = year_entered
-                        unit_data['mat18'] = mat18
-                        current_units.append(parse_unit_xml(unit_xml, unit_data))
+                try:
+                    if evt == 'START_ELEMENT':
+                        if node.tagName == 'RLUEx':
+                            # Parse until the closing tag
+                            event_stream.expandNode(node)
+                            unit_xml = BeautifulSoup(node.toxml(), 'lxml')
 
-                # Print an update and commit latest writes
-                if len(current_units) % 1000 == 0 and len(current_units) > 0:
-                    current_offset = event_stream.stream.tell()
-                    if current_offset != last_offset:
-                        offset_delta = current_offset - last_offset
-                        progress_bar.update(offset_delta)
-                        last_offset = current_offset
-                    EvalUnit.objects.bulk_create(current_units)
-                    worker_total_units += len(current_units)
-                    current_units = []
+                            # CUBF is mandatory
+                            cubf = extract_field_or_none(unit_xml, 'rl0105a', type=int)
 
-            except KeyboardInterrupt:
-                progress_bar.close()
-                return worker_total_units
+                            # We skip all CUBFs other than those defined above
+                            if cubf not in CUBFS_TO_KEEP:
+                                continue
 
-            except:
-                print(traceback.format_exc())
-                print(f"{xml_file} - around tag {i}")
-                print(unit_xml.prettify())
-                continue
+                            # First get the MAT18 to create the provincial ID
+                            mat18 = get_mat18(unit_xml)
+                            id = muni_code + mat18
+
+                            # Check if the unit already exists before doing any more work
+                            if EvalUnit.objects.filter(id=id).first():
+
+                                if i % 5_000 == 0:
+                                    current_offset = event_stream.stream.tell()
+                                    if current_offset != last_offset:
+                                        offset_delta = current_offset - last_offset
+                                        progress_bar.update(offset_delta)
+                                        last_offset = current_offset
+                                continue
+                            
+                            # Start filling the unit values
+                            unit_data = {}
+                            unit_data['id'] = id
+                            unit_data['cubf'] = cubf
+                            unit_data['muni'] = MUNICIPALITIES[f'RL{muni_code}']
+                            unit_data['muni_code'] = muni_code
+                            unit_data['year'] = year_entered
+                            unit_data['mat18'] = mat18
+                            current_units.append(parse_unit_xml(unit_xml, unit_data))
+
+                    # Print an update and commit latest writes
+                    if len(current_units) % 1000 == 0 and len(current_units) > 0:
+                        current_offset = event_stream.stream.tell()
+                        if current_offset != last_offset:
+                            offset_delta = current_offset - last_offset
+                            progress_bar.update(offset_delta)
+                            last_offset = current_offset
+                        EvalUnit.objects.bulk_create(current_units)
+                        worker_total_units += len(current_units)
+                        current_units = []
+
+                except KeyboardInterrupt:
+                    progress_bar.close()
+                    return worker_total_units
+
+                except:
+                    print(traceback.format_exc())
+                    print(f"{xml_file} - around tag {i}")
+                    print(unit_xml.prettify())
+                    continue
 
 
-        # End of current file
-        current_offset = event_stream.stream.tell()
-        if current_offset != last_offset:
-            offset_delta = current_offset - last_offset
-            last_offset = current_offset
-            progress_bar.update(offset_delta)
+            # End of current file
+            current_offset = event_stream.stream.tell()
+            if current_offset != last_offset:
+                offset_delta = current_offset - last_offset
+                last_offset = current_offset
+                progress_bar.update(offset_delta)
 
-        # Flush out the current file's units
-        EvalUnit.objects.bulk_create(current_units)
-        worker_total_units += len(current_units)
+            # Flush out the current file's units
+            EvalUnit.objects.bulk_create(current_units)
+            worker_total_units += len(current_units)
+
+        # Catch any unexpected error and continue
+        except SAXParseException:
+            print(traceback.format_exc())
+            print(f"{xml_file} - i: {i}, j: {j}\nevt: {evt} node: {node}")
+            continue
+
+        finally:
+            event_stream.clear()
 
     progress_bar.close()
     return worker_total_units
-
 
 
 
@@ -300,9 +334,6 @@ def parse_unit_xml(unit_xml, unit_data: dict):
 
     # RL0102A 
     unit_data['arrond'] = extract_field_or_none(unit_xml, 'rl0102a')
-
-    # CUBF is mandatory
-    unit_data['cubf'] = extract_field_or_none(unit_xml, 'rl0105a', type=int) 
 
     unit_data['file_num'] = extract_field_or_none(unit_xml, 'rl0106a')
     unit_data['nghbr_unit'] = extract_field_or_none(unit_xml, 'rl0107a')

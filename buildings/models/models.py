@@ -11,6 +11,7 @@ from django.db.models import Q, Count, Avg, TextField
 from django.db.models.functions import Cast, Coalesce
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from allauth.account.adapter import DefaultAccountAdapter
 
 from buildings.utils.constants import CUBF_TO_NAME_MAP
 
@@ -82,49 +83,72 @@ SQL_RANDOM_ID_WITH_EXCLUDE = f"""
 class UserQuerySet(models.QuerySet):
 
     def get_top_n(self, n) -> QuerySet:
-        return self.annotate(num_votes=Coalesce(models.Count("vote"), 0)).order_by('-num_votes')[:n]
+        return self.annotate(num_votes=Coalesce(models.Count("vote"), 0)).order_by(
+            "-num_votes"
+        )[:n]
+
+
+class UserAdapter(DefaultAccountAdapter):
+    def save_user(self, request, user, form):
+        data = form.cleaned_data
+        user.username = data["username"]
+        user.email = data["email"]
+        user.knowledge_level = data["knowledge_level"]
+        user.set_password(data["password1"])
+        self.populate_username(request, user)
+        user.save()
+        return user
+
 
 class UserManager(BaseUserManager):
 
     def create_user(self, username, password, email=None, **otherfields):
         email = self.normalize_email(email)
         self.model(username=username, password=password, email=email, **otherfields)
-        user = self.model(username=username, email=email,
-                          is_staff=False, is_active=True, is_superuser=False)
+        user = self.model(
+            username=username,
+            email=email,
+            is_staff=False,
+            is_active=True,
+            is_superuser=False,
+        )
         user.set_password(password)
         user.save(using=self._db)
         return user
-
 
     def create_superuser(self, username, password, email=None, **otherfields):
         """
         Creates and saves a superuser with the given email and password.
         """
         user = self.create_user(
-            username=username,
-            password=password,
-            email=email,
-            **otherfields
+            username=username, password=password, email=email, **otherfields
         )
         user.is_staff = True
         user.is_superuser = True
         user.save(using=self._db)
         return user
-    
+
     def get_queryset(self) -> QuerySet:
         return UserQuerySet(self.model, using=self._db)
+
 
 class User(AbstractUser):
     """https://docs.djangoproject.com/en/4.2/topics/auth/customizing/#extending-the-existing-user-model"""
 
+    # Add any other user fields here
+    knowledge_level = models.TextField(null=True, blank=True)
+
     objects: UserQuerySet = UserManager.from_queryset(UserQuerySet)()
 
     def num_votes(self):
-        return len(self.vote_set)
-    
+        return len(self.vote_set.all())
+
     def get_avatar_url(self, size=32):
-        digest = md5(self.email.encode('utf-8')).hexdigest()
-        return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
+        digest = md5(self.email.encode("utf-8")).hexdigest()
+        return f"https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}"
+
+    def __str__(self):
+        return str(vars(self))
 
 
 class EvalUnitQuerySet(models.QuerySet):
@@ -135,10 +159,10 @@ class EvalUnitQuerySet(models.QuerySet):
                 return self.all().order_by(ordering)
             else:
                 return self.all()
-        
+
         # Use this to filter on CUBF as a string
         # .annotate(cubf_str=Cast('cubf', output_field=TextField()))
-        
+
         lookups = {}
 
         # Add all string field queries to lookups if present
@@ -150,27 +174,28 @@ class EvalUnitQuerySet(models.QuerySet):
         if "q_num_votes" in query:
             op = query["q_num_votes_op"]
             # For equals queries, we don't need to do anything to the filter
-            if op == 'eq':
+            if op == "eq":
                 lookups["num_votes"] = query["q_num_votes"]
             else:
                 lookups[f"num_votes__{op}"] = query["q_num_votes"]
 
         log.info(lookups)
-        lookups = Q(**lookups) 
+        lookups = Q(**lookups)
 
         # Can split up the query into multiple steps too and merge the results
-        result = self.annotate(num_votes=Count('vote')) \
-                    .annotate(cubf_str=Cast('cubf', output_field=TextField())) \
-                    .filter(lookups)
+        result = (
+            self.annotate(num_votes=Count("vote"))
+            .annotate(cubf_str=Cast("cubf", output_field=TextField()))
+            .filter(lookups)
+        )
         if ordering:
             result = result.order_by(ordering)
 
         return result
-    
+
     def get_unvoted(self):
-        return EvalUnit.objects.filter(vote = None)
-    
-    
+        return EvalUnit.objects.filter(vote=None)
+
     def get_random_unvoted_id(self, exclude_id=None):
         with connection.cursor() as cursor:
             if exclude_id:
@@ -183,14 +208,15 @@ class EvalUnitQuerySet(models.QuerySet):
             return res
         return res[0]
 
-
     def get_random_least_voted_id(self, exclude_id=None):
         # Number of least voted eval units from which to randomly pick
         # Can't be smaller than the number of units, else it won't work
-        inner_limit = min(100, self.count()-1)
+        inner_limit = min(100, self.count() - 1)
         with connection.cursor() as cursor:
             if exclude_id:
-                cursor.execute(SQL_RANDOM_LEAST_VOTED_ID_WITH_EXCLUDE, (exclude_id, inner_limit))
+                cursor.execute(
+                    SQL_RANDOM_LEAST_VOTED_ID_WITH_EXCLUDE, (exclude_id, inner_limit)
+                )
             else:
                 cursor.execute(SQL_RANDOM_LEAST_VOTED_ID, (inner_limit,))
             res = cursor.fetchone()
@@ -198,9 +224,9 @@ class EvalUnitQuerySet(models.QuerySet):
             return res
         # Should not be None if there is at least 1 model
         return res[0]
-    
+
     def get_random_eval_unit(self, exclude_id=None):
-        inner_limit = min(100, self.count()-1)
+        inner_limit = min(100, self.count() - 1)
         with connection.cursor() as cursor:
             if exclude_id:
                 cursor.execute(SQL_RANDOM_ID_WITH_EXCLUDE, (exclude_id, inner_limit))
@@ -214,7 +240,7 @@ class EvalUnitQuerySet(models.QuerySet):
 
     def get_next_unit_to_survey(self, exclude_id=None, id_only=False):
         """
-        Tries to get a random unvoted building. 
+        Tries to get a random unvoted building.
         If all buildings were voted, returns a random least voted building.
         TODO: Currently modified to return only buildings with associated HLMs
         """
@@ -228,13 +254,11 @@ class EvalUnitQuerySet(models.QuerySet):
         if id_only:
             return id
         return EvalUnit.objects.get(pk=id)
-    
-
 
 
 class EvalUnitLot(models.Model):
     class Meta:
-        db_table = 'lots'
+        db_table = "lots"
         indexes = [
             models.Index(fields=["id_provinc"], name="idx_id_provinc"),
         ]
@@ -249,7 +273,9 @@ class EvalUnitLot(models.Model):
     no_lot = models.TextField(blank=True, null=True)
     nb_poly_lo = models.FloatField(blank=True, null=True)
     utilisatio = models.TextField(blank=True, null=True)
-    id_provinc = models.TextField(null=False) # reverse foreign key to lot IDs, used when populating but not when fetching thereafter
+    id_provinc = models.TextField(
+        null=False
+    )  # reverse foreign key to lot IDs, used when populating but not when fetching thereafter
     sup_totale = models.FloatField(blank=True, null=True)
     descriptio = models.TextField(blank=True, null=True)
     nb_logemen = models.BigIntegerField(blank=True, null=True)
@@ -261,12 +287,12 @@ class EvalUnitLot(models.Model):
     geom = models.MultiPolygonField(null=True, spatial_index=True)
 
 
-    
 class EvalUnitManager(models.Manager):
     def get_queryset(self):
         return EvalUnitQuerySet(self.model, using=self._db)
+
     # .annotate(num_votes=Count('vote'))
-        # .annotate(avg_score=Avg('vote__buildingtypology__score'))
+    # .annotate(avg_score=Avg('vote__buildingtypology__score'))
 
 
 class EvalUnit(models.Model):
@@ -275,12 +301,15 @@ class EvalUnit(models.Model):
     An evaluation unit can be composed of one or more buildings, and
     has a land-use code (CUBF) describing its primary use.
     """
+
     # 23 character unique ID
     id = models.TextField(primary_key=True)
     lat = models.FloatField(null=True)
     lng = models.FloatField(null=True)
     point = models.PointField(null=True, spatial_index=True)
-    lot = models.ForeignKey(EvalUnitLot, to_field="gid", on_delete=models.CASCADE, null=True, blank=True)
+    lot = models.ForeignKey(
+        EvalUnitLot, to_field="gid", on_delete=models.CASCADE, null=True, blank=True
+    )
     year = models.SmallIntegerField()
     muni = models.TextField()
     muni_code = models.TextField(null=True, blank=True)
@@ -317,39 +346,39 @@ class EvalUnit(models.Model):
     building_value = models.IntegerField(null=True, blank=True)
     value = models.IntegerField(null=True, blank=True)
     prev_value = models.IntegerField(null=True, blank=True)
-    # JSON dictionary giving the IDs of any secondary objects 
+    # JSON dictionary giving the IDs of any secondary objects
     # (e.g. HLMs) associated with this evaluation unit.
     associated = models.JSONField(null=True, blank=True)
-    date_added = models.DateTimeField('date added', default=timezone.now)
+    date_added = models.DateTimeField("date added", default=timezone.now)
 
     # Override the objects attribute of the model
     # in order to implement custom search functionality
     objects = EvalUnitManager.from_queryset(EvalUnitQuerySet)()
 
     class Meta:
-        db_table = 'evalunits'
+        db_table = "evalunits"
 
     def num_votes(self):
         return len(self.vote_set)
-    
+
     def cubf_name(self):
         if self.cubf in CUBF_TO_NAME_MAP:
             return CUBF_TO_NAME_MAP[self.cubf]
         else:
-            return ''
-        
+            return ""
+
     def __str__(self):
-        return f'{self.address}, {self.muni}, CUBF: {self.cubf_name()}'
-    
+        return f"{self.address}, {self.muni}, CUBF: {self.cubf_name()}"
+
     @classmethod
     def get_field_names(self):
         return [f.name for f in EvalUnit._meta.get_fields()]
 
     @classmethod
     def _get_proper_field_name(self, field):
-        if field in [None, 'None']:
+        if field in [None, "None"]:
             return "address"
-        
+
         field = field.lower()
         if field == "address":
             return "address"
@@ -368,11 +397,11 @@ class EvalUnit(models.Model):
 
         ordering = cls._get_proper_field_name(order_by)
 
-        if direction in [None, 'None']:
+        if direction in [None, "None"]:
             direction = "desc"
 
-        if direction == 'desc':
-            ordering = f'-{ordering}'
+        if direction == "desc":
+            ordering = f"-{ordering}"
 
         return ordering, direction
 
@@ -382,15 +411,20 @@ class EvalUnitLatestViewDataQuerySet(models.QuerySet):
     def get_latest_view_data(self, unit_id, user_id):
 
         # First look if there are any previous saved data for this building
-        if self.filter(eval_unit_id = unit_id).count() == 0:
+        if self.filter(eval_unit_id=unit_id).count() == 0:
             return None
-        
+
         # Then check if there is a previous saved value for this user
         # If not, return the latest view saved by any other user
-        if self.filter(eval_unit_id = unit_id, user_id = user_id).count() == 0:
-            return self.filter(eval_unit_id = unit_id).order_by('-date_added').first()
+        if self.filter(eval_unit_id=unit_id, user_id=user_id).count() == 0:
+            return self.filter(eval_unit_id=unit_id).order_by("-date_added").first()
         else:
-            return self.filter(eval_unit_id = unit_id, user_id = user_id).order_by('-date_added').first()
+            return (
+                self.filter(eval_unit_id=unit_id, user_id=user_id)
+                .order_by("-date_added")
+                .first()
+            )
+
 
 class EvalUnitLatestViewData(models.Model):
 
@@ -400,7 +434,7 @@ class EvalUnitLatestViewData(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
-    date_added = models.DateTimeField('date added', default=timezone.now)
+    date_added = models.DateTimeField("date added", default=timezone.now)
     sv_pano = models.TextField(blank=True, null=True)
     sv_heading = models.FloatField(blank=True, null=True)
     sv_pitch = models.FloatField(blank=True, null=True)
@@ -413,45 +447,48 @@ class EvalUnitLatestViewData(models.Model):
 
 class VoteQuerySet(models.QuerySet):
     def get_latest(self, n=10):
-        return self.order_by('-date_added')[:n]
-    
+        return self.order_by("-date_added")[:n]
+
 
 class Vote(models.Model):
     """
-    Votes link submitted data (surveys, nobuildingflags or other) 
+    Votes link submitted data (surveys, nobuildingflags or other)
     to a specific building and user.
     Submitted data implements a 1-to-1 relationship to a Vote.
     """
+
     eval_unit = models.ForeignKey(EvalUnit, on_delete=models.CASCADE)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
-    date_added = models.DateTimeField('date added', auto_now_add=True)
-    date_modified  = models.DateTimeField('date modified', auto_now=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    date_added = models.DateTimeField("date added", auto_now_add=True)
+    date_modified = models.DateTimeField("date modified", auto_now=True)
 
     objects = VoteQuerySet.as_manager()
+
     def __str__(self):
-        return f'{self.user.username} voted on {self.eval_unit.address} on {self.date_added}'
+        return f"{self.user.username} voted on {self.eval_unit.address} on {self.date_added}"
 
 
 class NoBuildingFlag(models.Model):
     vote = models.OneToOneField(Vote, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'No building at {self.vote.eval_unit.address}'
-    
+        return f"No building at {self.vote.eval_unit.address}"
+
 
 class EvalUnitStreetViewImage(models.Model):
     eval_unit = models.ForeignKey(EvalUnit, on_delete=models.CASCADE)
     uuid = models.TextField(null=False)
-    date_added = models.DateTimeField('date added', default=timezone.now)
+    date_added = models.DateTimeField("date added", default=timezone.now)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
 
+
 class EvalUnitSatelliteImage(models.Model):
     eval_unit = models.ForeignKey(EvalUnit, on_delete=models.CASCADE)
     uuid = models.TextField(null=False)
-    date_added = models.DateTimeField('date added', default=timezone.now)
+    date_added = models.DateTimeField("date added", default=timezone.now)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -461,9 +498,12 @@ class EvalUnitSatelliteImage(models.Model):
 class HLMBuilding(models.Model):
     """
     Model representing an HLM building.
+    The data was obtained after a freedom of information type request to the SHQ
+    and is saved here https://f005.backblazeb2.com/file/bit-data-public/hlms.csv
     """
+
     class Meta:
-        db_table = 'hlms'
+        db_table = "hlms"
 
     id = models.IntegerField(primary_key=True)
     lat = models.FloatField(null=True)
@@ -493,15 +533,15 @@ class HLMBuilding(models.Model):
     @classmethod
     def get_disrepair_state(cls, ivp):
         if ivp <= 5:
-            return 'A'
+            return "A"
         elif ivp <= 10:
-            return 'B'
+            return "B"
         elif ivp <= 15:
-            return 'C'
+            return "C"
         elif ivp <= 30.2:
-            return 'D'
+            return "D"
         else:
-            return 'E'
+            return "E"
 
 
 class UploadImageJob(models.Model):
@@ -513,8 +553,8 @@ class UploadImageJob(models.Model):
 
     """Async job for uploading screenshots to storage"""
     eval_unit = models.ForeignKey(EvalUnit, on_delete=models.CASCADE)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
-    date_added = models.DateTimeField('date added', default=timezone.now)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    date_added = models.DateTimeField("date added", default=timezone.now)
     status = models.TextField(choices=Status.choices, default=Status.PENDING)
     job_data = models.JSONField()
 

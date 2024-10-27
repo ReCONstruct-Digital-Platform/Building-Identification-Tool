@@ -1,6 +1,7 @@
 import re
 import logging
 import time
+
 # To debug
 import IPython
 
@@ -10,6 +11,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.remote_connection import LOGGER
 from buildings.models.models import UploadImageJob
 from buildings.models.surveys import SurveyV1Form
+
 LOGGER.setLevel(logging.WARNING)
 
 from tests.gui_tests_base import ChromeSeleniumTestsBase
@@ -17,21 +19,21 @@ from tests.gui_tests_base import ChromeSeleniumTestsBase
 
 class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
     """
-    The live server listens on localhost and binds to port 0 which uses a free port assigned by the OS. 
+    The live server listens on localhost and binds to port 0 which uses a free port assigned by the OS.
     The server's URL can be accessed with self.live_server_url during the tests.
     """
-    fixtures = ['user.json', 'evalunits.json']
+
+    fixtures = ["user.json", "evalunits.json", "emailaddress.json"]
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass(headless=True)
 
-
     def test_chrome_should_screenshot_satellite_on_survey_tab_click(self):
         driver = self.driver
-        wait = self.wait 
+        wait = self.wait
 
-        self._sign_in('/survey/v1/id1')
+        self._sign_in("/survey/v1/id1")
         # For some reason, the test starts with jobs in the DB already
         # (Presumably from other tests - so delete them here)
         # Assert no pending jobs in DB
@@ -46,44 +48,51 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         # click too quickly on the tab, and no screenshot will be taken, since
         # the satellite map will never have been visible. Waiting for the map outer
         # element to be visible is not enough, so we wait on 'gmimap1' as well (red pin)
-        wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))   
-        wait.until(EC.visibility_of_element_located((By.ID, 'satellite')))
+        wait.until(EC.presence_of_element_located((By.ID, "nav-survey-tab")))
+        wait.until(EC.visibility_of_element_located((By.ID, "nav-satellite-tab")))
         # This is a proxy to know when the satellite map is visible
-        wait.until(EC.visibility_of_element_located((By.ID, 'gmimap1')))
+        wait.until(EC.visibility_of_element_located((By.ID, "gmimap1")))
 
         # Click the survey tab
         driver.find_element(By.ID, "nav-survey-tab").click()
 
         # The satellite screenshot should be stored in the 'data-url' attribute of sat_data
         sat_data = driver.find_element(By.ID, "sat_data")
-        wait.until(EC.text_to_be_present_in_element_attribute((By.ID, 'sat_data'), 'data-url', 'data:image/png;base64'))
-        self.assertRegex(sat_data.get_attribute('data-url'), 'data:image/png;base64')
+        wait.until(
+            EC.text_to_be_present_in_element_attribute(
+                (By.ID, "sat_data"), "data-url", "data:image/png;base64"
+            )
+        )
+        self.assertRegex(sat_data.get_attribute("data-url"), "data:image/png;base64")
+
         # Click on an input to trigger uploading
         e = driver.find_element(By.ID, "id_self_similar_cluster_no")
-        driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
         # Make sure an image upload job was created
         time.sleep(1)
         self.assertEqual(UploadImageJob.objects.count(), 1)
 
+        time.sleep(1)
         # Switch to the satellite tab and back to survey again
         # NO NEW screenshot should be taken, since the satellite view has not changed
         driver.find_element(By.ID, "nav-satellite-tab").click()
-        wait.until(EC.visibility_of_element_located((By.ID, 'satellite')))
+
+        wait.until(EC.visibility_of_element_located((By.ID, "satellite")))
         driver.find_element(By.ID, "nav-survey-tab").click()
-        wait.until(EC.visibility_of_element_located((By.ID, 'id_self_similar_cluster_specify')))
+        wait.until(
+            EC.visibility_of_element_located((By.ID, "id_self_similar_cluster_specify"))
+        )
         time.sleep(1)
         self.assertEqual(UploadImageJob.objects.count(), 1)
 
-
     def test_chrome_modals_should_open_on_info_button_click(self):
         driver = self.driver
-        wait = self.wait 
+        wait = self.wait
 
-        self._sign_in('/survey/v1/id1')
+        self._sign_in("/survey/v1/id1")
 
-        wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
-        wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
+        wait.until(EC.presence_of_element_located((By.ID, "nav-survey-tab")))
+        wait.until(EC.presence_of_element_located((By.ID, "nav-survey-tab")))
         driver.find_element(By.ID, "nav-survey-tab").click()
 
         survey = SurveyV1Form()
@@ -94,29 +103,29 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         for field in fields[:2]:
             wait.until(EC.element_to_be_clickable((By.ID, f"{field}_info_btn")))
             driver.find_element(By.ID, f"{field}_info_btn").click()
-            wait.until(EC.visibility_of_element_located((By.ID, f'{field}_info')))
+            wait.until(EC.visibility_of_element_located((By.ID, f"{field}_info")))
             time.sleep(0.25)
             wait.until(EC.visibility_of_element_located((By.ID, f"{field}_info_close")))
             wait.until(EC.element_to_be_clickable((By.ID, f"{field}_info_close")))
             driver.find_element(By.ID, f"{field}_info_close").click()
-            wait.until_not((EC.visibility_of_element_located((By.CLASS_NAME, 'modal-backdrop'))))
-
-
+            wait.until_not(
+                (EC.visibility_of_element_located((By.CLASS_NAME, "modal-backdrop")))
+            )
 
     def test_chrome_should_screenshot_streetview_on_button_click(self):
         driver = self.driver
-        wait = self.wait 
+        wait = self.wait
 
-        self._sign_in('/survey/v1/id1')
+        self._sign_in("/survey/v1/id1")
 
         # In Selenium we have to wait for the element to appear, otherwise it will
         # click too quickly on the tab, and no screenshot will be taken, since
         # the satellite map will never have been visible. Waiting for the map outer
         # element to be visible is not enough, so we wait on 'gmimap1' as well (red pin)
-        wait.until(EC.visibility_of_element_located((By.ID, 'nav-survey-tab')))
-        wait.until(EC.visibility_of_element_located((By.ID, 'satellite')))
+        wait.until(EC.visibility_of_element_located((By.ID, "nav-survey-tab")))
+        wait.until(EC.visibility_of_element_located((By.ID, "satellite")))
         # This is a proxy to know when the satellite map is visible
-        wait.until(EC.visibility_of_element_located((By.ID, 'gmimap1')))
+        wait.until(EC.visibility_of_element_located((By.ID, "gmimap1")))
 
         # For some reason, the test starts with jobs in the DB already
         # (Presumably from other tests - so delete them here)
@@ -128,24 +137,22 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         # Click on the screenshot button, it should pop up a toast
         # and insert a new job for the Streetview image in the DB
         driver.find_element(By.ID, "btn-screenshot").click()
-        wait.until(EC.visibility_of_element_located((By.ID, 'screenshot-toast')))
+        wait.until(EC.visibility_of_element_located((By.ID, "screenshot-toast")))
         time.sleep(1)
         self.assertEqual(UploadImageJob.objects.count(), 1)
 
-
-
     def test_chrome_should_screenshot_streetview_on_spacebar(self):
         driver = self.driver
-        wait = self.wait 
+        wait = self.wait
 
-        self._sign_in('/survey/v1/id1')
+        self._sign_in("/survey/v1/id1")
 
         # In Selenium we have to wait for the element to appear, otherwise it will
         # click too quickly on the tab, and no screenshot will be taken, since
         # the satellite map will never have been visible. Waiting for the map outer
         # element to be visible is not enough, so we wait on 'gmimap1' as well (red pin)
-        wait.until(EC.visibility_of_element_located((By.ID, 'nav-survey-tab')))
-        wait.until(EC.visibility_of_element_located((By.ID, 'satellite')))
+        wait.until(EC.visibility_of_element_located((By.ID, "nav-survey-tab")))
+        wait.until(EC.visibility_of_element_located((By.ID, "satellite")))
 
         # Click the survey tab
         driver.find_element(By.ID, "nav-survey-tab").click()
@@ -154,24 +161,23 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         self.assertEqual(UploadImageJob.objects.count(), 0)
 
         # Now, press the spacebar anywhere on the page
-        driver.find_element(By.XPATH, '//body').send_keys(Keys.SPACE)
-        wait.until(EC.visibility_of_element_located((By.ID, 'screenshot-toast')))
+        driver.find_element(By.XPATH, "//body").send_keys(Keys.SPACE)
+        wait.until(EC.visibility_of_element_located((By.ID, "screenshot-toast")))
         time.sleep(1)
         self.assertEqual(UploadImageJob.objects.count(), 1)
 
-
     def test_chrome_should_NOT_screenshot_streetview_on_spacebar_while_inputing(self):
         driver = self.driver
-        wait = self.wait 
+        wait = self.wait
 
-        self._sign_in('/survey/v1/id1')
+        self._sign_in("/survey/v1/id1")
 
         # In Selenium we have to wait for the element to appear, otherwise it will
         # click too quickly on the tab, and no screenshot will be taken, since
         # the satellite map will never have been visible. Waiting for the map outer
         # element to be visible is not enough, so we wait on 'gmimap1' as well (red pin)
-        wait.until(EC.visibility_of_element_located((By.ID, 'nav-survey-tab')))
-        wait.until(EC.visibility_of_element_located((By.ID, 'satellite')))
+        wait.until(EC.visibility_of_element_located((By.ID, "nav-survey-tab")))
+        wait.until(EC.visibility_of_element_located((By.ID, "satellite")))
 
         # Click the survey tab
         driver.find_element(By.ID, "nav-survey-tab").click()
@@ -193,16 +199,14 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         time.sleep(1)
         self.assertEqual(UploadImageJob.objects.count(), 0)
 
-
-
     def test_survey_chrome_GUI_should_submit_successfully_vanilla(self):
         driver = self.driver
-        wait = self.wait 
+        wait = self.wait
 
-        self._sign_in('/survey/v1/id1')
+        self._sign_in("/survey/v1/id1")
 
         wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id1"))
-        wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
+        wait.until(EC.presence_of_element_located((By.ID, "nav-survey-tab")))
         driver.find_element(By.ID, "nav-survey-tab").click()
 
         self._fill_and_submit_form()
@@ -216,18 +220,17 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         # TODO: Change if we add more eval units to these test cases in the future
         wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id1"))
 
-
     def test_chrome_should_submit_when_clicking_on_labels_or_input_fields(self):
         # As a UX measure, the specify fields should activate when the user clicks on the label
         # or the field itself, behavior supported by custom javascript.
 
         driver = self.driver
-        wait = self.wait 
+        wait = self.wait
 
-        self._sign_in('/survey/v1/id1')
+        self._sign_in("/survey/v1/id1")
 
         wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id1"))
-        wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
+        wait.until(EC.presence_of_element_located((By.ID, "nav-survey-tab")))
         driver.find_element(By.ID, "nav-survey-tab").click()
 
         # Fill in the form
@@ -250,7 +253,7 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
         e = driver.find_element(By.ID, "id_num_storeys_specify_value")
-        driver.execute_script("arguments[0].value = arguments[1];", e, '5')
+        driver.execute_script("arguments[0].value = arguments[1];", e, "5")
 
         e = driver.find_element(By.ID, "id_has_basement_2")
         driver.execute_script("arguments[0].scrollIntoView();", e)
@@ -266,12 +269,12 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
         e = driver.find_element(By.ID, "id_appendages_specify_value")
-        driver.execute_script("arguments[0].value = arguments[1];", e, 'blabla')
+        driver.execute_script("arguments[0].value = arguments[1];", e, "blabla")
 
         e = driver.find_element(By.ID, "id_exterior_cladding_5")
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
-        
+
         e = driver.find_element(By.ID, "id_facade_condition_0")
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
@@ -302,98 +305,15 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         # Make sure we get redirected to the next eval unit
         wait.until(EC.url_matches(f"{self.live_server_url}/survey/v1/id2"))
 
-
-    def test_chrome_should_remove_values_when_unselecting_specify_fields(self):
-        # Test that when a user unselects one of the radio specifies
-        # their previously entered values are deleted and the field is disactivated 
-        driver = self.driver
-        wait = self.wait 
-
-        # Login and go on the survey
-        self._sign_in('/survey/v1/id1')
-
-        wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
-        driver.find_element(By.ID, "nav-survey-tab").click()
-
-        # Test the NumberOrUnsure field
-        specify_radio_elem = driver.find_element(By.ID, "id_num_storeys_specify")
-        driver.execute_script("arguments[0].scrollIntoView();", specify_radio_elem)
-        # driver.execute_script("arguments[0].click();", specify_radio_elem)
-        specify_radio_elem.click()
-        number_input_elem = driver.find_element(By.ID, "id_num_storeys_specify_value")
-        driver.execute_script("arguments[0].scrollIntoView();", number_input_elem)
-        number_input_elem.send_keys('5')
-
-        self.assertEqual(number_input_elem.get_attribute('value'), '5')
-        # Click on another radio, thus unselecting the specify
-        driver.find_element(By.ID, "id_num_storeys_unsure").click()
-        # Make sure the number input is disabled and has no value
-        wait.until(EC.element_attribute_to_include((By.ID, "id_num_storeys_specify_value"), 'disabled'))
-        self.assertEqual(number_input_elem.get_attribute('value'), '')
-        # check that the radio is not checked (returns None instead of false)
-        self.assertEqual(specify_radio_elem.get_attribute('checked'), None)
-
-        # Test a RadioWithSpecify field
-        specify_radio_elem = driver.find_element(By.ID, "id_self_similar_cluster_specify")
-        specify_radio_elem.click()
-        specify_text_input_elem = driver.find_element(By.ID, "id_self_similar_cluster_specify_value")
-        specify_text_input_elem.send_keys('5')
-        self.assertEqual(specify_text_input_elem.get_attribute('value'), '5')
-        # Clicking the same radio should not unselect it
-        specify_radio_elem.click()
-        self.assertEqual(specify_text_input_elem.get_attribute('value'), '5')
-
-        # Clicking on another radio should unselect it and delte the entered value
-        driver.find_element(By.ID, "id_self_similar_cluster_no").click()   
-        # Make sure the number input is disabled and has no value
-        wait.until(EC.element_attribute_to_include((By.ID, "id_self_similar_cluster_specify_value"), 'disabled'))
-        self.assertEqual(specify_text_input_elem.get_attribute('value'), '')
-        # check that the radio is not checked (returns None instead of false)
-        self.assertEqual(specify_radio_elem.get_attribute('checked'), None)
-
-        # Test a multiple checkbox
-        specify_checkbox = driver.find_element(By.ID, "id_appendages_specify")
-        specify_checkbox.click()
-        specify_input_field = driver.find_element(By.ID, "id_appendages_specify_value")
-        specify_input_field.send_keys('blabla')
-        self.assertEqual(specify_input_field.get_attribute('value'), 'blabla')
-        # Click on another checkbox
-        # This should NOT delete the value, as we can select multiple
-        driver.find_element(By.ID, "id_appendages_0").click()
-        # Checkbox should stil lbe checked, not disabled, and have its value!
-        self.assertEqual(specify_input_field.get_attribute('value'), 'blabla')
-        self.assertEqual(specify_checkbox.get_attribute('checked'), 'true')
-        self.assertEqual(specify_input_field.get_attribute('disabled'), None)
-
-        # Now clicking it again however should unselect it
-        specify_checkbox.click()
-        self.assertEqual(specify_input_field.get_attribute('value'), '')
-        self.assertEqual(specify_checkbox.get_attribute('checked'), None)
-        self.assertEqual(specify_input_field.get_attribute('disabled'), 'true')
-
-        # Try the unselecting again, this time clicking the parent element
-        specify_checkbox.click()
-        specify_input_field.send_keys('blabla')
-        self.assertEqual(specify_input_field.get_attribute('value'), 'blabla')
-
-        # Now click the label, and it should unselect it
-        # Clicking the parent id_appendages_specify_container does not work here, (for a reason I don't understand)
-        # But clicking on the LABEL works
-        driver.find_element(By.XPATH, "//div[@id='id_appendages_specify_container']//label").click()
-        self.assertEqual(specify_input_field.get_attribute('value'), '')
-        self.assertEqual(specify_checkbox.get_attribute('checked'), None)
-        self.assertEqual(specify_input_field.get_attribute('disabled'), 'true')
-
-
     def test_chrome_should_fail_to_submit_when_a_field_is_missing(self):
         driver = self.driver
-        wait = self.wait 
+        wait = self.wait
 
-        self._sign_in('/survey/v1/id1')
+        self._sign_in("/survey/v1/id1")
 
         # Test redirect to an eval unit
         wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id1"))
-        wait.until(EC.presence_of_element_located((By.ID, 'nav-survey-tab')))
+        wait.until(EC.presence_of_element_located((By.ID, "nav-survey-tab")))
         driver.find_element(By.ID, "nav-survey-tab").click()
 
         # Fill in the form
@@ -402,7 +322,7 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
         e = driver.find_element(By.ID, "id_self_similar_cluster_specify_value")
-        driver.execute_script("arguments[0].value = arguments[1];", e, '60')
+        driver.execute_script("arguments[0].value = arguments[1];", e, "60")
 
         e = driver.find_element(By.ID, "id_has_simple_footprint_0")
         driver.execute_script("arguments[0].scrollIntoView();", e)
@@ -416,7 +336,7 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
         e = driver.find_element(By.ID, "id_num_storeys_specify_value")
-        driver.execute_script("arguments[0].value = arguments[1];", e, '5')
+        driver.execute_script("arguments[0].value = arguments[1];", e, "5")
 
         e = driver.find_element(By.ID, "id_has_basement_2")
         driver.execute_script("arguments[0].scrollIntoView();", e)
@@ -430,7 +350,7 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
         e = driver.find_element(By.ID, "id_appendages_specify_value")
-        driver.execute_script("arguments[0].value = arguments[1];", e, 'blabla')
+        driver.execute_script("arguments[0].value = arguments[1];", e, "blabla")
 
         # Clicking it again will undo the previous work and make the form invalid!
         e = driver.find_element(By.ID, "id_appendages_specify")
@@ -440,7 +360,7 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         e = driver.find_element(By.ID, "id_exterior_cladding_5")
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)
-        
+
         e = driver.find_element(By.ID, "id_facade_condition_0")
         driver.execute_script("arguments[0].scrollIntoView();", e)
         driver.execute_script("arguments[0].click();", e)

@@ -8,7 +8,7 @@ from pathlib import Path
 from botocore.config import Config
 from botocore.exceptions import ClientError
 
-from config.settings import B2_APPKEY_RW, B2_BUCKET_IMAGES, B2_ENDPOINT, B2_KEYID_RW
+# from config.settings import B2_APPKEY_RW, B2_BUCKET_IMAGES, B2_ENDPOINT, B2_KEYID_RW
 
 # Return a boto3 resource object for B2 service
 def get_b2_resource(endpoint, key_id, application_key):
@@ -67,10 +67,10 @@ if __name__=='__main__':
     environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
     # # Possible override of settings to test
-    # B2_KEYID_RW=''
-    # B2_APPKEY_RW=''
-    # B2_ENDPOINT=''
-    # B2_BUCKET_IMAGES=''
+    B2_KEYID_RW=env('B2_KEYID_RW')
+    B2_APPKEY_RW=env('B2_APPKEY_RW')
+    B2_ENDPOINT=env('B2_ENDPOINT')
+    B2_BUCKET_IMAGES=env('B2_BUCKET_IMAGES')
 
     b2 = get_b2_resource(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW)
     c = get_b2_client(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW)

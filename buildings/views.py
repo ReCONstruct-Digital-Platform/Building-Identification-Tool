@@ -1,13 +1,9 @@
-import git
 import json
-import requests
 import traceback
 
 import IPython
 from pprint import pprint
 from datetime import datetime
-from ipaddress import ip_address, ip_network
-from render_block import render_block_to_string
 from django.db import connection
 from django.views import generic
 from django.conf import settings
@@ -18,19 +14,18 @@ from django.core.paginator import Paginator
 from django.db.models import Avg, Count, Sum
 from django.db.models.functions import Round
 from django.forms.models import model_to_dict
+from render_block import render_block_to_string
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
-from buildings.utils.constants import CUBF_TO_NAME_MAP
-from buildings.utils.utility import print_query_dict, verify_github_signature
 from django.core.serializers import serialize
 
-from .forms import CreateUserForm
-from .models.surveys import SurveyV1Form
-from config.settings import WEBHOOK_SECRET, BASE_DIR
-from .models.models import (
+from buildings.forms import CreateUserForm, LoginUserForm
+from buildings.models.surveys import SurveyV1Form
+from buildings.utils.constants import CUBF_TO_NAME_MAP
+from buildings.models.models import (
     EvalUnit,
     EvalUnitLatestViewData,
     HLMBuilding,
@@ -44,7 +39,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-@login_required(login_url="buildings:login")
+@login_required(login_url="account_login")
 def index(request):
     template = "buildings/index.html"
 
@@ -74,7 +69,7 @@ def index(request):
         "top_3_total_votes": top_3_total_votes,
         "top_3_vote_percentage": top_3_vote_percentage,
     }
-
+    # This returns partial HTML content only for the activity tab
     if request.htmx:
         rendered_content = render_block_to_string(
             template, "activity-tab-content", context=context, request=request
@@ -118,7 +113,7 @@ def _validate_query(query):
     return query
 
 
-@login_required(login_url="buildings:login")
+@login_required(login_url="account_login")
 def all_buildings(request):
     # Get all the query elements and assemble them in a query dictionary
     query = _populate_query(request)
@@ -132,7 +127,7 @@ def all_buildings(request):
     log.debug(f"Ordering: {ordering}, direction: {direction}")
     qs = EvalUnit.objects.search(query=query, ordering=ordering)
 
-    paginator = Paginator(qs, 25)  # Show 25 per page.
+    paginator = Paginator(qs, 25)  # Show 25 contacts per page.
 
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -153,14 +148,15 @@ def all_buildings(request):
     return render(request, template, context)
 
 
-@login_required(login_url="buildings:login")
+@login_required(login_url="account_login")
 def survey(_):
+    # TODO: Split this into HLMs and Metal Buildings
     random_unscored_unit = EvalUnit.objects.get_next_unit_to_survey()
     eval_unit_id = random_unscored_unit.id
     return redirect("buildings:survey_v1", eval_unit_id=eval_unit_id)
 
 
-@login_required(login_url="buildings:login")
+@login_required(login_url="account_login")
 def survey_v1(request, eval_unit_id):
     eval_unit = get_object_or_404(EvalUnit, pk=eval_unit_id)
 
@@ -295,22 +291,6 @@ def survey_v1(request, eval_unit_id):
     # Load the lot polygon
     # https://django.readthedocs.io/en/stable/ref/contrib/gis/functions.html
     # https://django.readthedocs.io/en/stable/ref/contrib/gis/serializers.html
-    # eval_unit.geom = eval_unit.geom.simplify(0.000005)
-    # lot_geojson = json.loads(serialize('geojson', [eval_unit], geometry_field='geom', fields=[]))
-
-    # lot_geojson = None
-    # with connection.cursor() as cursor:
-    #     cursor.execute(f"select st_asgeojson(st_simplify(lot_geom, 0.000005, true)) from evalunits where id = %s", [eval_unit_id])
-    #     row = cursor.fetchone()
-    #     # If we get a result
-    #     if row and row[0]:
-    #         print(cursor.mogrify(f"select st_asgeojson(st_simplify(lot_geom, 0.000005, true)) from evalunits where id = %s", [eval_unit_id]))
-    #         print(row)
-    #         lot_geojson = {
-    #             'type': 'Feature',
-    #             'geometry': json.loads(row[0])
-    #         }
-
     lot_geojson = (
         json.loads(
             serialize("geojson", [eval_unit.lot], geometry_field="geom", fields=["gid"])
@@ -348,33 +328,16 @@ class EvalUnitDetailView(generic.DetailView):
     template_name = "buildings/detail.html"
 
 
-def register(request):
-    if request.user.is_authenticated:
-        return redirect("buildings:index")
-
-    if request.method == "POST":
-        form = CreateUserForm(request.POST)
-        if form.is_valid():
-            # This will create the user
-            user = form.save()
-            messages.success(request, f"Account created for {user.username}")
-            return redirect("buildings:login")
-    else:
-        form = CreateUserForm()
-
-    context = {"form": form}
-    return render(request, "buildings/register.html", context)
-
-
 def login_page(request):
     if request.user.is_authenticated:
         return redirect("buildings:index")
 
     if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-
-        user = authenticate(request, username=username, password=password)
+        user = authenticate(
+            request,
+            username=request.POST.get("username"),
+            password=request.POST.get("password"),
+        )
 
         if user:
             login(request, user)
@@ -384,21 +347,47 @@ def login_page(request):
                 return redirect("buildings:index")
         else:
             messages.error(request, "Username or password incorrect")
-            return render(request, "buildings/login.html")
-
-    return render(request, "buildings/login.html")
+            return render(
+                request, "buildings/login.html", {"form": LoginUserForm(request.POST)}
+            )
+    else:
+        form = LoginUserForm()
+    return render(request, "buildings/login.html", {"form": form})
 
 
 def logout_page(request):
     logout(request)
-    return redirect("buildings:login")
+    return redirect("account_login")
+
+
+def register(request):
+    if request.user.is_authenticated:
+        return redirect("buildings:index")
+
+    if request.method == "POST":
+        print(request.POST)
+        form = CreateUserForm(request.POST)
+        print(form)
+        if form.is_valid():
+            # This will create the user
+            user = form.save()
+            messages.success(request, f"Account created for {user.username}")
+            return redirect("account_login")
+        else:
+            print(form.errors)
+            return render(request, "buildings/register.html", {"form": form})
+    else:
+        form = CreateUserForm()
+
+    return render(request, "buildings/register.html", {"form": form})
 
 
 @require_POST
+@login_required(login_url="account_login")
 def upload_imgs(request, eval_unit_id):
     """
     We'll process the image uploading asynchronously using a PythonAnywhere (PA) Always-on Task
-    We have to do this because PA doesn't support laucnhing background threads.
+    We have to do this because PA doesn't support launching background threads.
     If we switch to another VPS, we should implement the background thread solution
     https://blog.pythonanywhere.com/198/
     https://www.pythonanywhere.com/forums/topic/3627/

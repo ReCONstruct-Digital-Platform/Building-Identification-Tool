@@ -3,19 +3,19 @@
   {% for _, options, _ in widget.optgroups %}
     {% for option in options %}
         <label>
-          <input id="{{ option.attrs.id }}" class="me-1" type="{{ option.type }}"
+          <input id="{{ option.attrs.id }}" class="{{ widget.attrs.option_class }}" type="{{ option.type }}"
             onclick="turnOffSpecify('{{ id }}_specify_value')"
             name="{{ option.name }}" value="{{ option.value|stringformat:'s' }}" 
             {% if not widget.value_was_specified and option.value == widget.initial %} checked{% endif %} 
             required>{{ option.label }}</label>
     {% endfor %}
   {% endfor %}
-  <div id="{{ id }}_specify_container" class = "specify">
+  <div id="{{ id }}_specify_container" class = "flex items-center">
     <label>
-      <input id = "{{ id }}_specify" type="radio" class = "me-1"
+      <input id = "{{ id }}_specify" type="{{ option.type }}" class = "{{ widget.attrs.option_class }}"
       onclick="turnOnSpecify('{{ id }}_specify_value')" name="{{ widget.name }}"
       {% if widget.value_was_specified %} checked{% endif %} required>Other (specify):</label>
-    <input class="ms-1" id="{{ id }}_specify_value" type="text" name="{{ widget.name }}"
+    <input id="{{ id }}_specify_value" class="{{ widget.attrs.specify_class }}" type="text" name="{{ widget.name }}"
     {% if widget.value_was_specified %} value="{{ widget.initial }}" {% else %} disabled {% endif %} />
   </div>
 </div>

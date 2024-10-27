@@ -12,65 +12,70 @@ from buildings.widgets import (
     MultiCheckboxSpecifyRequired, SelfSimilarClusterWidget
 )
 
+TW_INPUT_CLASSES = """block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset 
+    focus:ring-teal-600 sm:text-sm sm:leading-6"""
+
+TW_INPUT_CHECKBOX_CLASSES = """block rounded-sm border-0 text-teal-600 accent-teal-600 focus:accent-teal-700 shadow-sm ring-1 focus:ring-2 focus:ring-teal-600 sm:text-sm sm:leading-6"""
+
 
 # The first element is the actual value
 # forms will pass it as a string nack to the backend
 YES_NO = [
-    (True, "Yes"),
-    (False, "No"),
+    (True, _("Yes")),
+    (False, _("No")),
 ]
 YES_NO_UNSURE = [
-    (True, "Yes"),
-    (False, "No"),
-    (None, "Unsure"),
+    (True, _("Yes")),
+    (False, _("No")),
+    (None, _("Unsure")),
 ]
 SITE_OBSTRUCTIONS = [
-    ("trees_or_landscaping", "Important trees or landscaping"),
-    ("buildings", "Buildings"),
-    ("overhead_wires", "Overhead wires, incl. those blocking general access to site"),
+    ("trees_or_landscaping", _("Important trees or landscaping")),
+    ("buildings", _("Buildings")),
+    ("overhead_wires", _("Overhead wires, incl. those blocking general access to site")),
 ]
 APPENDAGES = [
-    ("canopies_eaves", "Roof overhangs/eaves"),
-    ("balconies", "Balconies"),
-    ("porches_stoops", "Porches/stoops"),
-    ("vestibules", "Exterior Vestibules"),
+    ("canopies_eaves", _("Roof overhangs/eaves")),
+    ("balconies", _("Balconies")),
+    ("porches_stoops", _("Porches/stoops")),
+    ("vestibules", _("Exterior Vestibules")),
 ]
 FACADE_MATERIALS = [
-    ("brick_masonry", "Brick Masonry"),
-    ("concrete", "Concrete"),
-    ("curtain_wall", "Curtain Wall"),
-    ("plaster", "Plaster"),
-    ("metal", "Metal"),
-    ("vinyl", "Vinyl"),
-    ("stone_masonry", "Stone Masonry"),
-    ("wood", "Wood"),
-    ("unsure", "Unsure"),
+    ("brick_masonry", _("Brick Masonry")),
+    ("concrete", _("Concrete")),
+    ("curtain_wall", _("Curtain Wall")),
+    ("plaster", _("Plaster")),
+    ("metal", _("Metal")),
+    ("vinyl", _("Vinyl")),
+    ("stone_masonry", _("Stone Masonry")),
+    ("wood", _("Wood")),
+    ("unsure", _("Unsure")),
 ]
 ROOF_GEOMETRIES = [
-    ("flat", "Flat"),
-    ("pitch_low", "Low Pitched"),
-    ("pitch_high", "High Pitched"),
-    ("curved", "Curved"),
-    ("complex", "Complex"),
-    ("unsure", "Unsure"),
+    ("flat", _("Flat")),
+    ("pitch_low", _("Low Pitched")),
+    ("pitch_high", _("High Pitched")),
+    ("curved", _("Curved")),
+    ("complex", _("Complex")),
+    ("unsure", _("Unsure")),
 ]
 
 # TODO: We might re-use this question for expert users at a later time
 STRUCTURE_TYPES = [
-    ("wood_frame_light_gauge_steel", "Wood frame or light gauge steel"),
-    ("concrete_frame", "Concrete frame"),
-    ("steel_frame", "Steel frame"),
-    ("brick_masonry", "Load-bearing brick masonry"),
-    ("stone_masonry", "Load-bearing stone masonry"),
+    ("wood_frame_light_gauge_steel", _("Wood frame or light gauge steel")),
+    ("concrete_frame", _("Concrete frame")),
+    ("steel_frame", _("Steel frame")),
+    ("brick_masonry", _("Load-bearing brick masonry")),
+    ("stone_masonry", _("Load-bearing stone masonry")),
     ("unsure", "Unsure"),
 ]
 WINDOWS = [
-    ("very_large_windows", "Very large"),
-    ("irregular_windows", "Irregularly shaped"),
+    ("very_large_windows", _("Very large")),
+    ("irregular_windows", _("Irregularly shaped")),
 ]
 NEW_OR_RENOVATED = [
-    ("newly_built", "Newly built"),
-    ("recently_renovated", "Recently renovated"),
+    ("newly_built", _("Newly built")),
+    ("recently_renovated", _("Recently renovated")),
 ]
 
 
