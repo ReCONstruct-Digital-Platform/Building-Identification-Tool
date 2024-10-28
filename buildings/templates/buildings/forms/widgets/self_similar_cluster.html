@@ -1,16 +1,15 @@
 {% with id=widget.attrs.id intial_val=widget.initial was_filled=widget.was_filled %}
 <div id="{{ id }}" class="{{ widget.attrs.class }}" >
-  <div id="{{ id }}_specify_container" class="specify">
-    <label class="me-1">
+  <div id="{{ id }}_specify_container" class="flex">
+    <label class="me-1 flex items-center">
       <input id="{{ id }}_specify" type="radio" name="{{ widget.name }}" value="specify"
-        class="me-1 specify" onclick="turnOnSpecify('{{ id }}_specify_value')" 
+        class="{{ widget.attrs.radio_class }}" onclick="turnOnSpecify('{{ id }}_specify_value')" 
         {% if was_filled and intial_val is not None %} checked{% endif %} required>Buildings in cluster:
     </label>
-    <input id="{{ id }}_specify_value" class = "me-1" type="number" name="{{ widget.name }}" 
-      min="2" max="500" step="1" {% if was_filled and intial_val is not None %}value="{{ intial_val }}"{% else %}disabled{% endif %}/>
+    <input id="{{ id }}_specify_value" class="{{ widget.attrs.specify_class }}" type="number" name="{{ widget.name }}" min="2" max="500" step="1" {% if was_filled and intial_val is not None %}value="{{ intial_val }}"{% else %}disabled{% endif %}/>
   </div>
   <label>
-    <input id="{{ id }}_no" class="me-1" type="radio" name="{{ widget.name }}" 
+    <input id="{{ id }}_no" class="{{ widget.attrs.radio_class }}" type="radio" name="{{ widget.name }}" 
       value="" onclick="turnOffSpecify('{{ id }}_specify_value')" 
       {% if was_filled and intial_val is None %} checked{% endif %} required/>No
   </label>

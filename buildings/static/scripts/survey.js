@@ -13,7 +13,7 @@ function setUpSurveyNavigation() {
     // page on the browser history, so that if the user clicks "back" again,
     // it'll actually return to this page. We need to perform a native back to
     // integrate properly into the browser's history behavior
-    element.onclick = function() {
+    element.onclick = function () {
         history.back();
         return false;
     }
@@ -23,7 +23,7 @@ function getLatestViewData() {
     // Get the latest view data from streetview
     const sv_pov = sv.getPov();
     const m_marker_pos = m_marker.getPosition();
-    
+
     return {
         'sv_pano': sv.getPano(),
         'sv_heading': sv_pov.heading,
@@ -40,26 +40,26 @@ function getLatestViewData() {
 async function screenshot(element_id) {
     return html2canvas(
         document.getElementById(element_id), {
-            useCORS: true,
-            logging: false, // set true for debug,
-            ignoreElements: (el) => {
-                // The following hides unwanted controls, copyrights, pins etc. on the maps and streetview canvases
-                let condition = el.classList.contains("gmnoprint") || el.classList.contains("gm-style-cc") 
+        useCORS: true,
+        logging: false, // set true for debug,
+        ignoreElements: (el) => {
+            // The following hides unwanted controls, copyrights, pins etc. on the maps and streetview canvases
+            let condition = el.classList.contains("gmnoprint") || el.classList.contains("gm-style-cc")
                 || el.id === 'gmimap1' || el.tagName === 'BUTTON' || el.classList.contains("gm-iv-address")
                 || el.getAttribute('title') === "Open this area in Google Maps (opens a new window)"
-                || el.id === 'time-travel-container';
+                || el.id === 'sv-top-right-controls-container';
 
-                // Addtionally remove the red pin for the streetview (but keep it for satellite)
-                if (element_id === 'streetview') {
-                    return condition 
-                        ||= el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3_hdpi.png'
-                        || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3.png';
-                }
-                else {
-                    return condition ||= el.getAttribute('style') === "position: absolute; left: 0px; top: 0px; z-index: 1;";
-                }
-            },
-        }
+            // Addtionally remove the red pin for the streetview (but keep it for satellite)
+            if (element_id === 'streetview') {
+                return condition
+                    ||= el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3_hdpi.png'
+                    || el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3.png';
+            }
+            else {
+                return condition ||= el.getAttribute('style') === "position: absolute; left: 0px; top: 0px; z-index: 1;";
+            }
+        },
+    }
     ).then(canvas => {
         // // Uncomment for testing - appends the images to the page
         // document.body.style.overflowY = 'scroll';
@@ -79,8 +79,8 @@ async function screenshotStreetview(event) {
     event.preventDefault();
 
     const toastElement = document.getElementById('screenshot-toast');
-    const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastElement); 
-    
+    const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastElement);
+
     // Screenshot the streetview as well
     const imgData = {
         streetview: await screenshot('streetview'),
@@ -89,17 +89,20 @@ async function screenshotStreetview(event) {
     // Get the upload url from the page and POST the data
     const url = document.getElementById("upload_url").getAttribute("data-url");
 
+    console.debug(`screenshotting and sending to ${url}`);
+
     fetch(url, {
         method: "POST",
-        mode: "same-origin", 
-        cache: "no-cache", 
-        credentials: "same-origin", 
+        mode: "same-origin",
+        cache: "no-cache",
+        credentials: "same-origin",
         headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie('csrftoken'), // So django accepts the request
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie('csrftoken'), // So django accepts the request
         },
-        body: JSON.stringify(imgData), 
+        body: JSON.stringify(imgData),
     }).then((resp) => {
+        console.debug(resp)
         if (resp.status === 200) {
             document.getElementById('sv_uploaded').setAttribute('data-uploaded', 'true');
             toastBootstrap.show();
@@ -116,12 +119,12 @@ function setUpDragBar() {
     // If not set its size to a default of 50%, otherwise use saved settings
     const saved = localStorage.getItem("savedWidth");
 
-    if (saved){
+    if (saved) {
         left.style.width = saved;
     } else {
         left.style.width = '50%';
     }
-    
+
     // Calculate the new width, set the left panel's width and save in local storage
     const resizeOnDrag = (e) => {
         document.selection ? document.selection.empty() : window.getSelection().removeAllRanges();
@@ -129,11 +132,11 @@ function setUpDragBar() {
         left.style.width = newWidth;
         localStorage.setItem("savedWidth", newWidth);
     }
-      
+
     dragbar.addEventListener('mousedown', () => {
         document.addEventListener('mousemove', resizeOnDrag);
     });
-    
+
     dragbar.addEventListener('mouseup', () => {
         document.removeEventListener('mousemove', resizeOnDrag);
     });
@@ -169,10 +172,10 @@ function setUpScrollHeightObserver() {
     const observer = new MutationObserver(() => {
         const svHeight = svElement.offsetHeight;
         const tabHeight = tabElement.offsetHeight;
-        const textHeight = svHeight - tabHeight ;
+        const textHeight = svHeight - tabHeight;
         document.getElementById("tab-content-container").style.height = textHeight + "px";
     })
-    observer.observe(svElement, {childList: true, subtree: true});
+    observer.observe(svElement, { childList: true, subtree: true });
 }
 
 
@@ -183,11 +186,11 @@ function setUpButtons() {
     screenshotButton.addEventListener('click', (e) => {
         screenshotStreetview(e);
     });
-    window.addEventListener('keyup', (e) => {
+    window.addEventListener('keyup', async (e) => {
         if (e.code === 'Space') {
-            console.debug('spacebar pressed');
+            console.debug(`spacebar pressed. Target: ${e.target}`);
             if (e.target.nodeName !== 'INPUT') {
-                screenshotStreetview(e);
+                await screenshotStreetview(e);
             }
         }
     }, false);
@@ -196,7 +199,7 @@ function setUpButtons() {
     // No building button
     document.getElementById('btn-no-building').addEventListener('click', (e) => {
         e.preventDefault();
-        
+
         const form = document.getElementById('building-submission-form');
 
         const no_building_input = document.createElement("input");
@@ -210,7 +213,7 @@ function setUpButtons() {
         }
         catch (error) {
             console.error(error);
-        } 
+        }
         finally {
             form.submit();
         }
@@ -222,7 +225,7 @@ function setUpButtons() {
         e.preventDefault();
 
         const form = document.getElementById('building-submission-form');
-        
+
         // Check form inputs are valid
         if (!form.checkValidity()) {
             // Create the temporary button, click and remove it
@@ -241,7 +244,7 @@ function setUpButtons() {
                 await screenshotStreetview(e);
             }
             // Set the latest view data in the form
-            const latest_view_data =  JSON.stringify(getLatestViewData());
+            const latest_view_data = JSON.stringify(getLatestViewData());
             document.getElementById('latest_view_data').value = latest_view_data;
             form.submit();
         }
@@ -262,22 +265,22 @@ function uploadSatelliteImage(target, uploadURL, oldValue) {
 
     if (oldValue === currentValue)
         return console.debug("Satellite image hasn't changed, do not upload.")
-       
+
     // Upload new satellite image
     fetch(uploadURL, {
         method: "POST",
-        mode: "same-origin", 
-        cache: "no-cache", 
-        credentials: "same-origin", 
+        mode: "same-origin",
+        cache: "no-cache",
+        credentials: "same-origin",
         headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": getCookie('csrftoken'), // So django accepts the request
         },
-        body: JSON.stringify({'satellite': currentValue})
+        body: JSON.stringify({ 'satellite': currentValue })
     }).then((resp) => {
         if (resp.status === 200) {
             console.debug('Satellite img uploaded successfully');
-        } 
+        }
         else {
             console.debug(`Problem uploading screenshot ${resp}`);
         }
@@ -307,7 +310,7 @@ function allInputsEmpty() {
     document.querySelectorAll('input').forEach((input) => {
         if ((input.type === 'radio' || input.type === 'checkbox') && input.checked)
             return allEmpty = false;
-        if ((input.type === 'number' || input.type === 'text') && input.value !== '') 
+        if ((input.type === 'number' || input.type === 'text') && input.value !== '')
             return allEmpty = false;
     });
     return allEmpty;
@@ -319,7 +322,7 @@ function allInputsEmpty() {
 function setUpSatelliteImageObserver() {
     const targetNode = document.getElementById('sat_data');
     const observer = new MutationObserver(satelliteImageMutationCallback);
-    observer.observe(targetNode, {attributes: true, attributeOldValue: true});
+    observer.observe(targetNode, { attributes: true, attributeOldValue: true });
 }
 
 
@@ -331,10 +334,10 @@ function setUpSatelliteImageObserver() {
 function satelliteTabScreenshotOnHide() {
     // The hide.bs.tab event fires when the tab is to be hidden
     document.getElementById('nav-satellite-tab').addEventListener(
-      'hide.bs.tab', async () => {
-        const dataUrl = await screenshot('satellite');
-        document.getElementById('sat_data').setAttribute('data-url', dataUrl);
-    });
+        'hide.bs.tab', async () => {
+            const dataUrl = await screenshot('satellite');
+            document.getElementById('sat_data').setAttribute('data-url', dataUrl);
+        });
 }
 
 
@@ -363,11 +366,19 @@ function setUpInitialSurveyMutationChecker() {
             }
         }
     });
-    observer.observe(form, {subtree: true, attributes: true});
+    observer.observe(form, { subtree: true, attributes: true });
+}
+
+function setStreetviewAndMapContainerHeight() {
+    const container = document.getElementById('streetview-and-map-container');
+    const windowHeight = window.innerHeight;
+    // Leave some space at the bottom
+    container.style.height = `${Math.floor(windowHeight * 0.9)}px`
 }
 
 
-$(document).ready(function() {
+document.addEventListener("DOMContentLoaded", function () {
+    setStreetviewAndMapContainerHeight();
     setUpSurveyNavigation();
     setUpDragBar();
     setUpScrollHeightObserver();

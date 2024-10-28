@@ -31,7 +31,7 @@ class Command(BaseCommand):
         
         parser.add_argument('-dd', '--delete-data', 
                             action="store_true", 
-                            default=True,
+                            default=False,
                             help="Delete the data after processing (~7GB)")
 
         parser.add_argument('-n', '--num-workers', 
@@ -63,7 +63,8 @@ class Command(BaseCommand):
                         test=test)
             
             call_command('process_roll_shp', 
-                        output_folder= output_folder, 
+                        output_folder= output_folder,
+                        num_workers=num_workers,
                         download_data=download_data, 
                         delete_data=delete_data, 
                         test=test)
@@ -84,6 +85,9 @@ class Command(BaseCommand):
                         delete_data=delete_data, 
                         num_workers=num_workers, 
                         test=test)
+            
+            call_command('check_streetview', 
+                        num_workers=num_workers)
             
             self.stdout.write(
                 self.style.SUCCESS(f'\nFinished setting up DB in {datetime.now() - t0} s')
