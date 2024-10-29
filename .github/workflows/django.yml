@@ -94,6 +94,8 @@ jobs:
           SSH_HOST: ${{ secrets.PA_SSH_HOST }}
       - name: (STAGING) Check out source
         run: ssh staging 'cd /home/lhovon/staging_bit && git stash push -m "local_changes_$(date +%s)" && git fetch && git reset --hard origin/staging'
+      - name: (STAGING) pip install 
+        run: ssh staging 'pip install -r requirements.txt'
       - name: (STAGING) Run migrations
         run: ssh staging 'cd /home/lhovon/staging_bit && /home/lhovon/.virtualenvs/stagingbitvenv/bin/python manage.py migrate'
       - name: (STAGING) Collectstatic
@@ -125,6 +127,8 @@ jobs:
           SSH_HOST: ${{ secrets.PA_SSH_HOST }}
       - name: (PROD) Check out source
         run: ssh prod 'cd /home/lhovon/prod_bit && git stash push -m "local_changes_$(date +%s)" && git fetch && git reset --hard origin/main'
+      - name: (PROD) pip install 
+        run: ssh prod 'pip install -r requirements.txt'
       - name: (PROD) Run migrations
         run: ssh prod 'cd /home/lhovon/prod_bit && /home/lhovon/.virtualenvs/bitvenv/bin/python manage.py migrate'
       - name: (PROD) Collectstatic
