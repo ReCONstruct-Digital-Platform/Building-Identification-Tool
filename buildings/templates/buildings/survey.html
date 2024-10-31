@@ -523,24 +523,25 @@
           v: "3.58",
       });
   </script>
-  <script defer src="{% static 'scripts/gmaps.js' %}"></script>
-
+  <script async src="{% static 'scripts/html2canvas.min.js' %}"></script>
+  
   <!-- Hack to augment the creation of all WebGL contexts with preserveDrawingBuffer=true -->
   <!-- This is done so we can take a screenshot with html2canvas -->
   <!-- https://stackoverflow.com/questions/26783586/canvas-todataurl-returns-blank-image  -->
   <script async>
-      HTMLCanvasElement.prototype.getContext = function(origFn) {
-          return function(type, attributes) {
-              if (type === 'webgl') {
-                  attributes = Object.assign({}, attributes, {
-                      preserveDrawingBuffer: true,
-                  });
-              }
-              return origFn.call(this, type, attributes);
-          };
-      }(HTMLCanvasElement.prototype.getContext);
+    HTMLCanvasElement.prototype.getContext = function(origFn) {
+      return function(type, attributes) {
+        if (type === 'webgl') {
+          attributes = Object.assign({}, attributes, {
+            preserveDrawingBuffer: true,
+          });
+        }
+        return origFn.call(this, type, attributes);
+      };
+    }(HTMLCanvasElement.prototype.getContext);
   </script>
+  
+  <script defer src="{% static 'scripts/gmaps.js' %}"></script>
   <script defer src="{% static 'scripts/survey.js' %}"></script>
-  <script async src="{% static 'scripts/html2canvas.min.js' %}"></script>
 
 {% endblock page_scripts %}
