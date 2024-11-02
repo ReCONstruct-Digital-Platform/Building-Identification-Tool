@@ -1156,6 +1156,14 @@ select {
   width: 25% !important;
 }
 
+.w-\[50px\] {
+  width: 50px !important;
+}
+
+.w-\[75px\] {
+  width: 75px !important;
+}
+
 .max-w-6xl {
   max-width: 72rem !important;
 }
