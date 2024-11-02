@@ -1,4 +1,5 @@
 {% extends "buildings/base.html" %}
+{% load allauth %}
 {% load i18n %}
 {% block content %}
   <div class="h-full flex flex-col justify-center items-center">
@@ -17,10 +18,9 @@
             {% trans "Are you sure you want to sign out?" %}
           </div>
           <div>
-            <button type="submit"
-                    class="flex w-full justify-center rounded-md bg-red-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
+            {% element button type="submit" name="error" %}
               {% trans "Sign out" %}
-            </button>
+            {% endelement %}
           </div>
         </form>
       </div>

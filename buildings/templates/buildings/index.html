@@ -78,7 +78,8 @@
                   Top 3:
                 </h5>
                 <div>
-                  Together these users completed {{ top_3_total_votes }} of the {{ total_votes }} ({{ top_3_vote_percentage }}%) surveys.
+                  Together these users completed {{ top_3_total_votes }} of the {{ total_votes }}
+                  ({{ top_3_vote_percentage }}%) surveys.
                 </div>
               </div>
               <ul class="list-group">
@@ -94,7 +95,7 @@
                   <li class="list-group-item list-group-item-light card mb-3">
                     <div class="activity-top-row">
                       <div class="vote-user">
-                        <img class="profile-pic-icon border me-2" src="{{ user.get_avatar_url }}" />
+                        <img class="profile-pic-icon border me-2" src="{{ user.get_avatar_url }}"/>
                         <strong>{{ user.username }}</strong>
                         <span class="ms-2 d-none d-mflex">
                           (joined {{ user.date_joined | naturalday }})
@@ -136,7 +137,7 @@
                       <div class="activity-top-row mb-2">
                         <div class="vote-user">
                           <img class="profile-pic-icon border me-2"
-                               src="{{ vote.user.get_avatar_url }}" />
+                               src="{{ vote.user.get_avatar_url }}"/>
                           <strong>
                             {{ vote.user.username }}
                           </strong>
@@ -188,8 +189,7 @@
                   </span>
 
                   {% if latest_votes_page.has_next %}
-                    <a href='#'
-                       hx-swap="outerHTML"
+                    <a href='#' hx-swap="outerHTML"
                        hx-target='#activity-tab-content'
                        hx-get="?latest_votes_page={{ latest_votes_page.next_page_number }}&active_tab=latest&user_votes_page={{ user_votes_page.number }}">next</a>
                     <a href='#'
@@ -235,7 +235,7 @@
                       <div class="activity-top-row mb-2">
                         <div class="vote-user">
                           <img class="profile-pic-icon border me-2"
-                               src="{{ vote.user.get_avatar_url }}" />
+                               src="{{ vote.user.get_avatar_url }}"/>
                           <strong>
                             {{ vote.user.username }}
                           </strong>

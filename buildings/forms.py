@@ -30,7 +30,7 @@ class CreateUserForm(allauth_forms.SignupForm):
     knowledge_level = ChoiceField(
         choices=KNOWLEDGE_LEVEL_CHOICES,
         widget=Select(attrs={"class": TW_INPUT_CLASSES}),
-        label=_("Level of Architecture, Engineering and Contruction (AEC) knowledge"),
+        label=_("Level of Architecture, Engineering and Construction (AEC) knowledge"),
     )
 
     def __init__(self, *args, **kwargs):

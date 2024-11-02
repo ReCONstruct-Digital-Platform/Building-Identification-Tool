@@ -1,5 +1,6 @@
 {% extends "buildings/base.html" %}
 {% load i18n %}
+{% load allauth %}
 {% block content %}
   <div class="h-full flex flex-col justify-center items-center">
     <form id="register-form"
@@ -106,11 +107,9 @@
             <div class="mt-8 w-full flex justify-end">
               <!-- Never give a submit button the id 'submit' -->
               <!-- https://stackoverflow.com/questions/833032/submit-is-not-a-function-error-in-javascript -->
-              <button id="submitButton"
-                      type="submit"
-                      class="next flex items-center justify-center text-center w-full rounded-md bg-teal-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
+              {% element button id="submitButton" type="submit"%}
                 {% trans "Submit" %}
-              </button>
+              {% endelement %}
             </div>
           </div>
         </div>

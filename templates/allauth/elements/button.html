@@ -1,0 +1,9 @@
+{% load allauth %}
+<button
+  {% if attrs.id %}id="{{ attrs.id }}"{% endif %}
+  {% if attrs.type %}type="{{ attrs.type }}"{% endif %}
+ class="{% if attrs.name == 'error' %} bg-red-600 hover:bg-red-500 focus-visible:outline-red-600 {% else %}bg-teal-600 hover:bg-teal-500 focus-visible:outline-teal-600 {% endif %}  flex w-full justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+>
+{% slot %}
+{% endslot %}
+</button>
