@@ -1,3 +1,4 @@
+from allauth.account.forms import AddEmailForm
 from django.forms import Select, ChoiceField
 from django.utils.translation import gettext_lazy as _
 from allauth.account import forms as allauth_forms
@@ -63,3 +64,20 @@ class ResetPasswordKeyForm(allauth_forms.ResetPasswordKeyForm):
         self.fields["password1"].widget.attrs["minlength"] = 8
         self.fields["password2"].widget.attrs["class"] = TW_INPUT_CLASSES
         self.fields["password2"].widget.attrs["autocomplete"] = "new-password"
+
+class ChangePasswordForm(allauth_forms.ChangePasswordForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Need to modify the password fields here instead of in Meta class below
+        self.fields["oldpassword"].widget.attrs["class"] = TW_INPUT_CLASSES
+        self.fields["oldpassword"].widget.attrs["autocomplete"] = "off"
+        self.fields["password1"].widget.attrs["class"] = TW_INPUT_CLASSES
+        self.fields["password1"].widget.attrs["minlength"] = 8
+        self.fields["password2"].widget.attrs["class"] = TW_INPUT_CLASSES
+        self.fields["password2"].widget.attrs["autocomplete"] = "new-password"
+
+class ChangeEmailForm(AddEmailForm):
+    def __init__(self, *args, **kwargs):
+        super(AddEmailForm, self).__init__(*args, **kwargs)
+        self.fields["email"].widget.attrs["class"] = TW_INPUT_CLASSES

@@ -47,7 +47,7 @@
         <span class="ms-2 me-1">{{ user.username }}</span>
       </a>
       <ul class="dropdown-menu">
-        <li><a class="dropdown-item" href="#">Profile</a></li>
+        <li><a class="dropdown-item" href="{% url "buildings:profile" %}">Profile</a></li>
         <li><a class="dropdown-item" href="{% url 'account_logout' %}">Sign out</a></li>
       </ul>
     </div>

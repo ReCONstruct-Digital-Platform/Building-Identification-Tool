@@ -35,7 +35,7 @@ env = environ.Env(
     POSTGRES_PORT=(int, ""),
     GDAL_LIBRARY_PATH=(str, ""),
     GEOS_LIBRARY_PATH=(str, ""),
-    # NPM_BIN_PATH=(str, "/usr/local/bin/npm"),
+    NPM_BIN_PATH=(str, "/usr/local/bin/npm"),
     EMAIL_HOST=(str, ""),
     EMAIL_PORT=(str, ""),
     EMAIL_HOST_USER=(str, ""),
@@ -84,6 +84,9 @@ STATIC_URL = env("STATIC_URL")
 
 STATIC_ROOT = env("STATIC_ROOT")
 
+TAILWIND_APP_NAME = "theme"
+NPM_BIN_PATH = env("NPM_BIN_PATH")
+
 # See https://docs.djangoproject.com/en/4.2/topics/logging/#configuring-logging
 LOGGING = {
     "version": 1,  # the dictConfig format version
@@ -129,12 +132,15 @@ INSTALLED_APPS = [
     "django_htmx",
     "django.contrib.humanize",
     "django_browser_reload",
+    "tailwind",
+    "theme",
     # Allauth apps
     # https://docs.allauth.org/en/dev/installation/quickstart.html#quickstart
     "allauth",
     "allauth.account",
     "mailer",
 ]
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

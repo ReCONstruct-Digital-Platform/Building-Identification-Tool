@@ -2,9 +2,8 @@ import json
 import traceback
 
 import IPython
-from pprint import pprint
+
 from datetime import datetime
-from django.db import connection
 from django.views import generic
 from django.conf import settings
 from django.db import transaction
@@ -15,14 +14,12 @@ from django.db.models import Avg, Count, Sum
 from django.db.models.functions import Round
 from django.forms.models import model_to_dict
 from render_block import render_block_to_string
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404, render, redirect
 from django.core.serializers import serialize
 
-from buildings.forms import CreateUserForm, LoginUserForm
+from buildings.forms import ChangeEmailForm, ChangePasswordForm
 from buildings.models.surveys import SurveyV1Form
 from buildings.utils.constants import CUBF_TO_NAME_MAP
 from buildings.models.models import (
@@ -160,7 +157,6 @@ def survey(_):
 def survey_v1(request, eval_unit_id):
     eval_unit = get_object_or_404(EvalUnit, pk=eval_unit_id)
 
-    hlms = None
     hlm_info = None
     avg_disrepair = None
 
@@ -328,59 +324,15 @@ class EvalUnitDetailView(generic.DetailView):
     template_name = "buildings/detail.html"
 
 
-def login_page(request):
-    if request.user.is_authenticated:
-        return redirect("buildings:index")
-
-    if request.method == "POST":
-        user = authenticate(
-            request,
-            username=request.POST.get("username"),
-            password=request.POST.get("password"),
-        )
-
-        if user:
-            login(request, user)
-            if request.GET and "next" in request.GET:
-                return redirect(request.GET["next"])
-            else:
-                return redirect("buildings:index")
-        else:
-            messages.error(request, "Username or password incorrect")
-            return render(
-                request, "buildings/login.html", {"form": LoginUserForm(request.POST)}
-            )
-    else:
-        form = LoginUserForm()
-    return render(request, "buildings/login.html", {"form": form})
-
-
-def logout_page(request):
-    logout(request)
-    return redirect("account_login")
-
-
-def register(request):
-    if request.user.is_authenticated:
-        return redirect("buildings:index")
-
-    if request.method == "POST":
-        print(request.POST)
-        form = CreateUserForm(request.POST)
-        print(form)
-        if form.is_valid():
-            # This will create the user
-            user = form.save()
-            messages.success(request, f"Account created for {user.username}")
-            return redirect("account_login")
-        else:
-            print(form.errors)
-            return render(request, "buildings/register.html", {"form": form})
-    else:
-        form = CreateUserForm()
-
-    return render(request, "buildings/register.html", {"form": form})
-
+@login_required(login_url="account_login")
+def profile(request):
+    change_pw_form = ChangePasswordForm(user=request.user)
+    change_email_form = ChangeEmailForm(user=request.user)
+    context = {
+        "pw_form": change_pw_form,
+        "email_form": change_email_form,
+    }
+    return render(request, "buildings/profile.html", context=context)
 
 @require_POST
 @login_required(login_url="account_login")

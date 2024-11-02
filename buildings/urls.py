@@ -25,4 +25,5 @@ urlpatterns = [
     path("survey/", views.survey, name="survey"),
     path("survey/v1/<str:eval_unit_id>", views.survey_v1, name="survey_v1"),
     path("upload_imgs/<str:eval_unit_id>", views.upload_imgs, name="upload_imgs"),
+    path("profile", views.profile, name="profile"),
 ]

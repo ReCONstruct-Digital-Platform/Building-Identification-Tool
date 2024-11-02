@@ -7,9 +7,6 @@ data/*
 !data/public
 .idea/
 
-node_modules
-theme/
-
 **/__pycache__/
 *db.sqlite*
 
