@@ -156,12 +156,6 @@ strong {
   justify-content: space-between;
 }
 
-@media(max-width: 868px) {
-  .spread-apart-container {
-    flex-direction: column;
-  }
-}
-
 .latest-activity-box {
   background: rgba(255, 255, 255, .7);
   border-radius: 10px;

@@ -1,14 +1,14 @@
 {% extends "buildings/base.html" %}
 {% block content %}
-
-  {% load humanize %}
+{% load humanize %}
+{% load allauth %}
 
   <div class="relative isolate px-6 lg:px-8 flex-col h-[100vh] items-center justify-center">
 
     <div class="home-content mx-auto max-w-6xl py-32 sm:py-48 lg:py-32">
       <div id="activity-target" class="flex flex-col md:flex-row w-full max-h-full justify-between">
         <div>
-          <ul class="nav nav-underline flex flex-row flex-nowrap md:flex-col">
+          <ul class="nav nav-underline flex-nowrap flex-md-column">
             <li class="nav-item activity-nav-item">
               <a class="nav-link
                         {% if active_tab == 'leaderboard' %}

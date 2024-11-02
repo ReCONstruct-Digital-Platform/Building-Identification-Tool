@@ -41,7 +41,7 @@ class ChromeSurveyGUITests(ChromeSeleniumTestsBase):
         time.sleep(1)
         self.assertEqual(UploadImageJob.objects.count(), 0)
 
-        # Wait until weève redirected to an eval unit
+        # Wait until we've redirected to an eval unit
         wait.until(EC.url_contains(f"{self.live_server_url}/survey/v1/id1"))
 
         # In Selenium we have to wait for the element to appear, otherwise it will
