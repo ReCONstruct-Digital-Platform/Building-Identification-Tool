@@ -35,7 +35,7 @@ env = environ.Env(
     POSTGRES_PORT=(int, ""),
     GDAL_LIBRARY_PATH=(str, ""),
     GEOS_LIBRARY_PATH=(str, ""),
-    NPM_BIN_PATH=(str, "/usr/local/bin/npm"),
+    # NPM_BIN_PATH=(str, "/usr/local/bin/npm"),
     EMAIL_HOST=(str, ""),
     EMAIL_PORT=(str, ""),
     EMAIL_HOST_USER=(str, ""),
@@ -128,10 +128,6 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "django_htmx",
     "django.contrib.humanize",
-    # Tailwind necessary apps
-    # https://django-tailwind.readthedocs.io/en/latest/installation.html
-    "tailwind",
-    "theme",
     "django_browser_reload",
     # Allauth apps
     # https://docs.allauth.org/en/dev/installation/quickstart.html#quickstart
@@ -139,10 +135,6 @@ INSTALLED_APPS = [
     "allauth.account",
     "mailer",
 ]
-
-TAILWIND_APP_NAME = "theme"
-
-NPM_BIN_PATH = env("NPM_BIN_PATH")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -160,8 +152,6 @@ MIDDLEWARE = [
 
 if DEBUG:
     MIDDLEWARE.append(
-        # For Tailwind CSS
-        # https://django-tailwind.readthedocs.io/en/latest/django_browser_reload.html
         "django_browser_reload.middleware.BrowserReloadMiddleware",
     )
 

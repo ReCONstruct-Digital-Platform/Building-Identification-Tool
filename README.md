@@ -142,15 +142,12 @@ python manage.py shell
 
 # Development
 
-In addition to running the server, you will need to run tailwind.
+In addition to running the server, you will need to install and run tailwind. https://tailwindcss.com/docs/installation 
 ```
-# On windows, will have to run this
-npm install -global cross-env
-
-python manage.py tailwind install
-python .\manage.py tailwind start
-
+npm install 
+npx tailwindcss -i .\buildings\static\tw\tw_input.css -o .\buildings\static\tw\tw_output.css -w
 ```
+
 If you want to test the email functionality, run runmailer_pg. We are using `django-mailer`` for emails: https://pypi.org/project/django-mailer/1.2/
 ```
 python .\manage.py runmailer_pg
