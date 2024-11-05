@@ -141,10 +141,10 @@ class User(AbstractUser):
     objects: UserQuerySet = UserManager.from_queryset(UserQuerySet)()
 
     def num_votes(self):
-        return len(self.vote_set.all())
+        return self.vote_set.count()
 
     def get_avatar_url(self, size=32):
-        digest = md5(self.email.encode("utf-8")).hexdigest()
+        digest = md5(self.username.encode("utf-8")).hexdigest()
         return f"https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}"
 
     def __str__(self):

@@ -3,6 +3,8 @@ from django.forms import Select, ChoiceField
 from django.utils.translation import gettext_lazy as _
 from allauth.account import forms as allauth_forms
 
+from config.settings import DEBUG
+
 TW_INPUT_CLASSES = """block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset 
     focus:ring-teal-600 sm:text-sm sm:leading-6"""
 
@@ -73,7 +75,7 @@ class ChangePasswordForm(allauth_forms.ChangePasswordForm):
         self.fields["oldpassword"].widget.attrs["class"] = TW_INPUT_CLASSES
         self.fields["oldpassword"].widget.attrs["autocomplete"] = "off"
         self.fields["password1"].widget.attrs["class"] = TW_INPUT_CLASSES
-        self.fields["password1"].widget.attrs["minlength"] = 8
+        self.fields["password1"].widget.attrs["minlength"] = 8 if not DEBUG else 2
         self.fields["password2"].widget.attrs["class"] = TW_INPUT_CLASSES
         self.fields["password2"].widget.attrs["autocomplete"] = "new-password"
 

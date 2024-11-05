@@ -293,4 +293,9 @@ ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
 ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS = False
 ACCOUNT_UNIQUE_EMAIL = True
 
+# When enabled (True), users are limited to having exactly one email address that
+# they can change by adding a temporary second email address that, when verified,
+# replaces the current email address.
+ACCOUNT_CHANGE_EMAIL = True
+
 LOGIN_REDIRECT_URL = "/"

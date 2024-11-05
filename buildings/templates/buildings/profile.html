@@ -6,77 +6,165 @@
 
   <div class="relative isolate px-6 lg:px-8 flex-col h-[100vh] items-center justify-center">
 
-  <div class="w-full mx-auto max-w-6xl py-32 sm:py-48 lg:py-32">
-    <div class="flex flex-column bg-white bg-opacity-70 py-3 px-5 rounded-md overflow-y-auto">
-      <h1 class="text-4xl font-semibold">
-        Update your profile information
-      </h1>
-      <section class="flex flex-column mt-4 w-1/3">
-        <h2 class="text-xl font-semibold">
-          Change password
-        </h2>
-        <div class="mt-2">
-          <form class="" action="" method="post">
-            {% csrf_token %}
-          
-            <div class="">
-              <label for="oldpassword" class="flex text-nowrap items-center justify-center text-sm font-medium leading-6 text-gray-900 mb-1">
-                {{ pw_form.oldpassword.label }}:
-              </label>
-              {{ pw_form.oldpassword }}
-            </div>
-
-            <div>
-              <div class="flex items-center justify-between">
-                <label for="password1"
-                  class="block text-sm font-medium leading-6 text-gray-900">
-                  {{ pw_form.password1.label }}
-                </label>
-                <div id="password1-errors" class="text-sm text-red-500">
-                  {{ pw_form.errors.password1 }}
+    <div class="w-full mx-auto max-w-6xl py-32 sm:py-48 lg:py-32">
+      <div class="flex flex-column bg-white bg-opacity-70 py-3 px-5 rounded-md overflow-y-auto text-md">
+        <h1 class="text-4xl font-semibold">
+          Update your profile information
+        </h1>
+        <section class="flex flex-column mt-4">
+          <h2 class="text-xl font-semibold">
+            Change your password
+          </h2>
+          {% if messages %}
+              <div class="">
+                {% for message in messages %}
+                  {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS and "password_change_message" in message.extra_tags %}
+                    <div>{{ message }}</div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+          <div class="mt-2">
+            <form class="w-1/3" action="" method="post">
+              {% csrf_token %}
+              <div class="mt-2">
+                <div class="flex flex-column">
+                  <label for="password1"
+                    class="block font-medium text-gray-900">
+                    {{ pw_form.oldpassword.label }}
+                  </label>
+                  <div id="password1-errors" class="text-sm text-red-500">
+                    {{ pw_form.errors.oldpassword }}
+                  </div>
+                </div>
+                <div class="mt-1 flex flex-inline items-center">
+                  {{ pw_form.oldpassword }}
+                  <i class="far fa-eye-slash -ms-8" id="togglePassword1"></i>
                 </div>
               </div>
-              <div class="mt-1 flex flex-row items-center">
-                {{ pw_form.password1 }}
-                <i class="far fa-eye-slash -ms-8" id="togglePassword1"></i>
-              </div>
-            </div>
-            <div>
-              <div class="flex items-center justify-between">
-                <label for="password2"
-                  class="block text-sm font-medium leading-6 text-gray-900">
-                  {{ pw_form.password2.label }}
-                </label>
-                <div id="password2-errors" class="text-sm text-red-500">
-                  {{ pw_form.errors.password2 }}
+
+              <div class="mt-2">
+                <div class="flex flex-column">
+                  <label for="password1"
+                    class="block font-medium text-gray-900">
+                    {{ pw_form.password1.label }}
+                  </label>
+                  <div id="password1-errors" class="text-sm text-red-500">
+                    {{ pw_form.errors.password1 }}
+                  </div>
+                </div>
+                <div class="mt-1 flex flex-row items-center">
+                  {{ pw_form.password1 }}
+                  <i class="far fa-eye-slash -ms-8" id="togglePassword2"></i>
                 </div>
               </div>
-              <div class="mt-1 flex items-center">
-                {{ pw_form.password2 }}
-                <i class="far fa-eye-slash -ms-8" id="togglePassword2"></i>
+              <div class="mt-2">
+                <div class="flex flex-column">
+                  <label for="password2"
+                    class="block font-medium text-gray-900">
+                    {{ pw_form.password2.label }}
+                  </label>
+                  <div id="password2-errors" class="text-sm text-red-500">
+                    {{ pw_form.errors.password2 }}
+                  </div>
+                </div>
+                <div class="mt-1 flex items-center">
+                  {{ pw_form.password2 }}
+                  <i class="far fa-eye-slash -ms-8" id="togglePassword3"></i>
+                </div>
+              </div>
+              <div class="mt-3 inline-flex">
+                {% element button type="submit" name="submit_change_pw" %}
+                  {% trans "Change Password" %}
+                {% endelement %}
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <hr class="mt-4 w-1/2">
+
+        <section class="flex flex-column mt-4">
+          <div>
+            <h2 class="text-xl font-semibold">
+              Change your email
+            </h2>
+            {% if messages %}
+              <div class="">
+                {% for message in messages %}
+                  {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS and "email_verification_message" in message.extra_tags %}
+                    <div>{{ message }}</div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+            <div class="mt-2 flex flex-col">
+              Current email
+              <div class="font-semibold">
+                {{ current_email }}
               </div>
             </div>
-            <div class="mt-2 w-[75px]">
-              {% element button type="submit" %}
-                {% trans "Change" %}
-              {% endelement %}
-            </div>
 
+            <form class="mt-2" action="" method="post">
+              {% csrf_token %}
+              <div class="flex flex-col justify-start w-1/3">
+                <label for="email"
+                  class="flex text-nowrap justify-start text-gray-900 mb-1">
+                  New email
+                </label>
+                <div id="email-errors" class="text-sm text-red-500">
+                  {{ email_form.errors.email }}
+                </div>
+                {{ email_form.email }}
+              </div>
+              <div class="mt-3 inline-flex">
+                {% element button type="submit" name="submit_change_email" %}
+                  {% trans "Change Email" %}
+                {% endelement %}
+              </div>
+            </form>
+          </div>
+        </section>
 
-          </form>
-        </div>
-      </section>
-      <section class="flex flex-column mt-4 w-1/3">
-        <h2 class="text-lg font-semibold">
-          Change email
-        </h2>
-        <div>
-          {{ email_form }}
-        </div>
-      </section>
-
+      </div>
     </div>
   </div>
+
+  <script>
+      const password1 = document.getElementById('id_oldpassword');
+      const password2 = document.getElementById('id_password1');
+      const password3 = document.getElementById('id_password2');
+      const togglePassword1 = document.getElementById('togglePassword1');
+      const togglePassword2 = document.getElementById('togglePassword2');
+      const togglePassword3 = document.getElementById('togglePassword3');
+
+        togglePassword1.addEventListener('click', (e) => {
+          e.preventDefault();
+          const type = password1.getAttribute('type') === 'password' ? 'text' : 'password';
+          password1.setAttribute('type', type);
+          // toggle the eye / eye slash icon
+          togglePassword1.classList.toggle('fa-eye-slash');
+          togglePassword1.classList.toggle('fa-eye');
+      });
+
+      togglePassword2.addEventListener('click', (e) => {
+          e.preventDefault();
+          const type = password2.getAttribute('type') === 'password' ? 'text' : 'password';
+          password2.setAttribute('type', type);
+          // toggle the eye / eye slash icon
+          togglePassword2.classList.toggle('fa-eye-slash');
+          togglePassword2.classList.toggle('fa-eye');
+      });
+
+      togglePassword3.addEventListener('click', (e) => {
+          e.preventDefault();
+          const type = password3.getAttribute('type') === 'password' ? 'text' : 'password';
+          password3.setAttribute('type', type);
+          // toggle the eye / eye slash icon
+          togglePassword3.classList.toggle('fa-eye-slash');
+          togglePassword3.classList.toggle('fa-eye');
+      });
+
+  </script>
 {% endblock %}
-</div>
 
