@@ -1,24 +1,3 @@
-function setUpSurveyNavigation() {
-    // Set-up the on-page back button
-    const element = document.getElementById('prev-building-link');
-
-    // Provide a standard href to facilitate standard browser features such as 
-    //  - Hover to see link
-    //  - Right click and copy link
-    //  - Right click and open in new tab
-    element.setAttribute('href', document.referrer);
-
-    // We can't let the browser use the above href for navigation. If it does, 
-    // the browser will think that it is a regular link, and place the current 
-    // page on the browser history, so that if the user clicks "back" again,
-    // it'll actually return to this page. We need to perform a native back to
-    // integrate properly into the browser's history behavior
-    element.onclick = function () {
-        history.back();
-        return false;
-    }
-}
-
 function getLatestViewData() {
     // Get the latest view data from streetview
     const sv_pov = sv.getPov();
@@ -36,7 +15,7 @@ function getLatestViewData() {
 
 // Tried to replace with the faster https://github.com/tsayen/dom-to-image 
 // but failed due to this error https://github.com/tsayen/dom-to-image/issues/205
-// Since google maps loads the stylesheet, I can't add crossorigin="anonymous" to it.
+// Since Google Maps loads the stylesheet, I can't add crossorigin="anonymous" to it.
 async function screenshot(element_id) {
     return html2canvas(
         document.getElementById(element_id), {
@@ -49,7 +28,7 @@ async function screenshot(element_id) {
                 || el.getAttribute('title') === "Open this area in Google Maps (opens a new window)"
                 || el.id === 'sv-top-right-controls-container';
 
-            // Addtionally remove the red pin for the streetview (but keep it for satellite)
+            // Additionally remove the red pin for the streetview (but keep it for satellite)
             if (element_id === 'streetview') {
                 return condition
                     ||= el.getAttribute('src') === 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3_hdpi.png'
@@ -148,7 +127,7 @@ function setUpDragBar() {
 
 function getCookie(name) {
     var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
+    if (document.cookie && document.cookie !== '') {
         var cookies = document.cookie.split(';');
         for (var i = 0; i < cookies.length; i++) {
             var cookie = jQuery.trim(cookies[i]);
@@ -230,7 +209,7 @@ function setUpButtons() {
         if (!form.checkValidity()) {
             // Create the temporary button, click and remove it
             // This makes the validation comments appear on screen
-            var tmpSubmit = document.createElement('button');
+            const tmpSubmit = document.createElement('button');
             form.appendChild(tmpSubmit);
             tmpSubmit.click();
             form.removeChild(tmpSubmit);
@@ -244,8 +223,7 @@ function setUpButtons() {
                 await screenshotStreetview(e);
             }
             // Set the latest view data in the form
-            const latest_view_data = JSON.stringify(getLatestViewData());
-            document.getElementById('latest_view_data').value = latest_view_data;
+            document.getElementById('latest_view_data').value = JSON.stringify(getLatestViewData());
             form.submit();
         }
     });
@@ -327,7 +305,7 @@ function setUpSatelliteImageObserver() {
 
 
 /**
- * Setup an event listener to take a screenshot of the satellite view
+ * Set up an event listener to take a screenshot of the satellite view
  * and save it in a hidden element on the page.
  * A mutation observer on the storage element will handle uploading it. 
  */
@@ -353,13 +331,13 @@ function setUpInitialSurveyMutationChecker() {
         for (const mutation of mutationList) {
             if (mutation.target.nodeName === 'INPUT') {
                 if (!allInputsEmpty()) {
-                    console.debug('Detected form input mutation, with some inputs filled. Trigerring upload.')
+                    console.debug('Detected form input mutation, with some inputs filled. Triggering upload.')
                     const target = document.getElementById('sat_data');
                     const uploadURL = document.getElementById("upload_url").getAttribute("data-url");
                     uploadSatelliteImage(target, uploadURL, "dummy old value");
                     // Only execute this observer the first time an input is changed
                     observer.disconnect();
-                    // don't process any other accompagnying mutations
+                    // don't process any other accompanying mutations
                     // e.g. on radio + text/number inputs
                     return;
                 }
@@ -379,7 +357,6 @@ function setStreetviewAndMapContainerHeight() {
 
 document.addEventListener("DOMContentLoaded", function () {
     setStreetviewAndMapContainerHeight();
-    setUpSurveyNavigation();
     setUpDragBar();
     setUpScrollHeightObserver();
     setUpButtons();

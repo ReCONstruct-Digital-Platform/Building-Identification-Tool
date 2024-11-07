@@ -19,7 +19,7 @@ from buildings.models.models import EvalUnit, EvalUnitSatelliteImage, EvalUnitSt
 log = logging.getLogger(__name__)
 
 # Modify or add new image sizes here
-IMAGE_SIZES = [('l', 1200), ('m', 700), ('s', 300)]
+IMAGE_SIZES = [('orig', None), ('l', 1200), ('m', 700), ('s', 300)]
 
 # Each job can have multiple MB image data
 MAX_JOBS_LOADED = 10
@@ -41,7 +41,7 @@ def process_job(job: UploadImageJob):
 
     # create 2 UUIDs to be shared by images of the same type
     # We consider streetview and satellite images separately bc
-    # there will usually be more streetview images than sartellite
+    # there will usually be more streetview images than satellite
     # due to there being multiple interesting angles of a building facade
     UUIDs = {
         'streetview': uuid7str(),
@@ -70,19 +70,22 @@ def process_job(job: UploadImageJob):
             # we won't save the link in the DB. On the other hand, if 
             # we have a link in the DB, we know that all sizes exist.
             # This could result in stranded images in B2 if only some uploads fail.
-            for format, size in IMAGE_SIZES: 
-                # Resize the image, maintaining the aspect ratio
-                image.thumbnail((size, size))
+            for image_size, image_length in IMAGE_SIZES:
+
+                if image_size != 'orig':
+                    # Resize the image, maintaining the aspect ratio
+                    image.thumbnail((image_length, image_length))
+
                 # Create an in memory file to temporarily store the image
                 in_mem_file = io.BytesIO()
                 image.save(in_mem_file, format='jpeg')
                 in_mem_file.seek(0)
 
-                log.debug(f'Screenshot {uuid}: uploading {image_type} format {format} of size {image.size}')
+                log.debug(f'Screenshot {uuid}: uploading {image_type} format {image_size} of size {image.size}')
                 # Try to upload the image
                 b2_upload.upload_image(
                     in_mem_file,
-                    f"screenshots/{image_type}/{format}/{uuid}.jpg",
+                    f"screenshots/{image_type}/{image_size}/{uuid}.jpg",
                     extra_args
                 )
 
@@ -91,9 +94,8 @@ def process_job(job: UploadImageJob):
                 EvalUnitStreetViewImage(eval_unit=job.eval_unit, uuid=uuid, user=job.user).save()
             elif image_type == 'satellite':
                 EvalUnitSatelliteImage(eval_unit=job.eval_unit, uuid=uuid, user=job.user).save()
-            
+            log.info(f'Screenshot {uuid}: successfully uploaded!')
 
-        log.info(f'Screenshot {uuid}: successfully uploaded!')
         # Can't delete the job here - I get
         # ValueError: UploadImageJob object can't be deleted because its id attribute is set to None.
         job.status = UploadImageJob.Status.DONE
@@ -101,7 +103,7 @@ def process_job(job: UploadImageJob):
         job.job_data = {}
         job.save()
         return 0
-    except:
+    except Exception as e:
         log.error(traceback.format_exc())
         job.status = UploadImageJob.Status.ERROR
         job.save()
@@ -113,30 +115,39 @@ def process_job(job: UploadImageJob):
 
 class Command(BaseCommand):
     """
-    This management command is intended to run as an always-on task in PythonAnywhere.com
-    It loops forever, checking for pending image upload jobs in the database.
+    This management command loops forever, checking for pending image upload jobs in the database.
     """
 
     help = "Check for pending image upload jobs in the DB and process them"
+
+    def add_arguments(self, parser):
+        parser.add_argument('-d', '--delete-jobs',
+                            action="store_true",
+                            default=False,
+                            help='Delete all jobs with status == DONE')
 
     def handle(self, *args, **options):
         
         sleep_time = 1
         num_checks = 0
-        log.info(f"Checking for pending jobs every {sleep_time}s")
+
+        if options['delete_jobs']:
+            # DONE jobs should not have heavy image data anymore
+            # so we can safely load a lot at once
+            jobs = UploadImageJob.objects.filter(status=UploadImageJob.Status.DONE)[:MAX_JOBS_LOADED]
+            jobs.delete()
+            exit(1)
+
 
         while True:
+            log.info(f"Checking for pending jobs every {sleep_time}s (it {num_checks})")
+
             if jobs := get_pending_jobs():
                 log.info(f"Starting processing on {len(jobs)} job{'s' if len(jobs) > 1 else ''}")
 
                 # Process all jobs, deleting successful ones
                 for job in jobs:
                     process_job(job)
-
-                # TODO: Periodic cleanup of images, probably use a scheduled task for this
-                # for job in jobs:
-                #     if job.status == UploadImageJob.Status.DONE:
-                #         job.delete()
 
                 # If pending job found, reset the retry policy to checks every 1s
                 sleep_time = 1

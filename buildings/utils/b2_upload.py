@@ -8,7 +8,7 @@ from pathlib import Path
 from botocore.config import Config
 from botocore.exceptions import ClientError
 
-# from config.settings import B2_APPKEY_RW, B2_BUCKET_IMAGES, B2_ENDPOINT, B2_KEYID_RW
+from config.settings import B2_APPKEY_RW, B2_BUCKET_IMAGES, B2_ENDPOINT, B2_KEYID_RW
 
 # Return a boto3 resource object for B2 service
 def get_b2_resource(endpoint, key_id, application_key):
