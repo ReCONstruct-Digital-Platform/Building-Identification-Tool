@@ -1,5 +1,4 @@
 import json
-import IPython
 import logging
 import botocore
 import traceback

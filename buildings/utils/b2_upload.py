@@ -74,8 +74,3 @@ if __name__=='__main__':
 
     b2 = get_b2_resource(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW)
     c = get_b2_client(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW)
-    
-    import IPython
-    IPython.embed()
-
-

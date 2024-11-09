@@ -1,13 +1,6 @@
-import os
-import re
 import logging
 
-# To debug
-import IPython
-
 from selenium.webdriver.common.by import By
-from selenium.webdriver import firefox, chrome
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 

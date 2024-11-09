@@ -1,4 +1,3 @@
-import code
 from http import HTTPStatus
 from django.test import TestCase, Client
 from buildings.models.models import User, EvalUnit

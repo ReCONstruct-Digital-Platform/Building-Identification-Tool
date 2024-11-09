@@ -1,8 +1,6 @@
 import json
 import traceback
 
-import IPython
-
 from datetime import datetime
 
 from allauth.account.models import EmailAddress

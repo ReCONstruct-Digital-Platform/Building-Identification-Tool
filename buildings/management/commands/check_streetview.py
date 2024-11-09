@@ -13,7 +13,6 @@ Using these coordinates, we will link them to an evaluation unit, by checking th
 """
 import os
 import time
-import IPython
 import django
 import psycopg2
 import traceback
@@ -29,7 +28,6 @@ from django.core.management.base import BaseCommand
 from buildings.utils.utility import NetworkError, split_list_in_n, get_DB_conn, is_streetview_imagery_available
 
 
-from buildings.utils.constants import * 
 from buildings.models import EvalUnit
 
 
