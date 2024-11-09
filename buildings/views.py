@@ -363,7 +363,6 @@ def profile(request):
       new_pw_form = ChangePasswordForm(user=request.user, data=request.POST)
 
       if new_pw_form.is_valid():
-        new_pw = new_pw_form.cleaned_data["password1"]
         new_pw_form.save()
         messages.add_message(request, messages.SUCCESS,
                              f"Successfully changed your password!",

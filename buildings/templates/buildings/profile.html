@@ -11,7 +11,7 @@
         <h1 class="text-4xl font-semibold">
           Update your profile information
         </h1>
-        <section class="flex flex-column mt-4">
+        <section id="section-password-change" class="flex flex-column mt-4">
           <h2 class="text-xl font-semibold">
             Change your password
           </h2>
@@ -73,10 +73,20 @@
                   <i class="far fa-eye-slash -ms-8" id="togglePassword3"></i>
                 </div>
               </div>
+              <input type="hidden" name="submit_change_pw" value="submit_change_pw"/>
               <div class="mt-3 inline-flex">
-                {% element button type="submit" name="submit_change_pw" %}
-                  {% trans "Change Password" %}
-                {% endelement %}
+              <button
+                type="submit"
+                hx-post=""
+                hx-trigger="click"
+                hx-select="#section-password-change"
+                hx-target="#section-password-change"
+                hx-swap="outerHTML"
+                class="bg-teal-600 hover:bg-teal-500 focus-visible:outline-teal-600 flex w-full
+              justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white
+              shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                {% trans "Change password" %}
+              </button>
               </div>
             </form>
           </div>
@@ -84,7 +94,7 @@
 
         <hr class="mt-4 w-1/2">
 
-        <section class="flex flex-column mt-4">
+        <section id="section-email-change" class="flex flex-column mt-4">
           <div>
             <h2 class="text-xl font-semibold">
               Change your email
@@ -117,10 +127,20 @@
                 </div>
                 {{ email_form.email }}
               </div>
+              <input type="hidden" name="submit_change_email" value="submit_change_email"/>
               <div class="mt-3 inline-flex">
-                {% element button type="submit" name="submit_change_email" %}
-                  {% trans "Change Email" %}
-                {% endelement %}
+                <button
+                  type="submit"
+                  hx-post=""
+                  hx-trigger="click"
+                  hx-select="#section-email-change"
+                  hx-target="#section-email-change"
+                  hx-swap="outerHTML"
+                  class="bg-teal-600 hover:bg-teal-500 focus-visible:outline-teal-600 flex w-full
+                justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white
+                shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                {% trans "Change Email" %}
+              </button>
               </div>
             </form>
           </div>
@@ -129,7 +149,6 @@
       </div>
     </div>
   </div>
-
   <script>
       const password1 = document.getElementById('id_oldpassword');
       const password2 = document.getElementById('id_password1');
