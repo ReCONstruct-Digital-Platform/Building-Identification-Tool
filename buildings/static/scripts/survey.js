@@ -26,7 +26,9 @@ async function screenshot(element_id) {
             let condition = el.classList.contains("gmnoprint") || el.classList.contains("gm-style-cc")
                 || el.id === 'gmimap1' || el.tagName === 'BUTTON' || el.classList.contains("gm-iv-address")
                 || el.getAttribute('title') === "Open this area in Google Maps (opens a new window)"
-                || el.id === 'sv-top-right-controls-container';
+                || el.id === 'sv-top-right-controls-container' || el.id === 'unit-info'
+                // Lot polygon corner markers
+                || (el.nodeName === 'CANVAS' && el.getAttribute('width') === "32" && el.getAttribute('height') === "36");
 
             // Additionally remove the red pin for the streetview (but keep it for satellite)
             if (element_id === 'streetview') {
@@ -40,10 +42,10 @@ async function screenshot(element_id) {
         },
     }
     ).then(canvas => {
-        // // Uncomment for testing - appends the images to the page
-        // document.body.style.overflowY = 'scroll';
-        // document.body.style.height = '100%';
-        // document.getElementById('test-screenshots-container').appendChild(canvas);
+        // Uncomment for testing - appends the images to the page
+        document.body.style.overflowY = 'scroll';
+        document.body.style.height = '100%';
+        document.getElementById('test-screenshots-container').appendChild(canvas);
 
         // Convert the image to a dataURL for uploading to the backend
         return canvas.toDataURL('image/png');
