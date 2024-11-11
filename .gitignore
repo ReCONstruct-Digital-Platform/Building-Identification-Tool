@@ -6,7 +6,7 @@ output/
 data/*
 !data/public
 .idea/
-
+CACHE/
 **/__pycache__/
 *db.sqlite*
 
