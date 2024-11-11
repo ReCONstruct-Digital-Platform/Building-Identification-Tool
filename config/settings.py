@@ -84,6 +84,16 @@ STATIC_URL = env("STATIC_URL")
 
 STATIC_ROOT = env("STATIC_ROOT")
 
+STATICFILES_FINDERS = (
+    # default
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    # other finders
+    'compressor.finders.CompressorFinder',
+)
+
+COMPRESS_ENABLED = False
+
 TAILWIND_APP_NAME = "theme"
 NPM_BIN_PATH = env("NPM_BIN_PATH")
 
@@ -139,6 +149,7 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "mailer",
+    "compressor",
 ]
 
 

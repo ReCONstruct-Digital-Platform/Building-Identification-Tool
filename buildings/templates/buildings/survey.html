@@ -2,7 +2,8 @@
 
 {% block content %}
 
-  {% load humanize %}
+{% load humanize %}
+{% load compress %}
 
   <link rel="stylesheet"
         type="text/css"
@@ -523,7 +524,6 @@
           v: "3.58",
       });
   </script>
-  <script async src="{% static 'scripts/html2canvas.min.js' %}"></script>
   
   <!-- Hack to augment the creation of all WebGL contexts with preserveDrawingBuffer=true -->
   <!-- This is done so we can take a screenshot with html2canvas -->
@@ -540,8 +540,11 @@
       };
     }(HTMLCanvasElement.prototype.getContext);
   </script>
-  
+
+  {% compress js %}
+  <script defer src="{% static 'scripts/html2canvas.min.js' %}"></script>
   <script defer src="{% static 'scripts/gmaps.js' %}"></script>
-  <script defer src="{% static 'scripts/survey.js' %}"></script>
+  <script defer src="{% static 'scripts/survey.js' %}"></script>  
+  {% endcompress %}
 
 {% endblock page_scripts %}
