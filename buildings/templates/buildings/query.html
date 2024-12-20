@@ -1,0 +1,29 @@
+{% extends "buildings/base.html" %}
+{% load static %}
+{% load i18n %}
+{% load allauth %}
+
+{% block css_imports %}
+  <link rel="stylesheet"
+    type="text/css"
+    href="{% static 'buildings/query-builder.default.css' %}"/>
+{% endblock %}
+
+
+{% block content %}
+  <div class="w-full h-full flex flex-col place-content-center justify-center items-center">
+    <div id="builder" class="flex self-center justify-self-center"></div>
+  <div class="flex w-1/8">
+    {% element button id="submitQueryButton" type="button" %}
+      {% trans "Submit" %}
+    {% endelement %}
+  </div>
+
+  </div>
+{% endblock %}
+
+
+{% block page_scripts %}
+  <script src="{% static 'scripts/query-builder.standalone.js' %}"></script>
+  <script defer src="{% static 'scripts/query.js' %}"></script>
+{% endblock %}

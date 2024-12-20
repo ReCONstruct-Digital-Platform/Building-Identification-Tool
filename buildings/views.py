@@ -20,6 +20,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.core.serializers import serialize
 
 from buildings.forms import ChangeEmailForm, ChangePasswordForm
+from buildings.models import Dataset
 from buildings.models.surveys import SurveyV1Form
 from buildings.utils.constants import CUBF_TO_NAME_MAP
 from buildings.models.models import (
@@ -151,6 +152,26 @@ def survey(_):
   random_unscored_unit = EvalUnit.objects.get_next_unit_to_survey()
   eval_unit_id = random_unscored_unit.id
   return redirect("buildings:survey_v1", eval_unit_id=eval_unit_id)
+
+
+@login_required(login_url="account_login")
+def query(request, dataset_id):
+
+  # Validate dataset id
+  dataset = get_object_or_404(Dataset, name=dataset_id)
+
+  print(dataset.schema)
+
+  if request.method == "POST":
+    query = json.loads(request.body)
+    print(query)
+
+  context = {
+    "dataset_name": dataset.name,
+    "schema": dataset.schema,
+  }
+  return render(request, "buildings/query.html", context)
+
 
 
 @login_required(login_url="account_login")

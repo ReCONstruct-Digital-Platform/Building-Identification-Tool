@@ -7,14 +7,21 @@ from allauth.account.admin import EmailAddress
 
 
 def forward_verify_emails_of_all_existing_users(apps, schema_editor):
-    users = User.objects.all()
+    users = User.objects.all().order_by("-date_joined")
+    seen_emails = set()
     for u in users:
-        print(u.id, u.username, u.email)
+        print(u.id, u.username, u.email, u.date_joined)
+        if u.email in seen_emails:
+            print(f"Already seen: {u.email}")
+            u.delete()
+            continue
+
         if u.email is not None and u.email != "":
             e = EmailAddress.objects.get_or_create(user=u, email=u.email)[0]
             e.verified = True
             try:
                 e.save()
+                seen_emails.add(u.email)
             except Exception as e:
                 print(e)
 
