@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from django.db.models import Q
 from functools import reduce
+from typing import Callable
 
 """
 Inspired by 
@@ -20,6 +21,8 @@ class Op:
 
 OPERATORS = {
   # We could use the contains json operator for this, as it can use indexes
+  # If top-level field, use exact
+  # If JSON attrs field, use contains and reshape value as JSON object
   'equal': Op('exact'),
   'not_equal': Op('exact', True),
   'less': Op('lt'),
@@ -46,22 +49,49 @@ CONDITION_LAMBDAS = {
   'AND': lambda a, b: a & b
 }
 
+TOP_LEVEL_FIELDS = {"address", "muni"}
+
 
 class QParser(object):
 
-  @classmethod
-  def parse_query(cls, query: dict) -> Q:
+  def __init__(self, schema, top_level_fields, json_field_name = "attrs"):
+    self.schema = schema
+    self.top_level_fields = set(top_level_fields)
+    self.json_field_name = json_field_name
+
+  def parse_query(self, query: dict) -> Q:
     """
     Parse a querybuilder query JSON into an aggregate Q object
     """
     rules = query['rules']
-    rules_q_objects = cls.parse_rules(rules)
+    rules_q_objects = self.parse_rules(rules)
     condition = query['condition'].upper()
 
     return reduce(CONDITION_LAMBDAS[condition], rules_q_objects)
 
+  def get_q_args(self, rule, operator) -> dict:
+    field = rule['field']
+    if field in TOP_LEVEL_FIELDS:
+      return {
+        f"{field}__{operator.text}": rule['value']
+      }
+    else:
+      # Else JSON, with a special case for equal
+      if operator.text == "equal":
+        json_field, json_inner_field = field.split("_")
+        # Optimization to use any GIN indexes
+        return {
+          f"{json_field}__contains": {json_inner_field: rule['value']}
+        }
+      else:
+        return {
+          f"{field}__{operator.text}": rule['value']
+        }
 
-  @classmethod
+
+    return {}
+
+
   def parse_rules(cls, rules: list) -> list[Q]:
     """
     Returns a list of Q objects to be merged at a higher level using the condition
@@ -88,10 +118,8 @@ class QParser(object):
         if rule_operator not in OPERATORS:
           raise NotImplementedError
 
-        operator: Op = OPERATORS[rule_operator]
-        rule_q = Q(**{
-          f"{rule['field']}__{operator.text}": rule['value']
-        })
+        q_args = cls.get_q_args(rule, rule_operator)
+        rule_q = Q(**q_args)
 
         if operator.negated:
           q_objects.append(~rule_q)

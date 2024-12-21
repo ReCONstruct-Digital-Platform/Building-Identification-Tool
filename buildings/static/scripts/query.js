@@ -27,9 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       {
         id: '2',
-        field: 'my second field',
-        label: 'my second label',
-        type: 'integer',
+        field: 'attrs_const_yr',
+        label: 'Construction Year',
+        type: 'datetime',
         input: 'number',
       }
     ]
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log(rules);
 
     // Upload new satellite image
-    fetch('query', {
+    fetch('ds1', {
         method: "POST",
         mode: "same-origin",
         cache: "no-cache",
