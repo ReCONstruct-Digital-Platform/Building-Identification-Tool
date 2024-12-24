@@ -1,0 +1,207 @@
+import json
+import math
+import traceback
+import IPython
+import argparse
+import psycopg2
+
+from tqdm import tqdm
+from dotenv import dotenv_values
+from django.contrib.gis.geos import Point
+from psycopg2.extras import execute_values
+from django.core.management.base import BaseCommand
+from buildings.models.newmodels import Building, Dataset
+
+# Read in the database configuration from a .env file
+ENV = dotenv_values(".env")
+
+
+EVALUNITS_TABLE = "evalunits"
+BUILDINGS_TABLE = "buildings"
+HLM_TABLE = "hlms"
+
+
+SQL_UPSERT_BUILDING = f"""INSERT INTO {BUILDINGS_TABLE} 
+        (ext_id, lat, lng, point, dataset, address, street_name, street_num, street_num2,
+        apt_num, apt_num_2, muni, submuni, postal_code, const_year, num_floors, floor_area, attrs) 
+    VALUES %s
+    ON CONFLICT (lat, lng, dataset, address) DO UPDATE SET
+        ext_id = EXCLUDED.ext_id, lat = EXCLUDED.lat, lng = EXCLUDED.lng, point = EXCLUDED.point, dataset = EXCLUDED.dataset, address = EXCLUDED.address, street_name = EXCLUDED.street_name, street_num = EXCLUDED.street_num, street_num2 = EXCLUDED.street_num2, apt_num = EXCLUDED.apt_num, apt_num_2 = EXCLUDED.apt_num_2, muni = EXCLUDED.muni, submuni = EXCLUDED.submuni, postal_code = EXCLUDED.postal_code, const_year = EXCLUDED.const_year, num_floors = EXCLUDED.num_floors, floor_area = EXCLUDED.floor_area, attrs = EXCLUDED.attrs"""
+
+SQL_UPSERT_BUILDING_TEMPLATE = f"""(%(ext_id)s, %(lat)s, %(lng)s, %(point)s, %(dataset)s, %(address)s, %(street_name)s, %(street_num)s, %(street_num2)s, %(apt_num)s, %(apt_num_2)s, %(muni)s, %(submuni)s, %(postal_code)s, %(const_year)s, %(num_floors)s, %(floor_area)s, %(attrs)s)"""
+
+
+def upsert_evalunits(dry_run=True):
+
+    from_db = psycopg2.connect(
+        user="bitdbuser",
+        password="new_password",
+        host="127.0.0.1",
+        port=5432,
+        database="bitdb4",
+    )
+    # Do stuff inside the context manager block
+    from_cur = from_db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    to_db = psycopg2.connect(
+        user=ENV["POSTGRES_USER"],
+        password=ENV["POSTGRES_PW"],
+        database=ENV["POSTGRES_NAME"],
+        port=5433,
+    )
+    to_cur = to_db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    print(f"Upserting evalunits from local DB to prod")
+
+    from_cur.execute(
+        f"""
+        SELECT count(*) 
+        FROM {EVALUNITS_TABLE} e
+        INNER JOIN {HLM_TABLE} h ON
+            e.id = h.eval_unit_id
+    """
+    )
+    num_units = from_cur.fetchone()["count"]
+
+    NUM_CHUNKS = 10
+    chunk_length = math.ceil(num_units / NUM_CHUNKS)
+
+    # TODO: Create dataset first
+
+    for offset in tqdm(
+        range(0, num_units, chunk_length),
+        desc="Upsert Buildings from EvalUnits",
+    ):
+        try:
+            from_cur.execute(
+                f"""SELECT 
+                    h.id as id, h.lat as lat, h.lng as lng, h.point as point, 
+                    h.address as address, 
+                    h.street_name as street_name, 
+                    h.street_num as street_num, 
+                    h.muni as muni, 
+                    e.arrond as submuni,
+                    h.postal_code as postal_code,
+                    h.num_dwellings as num_dwellings, 
+                    h.num_floors as num_floors, 
+                    e.floor_area as floor_area, 
+                    e.const_yr as const_yr,
+                    h.project_id as project_id, 
+                    h.organism as organism, 
+                    h.service_center as service_center, 
+                    h.area_footprint as area_footprint, 
+                    h.area_total as area_total, 
+                    h.ivp as ivp, 
+                    h.disrepair_state as disrepair_state, 
+                    h.interest_adjust_date as interest_adjust_date, 
+                    h.contract_end_date as contract_end_date, 
+                    h.category as category, 
+                    h.building_id as building_id,
+                    e.phys_link as phys_link, 
+                    e.const_type as const_type, 
+                    e.owner_date as owner_date, 
+                    e.owner_type as owner_type, 
+                    e.owner_status as owner_status, 
+                    e.lot_lin_dim as lot_lin_dim, 
+                    e.lot_area as lot_area, 
+                    e.apprais_date as apprais_date, 
+                    e.lot_value as lot_value, 
+                    e.building_value as building_value, 
+                    e.value as value, 
+                    e.prev_value as prev_value 
+                FROM {EVALUNITS_TABLE} e
+                INNER JOIN {HLM_TABLE} h ON
+                    e.id = h.eval_unit_id
+                ORDER BY e.id DESC
+                LIMIT {chunk_length} offset {offset}
+            """
+            )
+            unit_batch = from_cur.fetchall()
+
+            buildings_to_write = []
+
+            # Convert to new model
+            for unit in unit_batch:
+
+                attrs = {
+                    "organism": unit["organism"],
+                    "service_center": unit["service_center"],
+                    "area_footprint": unit["area_footprint"],
+                    "area_total": unit["area_total"],
+                    "ivp": unit["ivp"],
+                    "disrepair_state": unit["disrepair_state"],
+                    "interest_adjust_date": unit["interest_adjust_date"],
+                    "contract_end_date": unit["contract_end_date"],
+                    "category": (
+                        unit["category"].lower().capitalize()
+                        if unit["category"]
+                        else None
+                    ),
+                    "building_id": unit["building_id"],
+                    "phys_link": unit["phys_link"],
+                    "const_type": unit["const_type"],
+                    "owner_date": unit["owner_date"],
+                    "owner_type": unit["owner_type"],
+                    "owner_status": unit["owner_status"],
+                    "lot_lin_dim": unit["lot_lin_dim"],
+                    "lot_area": unit["lot_area"],
+                    "apprais_date": unit["apprais_date"],
+                    "lot_value": unit["lot_value"],
+                    "building_value": unit["building_value"],
+                    "value": unit["value"],
+                    "prev_value": unit["prev_value"],
+                }
+
+                new_model = {
+                    "ext_id": unit["id"],
+                    "lat": unit["lat"],
+                    "lng": unit["lng"],
+                    "point": unit["point"],
+                    "address": unit["address"],
+                    "street_name": unit["street_name"],
+                    "street_num": unit["street_num"],
+                    "muni": unit["muni"],
+                    "submuni": unit["submuni"],
+                    "postal_code": unit["postal_code"],
+                    "const_year": unit["const_yr"],
+                    "num_floors": unit["num_floors"],
+                    "floor_area": unit["floor_area"],
+                    "attrs": json.dumps(attrs, ensure_ascii=False, default=str),
+                    "dataset": Dataset.objects.get(pk=1),
+                }
+
+                buildings_to_write.append(Building(**new_model))
+
+            Building.objects.bulk_create(
+                buildings_to_write,
+                update_conflicts=True,
+                unique_fields=["ext_id", "lat", "lng", "address", "muni"],
+                update_fields=[
+                    "ext_id", "lat", "lng", "point", "address", "street_name", "street_num", "muni", "submuni", "postal_code", "const_year", "num_floors", "floor_area", "attrs", "dataset",
+                ],
+            )
+            if not dry_run:
+                from_db.commit()
+
+        except KeyboardInterrupt:
+            print("Interrupt received")
+            exit()
+        except:
+            print(traceback.format_exc())
+            # IPython.embed()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="DANGER: Modify prob DB directly")
+
+    args = parser.parse_args()
+
+
+class Command(BaseCommand):
+    help = "Create new models from old evalunits"
+
+    def add_arguments(self, parser):
+        parser.add_argument("-dr", "--dry-run", action="store_true", default=True)
+
+    def handle(self, *args, **options):
+        upsert_evalunits(dry_run=options["dry_run"])
