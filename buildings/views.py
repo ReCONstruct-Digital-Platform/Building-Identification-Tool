@@ -21,6 +21,7 @@ from django.core.serializers import serialize
 
 from buildings.forms import ChangeEmailForm, ChangePasswordForm
 from buildings.models import Dataset
+from buildings.models.newmodels import Building
 from buildings.models.surveys import SurveyV1Form
 from buildings.utils.constants import CUBF_TO_NAME_MAP
 from buildings.models.models import (
@@ -33,6 +34,8 @@ from buildings.models.models import (
   Vote,
 )
 import logging
+
+from buildings.utils.query_utils import QParser
 
 log = logging.getLogger(__name__)
 
@@ -155,20 +158,38 @@ def survey(_):
 
 
 @login_required(login_url="account_login")
-def query(request, dataset_id):
+def datasets(request):
 
-  # Validate dataset id
-  dataset = get_object_or_404(Dataset, name=dataset_id)
+  datasets = Dataset.objects.all()
+  print(datasets)
+  context = {
+    "datasets": datasets
+  }
+  return render(request, "buildings/datasets.html", context)
 
-  print(dataset.schema)
+
+@login_required(login_url="account_login")
+def query(request, dataset_slug):
+
+  # Get the dataset by slug
+  dataset = get_object_or_404(Dataset, slug=dataset_slug)
+
+  from pprint import pformat
 
   if request.method == "POST":
     query = json.loads(request.body)
-    print(query)
+    log.debug(pformat(query))
+    parser = QParser(schema = dataset.schema)
+    q = parser.parse_query(query)
+    log.debug(q)
+    buildings = Building.objects.filter(dataset_id = dataset.id).filter(q)
+
+    print(buildings.query)
+    print(buildings.count())
 
   context = {
     "dataset_name": dataset.name,
-    "schema": dataset.schema,
+    "querybuilder_filters": dataset.schema,
   }
   return render(request, "buildings/query.html", context)
 

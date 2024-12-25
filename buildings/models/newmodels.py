@@ -8,8 +8,9 @@ class Dataset(models.Model):
     class Meta:
         db_table = "datasets"
 
-    # internal ID
     name = models.TextField()
+    description = models.TextField()
+
     slug = AutoSlugField(populate_from='name')
     # Contains the schema of both the static and dynamic fields of 
     # the associated models. Static fields that are not present are null.
@@ -81,16 +82,15 @@ class Survey(models.Model):
         db_table = "surveys"
 
     name = models.TextField()
+    description = models.TextField()
+
     # Survey schema is a mapping of field_name -> (question_text, type)
     schema = JSONField()
     # Upstream dataset
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
 
-    # TODO: Might be able to combine data_filter and attrs_filter
-    # Filter on the upstream dataset's columns
-    data_filter = models.JSONField(null=True, blank=True)
-    # Filter on the upstream dataset json attributes
-    attrs_filter = models.JSONField(null=True, blank=True)
+    # Filter on the upstream dataset's columns and json attributes
+    dataset_filter = models.JSONField(null=True, blank=True)
     # Filter on any existing survey results for the dataset
     # a mapping of survey_id -> {[survey_field]: [conditions]}
-    s_filter = models.JSONField(null=True, blank=True)
+    surveys_filter = models.JSONField(null=True, blank=True)

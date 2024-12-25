@@ -661,12 +661,6 @@ tr:hover .delete-row-icon {
   border-color: rgb(255, 255, 255);
 }
 
-
-/* #building-submission-form input[type="radio"] {
-  color: rgb(45, 127, 120); 
-  accent-color: rgb(45, 127, 120);
+label {
+  margin: 2px 5px;
 }
-
-#building-submission-form input[type="radio"]:focus {
-  border-color: rgb(45, 127, 120); 
-} */

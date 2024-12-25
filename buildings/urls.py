@@ -26,5 +26,6 @@ urlpatterns = [
     path("survey/v1/<str:eval_unit_id>", views.survey_v1, name="survey_v1"),
     path("upload_imgs/<str:eval_unit_id>", views.upload_imgs, name="upload_imgs"),
     path("profile", views.profile, name="profile"),
-    path("query/<str:dataset_id>", views.query, name="query"),
+    path("query/<str:dataset_slug>", views.query, name="query"),
+    path("datasets", views.datasets, name="datasets"),
 ]
