@@ -1,0 +1,227 @@
+{% extends "buildings/base.html" %}
+{% load static %}
+{% load i18n %}
+{% load allauth %}
+
+{% block css_imports %}
+<link rel="stylesheet" type="text/css" href="{% static 'buildings/query-builder.default.css' %}" />
+<link rel="stylesheet" type="text/css"
+  href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker3.standalone.min.css" />
+{% endblock %}
+
+
+{% block content %}
+<div class="max-w-[75%] mx-auto py-16 sm:py-48 lg:py-16">
+  <div class="flex flex-column bg-white bg-opacity-50 py-3 px-5 rounded-md text-md">
+
+    <h1 class="text-4xl font-semibold py-2">
+      Creating survey on Dataset {{ dataset.name }}
+    </h1>
+
+    <div class="w-1/2 py-2">
+      <hr>
+    </div>
+
+    <section id="data-filter">
+
+      <div class="text-2xl">Dataset filter</div>
+      <p>Filter the input dataset buildings to survey</p>
+
+      <div class="block w-2/3 py-2">
+        <div id="query-builder-dataset" class="col-start-2 col-span-6">
+        </div>
+      </div>
+    </section>
+
+    <section id="surveys-filter">
+
+      <div class="text-2xl">Surveys filter</div>
+      <p>Filter the input to your survey on previous survey results. Your survey's target population will be updated as
+        the upstream surveys get new responses.</p>
+      <div class="block w-2/3 py-2">
+        <div id="query-builder-surveys" class="col-start-2 col-span-6">
+        </div>
+      </div>
+    </section>
+
+    <section id="survey-questions">
+      <div class="text-2xl">Surveys filter</div>
+      <p>Add questions to your survey</p>
+      <div>
+        TODO
+      </div>
+    </section>
+    <div class="block w-[75px]">
+      {% element button id="submitQueryButton" type="button" %}
+      {% trans "Submit" %}
+      {% endelement %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+
+{% block page_scripts %}
+{{ dataset_filters | json_script:"dataset_filters" }}
+{{ survey_filters | json_script:"survey_filters" }}
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
+<script src="{% static 'scripts/query-builder.standalone.js' %}"></script>
+<script defer>
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const dataset_filters = JSON.parse(
+      document.getElementById("dataset_filters").textContent
+    );
+    const survey_filters = JSON.parse(
+      document.getElementById("survey_filters").textContent
+    );
+
+    console.log(survey_filters)
+    const datasetQueryBuilderId = "#query-builder-dataset"
+    const surveyQueryBuilderId = "#query-builder-surveys"
+
+
+    // Fix for Bootstrap Datepicker
+    $(datasetQueryBuilderId).on(
+      "afterUpdateRuleValue.queryBuilder",
+      function (e, rule) {
+        if (rule.filter.plugin === "datepicker") {
+          rule.$el.find(".rule-value-container input").datepicker("update");
+        }
+      }
+    );
+
+    $(datasetQueryBuilderId).queryBuilder({
+      optgroups: {
+        core: {
+          en: "Core",
+        },
+        attributes: {
+          en: "Attributes",
+        },
+      },
+      operators: [
+        "equal",
+        "not_equal",
+        "less",
+        "less_or_equal",
+        "greater",
+        "greater_or_equal",
+        "between",
+        "not_between",
+        "begins_with",
+        "not_begins_with",
+        "contains",
+        "not_contains",
+        "ends_with",
+        "not_ends_with",
+        "is_null",
+        "is_not_null",
+        "in",
+        "not_in",
+      ],
+      filters: dataset_filters,
+      // rules: {
+      //   condition: "AND",
+      //   rules: [
+      //     {
+      //       id: "const_year",
+      //       field: "const_year",
+      //       type: "date",
+      //       input: "text",
+      //       operator: "between",
+      //       value: [1950, 2000],
+      //     },
+      //     {
+      //       condition: "OR",
+      //       rules: [
+      //         {
+      //           id: "num_floors",
+      //           field: "num_floors",
+      //           type: "integer",
+      //           input: "number",
+      //           operator: "greater",
+      //           value: 1,
+      //           validation: { min: 0 },
+      //         },
+      //         {
+      //           id: "attrs__phys_link",
+      //           field: "attrs__phys_link",
+      //           type: "string",
+      //           input: "text",
+      //           operator: "in",
+      //           value: ["semi-detached", "row house"],
+      //         },
+      //       ],
+      //     },
+      //   ],
+      //   valid: true,
+    });
+
+
+    $(surveyQueryBuilderId).queryBuilder({
+      optgroups: survey_filters['optgroups'],
+      operators: [
+        "equal",
+        "not_equal",
+        "less",
+        "less_or_equal",
+        "greater",
+        "greater_or_equal",
+        "between",
+        "not_between",
+        "begins_with",
+        "not_begins_with",
+        "contains",
+        "not_contains",
+        "ends_with",
+        "not_ends_with",
+        "is_null",
+        "is_not_null",
+        "in",
+        "not_in",
+      ],
+      filters: survey_filters['filters']
+    });
+
+    document
+      .getElementById("submitQueryButton")
+      .addEventListener("click", (e) => {
+        e.preventDefault();
+
+        const datasetRules = $(datasetQueryBuilderId).queryBuilder("getRules", {
+          get_flags: true,
+        });
+        const surveyRules = $(surveyQueryBuilderId).queryBuilder("getRules", {
+          get_flags: true,
+        });
+
+        if (datasetRules === null && surveyRules === null) return;
+
+        console.log(datasetRules);
+        console.log(surveyRules);
+
+        // Upload new satellite image
+        fetch("shq-hlms", {
+          method: "POST",
+          mode: "same-origin",
+          cache: "no-cache",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken"), // So django accepts the request
+          },
+          body: JSON.stringify({ datasetQuery: datasetRules, surveysQuery: surveyRules }),
+        }).then((resp) => {
+          if (resp.status === 200) {
+            console.debug("Query uploaded");
+          } else {
+            console.debug(`ERROR running query ${resp}`);
+          }
+        });
+      });
+  });
+</script>
+{% endblock %}

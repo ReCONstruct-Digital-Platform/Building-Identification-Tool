@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.gis.db import models
 from django.db.models import JSONField
 from django.utils import timezone
@@ -10,6 +11,10 @@ class Dataset(models.Model):
 
     name = models.TextField()
     description = models.TextField()
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
 
     slug = AutoSlugField(populate_from='name')
     # Contains the schema of both the static and dynamic fields of 
@@ -24,7 +29,14 @@ class Dataset(models.Model):
 class Building(models.Model):
     """
     Base building class.
+    The objects of Surveys.
     """
+    # Can be changed without creating a new migration
+    def slugify(instance):
+        fields = [instance.dataset.name, instance.address, instance.submuni, instance.muni]
+        fields = [f for f in fields if f is not None]
+        return " ".join(fields)
+    
     class Meta:
         db_table = "buildings"
         unique_together = ('ext_id', 'lat', 'lng', 'address', 'muni')
@@ -61,12 +73,6 @@ class Building(models.Model):
     # JSONB field to hold an object of dynamic attributes
     attrs = models.JSONField(null=True, blank=True)
 
-    # Can be changed without creating a new migration
-    def slugify(instance):
-        fields = [instance.dataset.name, instance.address, instance.submuni, instance.muni]
-        fields = [f for f in fields if f is not None]
-        return " ".join(fields)
-    
     # User-friendly URL slug
     slug = AutoSlugField(populate_from=slugify)
 
@@ -78,19 +84,76 @@ class Building(models.Model):
 
 
 class Survey(models.Model):
+    """
+    Surveys are linked to a source dataset and target a subset of buildings.
+    The subset of buildings is defined through a filter on the source dataset.
+
+    Sub-surveys are defined by an additional filter on other surveys' responses on 
+    the source dataset's buildings. 
+    """
     class Meta:
         db_table = "surveys"
+        unique_together = ("name", "dataset", "schema", "dataset_filter", "surveys_filter")
 
     name = models.TextField()
     description = models.TextField()
+    slug = AutoSlugField(populate_from='name')
 
-    # Survey schema is a mapping of field_name -> (question_text, type)
-    schema = JSONField()
-    # Upstream dataset
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    def get_target_population():
+        q_buildings = None
+        q_responses = None
+        Building.objects.filter(
+         
+        )
+        pass
+
+    # Source dataset
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
 
     # Filter on the upstream dataset's columns and json attributes
+    # JSON necessary to construct a Q object on the source dataset
     dataset_filter = models.JSONField(null=True, blank=True)
+
+    # Survey schema is a mapping of field_id -> (field_label, type, question_text, widget)
+    schema = JSONField()
+
     # Filter on any existing survey results for the dataset
     # a mapping of survey_id -> {[survey_field]: [conditions]}
     surveys_filter = models.JSONField(null=True, blank=True)
+
+    date_added = models.DateTimeField("date added", default=timezone.now)
+    date_modified = models.DateTimeField("date modified", default=timezone.now)
+
+
+class Response(models.Model):
+    """
+    Response contains the answers to a Survey's questions for a Building, by a User.
+    Has JSON data with an answer for each question in the survey.
+    Since surveys are linked to a source dataset, has a single source dataset as well.
+    """
+
+    class Meta:
+        db_table = "responses"
+        unique_together = ("building", "survey", "created_by")
+    
+    data = models.JSONField()
+    building = models.ForeignKey(
+        Building,
+        on_delete=models.CASCADE
+    )
+    survey = models.ForeignKey(
+        Survey,
+        on_delete=models.CASCADE
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    date_added = models.DateTimeField("date added", default=timezone.now)
+    date_modified = models.DateTimeField("date modified", default=timezone.now)

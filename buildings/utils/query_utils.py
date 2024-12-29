@@ -67,7 +67,8 @@ class QParser(object):
         """
         Parse a querybuilder query JSON into an aggregate Q object
         """
-        query = query["query"]
+        if "query" in query:
+            query = query["query"]
         rules = query["rules"]
         rules_q_objects = self.parse_rules(rules)
         condition = query["condition"].upper()
