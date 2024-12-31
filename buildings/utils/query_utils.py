@@ -14,12 +14,6 @@ class Op:
     text: str
     negated: bool = False
 
-
-# TODO: See date functions
-# Will need the schema of attributes ot know when datetime
-# https://docs.djangoproject.com/en/5.1/ref/models/querysets/#date
-
-
 OPERATORS = {
     # We could use the contains json operator for this, as it can use indexes
     # If top-level field, use exact
@@ -30,12 +24,12 @@ OPERATORS = {
     "greater": Op("gt"),
     "less_or_equal": Op("lte"),
     "greater_or_equal": Op("gte"),
-    "ends_with": Op("endswith"),
-    "begins_with": Op("startswith"),
     "contains": Op("contains"),
     "not_contains": Op("contains", True),
     "is_null": Op("isnull"),
     "is_not_null": Op("isnull", True),
+    "ends_with": Op("endswith"),
+    "begins_with": Op("startswith"),
     "not_ends_with": Op("endswith", True),
     "not_begins_with": Op("startswith", True),
     "in": Op("in"),
@@ -50,7 +44,7 @@ CONDITION_LAMBDAS = {"OR": lambda a, b: a | b, "AND": lambda a, b: a & b}
 
 class QParser(object):
 
-    def __init__(self, schema, json_field_name="attrs_"):
+    def __init__(self, schema, json_field_name="attrs"):
         self.schema = schema
         self.json_field_name = json_field_name
         self.top_level_fields = self._get_top_level_fields(schema)
@@ -96,7 +90,7 @@ class QParser(object):
                 json_field, json_inner_field = field.split("_")
                 return {f"{json_field}__contains": {json_inner_field: rule["value"]}}
             else:
-                return {f"{field}__{operator.text}": rule["value"]}
+                return {f"{field}__{operator.text}": value}
 
     def parse_rules(self, rules: list) -> list[Q]:
         """

@@ -4,3 +4,4 @@
 from .models import *
 from .surveys import *
 from .newmodels import *
+from .lookups import *

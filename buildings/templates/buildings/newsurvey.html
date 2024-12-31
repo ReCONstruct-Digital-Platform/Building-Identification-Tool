@@ -22,6 +22,10 @@
       <hr>
     </div>
 
+    <div>
+      <input type="text" placeholder="Survey name">
+    </div>
+
     <section id="data-filter">
 
       <div class="text-2xl">Dataset filter</div>
@@ -121,45 +125,105 @@
         "is_not_null",
         "in",
         "not_in",
+
       ],
       filters: dataset_filters,
-      // rules: {
-      //   condition: "AND",
-      //   rules: [
-      //     {
-      //       id: "const_year",
-      //       field: "const_year",
-      //       type: "date",
-      //       input: "text",
-      //       operator: "between",
-      //       value: [1950, 2000],
-      //     },
-      //     {
-      //       condition: "OR",
-      //       rules: [
-      //         {
-      //           id: "num_floors",
-      //           field: "num_floors",
-      //           type: "integer",
-      //           input: "number",
-      //           operator: "greater",
-      //           value: 1,
-      //           validation: { min: 0 },
-      //         },
-      //         {
-      //           id: "attrs__phys_link",
-      //           field: "attrs__phys_link",
-      //           type: "string",
-      //           input: "text",
-      //           operator: "in",
-      //           value: ["semi-detached", "row house"],
-      //         },
-      //       ],
-      //     },
-      //   ],
-      //   valid: true,
+      rules: {
+        condition: "AND",
+        rules: [
+          {
+            id: "const_year",
+            field: "const_year",
+            type: "date",
+            input: "text",
+            operator: "between",
+            value: [1950, 2000],
+          }
+        ],
+      },
+      valid: true,
     });
 
+    const survey_filters_fake = [
+      {
+        "id": "s_5_exterior_cladding",
+        "field": "s_5_exterior_cladding",
+        "label": "Exterior Cladding",
+        "optgroup": "Recon Survey V2: Montreal HLMs with brick facade",
+        "type": "string",
+        "input": "checkbox",
+        "values": [
+          "wood",
+          "metal",
+          "vinyl",
+          "unsure",
+          "plaster",
+          "concrete",
+          "curtain_wall",
+          "brick_masonry",
+          "stone_masonry"
+        ],
+        "operators": [
+          "in",
+          "not_in",
+          "is_null",
+          "is_not_null"
+        ]
+      },
+      {
+        "id": "s_5_exterior_cladding_search",
+        "field": "s_5_exterior_cladding",
+        "label": "Exterior Cladding (Search)",
+        "optgroup": "Recon Survey V2: Montreal HLMs with brick facade",
+        "type": "string",
+        "input": "text",
+        "operators": [
+          "contains",
+          "not_contains",
+          "ends_with",
+          "begins_with",
+          "not_ends_with",
+          "not_begins_with"
+        ]
+      },
+      {
+        "id": "s_5_has_basement",
+        "field": "s_5_has_basement",
+        "label": "Has Basement",
+        "optgroup": "Recon Survey V2: Montreal HLMs with brick facade",
+        "type": "boolean",
+        "input": "checkbox",
+        "values": [
+          "true",
+          "false"
+        ],
+        "operators": [
+          "in",
+          "is_null",
+          "is_not_null"
+        ]
+      },
+      {
+        "id": "s_6_num_storeys",
+        "field": "s_6_num_storeys",
+        "label": "Num. Storeys",
+        "optgroup": "Recon Survey V1",
+        "type": "integer",
+        "input": "number",
+        "operators": [
+          "equal",
+          "not_equal",
+          "less",
+          "greater",
+          "less_or_equal",
+          "greater_or_equal",
+          "between",
+          "not_between",
+          "is_null",
+          "is_not_null"
+        ]
+      }
+    ]
 
     $(surveyQueryBuilderId).queryBuilder({
       optgroups: survey_filters['optgroups'],
@@ -183,7 +247,36 @@
         "in",
         "not_in",
       ],
-      filters: survey_filters['filters']
+      filters: survey_filters_fake,
+      // filters: survey_filters['filters'],
+      rules: {
+        condition: "AND",
+        rules: [
+          {
+            id: "s_5_exterior_cladding",
+            field: "s_5_exterior_cladding",
+            input: "text",
+            type: "checkbox",
+            operator: "in",
+            value: ["brick_masonry", "wood"],
+          },
+          {
+            id: "s_5_has_basement",
+            field: "s_5_has_basement",
+            type: "boolean",
+            input: "checkbox",
+            operator: "is_null"
+          },
+          {
+            id: "s_6_num_storeys",
+            field: "s_6_num_storeys",
+            type: "integer",
+            input: "number",
+            operator: "between",
+            value: [5, 8]
+          }
+        ],
+      },
     });
 
     document
@@ -204,7 +297,7 @@
         console.log(surveyRules);
 
         // Upload new satellite image
-        fetch("shq-hlms", {
+        fetch("", {
           method: "POST",
           mode: "same-origin",
           cache: "no-cache",
@@ -213,7 +306,7 @@
             "Content-Type": "application/json",
             "X-CSRFToken": getCookie("csrftoken"), // So django accepts the request
           },
-          body: JSON.stringify({ datasetQuery: datasetRules, surveysQuery: surveyRules }),
+          body: JSON.stringify({ dataset_query: datasetRules, surveys_query: surveyRules }),
         }).then((resp) => {
           if (resp.status === 200) {
             console.debug("Query uploaded");

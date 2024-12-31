@@ -56,4 +56,4 @@ class QParserTest(TestCase):
     print(result)
     assert isinstance(result, Q)
 
-
+# TODO - Test it returns the correct buildings

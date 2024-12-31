@@ -325,6 +325,7 @@ def upsert_evalunits(dry_run=True):
     dataset.save()
 
 
+
     for offset in tqdm(
         range(0, num_units, chunk_length),
         desc="Upsert Buildings from EvalUnits",
@@ -372,16 +373,16 @@ def upsert_evalunits(dry_run=True):
             for unit in unit_batch:
 
                 attrs = {
-                    "p_metal": unit["p_metal"],
-                    "p_bldg": unit["p_bldg"],
+                    "p_metal": float(unit["p_metal"]),
+                    "p_bldg": float(unit["p_bldg"]),
                     "phys_link": unit["phys_link"],
                     "const_type": unit["const_type"],
-                    "owner_date": unit["owner_date"],
+                    "owner_date": unit["owner_date"].strftime("%Y-%m-%d"),
                     "owner_type": unit["owner_type"],
                     "owner_status": unit["owner_status"],
                     "lot_lin_dim": unit["lot_lin_dim"],
                     "lot_area": unit["lot_area"],
-                    "apprais_date": unit["apprais_date"],
+                    "apprais_date": unit["apprais_date"].strftime("%Y-%m-%d"),
                     "lot_value": unit["lot_value"],
                     "building_value": unit["building_value"],
                     "value": unit["value"],
@@ -402,7 +403,7 @@ def upsert_evalunits(dry_run=True):
                     "num_floors": unit["num_floors"],
                     "floor_area": unit["floor_area"],
                     "attrs": attrs,
-                    "dataset": dataset.id,
+                    "dataset": dataset,
                 }
 
                 buildings_to_write.append(Building(**new_model))

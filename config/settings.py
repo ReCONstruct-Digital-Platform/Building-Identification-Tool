@@ -83,10 +83,10 @@ STATIC_ROOT = env("STATIC_ROOT")
 
 STATICFILES_FINDERS = (
     # default
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
     # other finders
-    'compressor.finders.CompressorFinder',
+    "compressor.finders.CompressorFinder",
 )
 
 COMPRESS_ENABLED = True
@@ -146,7 +146,7 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "mailer",
-    "compressor",
+    "compressor"
 ]
 
 

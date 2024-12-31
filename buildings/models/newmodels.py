@@ -5,6 +5,10 @@ from django.utils import timezone
 from autoslug import AutoSlugField
 
 
+from buildings.utils.query_utils import QParser
+from buildings.utils.survey_query import SurveyQParser
+
+
 class Dataset(models.Model):
     class Meta:
         db_table = "datasets"
@@ -16,8 +20,8 @@ class Dataset(models.Model):
         on_delete=models.CASCADE,
     )
 
-    slug = AutoSlugField(populate_from='name')
-    # Contains the schema of both the static and dynamic fields of 
+    slug = AutoSlugField(populate_from="name")
+    # Contains the schema of both the static and dynamic fields of
     # the associated models. Static fields that are not present are null.
     schema = JSONField()
 
@@ -25,21 +29,26 @@ class Dataset(models.Model):
     date_modified = models.DateTimeField("date modified", default=timezone.now)
 
 
-
 class Building(models.Model):
     """
     Base building class.
     The objects of Surveys.
     """
+
     # Can be changed without creating a new migration
     def slugify(instance):
-        fields = [instance.dataset.name, instance.address, instance.submuni, instance.muni]
+        fields = [
+            instance.dataset.name,
+            instance.address,
+            instance.submuni,
+            instance.muni,
+        ]
         fields = [f for f in fields if f is not None]
         return " ".join(fields)
-    
+
     class Meta:
         db_table = "buildings"
-        unique_together = ('ext_id', 'lat', 'lng', 'address', 'muni')
+        unique_together = ("ext_id", "lat", "lng", "address", "muni")
 
     # optional external ID field
     ext_id = models.TextField(null=True, blank=True)
@@ -64,7 +73,7 @@ class Building(models.Model):
     muni = models.TextField(null=True, blank=True)
     submuni = models.TextField(null=True, blank=True)
     postal_code = models.TextField(null=True, blank=True)
-    
+
     # # construction year
     const_year = models.SmallIntegerField(null=True, blank=True)
     num_floors = models.IntegerField(null=True, blank=True)
@@ -83,34 +92,101 @@ class Building(models.Model):
         return f"Building {self.id}: {self.address}, {self.muni}, {self.postal_code}"
 
 
+class AggregatedBuildingResponses(models.Model):
+    """
+    Hack to use Q filters on aggregated data
+    """
+
+    class Meta:
+        managed = False
+
+    # Copied from Building
+    id = models.BigIntegerField(primary_key=True)
+    ext_id = models.TextField(null=True, blank=True)
+    lat = models.FloatField(null=True)
+    lng = models.FloatField(null=True)
+    point = models.PointField(null=True, spatial_index=True)
+    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
+    address = models.TextField()
+    street_name = models.TextField(null=True)
+    street_num = models.TextField(null=True)
+    street_num_2 = models.TextField(null=True, blank=True)
+    muni = models.TextField(null=True, blank=True)
+    submuni = models.TextField(null=True, blank=True)
+    postal_code = models.TextField(null=True, blank=True)
+    const_year = models.SmallIntegerField(null=True, blank=True)
+    num_floors = models.IntegerField(null=True, blank=True)
+    floor_area = models.FloatField(null=True, blank=True)
+    attrs = models.JSONField(null=True, blank=True)
+    # Aggregated data from all resonses of surveys on this Building
+    # TODO: What about multiple responses in a single survey?
+    response_data = models.JSONField()
+
+
 class Survey(models.Model):
     """
     Surveys are linked to a source dataset and target a subset of buildings.
     The subset of buildings is defined through a filter on the source dataset.
 
-    Sub-surveys are defined by an additional filter on other surveys' responses on 
-    the source dataset's buildings. 
+    Sub-surveys are defined by an additional filter on other surveys' responses on
+    the source dataset's buildings.
     """
+
     class Meta:
         db_table = "surveys"
-        unique_together = ("name", "dataset", "schema", "dataset_filter", "surveys_filter")
+        unique_together = (
+            "name",
+            "dataset",
+            "schema",
+            "dataset_filter",
+            "surveys_filter",
+        )
 
     name = models.TextField()
     description = models.TextField()
-    slug = AutoSlugField(populate_from='name')
+    slug = AutoSlugField(populate_from="name")
 
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
-    )
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
-    def get_target_population():
-        q_buildings = None
-        q_responses = None
-        Building.objects.filter(
-         
-        )
+    def parse_query_builder_filters(dataset_filter=None, surveys_filter=None):
         pass
+
+    def get_target_population(self):
+        candidates = Building.objects.filter(Q(**self.dataset_filter)).annotate(
+            reponse_data=RawSQL(
+                """select jsonb_object_agg(key, value)
+                    from (
+                        select 
+                            id, key, jsonb_agg(distinct value) as value
+                            from (
+                                select 
+                                    id, key, jsonb_array_elements(value) as value
+                                from (
+                                    select 
+                                        id, key,
+                                        case jsonb_typeof(value)
+                                            when 'array' then value
+                                            else jsonb_build_array(value)
+                                        end as value
+                                    from (
+                                        select 
+                                            r.building_id as id,
+                                            concat('s_', r.survey_id, '_', (jsonb_each(r.data)).key) as key, 
+                                            (jsonb_each(r.data)).value 
+                                        from responses r
+                                        where r.building_id = buildings.id
+                                    ) as sub
+                                ) as sub2
+                            ) as sub3    
+                        group by id, key
+                    ) as sub4
+                    group by id""",
+                (),
+                output_field=models.JSONField(),
+            )
+        ).filter(self.surveys_filter)
+
+        return candidates
 
     # Source dataset
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
@@ -130,6 +206,7 @@ class Survey(models.Model):
     date_modified = models.DateTimeField("date modified", default=timezone.now)
 
 
+
 class Response(models.Model):
     """
     Response contains the answers to a Survey's questions for a Building, by a User.
@@ -140,20 +217,11 @@ class Response(models.Model):
     class Meta:
         db_table = "responses"
         unique_together = ("building", "survey", "created_by")
-    
+
     data = models.JSONField()
-    building = models.ForeignKey(
-        Building,
-        on_delete=models.CASCADE
-    )
-    survey = models.ForeignKey(
-        Survey,
-        on_delete=models.CASCADE
-    )
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
-    )
+    building = models.ForeignKey(Building, on_delete=models.CASCADE)
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     date_added = models.DateTimeField("date added", default=timezone.now)
     date_modified = models.DateTimeField("date modified", default=timezone.now)

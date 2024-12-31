@@ -10,7 +10,7 @@ from django.db import transaction
 from django.contrib import messages
 from django.http import HttpResponse
 from django.core.paginator import Paginator
-from django.db.models import Avg, Count, Sum
+from django.db.models import Avg, Count, Sum, JSONField
 from django.db.models.functions import Round
 from django.forms.models import model_to_dict
 from render_block import render_block_to_string
@@ -18,6 +18,8 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
 from django.core.serializers import serialize
+from django.db.models import Q
+from django.db.models.expressions import RawSQL
 
 from pprint import pformat
 
@@ -38,6 +40,7 @@ from buildings.models.models import (
 import logging
 
 from buildings.utils.query_utils import QParser
+from buildings.utils.survey_query import SurveyQParser
 
 log = logging.getLogger(__name__)
 
@@ -216,24 +219,56 @@ def query(request, dataset_slug):
 
 def get_surveys_qb_filters_and_optgroups(surveys):
 
-    def transform_survey_schema_field(schema_field: dict) -> dict:
+    def transform_survey_schema_field(schema_field: dict, field_id: str) -> list[dict]:
         widget = schema_field["widget"]
         if widget in ["multi_checkbox_specify", "multi_checkbox_specify_required"]:
-            return {
-                "type": "string",
-                "input": "checkbox",
-                "values": list(schema_field["values"].keys()),
-                "operators": ["in", "not_in"],
-            }
+            return [
+                {
+                    "type": "string",
+                    "input": "checkbox",
+                    "values": list(schema_field["values"].keys()),
+                    "operators": ["in", "not_in", "is_null", "is_not_null"],
+                },
+                {
+                    # Override the field and label
+                    "id": field_id + "_search",
+                    "label": schema_field['label'] + " (Search)",
+                    "type": "string",
+                    "input": "text",
+                    "operators": [
+                        "contains",
+                        "not_contains",
+                        "ends_with",
+                        "begins_with",
+                        "not_ends_with",
+                        "not_begins_with",
+                    ],
+                },
+            ]
         elif widget in ["integer", "radio_specify_integer"]:
-            return {"type": "integer", "input": "number"}
+            return [{
+                "type": "integer",
+                "input": "number",
+                "operators": [
+                    "equal",
+                    "not_equal",
+                    "less",
+                    "greater",
+                    "less_or_equal",
+                    "greater_or_equal",
+                    "between",
+                    "not_between",
+                    "is_null",
+                    "is_not_null",
+                ],
+            }]
         elif widget in ["boolean"]:
-            return {
+            return [{
                 "type": "boolean",
                 "input": "checkbox",
-                "values": ["True", "False"],
-                "operators": ["in", "not_in", "is_null", "is_not_null"],
-            }
+                "values": ["true", "false"],
+                "operators": ["in", "is_null", "is_not_null"],
+            }]
         else:
             raise Exception(f"Unknown widget: {widget}")
 
@@ -249,20 +284,58 @@ def get_surveys_qb_filters_and_optgroups(surveys):
 
         for field_name, field_object in schema.items():
 
-            field_id = f"survey_{survey_id}__{field_name}"
+            field_id = f"s_{survey_id}_{field_name}"
 
-            qb_filter = {
-                "id": field_id,
-                "field": field_id,
-                "label": field_object["label"],
-                "optgroup": survey_name,
-                **transform_survey_schema_field(field_object),
-            }
-            print(qb_filter)
-            combined.append(qb_filter)
+            qb_fields_config = transform_survey_schema_field(field_object, field_id)
+
+            for config in qb_fields_config:
+                qb_filter = {
+                    "id": field_id,
+                    "field": field_id,
+                    "label": field_object["label"],
+                    "optgroup": survey_name,
+                    **config,
+                }
+                combined.append(qb_filter)
 
     return {"filters": combined, "optgroups": optgroups}
 
+
+def get_survey_target_population(dataset_q, surveys_q):
+    candidates = Building.objects.filter(dataset_q).annotate(
+            response_data=RawSQL(
+                """select jsonb_object_agg(key, value)
+                    from (
+                        select 
+                            id, key, jsonb_agg(distinct value) as value
+                            from (
+                                select 
+                                    id, key, jsonb_array_elements(value) as value
+                                from (
+                                    select 
+                                        id, key,
+                                        case jsonb_typeof(value)
+                                            when 'array' then value
+                                            else jsonb_build_array(value)
+                                        end as value
+                                    from (
+                                        select 
+                                            r.building_id as id,
+                                            concat('s_', r.survey_id, '_', (jsonb_each(r.data)).key) as key, 
+                                            (jsonb_each(r.data)).value 
+                                        from responses r
+                                        where r.building_id = buildings.id
+                                    ) as sub
+                                ) as sub2
+                            ) as sub3    
+                        group by id, key
+                    ) as sub4
+                    group by id""",
+                (),
+                output_field=JSONField(),
+            )
+        ).filter(surveys_q)
+    return candidates
 
 @login_required(login_url="account_login")
 def newsurvey(request, dataset_slug):
@@ -276,9 +349,33 @@ def newsurvey(request, dataset_slug):
     surveys_on_dataset = Survey.objects.filter(dataset=dataset)
     log.info(f"{surveys_on_dataset.count()} surveys found on dataset {dataset.name}")
 
-    survey_filters_and_optgroups = get_surveys_qb_filters_and_optgroups(surveys_on_dataset)
+    if request.method == "POST":
+        query = json.loads(request.body)
+        log.debug(pformat(query))
 
-    pprint(survey_filters_and_optgroups)
+        dataset_query = query["dataset_query"]
+        dataset_q_parser = QParser(schema=dataset.schema)
+        dataset_q = dataset_q_parser.parse_query(dataset_query)
+        # log.debug(q)
+        # buildings = Building.objects.filter(dataset_id=dataset.id).filter(dataset_q)
+
+        # print(buildings.count())
+
+        surveys_query = query["surveys_query"]
+
+        survey_q_parser = SurveyQParser()
+        surveys_q = survey_q_parser.parse_query(surveys_query)
+        print(surveys_query)
+
+        candidates = get_survey_target_population(dataset_q, surveys_q)
+
+        print(candidates)
+        print(candidates.count())
+
+
+    survey_filters_and_optgroups = get_surveys_qb_filters_and_optgroups(
+        surveys_on_dataset
+    )
 
     context = {
         "dataset": dataset,
