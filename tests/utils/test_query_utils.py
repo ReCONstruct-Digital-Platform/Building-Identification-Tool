@@ -3,7 +3,7 @@ from django.db.models import Q
 from django.db.models.expressions import Value
 
 from buildings.models.models import User
-from buildings.models.newmodels import Building, Dataset, Response, Survey
+from buildings.models.newmodels import Building, Dataset
 from buildings.utils.query_utils import DatasetQParser, SurveyQParser
 
 from .test_query_utils_constants import *
@@ -131,7 +131,7 @@ class SurveyQParserTest(TestCase):
         self.survey_q_parser = SurveyQParser()
 
     def test_survey_q_parser_1(self):
-        survey_query_1 = {
+        self.survey_query_1 = {
             "condition": "AND",
             "rules": [
                 {
@@ -161,7 +161,7 @@ class SurveyQParserTest(TestCase):
             ],
             "valid": True,
         }
-        result_q = self.survey_q_parser.parse_query(survey_query_1)
+        result_q = self.survey_q_parser.parse_query(self.survey_query_1)
         expected_q = (
             Q(response_data__s_1_exterior_cladding__any_str_in=["brick_masonry", "wood"]) &
             Q(response_data__s_1_has_basement__contains=Value('null')) &
@@ -170,7 +170,7 @@ class SurveyQParserTest(TestCase):
         assert_q_equal(result_q, expected_q)
         
     def test_survey_q_parser_2(self):
-        survey_query = {
+        self.survey_query_2 = {
             "condition": "AND",
             "rules": [
                 {
@@ -206,7 +206,7 @@ class SurveyQParserTest(TestCase):
             ],
             "valid": True,
         }
-        result_q = self.survey_q_parser.parse_query(survey_query)
+        result_q = self.survey_q_parser.parse_query(self.survey_query_2)
         expected_q = (
             Q(response_data__s_1_exterior_cladding__any_str_like="%wood%") &
             (

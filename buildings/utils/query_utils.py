@@ -228,9 +228,10 @@ class SurveyQParser(object):
                 value = rule["value"]
 
         elif type == "string":
-            # Rewrite the in operator's text if there is a single value
-            if rule_operator == "in" and len(rule["value"]) == 1:
-                operator.text = "contains"
+
+            # Replace the "in" operators to contains if there is a single value
+            if rule_operator in ["in", "not_in"] and len(rule["value"]) == 1:
+                operator = Op("contains", operator.negated)
 
             # If arrays contains null
             if rule_operator == "is_null":
