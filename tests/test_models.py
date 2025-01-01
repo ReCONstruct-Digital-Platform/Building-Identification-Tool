@@ -1,7 +1,7 @@
 from django.test import TestCase
 from buildings.models import Dataset, User, Building, Response, Survey
 
-from utils.test_query_utils_constants import *
+from .utils.test_query_utils_constants import *
 
 class SurveyTest(TestCase):
 

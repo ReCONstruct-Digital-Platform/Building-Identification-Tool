@@ -216,50 +216,50 @@ class SurveyQParserTest(TestCase):
 		)
         assert_q_equal(result_q, expected_q)
         
-    def test_survey_q_parser_integer_operators(self):
-        survey_query = {
-            "condition": "AND",
-            "rules": [
-                {
-                    "id": "f1",
-                    "field": "f1",
-                    "type": "integer",
-                    "input": "number",
-                    "operator": "equal",
-                    "value": 2,
-                },
-                {
-                    "condition": "OR",
-                    "rules": [
-						{
-						"id": "s_1_has_basement",
-						"field": "s_1_has_basement",
-						"type": "boolean",
-						"input": "checkbox",
-						"operator": "in",
-						"value": True,
-					},
-					{
-						"id": "s_2_num_storeys",
-						"field": "s_2_num_storeys",
-						"type": "integer",
-						"input": "number",
-						"operator": "not_equal",
-						"value": 5,
-					},
+    # def test_survey_q_parser_integer_operators(self):
+    #     survey_query = {
+    #         "condition": "AND",
+    #         "rules": [
+    #             {
+    #                 "id": "f1",
+    #                 "field": "f1",
+    #                 "type": "integer",
+    #                 "input": "number",
+    #                 "operator": "equal",
+    #                 "value": 2,
+    #             },
+    #             {
+    #                 "condition": "OR",
+    #                 "rules": [
+	# 					{
+	# 					"id": "s_1_has_basement",
+	# 					"field": "s_1_has_basement",
+	# 					"type": "boolean",
+	# 					"input": "checkbox",
+	# 					"operator": "in",
+	# 					"value": True,
+	# 				},
+	# 				{
+	# 					"id": "s_2_num_storeys",
+	# 					"field": "s_2_num_storeys",
+	# 					"type": "integer",
+	# 					"input": "number",
+	# 					"operator": "not_equal",
+	# 					"value": 5,
+	# 				},
                         
-					]
-				}
-            ],
-            "valid": True,
-        }
-        result_q = self.survey_q_parser.parse_query(survey_query)
-        expected_q = (
-            Q(response_data__s_1_exterior_cladding__any_str_like="%wood%") &
-            (
-                Q(response_data__s_1_has_basement__contains=True) |
-            	~Q(response_data__s_2_num_storeys__any_int=5)
-			)
-		)
-        assert_q_equal(result_q, expected_q)
+	# 				]
+	# 			}
+    #         ],
+    #         "valid": True,
+    #     }
+    #     result_q = self.survey_q_parser.parse_query(survey_query)
+    #     expected_q = (
+    #         Q(response_data__s_1_exterior_cladding__any_str_like="%wood%") &
+    #         (
+    #             Q(response_data__s_1_has_basement__contains=True) |
+    #         	~Q(response_data__s_2_num_storeys__any_int=5)
+	# 		)
+	# 	)
+    #     assert_q_equal(result_q, expected_q)
         

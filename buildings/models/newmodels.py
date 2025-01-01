@@ -91,38 +91,6 @@ class Building(models.Model):
     def __str__(self):
         return f"Building {self.id}: {self.address}, {self.muni}, {self.postal_code}"
 
-
-class AggregatedBuildingResponses(models.Model):
-    """
-    Hack to use Q filters on aggregated data
-    """
-
-    class Meta:
-        managed = False
-
-    # Copied from Building
-    id = models.BigIntegerField(primary_key=True)
-    ext_id = models.TextField(null=True, blank=True)
-    lat = models.FloatField(null=True)
-    lng = models.FloatField(null=True)
-    point = models.PointField(null=True, spatial_index=True)
-    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
-    address = models.TextField()
-    street_name = models.TextField(null=True)
-    street_num = models.TextField(null=True)
-    street_num_2 = models.TextField(null=True, blank=True)
-    muni = models.TextField(null=True, blank=True)
-    submuni = models.TextField(null=True, blank=True)
-    postal_code = models.TextField(null=True, blank=True)
-    const_year = models.SmallIntegerField(null=True, blank=True)
-    num_floors = models.IntegerField(null=True, blank=True)
-    floor_area = models.FloatField(null=True, blank=True)
-    attrs = models.JSONField(null=True, blank=True)
-    # Aggregated data from all resonses of surveys on this Building
-    # TODO: What about multiple responses in a single survey?
-    response_data = models.JSONField()
-
-
 class Survey(models.Model):
     """
     Surveys are linked to a source dataset and target a subset of buildings.
@@ -148,6 +116,11 @@ class Survey(models.Model):
 
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
+    # If this gets slow, implement a view for the target population
+    # mapping building_id -> aggregated response data
+    # IT will have to refresh everytime a new response is added
+    # https://www.fusionbox.com/blog/detail/using-materialized-views-to-implement-efficient-reports-in-django/643/
+    # https://pypi.org/project/django-db-views/
     def get_target_population(self, dataset_schema = None, dataset_filter = None, surveys_filter = None):
         if dataset_schema is None:
             dataset_schema = self.dataset.schema

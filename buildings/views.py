@@ -165,7 +165,7 @@ def datasets(request):
 def test(req):
 
     columns = [
-        {"id": "name", "label": "Name"},
+    {"id": "name", "label": "Name"},
         {"id": "title", "label": "Title"},
         {"id": "email", "label": "Email"},
         {"id": "role", "label": "Role"},
