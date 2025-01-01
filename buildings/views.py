@@ -163,6 +163,57 @@ def datasets(request):
 
 
 def test(req):
+
+    columns = [
+        {"id": "name", "label": "Name", "accessor": "name"},
+        {"id": "title", "label": "Title", "accessor": "title"},
+        {"id": "email", "label": "Email", "accessor": "email"},
+        {"id": "role", "label": "Role", "accessor": "role"},
+    ]
+    data = [
+        {
+            "id": "1",
+            "name": "John Doe",
+            "title": "Software Engineer",
+            "email": "john@example.com",
+            "role": "Admin",
+        },
+        {
+            "id": "2",
+            "name": "Jane Smith",
+            "title": "Product Manager",
+            "email": "jane@example.com",
+            "role": "User",
+        },
+        {
+            "id": "3",
+            "name": "Bob Johnson",
+            "title": "Designer",
+            "email": "bob@example.com",
+            "role": "User",
+        },
+        {
+            "id": "4",
+            "name": "Alice Brown",
+            "title": "Data Analyst",
+            "email": "alice@example.com",
+            "role": "Admin",
+        },
+        {
+            "id": "5",
+            "name": "Charlie Wilson",
+            "title": "Marketing Specialist",
+            "email": "charlie@example.com",
+            "role": "User",
+        },
+    ]
+
+    context = {"columns": columns, "data": data}
+
+    return render(req, "buildings/test.html", context)
+
+
+def test2(req):
     people = [
         {
             "address": 1,
@@ -189,7 +240,7 @@ def test(req):
             "category": "david@example.com",
         },
     ]
-    return render(req, "buildings/test.html", {"people": people})
+    return render(req, "buildings/test_table_1.html", {"people": people})
 
 
 @login_required(login_url="account_login")
@@ -231,7 +282,7 @@ def get_surveys_qb_filters_and_optgroups(surveys):
                 {
                     # Override the field and label
                     "id": field_id + "_search",
-                    "label": schema_field['label'] + " (Search)",
+                    "label": schema_field["label"] + " (Search)",
                     "type": "string",
                     "input": "text",
                     "operators": [
@@ -245,29 +296,33 @@ def get_surveys_qb_filters_and_optgroups(surveys):
                 },
             ]
         elif widget in ["integer", "radio_specify_integer"]:
-            return [{
-                "type": "integer",
-                "input": "number",
-                "operators": [
-                    "equal",
-                    "not_equal",
-                    "less",
-                    "greater",
-                    "less_or_equal",
-                    "greater_or_equal",
-                    "between",
-                    "not_between",
-                    "is_null",
-                    "is_not_null",
-                ],
-            }]
+            return [
+                {
+                    "type": "integer",
+                    "input": "number",
+                    "operators": [
+                        "equal",
+                        "not_equal",
+                        "less",
+                        "greater",
+                        "less_or_equal",
+                        "greater_or_equal",
+                        "between",
+                        "not_between",
+                        "is_null",
+                        "is_not_null",
+                    ],
+                }
+            ]
         elif widget in ["boolean"]:
-            return [{
-                "type": "boolean",
-                "input": "radio",
-                "values": ["true", "false"],
-                "operators": ["in", "is_null", "is_not_null"],
-            }]
+            return [
+                {
+                    "type": "boolean",
+                    "input": "radio",
+                    "values": ["true", "false"],
+                    "operators": ["in", "is_null", "is_not_null"],
+                }
+            ]
         else:
             raise Exception(f"Unknown widget: {widget}")
 
@@ -301,7 +356,9 @@ def get_surveys_qb_filters_and_optgroups(surveys):
 
 
 def get_survey_target_population(dataset_q, surveys_q):
-    candidates = Building.objects.filter(dataset_q).annotate(
+    candidates = (
+        Building.objects.filter(dataset_q)
+        .annotate(
             response_data=RawSQL(
                 """select jsonb_object_agg(key, value)
                     from (
@@ -333,8 +390,11 @@ def get_survey_target_population(dataset_q, surveys_q):
                 (),
                 output_field=JSONField(),
             )
-        ).filter(surveys_q)
+        )
+        .filter(surveys_q)
+    )
     return candidates
+
 
 @login_required(login_url="account_login")
 def newsurvey(request, dataset_slug):
@@ -370,7 +430,6 @@ def newsurvey(request, dataset_slug):
 
         print(candidates)
         print(candidates.count())
-
 
     survey_filters_and_optgroups = get_surveys_qb_filters_and_optgroups(
         surveys_on_dataset

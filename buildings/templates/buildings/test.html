@@ -4,175 +4,174 @@
 {% load allauth %}
 
 
-{% block extra_head %}
+<!-- {% block extra_head %}
 <style>
   /* Custom styles for drag and drop */
   .dragging {
-      opacity: 0.5;
-      background-color: #4a5568;
+    opacity: 0.5;
+    background-color: #4a5568;
   }
 </style>
-{% endblock %}
+{% endblock %} -->
 
 {% block content %}
-
 <div class="min-h-screen flex items-center justify-center p-4">
-    <div class="w-[80%] h-full">
-        <div class="w-full overflow-x-auto rounded-lg bg-white bg-opacity-50 backdrop-blur-lg backdrop-filter">
-            <table id="dataTable" class="w-full min-w-full divide-y divide-gray-700">
-                <thead>
-                    <tr id="tableHeader"></tr>
-                </thead>
-                <tbody id="tableBody" class="divide-y divide-gray-700"></tbody>
-            </table>
-        </div>
+  <div class="w-[80%] h-full">
+    <div class="w-full overflow-x-auto rounded-lg bg-white bg-opacity-50 backdrop-blur-lg backdrop-filter">
+      <table id="dataTable" class="table-auto w-full min-w-full divide-y divide-gray-700">
+        <thead id="tableHeader" class="text-xs text-left font-medium text-gray-600 uppercase">
+          <tr>
+            {% for column in columns %}
+            <th class="px-6 py-3 cursor-pointer tracking-wider" draggable="true" data-index="{{ forloop.counter0 }}">
+              <div class="flex items-center space-x-1">
+                <span>{{ column.label }}</span>
+                <span class="sort-icon"></span>
+              </div>
+            </th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody id="tableBody" class="divide-y divide-gray-400">
+          {% for row in data %}
+          <tr>
+            <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-600">{{ row.name }}</td>
+            <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-600">{{ row.title }}</td>
+            <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-600">{{ row.email }}</td>
+            <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-600">{{ row.role }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+
+    <!-- Column Visibility Controls -->
+    <div class="flex flex-row items-center justify-center mt-4">
+      <label class="inline-flex items-center">
+        <input type="checkbox" checked class="column-toggle" data-column="0" />
+        <span class="ms-2">Address</span>
+      </label>
+      <label class="inline-flex items-center">
+        <input type="checkbox" checked class="column-toggle" data-column="1" />
+        <span class="ms-2">Municipality</span>
+      </label>
+      <label class="inline-flex items-center">
+        <input type="checkbox" checked class="column-toggle" data-column="2" />
+        <span class="ml-2">Area</span>
+      </label>
+      <label class="inline-flex items-center">
+        <input type="checkbox" checked class="column-toggle" data-column="3" />
+        <span class="ml-2">NumFloors</span>
+      </label>
     </div>
   </div>
+</div>
 
+{% endblock %}
 
+{% block page_scripts %}
 
 <script>
- const columns = [
-    { id: 'name', label: 'Name', accessor: 'name' },
-    { id: 'title', label: 'Title', accessor: 'title' },
-    { id: 'email', label: 'Email', accessor: 'email' },
-    { id: 'role', label: 'Role', accessor: 'role' },
-];
+  let sortConfig = { key: null, direction: 'asc' };
 
-const data = [
-    { id: '1', name: 'John Doe', title: 'Software Engineer', email: 'john@example.com', role: 'Admin' },
-    { id: '2', name: 'Jane Smith', title: 'Product Manager', email: 'jane@example.com', role: 'User' },
-    { id: '3', name: 'Bob Johnson', title: 'Designer', email: 'bob@example.com', role: 'User' },
-    { id: '4', name: 'Alice Brown', title: 'Data Analyst', email: 'alice@example.com', role: 'Admin' },
-    { id: '5', name: 'Charlie Wilson', title: 'Marketing Specialist', email: 'charlie@example.com', role: 'User' },
-];
+  document.addEventListener('DOMContentLoaded', () => {
 
-let sortConfig = { key: null, direction: 'asc' };
-let draggedItem = null;
+    // Column toggle functionality
+    document.querySelectorAll('.column-toggle').forEach(function (checkbox) {
+      checkbox.addEventListener('change', function () {
+        const column = this.dataset.column;
+        const cells = document.querySelectorAll(`table tr > *:nth-child(${+column + 1})`);
+        cells.forEach(cell => cell.classList.toggle('hidden', !this.checked));
+      });
+    });
 
-document.addEventListener('DOMContentLoaded', function() {
-    renderTable();
-});
-
-function renderTable() {
-    const tableHeader = document.getElementById('tableHeader');
-    const tableBody = document.getElementById('tableBody');
-
-    if (!tableHeader || !tableBody) {
-        console.error('Table header or body not found');
-        return;
+    // Sorting functionality
+    function sortTable(columnIndex) {
+      const table = document.getElementById('tableBody');
+      const rows = Array.from(table.querySelectorAll('tr'));
+      const sortedRows = rows.sort((a, b) => {
+        const aText = a.querySelector(`td:nth-child(${columnIndex + 1})`).textContent.trim();
+        const bText = b.querySelector(`td:nth-child(${columnIndex + 1})`).textContent.trim();
+        return aText.localeCompare(bText);
+      });
+      sortedRows.forEach(row => table.appendChild(row));
     }
 
-    // Clear existing content
-    tableHeader.innerHTML = '';
-    tableBody.innerHTML = '';
-
-    // Render header
-    columns.forEach((column, index) => {
-        const th = document.createElement('th');
-        th.className = 'px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider cursor-move';
-        th.innerHTML = `
-            <div class="flex items-center space-x-1">
-                <span>${column.label}</span>
-                <span class="sort-icon"></span>
-            </div>
-        `;
-        th.setAttribute('draggable', 'true');
-        th.setAttribute('data-index', index);
-        th.addEventListener('click', () => sortData(column.accessor));
-        th.addEventListener('dragstart', dragStart);
-        th.addEventListener('dragover', dragOver);
-        th.addEventListener('dragenter', dragEnter);
-        th.addEventListener('dragleave', dragLeave);
-        th.addEventListener('drop', dragDrop);
-        th.addEventListener('dragend', dragEnd);
-        tableHeader.appendChild(th);
-    });
-
-    // Render body
-    getSortedData().forEach(item => {
-        const tr = document.createElement('tr');
-        tr.className = 'hover:bg-#4a5568 transition-colors duration-100';
-        columns.forEach(column => {
-            const td = document.createElement('td');
-            td.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-600';
-            td.textContent = item[column.accessor];
-            tr.appendChild(td);
-        });
-        tableBody.appendChild(tr);
-    });
-
-    updateSortIcons();
-}
-
-function sortData(key) {
-    if (sortConfig.key === key) {
-        sortConfig.direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
-    } else {
-        sortConfig.key = key;
-        sortConfig.direction = 'asc';
-    }
-    renderTable();
-}
-
-function getSortedData() {
-    if (!sortConfig.key) return data;
-    return [...data].sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
-        if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
-        return 0;
-    });
-}
-
-function updateSortIcons() {
-    const headers = document.querySelectorAll('#tableHeader th');
-    headers.forEach(header => {
+    function updateSortIcons() {
+      const headers = document.querySelectorAll('#tableHeader th');
+      headers.forEach(header => {
         const sortIcon = header.querySelector('.sort-icon');
+
         const columnKey = columns[header.getAttribute('data-index')].accessor;
         if (sortConfig.key === columnKey) {
-            sortIcon.innerHTML = sortConfig.direction === 'asc' 
-                ? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>'
-                : '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
+          sortIcon.innerHTML = sortConfig.direction === 'asc'
+            ? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>'
+            : '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
         } else {
-            sortIcon.innerHTML = '';
+          sortIcon.innerHTML = '';
         }
-    });
-}
-
-function dragStart(e) {
-    draggedItem = this;
-    setTimeout(() => this.classList.add('dragging'), 0);
-}
-
-function dragEnd() {
-    this.classList.remove('dragging');
-}
-
-function dragOver(e) {
-    e.preventDefault();
-}
-
-function dragEnter(e) {
-    e.preventDefault();
-    this.classList.add('bg-#4a5568');
-}
-
-function dragLeave() {
-    this.classList.remove('bg-#4a5568');
-}
-
-function dragDrop() {
-    this.classList.remove('bg-#4a5568');
-    const fromIndex = parseInt(draggedItem.getAttribute('data-index'));
-    const toIndex = parseInt(this.getAttribute('data-index'));
-    if (fromIndex !== toIndex) {
-        const [movedColumn] = columns.splice(fromIndex, 1);
-        columns.splice(toIndex, 0, movedColumn);
-        renderTable();
+      });
     }
-}
 
+    // Column drag-and-drop functionality
+    const header = document.getElementById('tableHeader');
 
+    Array.from(header.children[0].children).forEach((th, index) => {
+      th.addEventListener('click', () => {
+        console.debug('clicked', index);
+        sortTable(index);
+        // updateSortIcons();
+      });
+    });
+
+    let draggedColumnIndex = null;
+
+    header.addEventListener('dragstart', (e) => {
+      let desiredTarget = e.target;
+      console.debug("drag target:", desiredTarget);
+
+      if (e.target.tagName !== 'TH') {
+        // Since we have children elements inside the th, we need to get the closest th element
+        desiredTarget = e.target.closest('th');
+        console.debug("updated drag target:", desiredTarget);
+      } 
+
+      draggedColumnIndex = Array.from(header.children[0].children).indexOf(desiredTarget);
+      console.debug("dragged column index:", draggedColumnIndex);
+    });
+
+    header.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+
+    header.addEventListener('drop', (e) => {
+      e.preventDefault();
+      let dropTarget = e.target
+      console.debug("drop target:", dropTarget);
+      if (e.target.tagName !== 'TH') {
+        // Since we have children elements inside the th, we need to get the closest th element
+        dropTarget = e.target.closest('th');
+        console.debug("updated drop target:", dropTarget);
+      } 
+      const dropTargetIndex = Array.from(header.children[0].children).indexOf(dropTarget);
+      console.debug("drop target index:", dropTargetIndex); 
+
+      if (draggedColumnIndex !== dropTargetIndex) {
+        const rows = document.querySelectorAll('table tr');
+        console.debug("inserting ", rows);
+        rows.forEach(row => {
+          const cells = Array.from(row.children);
+
+          draggedColumnIndex < dropTargetIndex
+            ? row.insertBefore(cells[draggedColumnIndex], cells[dropTargetIndex].nextSibling)
+            : row.insertBefore(cells[draggedColumnIndex], cells[dropTargetIndex]);
+        });
+      }
+
+      draggedColumnIndex = null;
+    });
+
+  }); 
 </script>
 
 {% endblock %}
