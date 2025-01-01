@@ -4,10 +4,10 @@ from django.db.models import JSONField
 from django.utils import timezone
 from autoslug import AutoSlugField
 
+from django.db.models import Q
+from django.db.models.expressions import RawSQL
 
-from buildings.utils.query_utils import QParser
-from buildings.utils.survey_query import SurveyQParser
-
+from buildings.utils.query_utils import DatasetQParser, SurveyQParser
 
 class Dataset(models.Model):
     class Meta:
@@ -143,17 +143,28 @@ class Survey(models.Model):
         )
 
     name = models.TextField()
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     slug = AutoSlugField(populate_from="name")
 
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
-    def parse_query_builder_filters(dataset_filter=None, surveys_filter=None):
-        pass
+    def get_target_population(self, dataset_schema = None, dataset_filter = None, surveys_filter = None):
+        if dataset_schema is None:
+            dataset_schema = self.dataset.schema
+        if dataset_filter is None:
+            dataset_filter = self.dataset_filter
+        if surveys_filter is None:
+            surveys_filter = self.surveys_filter
 
-    def get_target_population(self):
-        candidates = Building.objects.filter(Q(**self.dataset_filter)).annotate(
-            reponse_data=RawSQL(
+
+        dataset_q_parser = DatasetQParser(schema=dataset_schema)
+        dataset_q = dataset_q_parser.parse_query(dataset_filter)
+
+        survey_q_parser = SurveyQParser()
+        surveys_q = survey_q_parser.parse_query(surveys_filter)
+
+        candidates = Building.objects.filter(dataset_q).annotate(
+            response_data=RawSQL(
                 """select jsonb_object_agg(key, value)
                     from (
                         select 
@@ -184,7 +195,7 @@ class Survey(models.Model):
                 (),
                 output_field=models.JSONField(),
             )
-        ).filter(self.surveys_filter)
+        ).filter(surveys_q)
 
         return candidates
 
@@ -193,6 +204,7 @@ class Survey(models.Model):
 
     # Filter on the upstream dataset's columns and json attributes
     # JSON necessary to construct a Q object on the source dataset
+    # Can be fed to Q to create an ORM filter
     dataset_filter = models.JSONField(null=True, blank=True)
 
     # Survey schema is a mapping of field_id -> (field_label, type, question_text, widget)
@@ -200,6 +212,7 @@ class Survey(models.Model):
 
     # Filter on any existing survey results for the dataset
     # a mapping of survey_id -> {[survey_field]: [conditions]}
+    # Can be fed to Q to create an ORM filter
     surveys_filter = models.JSONField(null=True, blank=True)
 
     date_added = models.DateTimeField("date added", default=timezone.now)

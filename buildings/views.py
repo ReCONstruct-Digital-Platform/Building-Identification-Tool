@@ -39,8 +39,7 @@ from buildings.models.models import (
 )
 import logging
 
-from buildings.utils.query_utils import QParser
-from buildings.utils.survey_query import SurveyQParser
+from buildings.utils.query_utils import DatasetQParser, SurveyQParser
 
 log = logging.getLogger(__name__)
 
@@ -201,8 +200,8 @@ def query(request, dataset_slug):
 
     if request.method == "POST":
         query = json.loads(request.body)
-        log.debug(pformat(query))
-        parser = QParser(schema=dataset.schema)
+        log.debug(query)
+        parser = DatasetQParser(schema=dataset.schema)
         q = parser.parse_query(query)
         log.debug(q)
         buildings = Building.objects.filter(dataset_id=dataset.id).filter(q)
@@ -265,7 +264,7 @@ def get_surveys_qb_filters_and_optgroups(surveys):
         elif widget in ["boolean"]:
             return [{
                 "type": "boolean",
-                "input": "checkbox",
+                "input": "radio",
                 "values": ["true", "false"],
                 "operators": ["in", "is_null", "is_not_null"],
             }]
@@ -354,7 +353,7 @@ def newsurvey(request, dataset_slug):
         log.debug(pformat(query))
 
         dataset_query = query["dataset_query"]
-        dataset_q_parser = QParser(schema=dataset.schema)
+        dataset_q_parser = DatasetQParser(schema=dataset.schema)
         dataset_q = dataset_q_parser.parse_query(dataset_query)
         # log.debug(q)
         # buildings = Building.objects.filter(dataset_id=dataset.id).filter(dataset_q)

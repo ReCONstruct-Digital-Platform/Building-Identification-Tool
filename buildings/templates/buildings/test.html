@@ -4,115 +4,175 @@
 {% load allauth %}
 
 
+{% block extra_head %}
+<style>
+  /* Custom styles for drag and drop */
+  .dragging {
+      opacity: 0.5;
+      background-color: #4a5568;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<!-- Table Template in Django -->
-<div class="flex flex-col place-content-center justify-center items-center mt-20">
-  <div class="overflow-x-auto">
-    <table class="table-auto w-full border-collapse border border-gray-300">
-      <thead class="bg-gray-100" id="table-header">
-        <tr>
-          <th class="border border-gray-300 px-4 py-2 text-left cursor-pointer draggable" draggable="true">Address</th>
-          <th class="border border-gray-300 px-4 py-2 text-left cursor-pointer draggable" draggable="true">Municipality
-          </th>
-          <th class="border border-gray-300 px-4 py-2 text-left cursor-pointer draggable" draggable="true"> Area </th>
-          <th class="border border-gray-300 px-4 py-2 text-left cursor-pointer draggable" draggable="true">NumFloors
-          </th>
-          <th class="border border-gray-300 px-4 py-2 text-left cursor-pointer draggable" draggable="true">Category</th>
-        </tr>
-      </thead>
-      <tbody id="data-table">
-        {% for row in people %}
-        <tr class="border-b">
-          <td class="border border-gray-300 px-4 py-2">{{ row.address }}</td>
-          <td class="border border-gray-300 px-4 py-2">{{ row.municipality }}</td>
-          <td class="border border-gray-300 px-4 py-2">{{ row.area }}</td>
-          <td class="border border-gray-300 px-4 py-2">{{ row.num_floors }}</td>
-          <td class="border border-gray-300 px-4 py-2">{{ row.category }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+
+<div class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-[80%] h-full">
+        <div class="w-full overflow-x-auto rounded-lg bg-white bg-opacity-50 backdrop-blur-lg backdrop-filter">
+            <table id="dataTable" class="w-full min-w-full divide-y divide-gray-700">
+                <thead>
+                    <tr id="tableHeader"></tr>
+                </thead>
+                <tbody id="tableBody" class="divide-y divide-gray-700"></tbody>
+            </table>
+        </div>
+    </div>
   </div>
 
-  <!-- Column Visibility Controls -->
-  <div class="mt-4 space-y-2">
-    <label class="inline-flex items-center">
-      <input type="checkbox" checked class="column-toggle" data-column="0" />
-      <span class="ml-2">Address</span>
-    </label>
-    <label class="inline-flex items-center">
-      <input type="checkbox" checked class="column-toggle" data-column="1" />
-      <span class="ml-2">Municipality</span>
-    </label>
-    <label class="inline-flex items-center">
-      <input type="checkbox" checked class="column-toggle" data-column="2" />
-      <span class="ml-2">Area</span>
-    </label>
-    <label class="inline-flex items-center">
-      <input type="checkbox" checked class="column-toggle" data-column="3" />
-      <span class="ml-2">NumFloors</span>
-    </label>
-    <label class="inline-flex items-center">
-      <input type="checkbox" checked class="column-toggle" data-column="4" />
-      <span class="ml-2">Category</span>
-    </label>
-  </div>
-
-</div>
 
 
 <script>
-  // Column toggle functionality
-  document.querySelectorAll('.column-toggle').forEach(function (checkbox) {
-    checkbox.addEventListener('change', function () {
-      const column = this.dataset.column;
-      const cells = document.querySelectorAll(`table tr > *:nth-child(${+column + 1})`);
-      cells.forEach(cell => cell.classList.toggle('hidden', !this.checked));
+ const columns = [
+    { id: 'name', label: 'Name', accessor: 'name' },
+    { id: 'title', label: 'Title', accessor: 'title' },
+    { id: 'email', label: 'Email', accessor: 'email' },
+    { id: 'role', label: 'Role', accessor: 'role' },
+];
+
+const data = [
+    { id: '1', name: 'John Doe', title: 'Software Engineer', email: 'john@example.com', role: 'Admin' },
+    { id: '2', name: 'Jane Smith', title: 'Product Manager', email: 'jane@example.com', role: 'User' },
+    { id: '3', name: 'Bob Johnson', title: 'Designer', email: 'bob@example.com', role: 'User' },
+    { id: '4', name: 'Alice Brown', title: 'Data Analyst', email: 'alice@example.com', role: 'Admin' },
+    { id: '5', name: 'Charlie Wilson', title: 'Marketing Specialist', email: 'charlie@example.com', role: 'User' },
+];
+
+let sortConfig = { key: null, direction: 'asc' };
+let draggedItem = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    renderTable();
+});
+
+function renderTable() {
+    const tableHeader = document.getElementById('tableHeader');
+    const tableBody = document.getElementById('tableBody');
+
+    if (!tableHeader || !tableBody) {
+        console.error('Table header or body not found');
+        return;
+    }
+
+    // Clear existing content
+    tableHeader.innerHTML = '';
+    tableBody.innerHTML = '';
+
+    // Render header
+    columns.forEach((column, index) => {
+        const th = document.createElement('th');
+        th.className = 'px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider cursor-move';
+        th.innerHTML = `
+            <div class="flex items-center space-x-1">
+                <span>${column.label}</span>
+                <span class="sort-icon"></span>
+            </div>
+        `;
+        th.setAttribute('draggable', 'true');
+        th.setAttribute('data-index', index);
+        th.addEventListener('click', () => sortData(column.accessor));
+        th.addEventListener('dragstart', dragStart);
+        th.addEventListener('dragover', dragOver);
+        th.addEventListener('dragenter', dragEnter);
+        th.addEventListener('dragleave', dragLeave);
+        th.addEventListener('drop', dragDrop);
+        th.addEventListener('dragend', dragEnd);
+        tableHeader.appendChild(th);
     });
-  });
 
-  // Sorting functionality
-  function sortTable(columnIndex) {
-    const table = document.getElementById('data-table');
-    const rows = Array.from(table.querySelectorAll('tr'));
-    const sortedRows = rows.sort((a, b) => {
-      const aText = a.querySelector(`td:nth-child(${columnIndex + 1})`).textContent.trim();
-      const bText = b.querySelector(`td:nth-child(${columnIndex + 1})`).textContent.trim();
-      return aText.localeCompare(bText);
+    // Render body
+    getSortedData().forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-#4a5568 transition-colors duration-100';
+        columns.forEach(column => {
+            const td = document.createElement('td');
+            td.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-600';
+            td.textContent = item[column.accessor];
+            tr.appendChild(td);
+        });
+        tableBody.appendChild(tr);
     });
-    sortedRows.forEach(row => table.appendChild(row));
-  }
 
-  // Column drag-and-drop functionality
-  const header = document.getElementById('table-header');
-  let draggedColumnIndex = null;
+    updateSortIcons();
+}
 
-  header.addEventListener('dragstart', (e) => {
-    draggedColumnIndex = Array.from(header.children[0].children).indexOf(e.target);
-    e.dataTransfer.effectAllowed = 'move';
-  });
+function sortData(key) {
+    if (sortConfig.key === key) {
+        sortConfig.direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortConfig.key = key;
+        sortConfig.direction = 'asc';
+    }
+    renderTable();
+}
 
-  header.addEventListener('dragover', (e) => {
+function getSortedData() {
+    if (!sortConfig.key) return data;
+    return [...data].sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+    });
+}
+
+function updateSortIcons() {
+    const headers = document.querySelectorAll('#tableHeader th');
+    headers.forEach(header => {
+        const sortIcon = header.querySelector('.sort-icon');
+        const columnKey = columns[header.getAttribute('data-index')].accessor;
+        if (sortConfig.key === columnKey) {
+            sortIcon.innerHTML = sortConfig.direction === 'asc' 
+                ? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>'
+                : '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
+        } else {
+            sortIcon.innerHTML = '';
+        }
+    });
+}
+
+function dragStart(e) {
+    draggedItem = this;
+    setTimeout(() => this.classList.add('dragging'), 0);
+}
+
+function dragEnd() {
+    this.classList.remove('dragging');
+}
+
+function dragOver(e) {
     e.preventDefault();
-  });
+}
 
-  header.addEventListener('drop', (e) => {
+function dragEnter(e) {
     e.preventDefault();
-    const targetColumn = e.target;
-    if (targetColumn.tagName !== 'TH') return;
+    this.classList.add('bg-#4a5568');
+}
 
-    const targetIndex = Array.from(header.children[0].children).indexOf(targetColumn);
-    const rows = document.querySelectorAll('table tr');
+function dragLeave() {
+    this.classList.remove('bg-#4a5568');
+}
 
-    rows.forEach(row => {
-      const cells = Array.from(row.children);
-      if (draggedColumnIndex !== null) {
-        row.insertBefore(cells[draggedColumnIndex], cells[targetIndex]);
-      }
-    });
+function dragDrop() {
+    this.classList.remove('bg-#4a5568');
+    const fromIndex = parseInt(draggedItem.getAttribute('data-index'));
+    const toIndex = parseInt(this.getAttribute('data-index'));
+    if (fromIndex !== toIndex) {
+        const [movedColumn] = columns.splice(fromIndex, 1);
+        columns.splice(toIndex, 0, movedColumn);
+        renderTable();
+    }
+}
 
-    draggedColumnIndex = null;
-  });
+
 </script>
 
 {% endblock %}

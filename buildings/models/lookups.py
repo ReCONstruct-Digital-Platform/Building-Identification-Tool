@@ -24,8 +24,6 @@ class BaseAnyStringLookupMixin(Lookup):
         rhs, rhs_params = self.process_rhs(compiler, connection)
         rhs = self.get_rhs_op(None, rhs)
 
-        print(rhs)
-
         params = lhs_params + list(rhs_params)
 
         if self.lookup_name == "any_str_in":
@@ -37,7 +35,7 @@ class BaseAnyStringLookupMixin(Lookup):
                 select from unnest(jsonb_to_text_array(%s)) elem 
                 where elem %s )""" % (lhs, rhs), params
         
-        print(f"Result: {pformat(result)}")
+        # print(f"Result: {pformat(result)}")
         return result
 
 class AnyStringLookupMixin(BaseAnyStringLookupMixin, BuiltinLookup):
@@ -75,7 +73,6 @@ class BaseAnyIntLookupMixin(Lookup):
         lhs, lhs_params = self.process_rhs(compiler, connection)
         rhs, rhs_params = self.process_lhs(compiler, connection)
 
-        print(f"output of process_lhs: {rhs} % {rhs_params}")
         rhs = self.get_rhs_op(None, rhs)
 
         if self.lookup_name == "any_int_range":
@@ -86,7 +83,7 @@ class BaseAnyIntLookupMixin(Lookup):
         params = lhs_params + list(rhs_params)
 
         result = "%s %s" % (lhs, rhs), params
-        print(f"Result: {pformat(result)}")
+        # print(f"Result: {pformat(result)}")
         return result
 
 

@@ -1,0 +1,118 @@
+{% extends "buildings/base.html" %}
+{% load static %}
+{% load i18n %}
+{% load allauth %}
+
+
+{% block content %}
+<!-- Table Template in Django -->
+<div class="flex flex-col place-content-center justify-center items-center mt-20">
+  <div class="overflow-x-auto">
+    <table class="table-auto w-full border-collapse border border-gray-300">
+      <thead class="bg-gray-100" id="table-header">
+        <tr>
+          <th class="border border-gray-300 px-4 py-2 text-left cursor-pointer draggable" draggable="true">Address</th>
+          <th class="border border-gray-300 px-4 py-2 text-left cursor-pointer draggable" draggable="true">Municipality
+          </th>
+          <th class="border border-gray-300 px-4 py-2 text-left cursor-pointer draggable" draggable="true"> Area </th>
+          <th class="border border-gray-300 px-4 py-2 text-left cursor-pointer draggable" draggable="true">NumFloors
+          </th>
+          <th class="border border-gray-300 px-4 py-2 text-left cursor-pointer draggable" draggable="true">Category</th>
+        </tr>
+      </thead>
+      <tbody id="data-table">
+        {% for row in people %}
+        <tr class="border-b">
+          <td class="border border-gray-300 px-4 py-2">{{ row.address }}</td>
+          <td class="border border-gray-300 px-4 py-2">{{ row.municipality }}</td>
+          <td class="border border-gray-300 px-4 py-2">{{ row.area }}</td>
+          <td class="border border-gray-300 px-4 py-2">{{ row.num_floors }}</td>
+          <td class="border border-gray-300 px-4 py-2">{{ row.category }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Column Visibility Controls -->
+  <div class="mt-4 space-y-2">
+    <label class="inline-flex items-center">
+      <input type="checkbox" checked class="column-toggle" data-column="0" />
+      <span class="ml-2">Address</span>
+    </label>
+    <label class="inline-flex items-center">
+      <input type="checkbox" checked class="column-toggle" data-column="1" />
+      <span class="ml-2">Municipality</span>
+    </label>
+    <label class="inline-flex items-center">
+      <input type="checkbox" checked class="column-toggle" data-column="2" />
+      <span class="ml-2">Area</span>
+    </label>
+    <label class="inline-flex items-center">
+      <input type="checkbox" checked class="column-toggle" data-column="3" />
+      <span class="ml-2">NumFloors</span>
+    </label>
+    <label class="inline-flex items-center">
+      <input type="checkbox" checked class="column-toggle" data-column="4" />
+      <span class="ml-2">Category</span>
+    </label>
+  </div>
+
+</div>
+
+
+<script>
+  // Column toggle functionality
+  document.querySelectorAll('.column-toggle').forEach(function (checkbox) {
+    checkbox.addEventListener('change', function () {
+      const column = this.dataset.column;
+      const cells = document.querySelectorAll(`table tr > *:nth-child(${+column + 1})`);
+      cells.forEach(cell => cell.classList.toggle('hidden', !this.checked));
+    });
+  });
+
+  // Sorting functionality
+  function sortTable(columnIndex) {
+    const table = document.getElementById('data-table');
+    const rows = Array.from(table.querySelectorAll('tr'));
+    const sortedRows = rows.sort((a, b) => {
+      const aText = a.querySelector(`td:nth-child(${columnIndex + 1})`).textContent.trim();
+      const bText = b.querySelector(`td:nth-child(${columnIndex + 1})`).textContent.trim();
+      return aText.localeCompare(bText);
+    });
+    sortedRows.forEach(row => table.appendChild(row));
+  }
+
+  // Column drag-and-drop functionality
+  const header = document.getElementById('table-header');
+  let draggedColumnIndex = null;
+
+  header.addEventListener('dragstart', (e) => {
+    draggedColumnIndex = Array.from(header.children[0].children).indexOf(e.target);
+    e.dataTransfer.effectAllowed = 'move';
+  });
+
+  header.addEventListener('dragover', (e) => {
+    e.preventDefault();
+  });
+
+  header.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const targetColumn = e.target;
+    if (targetColumn.tagName !== 'TH') return;
+
+    const targetIndex = Array.from(header.children[0].children).indexOf(targetColumn);
+    const rows = document.querySelectorAll('table tr');
+
+    rows.forEach(row => {
+      const cells = Array.from(row.children);
+      if (draggedColumnIndex !== null) {
+        row.insertBefore(cells[draggedColumnIndex], cells[targetIndex]);
+      }
+    });
+
+    draggedColumnIndex = null;
+  });
+</script>
+
+{% endblock %}

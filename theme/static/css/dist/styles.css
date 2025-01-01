@@ -1702,6 +1702,10 @@ input:checked + .toggle-bg {
   max-height: 100vh !important;
 }
 
+.min-h-screen {
+  min-height: 100vh !important;
+}
+
 .w-1\/2 {
   width: 50% !important;
 }
@@ -1762,8 +1766,16 @@ input:checked + .toggle-bg {
   width: 100% !important;
 }
 
+.w-\[80\%\] {
+  width: 80% !important;
+}
+
 .min-w-full {
   min-width: 100% !important;
+}
+
+.max-w-4xl {
+  max-width: 56rem !important;
 }
 
 .max-w-6xl {
@@ -1778,8 +1790,8 @@ input:checked + .toggle-bg {
   max-width: 600px !important;
 }
 
-.max-w-\[85\%\] {
-  max-width: 85% !important;
+.max-w-\[75\%\] {
+  max-width: 75% !important;
 }
 
 .max-w-sm {
@@ -1788,10 +1800,6 @@ input:checked + .toggle-bg {
 
 .max-w-xs {
   max-width: 20rem !important;
-}
-
-.max-w-\[75\%\] {
-  max-width: 75% !important;
 }
 
 .flex-1 {
@@ -1863,6 +1871,10 @@ input:checked + .toggle-bg {
 
 .cursor-default {
   cursor: default !important;
+}
+
+.cursor-move {
+  cursor: move !important;
 }
 
 .cursor-not-allowed {
@@ -1994,6 +2006,11 @@ input:checked + .toggle-bg {
   border-color: rgb(230 234 230 / var(--tw-divide-opacity)) !important;
 }
 
+.divide-gray-700 > :not([hidden]) ~ :not([hidden]) {
+  --tw-divide-opacity: 1 !important;
+  border-color: rgb(70 84 88 / var(--tw-divide-opacity)) !important;
+}
+
 .overflow-hidden {
   overflow: hidden !important;
 }
@@ -2009,6 +2026,10 @@ input:checked + .toggle-bg {
 .truncate {
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.whitespace-nowrap {
   white-space: nowrap !important;
 }
 
@@ -2136,6 +2157,11 @@ input:checked + .toggle-bg {
   background-color: rgb(247 248 247 / var(--tw-bg-opacity)) !important;
 }
 
+.bg-gray-700 {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(70 84 88 / var(--tw-bg-opacity)) !important;
+}
+
 .bg-gray-800 {
   --tw-bg-opacity: 1 !important;
   background-color: rgb(61 69 76 / var(--tw-bg-opacity)) !important;
@@ -2209,6 +2235,10 @@ input:checked + .toggle-bg {
   --tw-bg-opacity: 0.7 !important;
 }
 
+.bg-gradient-to-br {
+  background-image: linear-gradient(to bottom right, var(--tw-gradient-stops)) !important;
+}
+
 .bg-gradient-to-tr {
   background-image: linear-gradient(to top right, var(--tw-gradient-stops)) !important;
 }
@@ -2219,8 +2249,18 @@ input:checked + .toggle-bg {
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
 }
 
+.from-gray-100 {
+  --tw-gradient-from: #e6eae6 var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgb(230 234 230 / 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
 .to-\[\#379aeb\] {
   --tw-gradient-to: #379aeb var(--tw-gradient-to-position) !important;
+}
+
+.to-gray-200 {
+  --tw-gradient-to: #cfd8d2 var(--tw-gradient-to-position) !important;
 }
 
 .p-1 {
@@ -2327,6 +2367,11 @@ input:checked + .toggle-bg {
 .py-32 {
   padding-top: 8rem !important;
   padding-bottom: 8rem !important;
+}
+
+.py-4 {
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
 }
 
 .py-\[6px\] {
@@ -2477,6 +2522,11 @@ input:checked + .toggle-bg {
   color: rgb(230 234 230 / var(--tw-text-opacity)) !important;
 }
 
+.text-gray-300 {
+  --tw-text-opacity: 1 !important;
+  color: rgb(171 186 180 / var(--tw-text-opacity)) !important;
+}
+
 .text-gray-400 {
   --tw-text-opacity: 1 !important;
   color: rgb(127 148 142 / var(--tw-text-opacity)) !important;
@@ -2618,10 +2668,27 @@ input:checked + .toggle-bg {
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow) !important;
 }
 
+.backdrop-blur-lg {
+  --tw-backdrop-blur: blur(16px) !important;
+  -webkit-backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia) !important;
+  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia) !important;
+}
+
+.backdrop-filter {
+  -webkit-backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia) !important;
+  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia) !important;
+}
+
 .transition {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter !important;
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter !important;
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition-duration: 150ms !important;
+}
+
+.transition-colors {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke !important;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
   transition-duration: 150ms !important;
 }
@@ -2708,6 +2775,11 @@ input:checked + .toggle-bg {
   background-color: rgb(247 248 247 / var(--tw-bg-opacity)) !important;
 }
 
+.hover\:bg-gray-700:hover {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(70 84 88 / var(--tw-bg-opacity)) !important;
+}
+
 .hover\:bg-red-500:hover {
   --tw-bg-opacity: 1 !important;
   background-color: rgb(240 82 82 / var(--tw-bg-opacity)) !important;
@@ -2731,6 +2803,11 @@ input:checked + .toggle-bg {
 .hover\:bg-white:hover {
   --tw-bg-opacity: 1 !important;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity)) !important;
+}
+
+.hover\:bg-\[\#4a5568\]:hover {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(74 85 104 / var(--tw-bg-opacity)) !important;
 }
 
 .hover\:text-blue-600:hover {
