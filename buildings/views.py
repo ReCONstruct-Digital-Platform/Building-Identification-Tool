@@ -165,10 +165,10 @@ def datasets(request):
 def test(req):
 
     columns = [
-        {"id": "name", "label": "Name", "accessor": "name"},
-        {"id": "title", "label": "Title", "accessor": "title"},
-        {"id": "email", "label": "Email", "accessor": "email"},
-        {"id": "role", "label": "Role", "accessor": "role"},
+        {"id": "name", "label": "Name"},
+        {"id": "title", "label": "Title"},
+        {"id": "email", "label": "Email"},
+        {"id": "role", "label": "Role"},
     ]
     data = [
         {
