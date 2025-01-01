@@ -4,16 +4,6 @@
 {% load allauth %}
 
 
-<!-- {% block extra_head %}
-<style>
-  /* Custom styles for drag and drop */
-  .dragging {
-    opacity: 0.5;
-    background-color: #4a5568;
-  }
-</style>
-{% endblock %} -->
-
 {% block content %}
 <div class="min-h-screen flex items-center justify-center p-4">
   <div class="w-[80%] h-full">
@@ -63,9 +53,7 @@
 {{ columns | json_script:"columns" }}
 <script>
 
-
   const sortConfig = { colId: null, direction: 'asc' };
-
 
   document.addEventListener('DOMContentLoaded', () => {
 

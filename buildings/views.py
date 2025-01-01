@@ -213,36 +213,6 @@ def test(req):
     return render(req, "buildings/test.html", context)
 
 
-def test2(req):
-    people = [
-        {
-            "address": 1,
-            "municipality": "Alice",
-            "num_floors": 30,
-            "category": "alice@example.com",
-        },
-        {
-            "address": 2,
-            "municipality": "Bob",
-            "num_floors": 25,
-            "category": "bob@example.com",
-        },
-        {
-            "address": 3,
-            "municipality": "Charlie",
-            "num_floors": 35,
-            "category": "charlie@example.com",
-        },
-        {
-            "address": 4,
-            "municipality": "David",
-            "num_floors": 28,
-            "category": "david@example.com",
-        },
-    ]
-    return render(req, "buildings/test_table_1.html", {"people": people})
-
-
 @login_required(login_url="account_login")
 def query(request, dataset_slug):
 
