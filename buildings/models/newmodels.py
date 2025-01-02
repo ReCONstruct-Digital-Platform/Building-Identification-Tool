@@ -171,6 +171,9 @@ class Survey(models.Model):
         ).filter(surveys_q)
 
         return candidates
+    
+    def get_next_building_to_survey(self):
+        return self.get_target_population().first()
 
     # Source dataset
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)

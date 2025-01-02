@@ -30,4 +30,5 @@ urlpatterns = [
     path("datasets", views.datasets, name="datasets"),
     path("datasets/<str:dataset_slug>/newsurvey", views.newsurvey, name="newsurvey"),
     path("test", views.test, name="test"),
+    path("surveys/<str:survey_slug>/survey", views.do_survey, name="do_survey"),
 ]

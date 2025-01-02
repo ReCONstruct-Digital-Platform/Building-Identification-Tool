@@ -1,0 +1,27 @@
+{% with id=widget.attrs.id %}
+<div id="{{ id }}" class="{{ widget.attrs.class }}">
+  {% for _, options, _ in widget.optgroups %}
+    {% for option in options %}
+    <!-- option.name is the field name for all options - value is the option's unique "name" -->
+      {% if widget.specify_option_value == option.value %}
+      <div id="{{ id }}_specify_container" class = "flex items-center">
+        <label>
+          <input id = "{{ id }}_specify" type="{{ option.type }}" class = "{{ widget.attrs.option_class }}"
+          onclick="turnOnSpecify('{{ id }}_specify_value')" name="{{ widget.name }}"
+          {% if widget.value_was_specified %} checked{% endif %} required>{{ option.label }}
+        </label>
+        <input id="{{ id }}_specify_value" class="{{ widget.attrs.specify_class }}" type="{{ widget.specify_input_type }}" name="{{ widget.name }}"
+        {% if widget.value_was_specified %} value="{{ widget.initial }}" {% else %} disabled {% endif %} />
+      </div>
+      {% else %}
+        <label>
+          <input id="{{ option.attrs.id }}" class="{{ widget.attrs.option_class }}" type="{{ option.type }}"
+            onclick="turnOffSpecify('{{ id }}_specify_value')"
+            name="{{ option.name }}" value="{{ option.value|stringformat:'s' }}" 
+            {% if not widget.value_was_specified and option.value == widget.initial %} checked{% endif %} 
+            required>{{ option.label }}</label>
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+</div>
+{% endwith %}

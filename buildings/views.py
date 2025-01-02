@@ -20,13 +20,14 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.core.serializers import serialize
 from django.db.models import Q
 from django.db.models.expressions import RawSQL
+from allauth.account.views import EmailView
 
-from pprint import pformat
+from pprint import pformat, pprint
 
 from buildings.forms import ChangeEmailForm, ChangePasswordForm
 from buildings.models import Dataset
 from buildings.models.newmodels import Building, Survey
-from buildings.models.surveys import SurveyV1Form
+from buildings.models.surveys import DynamicSurveyForm, SurveyV1Form
 from buildings.utils.constants import CUBF_TO_NAME_MAP
 from buildings.models.models import (
     EvalUnit,
@@ -211,6 +212,32 @@ def test(req):
     context = {"columns": columns, "data": data}
 
     return render(req, "buildings/test.html", context)
+
+
+def do_survey(request, survey_slug):
+
+    survey = get_object_or_404(Survey, slug=survey_slug)
+    building = survey.get_next_building_to_survey()
+
+    form = DynamicSurveyForm(schema=survey.schema)
+
+    context = {
+        "survey": survey,
+        "building": building,
+        "key": settings.GOOGLE_MAPS_API_KEY,
+        "building_coords": {
+            "lat": building.lat,
+            "lng": building.lng,
+        },
+        "geojson": None,
+        "latest_view_data_value": None,
+        "next_building_id": building.id + 1,
+        "form": form,
+        "previous_no_building_vote": None,
+    }
+
+
+    return render(request, "buildings/survey_rendering.html", context)
 
 
 @login_required(login_url="account_login")
@@ -591,10 +618,6 @@ class EvalUnitDetailView(generic.DetailView):
     model = EvalUnit
     template_name = "buildings/detail.html"
 
-
-from allauth.account.views import EmailView
-
-from pprint import pprint
 
 
 @login_required(login_url="account_login")

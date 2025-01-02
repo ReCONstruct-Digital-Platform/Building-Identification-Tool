@@ -1498,10 +1498,6 @@ input:checked + .toggle-bg {
   margin-left: 0.25rem !important;
 }
 
-.ml-2 {
-  margin-left: 0.5rem !important;
-}
-
 .ms-1 {
   margin-inline-start: 0.25rem !important;
 }
@@ -1528,10 +1524,6 @@ input:checked + .toggle-bg {
 
 .mt-2 {
   margin-top: 0.5rem !important;
-}
-
-.mt-20 {
-  margin-top: 5rem !important;
 }
 
 .mt-3 {
@@ -1810,10 +1802,6 @@ input:checked + .toggle-bg {
   table-layout: auto !important;
 }
 
-.border-collapse {
-  border-collapse: collapse !important;
-}
-
 .-translate-x-1\/2 {
   --tw-translate-x: -50% !important;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y)) !important;
@@ -1863,10 +1851,6 @@ input:checked + .toggle-bg {
 
 .cursor-default {
   cursor: default !important;
-}
-
-.cursor-move {
-  cursor: move !important;
 }
 
 .cursor-not-allowed {
@@ -1967,12 +1951,6 @@ input:checked + .toggle-bg {
   --tw-space-x-reverse: 0 !important;
   margin-right: calc(0.75rem * var(--tw-space-x-reverse)) !important;
   margin-left: calc(0.75rem * calc(1 - var(--tw-space-x-reverse))) !important;
-}
-
-.space-y-2 > :not([hidden]) ~ :not([hidden]) {
-  --tw-space-y-reverse: 0 !important;
-  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse))) !important;
-  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse)) !important;
 }
 
 .space-y-5 > :not([hidden]) ~ :not([hidden]) {
@@ -2093,10 +2071,6 @@ input:checked + .toggle-bg {
 
 .border-0 {
   border-width: 0px !important;
-}
-
-.border-b {
-  border-bottom-width: 1px !important;
 }
 
 .border-blue-600 {
@@ -2341,11 +2315,6 @@ input:checked + .toggle-bg {
 .py-32 {
   padding-top: 8rem !important;
   padding-bottom: 8rem !important;
-}
-
-.py-4 {
-  padding-top: 1rem !important;
-  padding-bottom: 1rem !important;
 }
 
 .py-\[6px\] {
@@ -2656,12 +2625,6 @@ input:checked + .toggle-bg {
   transition-duration: 150ms !important;
 }
 
-.transition-colors {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke !important;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
-  transition-duration: 150ms !important;
-}
-
 .transition-opacity {
   transition-property: opacity !important;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -2672,10 +2635,6 @@ input:checked + .toggle-bg {
   transition-property: transform !important;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
   transition-duration: 150ms !important;
-}
-
-.duration-100 {
-  transition-duration: 100ms !important;
 }
 
 .ease-out {
