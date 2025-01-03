@@ -185,6 +185,9 @@ class Survey(models.Model):
 
     # Survey schema is a mapping of field_id -> (field_label, type, question_text, widget)
     schema = JSONField()
+    
+    # Holds modal HTML 
+    modals = JSONField(null=True, blank=True)
 
     # Filter on any existing survey results for the dataset
     # a mapping of survey_id -> {[survey_field]: [conditions]}

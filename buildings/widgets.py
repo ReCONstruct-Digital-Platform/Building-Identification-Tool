@@ -76,6 +76,8 @@ class RadioWithSpecify2(RadioSelect):
         self.initial = None
         self.specify_input_type = None
         self.specify_option_value = None
+        self.has_modal = None
+        self.modal = None
         self.attrs["option_class"] = TW_RADIO_CLASS
         self.attrs["specify_class"] = TW_SPECIFY_CLASS
 
@@ -91,6 +93,8 @@ class RadioWithSpecify2(RadioSelect):
         )
         context["widget"]["specify_input_type"] = self.specify_input_type
         context["widget"]["specify_option_value"] = self.specify_option_value
+        context["widget"]["modal"] = self.modal
+        context["widget"]["has_modal"] = self.has_modal
         return context
 
 

@@ -1,15 +1,15 @@
-<!-- Gathers all the JS/CSS given to field widgets and imports them -->
 {{ form.media }}
-
-
 {% for field in form %}
 <fieldset class="q-container">
   <legend class="q-header">
     <strong>Q{{field.field.question_number}}: {{ field.field.question_text }}</strong>
-    <!-- {% if field.has_modal %}
-    {% include 'buildings/utils/info_modal_button.html' with modal_id=field.name %}
-    {% endif %} -->
+    {% if field.field.has_modal %}
+    {% include "buildings/utils/info_modal_button.html" with modal_id=field.auto_id %}
+    {% endif %}
   </legend>
   {{ field }}
 </fieldset>
+{% if field.field.has_modal %}
+  {% include "buildings/utils/modal_template.html" with field_name=field.auto_id modal=field.field.modal %}
+{% endif %}
 {% endfor %}

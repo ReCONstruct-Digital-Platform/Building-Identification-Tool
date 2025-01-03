@@ -9,6 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 from buildings.models.models import Vote
 
+from buildings.models.newmodels import Survey
 from buildings.widgets import (
     MultiCheckboxSpecify,
     MultiCheckboxSpecify2,
@@ -84,259 +85,46 @@ NEW_OR_RENOVATED = [
     ("recently_renovated", _("Recently renovated")),
 ]
 
-WIDGETS = {
-    "radio": RadioSelect(attrs={"class": "survey-1col"}),
-    "radio_w_specify": RadioWithSpecify2(attrs={"class": "survey-1col"}),
-    "multi_checkbox": MultiCheckboxSpecify2(
-        attrs={"class": "survey-1col"}, has_specify=False
-    ),
-    "multi_checkbox_specify": MultiCheckboxSpecify2(
-        attrs={"class": "survey-1col"}, has_specify=True
-    ),
-    "multi_checkbox_required": MultiCheckboxSpecifyRequired2(
-        attrs={"class": "survey-3col"},
-    ),
-    "multi_checkbox_required_specify": MultiCheckboxSpecifyRequired2(
-        attrs={"class": "survey-3col"},
-        has_specify=True,
-    ),
-}
 
-test_schema = {
-  "appendages": {
-    "label": { "en": "Appendages" },
-    "options": {
-      "balconies": { "option_text": { "en": "Balconies" } },
-      "vestibules": { "option_text": { "en": "Exterior Vestibules" } },
-      "canopies_eaves": { "option_text": { "en": "Roof overhangs/eaves" } },
-      "porches_stoops": { "option_text": { "en": "Porches/stoops" } },
-      "other": { "option_text": { "en": "Other (specify)" } }
-    },
-    "widget": "multi_checkbox_specify",
-    "widget_config": {
-      "specify_input_type": "text",
-      "specify_option_value": "other",
-      "attrs": { "class": "survey-1col" }
-    },
-    "question_text": {
-      "en": "Select any and all significant appendages to the building faces."
-    },
-    "question_number": 7
-  },
-  "num_storeys": {
-    "label": { "en": "Number of Storeys" },
-    "widget": "radio_w_specify",
-    "widget_config": {
-      "specify_input_type": "number",
-      "specify_option_value": "num_storeys",
-      "attrs": { "class": "survey-1col" }
-    },
-    "options": {
-      "num_storeys": {
-        "option_text": { "en": "Number of storeys:" }
-      },
-      "unsure": { "option_text": { "en": "Unsure" } }
-    },
-    "question_text": {
-      "en": "How many storeys above-ground does the building have?"
-    },
-    "question_number": 4
-  },
-  "has_basement": {
-    "label": { "en": "Has Basement" },
-    "widget": "radio",
-    "type": "boolean_3_choices",
-    "widget_config": {
-      "attrs": { "class": "survey-1col" }
-    },
-    "options": {
-      "true": { "option_text": { "en": "Yes" } },
-      "false": { "option_text": { "en": "No" } },
-      "other": { "option_text": { "en": "Unsure" } }
-    },
-    "question_text": { "en": "Does the building appear to have a basement?" },
-    "question_number": 5
-  },
-  "roof_geometry": {
-    "label": { "en": "Roof Geometry" },
-    "options": {
-      "flat": { "option_text": { "en": "Flat" } },
-      "curved": { "option_text": { "en": "Curved" } },
-      "unsure": { "option_text": { "en": "Unsure" } },
-      "complex": { "option_text": { "en": "Complex" } },
-      "pitch_low": { "option_text": { "en": "Low Pitched" } },
-      "pitch_high": { "option_text": { "en": "High Pitched" } }
-    },
-    "widget": "multi_checkbox_required",
-    "widget_config": {
-      "attrs": { "class": "survey-3col" }
-    },
-    "question_text": { "en": "Select all that describes the roof geometry." },
-    "question_number": 12
-  },
-  "facade_condition": {
-    "label": { "en": "Facade Condition" },
-    "widget": "radio",
-    "type": "boolean_3_choices",
-    "widget_config": {
-      "attrs": { "class": "survey-1col" }
-    },
-    "options": {
-      "true": { "option_text": { "en": "Yes" } },
-      "false": { "option_text": { "en": "No" } },
-      "other": { "option_text": { "en": "Unsure" } }
-    },
-    "question_text": {
-      "en": "Are the façades in poor condition and in need of replacement?"
-    },
-    "question_number": 9
-  },
-  "new_or_renovated": {
-    "label": { "en": "New or Renovated" },
-    "options": {
-      "newly_built": { "option_text": { "en": "Newly built" } },
-      "recently_renovated": { "option_text": { "en": "Recently renovated" } }
-    },
-    "widget": "multi_checkbox",
-    "question_text": {
-      "en": "Does the building look newly built or recently renovated?"
-    },
-    "question_number": 13
-  },
-  "exterior_cladding": {
-    "label": { "en": "Exterior Cladding" },
-    "options": {
-      "wood": { "option_text": { "en": "Wood" } },
-      "metal": { "option_text": { "en": "Metal" } },
-      "vinyl": { "option_text": { "en": "Vinyl" } },
-      "unsure": { "option_text": { "en": "Unsure" } },
-      "plaster": { "option_text": { "en": "Plaster" } },
-      "concrete": { "option_text": { "en": "Concrete" } },
-      "curtain_wall": { "option_text": { "en": "Curtain Wall" } },
-      "brick_masonry": { "option_text": { "en": "Brick Masonry" } },
-      "stone_masonry": { "option_text": { "en": "Stone Masonry" } },
-      "other": { "option_text": { "en": "Other (Specify)" } }
-    },
-    "widget": "multi_checkbox_required_specify",
-    "widget_config": {
-      "attrs": { "class": "survey-3col" },
-      "specify_input_type": "text",
-      "specify_option_value": "other"
-    },
-    "question_text": {
-      "en": "Select all widgets of exterior cladding does the building appear to have."
-    },
-    "question_number": 8
-  },
-  "has_simple_volume": {
-    "label": { "en": "Simple Volume" },
-    "widget": "radio",
-    "type": "boolean_2_choices",
-    "options": {
-      "true": { "option_text": { "en": "Yes" } },
-      "false": { "option_text": { "en": "No" } }
-    },
-    "question_text": {
-      "en": "Does the building have a simple volumetric form?"
-    },
-    "question_number": 3
-  },
-  "site_obstructions": {
-    "label": { "en": "Site Obstructions" },
-    "options": {
-      "buildings": { "option_text": { "en": "Buildings" } },
-      "overhead_wires": {
-        "option_text": {
-          "en": "Overhead wires, incl. those blocking general access to site"
-        }
-      },
-      "trees_or_landscaping": {
-        "option_text": { "en": "Important trees or landscaping" }
-      }
-    },
-    "widget": "multi_checkbox_specify",
-    "question_text": {
-      "en": "Select any and all obstructions to machine access around the building."
-    },
-    "question_number": 6
-  },
-  "window_wall_ratio": {
-    "label": { "en": "Window-to-Wall Ratio"},
-    "widget": "radio",
-    "type": "boolean_3_choices",
-    "widget_config": {
-      "attrs": { "class": "survey-1col" }
-    },
-    "options": {
-      "true": { "option_text": { "en": "Yes" } },
-      "false": { "option_text": { "en": "No" } },
-      "other": { "option_text": { "en": "Unsure" } }
-    },
-    "question_text": {
-      "en": "Does glazing make up more than 40% of the total visible façade area?"
-    },
-    "question_number": 10
-  },
-  "has_simple_footprint": {
-    "label": { "en": "Simple Footprint" },
-    "widget": "radio",
-    "type": "boolean_2_choices",
-    "options": {
-      "true": { "option_text": { "en": "Yes" } },
-      "false": { "option_text": { "en": "No" } }
-    },
-    "question_text": { "en": "Does the building have a simple footprint?" },
-    "question_number": 2
-  },
-  "self_similar_cluster": {
-    "label": {"en": "Self Similar Cluster"},
-    "widget": "radio_w_specify",
-    "widget_config": {
-        "specify_input_type": "number",
-        "specify_option_value": "num_buildings_in_cluster"
-    },
-    "options": {
-        "num_buildings_in_cluster": {
-            "option_text": {"en": "Buildings in cluster:"}
-        },
-        "no_cluster": {"option_text": {"en": "No"}}
-    },
-    "question_text": {
-        "en": "Is the building part of a self-similar cluster? If so, how many buildings are in the cluster?"
-    },
-    "question_number": 1
-  },
-  "large_irregular_windows": {
-    "label": { "en": "Large/Irregular Windows"},
-    "widget": "multi_checkbox",
-    "widget_config": {
-      "attrs": { "class": "survey-1col" }
-    },
-    "options": {
-      "very_large_windows": { "option_text": { "en": "Very large" } },
-      "irregular_windows": { "option_text": { "en": "Irregularly shaped" } }
-    },
-    "question_text": {
-      "en": "Are there very large and/or irregularly shaped windows?"
-    },
-    "question_number": 11
-  }
+def get_widget_for_field(widget_type):
+    if widget_type == "radio":
+        return RadioSelect(attrs={"class": "survey-1col"})
+    if widget_type == "radio_w_specify":
+        return RadioWithSpecify2(attrs={"class": "survey-1col"})
+    if widget_type == "multi_checkbox":
+        return MultiCheckboxSpecify2(attrs={"class": "survey-1col"}, has_specify=False)
+    if widget_type == "multi_checkbox_specify":
+        return MultiCheckboxSpecify2(attrs={"class": "survey-1col"}, has_specify=True)
+    if widget_type == "multi_checkbox_required":
+        return MultiCheckboxSpecifyRequired2(attrs={"class": "survey-3col"})
+    if widget_type == "multi_checkbox_required_specify":
+        return MultiCheckboxSpecifyRequired2(
+            attrs={"class": "survey-3col"}, has_specify=True
+        )
+    raise Exception(f"Unknown widget type: {widget_type}")
+
+
+FIELD_TYPES = {
+    "integer": forms.IntegerField,
+    "boolean": forms.BooleanField,
+    "text": forms.CharField,
 }
 
 
 def order_schema_by_question_number(schema):
+    """Ordering not garanteed to persist through JSON/dict serde"""
     return dict(sorted(schema.items(), key=lambda x: x[1]["question_number"]))
 
-
 class DynamicSurveyForm(Form):
-    def __init__(self, schema, *args, **kwargs):
+    def __init__(self, survey: Survey, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        schema = order_schema_by_question_number(test_schema)
+        schema = order_schema_by_question_number(survey.schema)
+        modals = survey.modals
 
         for field, config in schema.items():
-            self.fields[field] = forms.IntegerField()
+            self.fields[field] = FIELD_TYPES[config["type"]]()
             self.fields[field].label = config["label"]["en"]
-            self.fields[field].widget = deepcopy(WIDGETS[config["widget"]])
+            self.fields[field].widget = get_widget_for_field(config["widget"])
             self.fields[field].question_text = config["question_text"]["en"]
             self.fields[field].question_number = config["question_number"]
 
@@ -353,6 +141,10 @@ class DynamicSurveyForm(Form):
                 self.fields[field].widget.choices = [
                     (k, _(v["option_text"]["en"])) for k, v in config["options"].items()
                 ]
+
+            if "has_modal" in config and config["has_modal"]:
+                self.fields[field].has_modal = True
+                self.fields[field].modal = modals[field]
 
 
 class JSONFieldForSpecify(models.JSONField):

@@ -219,7 +219,7 @@ def do_survey(request, survey_slug):
     survey = get_object_or_404(Survey, slug=survey_slug)
     building = survey.get_next_building_to_survey()
 
-    form = DynamicSurveyForm(schema=survey.schema)
+    form = DynamicSurveyForm(survey)
 
     context = {
         "survey": survey,

@@ -31,6 +31,8 @@
       {% endif %}
     </div>
 
+    {{ test|safe }}
+
     <form id="building-submission-form" class="mt-2" action="{% url 'buildings:do_survey' survey_slug=survey.slug %}"
       method="post">
       {% csrf_token %}
