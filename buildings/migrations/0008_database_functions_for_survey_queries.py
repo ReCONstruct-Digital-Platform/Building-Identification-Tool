@@ -36,6 +36,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='survey',
-            unique_together={('name', 'dataset', 'schema', 'dataset_filter', 'surveys_filter')},
+            unique_together={('name', 'dataset', 'dataset_filter', 'surveys_filter')},
         ),
     ]
