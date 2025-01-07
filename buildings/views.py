@@ -265,93 +265,6 @@ def query(request, dataset_slug):
 
 def get_surveys_qb_filters_and_optgroups(surveys):
 
-    def transform_survey_schema_field(
-        schema_field: dict, field_id: str, survey_name: str
-    ) -> list[dict]:
-        """
-        Map between the DB schema field type and the QueryBuilder schema models
-        """
-        field_type = schema_field["type"]
-        if field_type in ["string", "text"]:
-            # For Survey string type fields, if we were given a set of possible choices
-            # we'll create a querybuilder checkbox input for these.
-            # In all cases, return a text input to search for arbitrary values
-
-            qb_schemas = []
-
-            if "options" in schema_field:
-                qb_schemas.append(
-                    {
-                        "id": field_id,
-                        "field": field_id,
-                        "label": schema_field["label"]["en"],
-                        "type": "string",
-                        "input": "checkbox",
-                        "values": list(schema_field["options"].keys()),
-                        "operators": ["in", "not_in", "is_null", "is_not_null"],
-                        "optgroup": survey_name,
-                    },
-                )
-
-            qb_schemas.append(
-                {
-                    "id": field_id + "_search",
-                    "field": field_id,
-                    "label": schema_field["label"]["en"] + " (Search)",
-                    "type": "string",
-                    "input": "text",
-                    "operators": [
-                        "contains",
-                        "not_contains",
-                        "ends_with",
-                        "begins_with",
-                        "not_ends_with",
-                        "not_begins_with",
-                    ],
-                    "optgroup": survey_name,
-                }
-            )
-            return qb_schemas
-
-        elif field_type in ["integer"]:
-            return [
-                {
-                    "id": field_id,
-                    "field": field_id,
-                    "label": schema_field["label"]["en"],
-                    "type": "integer",
-                    "input": "number",
-                    "operators": [
-                        "equal",
-                        "not_equal",
-                        "less",
-                        "greater",
-                        "less_or_equal",
-                        "greater_or_equal",
-                        "between",
-                        "not_between",
-                        "is_null",
-                        "is_not_null",
-                    ],
-                    "optgroup": survey_name,
-                }
-            ]
-        elif field_type in ["boolean"]:
-            return [
-                {
-                    "id": field_id,
-                    "field": field_id,
-                    "label": schema_field["label"]["en"],
-                    "type": "boolean",
-                    "input": "radio",
-                    "values": ["true", "false"],
-                    "operators": ["in", "is_null", "is_not_null"],
-                    "optgroup": survey_name,
-                }
-            ]
-        else:
-            raise Exception(f"Unknown field type: {field_type}")
-
     combined = []
     optgroups = {}
 
@@ -405,6 +318,34 @@ def get_survey_target_population(dataset_q, surveys_q):
 
 
 @login_required(login_url="account_login")
+def newsurvey_api(request, dataset_slug):
+    # Get the dataset by slug
+    dataset = get_object_or_404(Dataset, slug=dataset_slug)
+
+    surveys_on_dataset = Survey.objects.filter(dataset=dataset)
+    log.info(f"{surveys_on_dataset.count()} surveys found on dataset {dataset.name}")
+
+    if request.method == "POST":
+        query = json.loads(request.body)
+        log.debug(pformat(query))
+
+        dataset_query = query["dataset_query"]
+        dataset_q_parser = DatasetQParser(schema=dataset.schema)
+        dataset_q = dataset_q_parser.parse_query(dataset_query)
+
+        surveys_query = query["surveys_query"]
+
+        survey_q_parser = SurveyQParser()
+        surveys_q = survey_q_parser.parse_query(surveys_query)
+        print(surveys_query)
+
+        candidates = get_survey_target_population(dataset_q, surveys_q)
+
+        print(candidates)
+        print(candidates.count())
+
+
+@login_required(login_url="account_login")
 def newsurvey(request, dataset_slug):
     """
     Create a new survey on a dataset, and optionally the output of other surveys on that dataset
@@ -445,6 +386,32 @@ def newsurvey(request, dataset_slug):
         "survey_filters": survey_filters_and_optgroups,
     }
     return render(request, "buildings/newsurvey.html", context)
+
+
+@login_required(login_url="account_login")
+def newsurvey_questions(request, dataset_slug):
+    """
+    Create a new survey on a dataset, and optionally the output of other surveys on that dataset
+    """
+    # Get the dataset by slug
+    dataset = get_object_or_404(Dataset, slug=dataset_slug)
+
+    surveys_on_dataset = Survey.objects.filter(dataset=dataset)
+    log.info(f"{surveys_on_dataset.count()} surveys found on dataset {dataset.name}")
+
+    if request.method == "POST":
+        print("post")
+
+    survey_filters_and_optgroups = get_surveys_qb_filters_and_optgroups(
+        surveys_on_dataset
+    )
+
+    context = {
+        "dataset": dataset,
+        "dataset_filters": dataset.schema,
+        "survey_filters": survey_filters_and_optgroups,
+    }
+    return render(request, "buildings/newsurvey_questions.html", context)
 
 
 @login_required(login_url="account_login")

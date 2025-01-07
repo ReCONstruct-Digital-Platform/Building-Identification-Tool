@@ -146,7 +146,8 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "mailer",
-    "compressor"
+    "compressor",
+    "slippers",
 ]
 
 
@@ -187,6 +188,7 @@ TEMPLATES = [
             ],
             "builtins": [
                 "django.templatetags.static",
+                "slippers.templatetags.slippers",
             ],
         },
     },

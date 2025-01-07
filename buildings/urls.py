@@ -29,6 +29,11 @@ urlpatterns = [
     path("query/<str:dataset_slug>", views.query, name="query"),
     path("datasets", views.datasets, name="datasets"),
     path("datasets/<str:dataset_slug>/newsurvey", views.newsurvey, name="newsurvey"),
+    path(
+        "datasets/<str:dataset_slug>/newsurvey_questions",
+        views.newsurvey_questions,
+        name="newsurvey_questions",
+    ),
     path("test", views.test, name="test"),
     path("surveys/<str:survey_slug>/survey", views.do_survey, name="do_survey"),
 ]

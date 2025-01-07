@@ -22,29 +22,39 @@
       <hr>
     </div>
 
-    <div>
-      <input type="text" placeholder="Survey name">
-    </div>
+    <section id="survey-info" class="my-4">
+      <div class="text-2xl">Survey name</div>
+      <p>Enter a name for your survey</p>
+      <input id="survey-name" type="text" placeholder="Survey name">
+    </section>
 
-    <section id="data-filter">
+    <section id="data-filter" class="my-4">
 
       <div class="text-2xl">Dataset filter</div>
-      <p>Filter the input dataset buildings to survey</p>
+      <p>Filter the input dataset buildings to survey.</p>
+
+      {% #button id="add-dataset-filter" %}
+      Add dataset filter
+      {% /button %}
 
       <div class="block w-2/3 py-2">
-        <div id="query-builder-dataset" class="col-start-2 col-span-6">
-        </div>
+        <div id="query-builder-dataset" class="col-start-2 col-span-6"></div>
       </div>
     </section>
 
-    <section id="surveys-filter">
+    <section id="surveys-filter" class="my-4">
 
       <div class="text-2xl">Surveys filter</div>
-      <p>Filter the input to your survey on previous survey results. Your survey's target population will be updated as
-        the upstream surveys get new responses.</p>
+      <p>Filter the input data to your survey on previous survey results. Your survey's target population will be
+        updated as the upstream surveys get new responses.</p>
+
+      {% #button id="add-surveys-filter" %}
+      Add survey filter
+      {% /button %}
+
+
       <div class="block w-2/3 py-2">
-        <div id="query-builder-surveys" class="col-start-2 col-span-6">
-        </div>
+        <div id="query-builder-surveys" class="col-start-2 col-span-6"></div>
       </div>
     </section>
 
@@ -74,6 +84,7 @@
 <script src="{% static 'scripts/query-builder.standalone.js' %}"></script>
 <script defer>
 
+
   document.addEventListener("DOMContentLoaded", () => {
     const dataset_filters = JSON.parse(
       document.getElementById("dataset_filters").textContent
@@ -86,7 +97,6 @@
     const datasetQueryBuilderId = "#query-builder-dataset"
     const surveyQueryBuilderId = "#query-builder-surveys"
 
-
     // Fix for Bootstrap Datepicker
     $(datasetQueryBuilderId).on(
       "afterUpdateRuleValue.queryBuilder",
@@ -97,52 +107,69 @@
       }
     );
 
-    $(datasetQueryBuilderId).queryBuilder({
-      optgroups: {
-        core: {
-          en: "Core",
-        },
-        attributes: {
-          en: "Attributes",
-        },
-      },
-      operators: [
-        "equal",
-        "not_equal",
-        "less",
-        "less_or_equal",
-        "greater",
-        "greater_or_equal",
-        "between",
-        "not_between",
-        "begins_with",
-        "not_begins_with",
-        "contains",
-        "not_contains",
-        "ends_with",
-        "not_ends_with",
-        "is_null",
-        "is_not_null",
-        "in",
-        "not_in",
+    document.getElementById("add-dataset-filter").addEventListener("click", (e) => {
+      e.preventDefault();
 
-      ],
-      filters: dataset_filters,
-      rules: {
-        condition: "AND",
-        rules: [
-          {
-            id: "const_year",
-            field: "const_year",
-            type: "date",
-            input: "text",
-            operator: "between",
-            value: [1950, 2000],
-          }
-        ],
-      },
-      valid: true,
+      if (document.querySelector(datasetQueryBuilderId).childElementCount > 0) {
+        $(datasetQueryBuilderId).queryBuilder("destroy");
+        e.target.textContent = "Add dataset filter";
+        return;
+      }
+      else {
+        e.target.textContent = "Remove dataset filter"
+
+        $(datasetQueryBuilderId).queryBuilder({
+          optgroups: {
+            core: {
+              en: "Core",
+            },
+            attributes: {
+              en: "Attributes",
+            },
+          },
+          operators: [
+            "equal",
+            "not_equal",
+            "less",
+            "less_or_equal",
+            "greater",
+            "greater_or_equal",
+            "between",
+            "not_between",
+            "begins_with",
+            "not_begins_with",
+            "contains",
+            "not_contains",
+            "ends_with",
+            "not_ends_with",
+            "is_null",
+            "is_not_null",
+            "in",
+            "not_in",
+
+          ],
+          filters: dataset_filters,
+          rules: {
+            condition: "AND",
+            rules: [
+              {
+                id: "const_year",
+                field: "const_year",
+                type: "date",
+                input: "text",
+                operator: "between",
+                value: [1950, 2000],
+              }
+            ],
+          },
+          valid: true,
+          allow_empty: true
+        });
+
+      }
+
     });
+
 
     const survey_filters_fake = [
       {
@@ -225,59 +252,77 @@
       }
     ]
 
-    $(surveyQueryBuilderId).queryBuilder({
-      optgroups: survey_filters['optgroups'],
-      operators: [
-        "equal",
-        "not_equal",
-        "less",
-        "less_or_equal",
-        "greater",
-        "greater_or_equal",
-        "between",
-        "not_between",
-        "begins_with",
-        "not_begins_with",
-        "contains",
-        "not_contains",
-        "ends_with",
-        "not_ends_with",
-        "is_null",
-        "is_not_null",
-        "in",
-        "not_in",
-      ],
-      filters: survey_filters_fake,
-      // filters: survey_filters['filters'],
-      rules: {
-        condition: "AND",
-        rules: [
-          {
-            id: "s_5_exterior_cladding",
-            field: "s_5_exterior_cladding",
-            input: "text",
-            type: "checkbox",
-            operator: "in",
-            value: ["brick_masonry", "wood"],
+
+    document.getElementById("add-surveys-filter").addEventListener("click", (e) => {
+      e.preventDefault();
+
+      if (document.querySelector(surveyQueryBuilderId).childElementCount > 0) {
+        $(surveyQueryBuilderId).queryBuilder("destroy");
+        e.target.textContent = "Add surveys filter";
+        return;
+      }
+      else {
+        e.target.textContent = "Remove surveys filter"
+        $(surveyQueryBuilderId).queryBuilder({
+          optgroups: survey_filters['optgroups'],
+          operators: [
+            "equal",
+            "not_equal",
+            "less",
+            "less_or_equal",
+            "greater",
+            "greater_or_equal",
+            "between",
+            "not_between",
+            "begins_with",
+            "not_begins_with",
+            "contains",
+            "not_contains",
+            "ends_with",
+            "not_ends_with",
+            "is_null",
+            "is_not_null",
+            "in",
+            "not_in",
+          ],
+          filters: survey_filters_fake,
+          // filters: survey_filters['filters'],
+          rules: {
+            condition: "AND",
+            rules: [
+              {
+                id: "s_5_exterior_cladding",
+                field: "s_5_exterior_cladding",
+                input: "text",
+                type: "checkbox",
+                operator: "in",
+                value: ["brick_masonry", "wood"],
+              },
+              {
+                id: "s_5_has_basement",
+                field: "s_5_has_basement",
+                type: "boolean",
+                input: "checkbox",
+                operator: "is_null"
+              },
+              {
+                id: "s_6_num_storeys",
+                field: "s_6_num_storeys",
+                type: "integer",
+                input: "number",
+                operator: "between",
+                value: [5, 8]
+              }
+            ],
           },
-          {
-            id: "s_5_has_basement",
-            field: "s_5_has_basement",
-            type: "boolean",
-            input: "checkbox",
-            operator: "is_null"
-          },
-          {
-            id: "s_6_num_storeys",
-            field: "s_6_num_storeys",
-            type: "integer",
-            input: "number",
-            operator: "between",
-            value: [5, 8]
-          }
-        ],
-      },
+          allow_empty: true
+        });
+
+      }
+
     });
+
+
 
     document
       .getElementById("submitQueryButton")
