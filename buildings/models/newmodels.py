@@ -9,6 +9,7 @@ from django.db.models.expressions import RawSQL
 
 from buildings.utils.query_utils import DatasetQParser, SurveyQParser
 
+
 class Dataset(models.Model):
     class Meta:
         db_table = "datasets"
@@ -91,6 +92,7 @@ class Building(models.Model):
     def __str__(self):
         return f"Building {self.id}: {self.address}, {self.muni}, {self.postal_code}"
 
+
 class Survey(models.Model):
     """
     Surveys are linked to a source dataset and target a subset of buildings.
@@ -105,7 +107,6 @@ class Survey(models.Model):
         unique_together = (
             "name",
             "dataset",
-            "schema",
             "dataset_filter",
             "surveys_filter",
         )
@@ -116,12 +117,36 @@ class Survey(models.Model):
 
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
+    # Source dataset
+    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
+
+    # Filter on the upstream dataset's columns and json attributes
+    # JSON necessary to construct a Q object on the source dataset
+    # Can be fed to Q to create an ORM filter
+    dataset_filter = models.JSONField(null=True, blank=True)
+
+    # Survey schema is a mapping of field_id -> (field_label, type, question_text, widget)
+    schema = JSONField()
+
+    # Holds modal HTML
+    modals = JSONField(null=True, blank=True)
+
+    # Filter on any existing survey results for the dataset
+    # a mapping of survey_id -> {[survey_field]: [conditions]}
+    # Can be fed to Q to create an ORM filter
+    surveys_filter = models.JSONField(null=True, blank=True)
+
+    date_added = models.DateTimeField("date added", default=timezone.now)
+    date_modified = models.DateTimeField("date modified", default=timezone.now)
+
     # If this gets slow, implement a view for the target population
     # mapping building_id -> aggregated response data
     # IT will have to refresh everytime a new response is added
     # https://www.fusionbox.com/blog/detail/using-materialized-views-to-implement-efficient-reports-in-django/643/
     # https://pypi.org/project/django-db-views/
-    def get_target_population(self, dataset_schema = None, dataset_filter = None, surveys_filter = None):
+    def get_target_population(
+        self, dataset_schema=None, dataset_filter=None, surveys_filter=None
+    ):
         if dataset_schema is None:
             dataset_schema = self.dataset.schema
         if dataset_filter is None:
@@ -129,16 +154,17 @@ class Survey(models.Model):
         if surveys_filter is None:
             surveys_filter = self.surveys_filter
 
-
         dataset_q_parser = DatasetQParser(schema=dataset_schema)
         dataset_q = dataset_q_parser.parse_query(dataset_filter)
 
         survey_q_parser = SurveyQParser()
         surveys_q = survey_q_parser.parse_query(surveys_filter)
 
-        candidates = Building.objects.filter(dataset_q).annotate(
-            response_data=RawSQL(
-                """select jsonb_object_agg(key, value)
+        candidates = (
+            Building.objects.filter(dataset_q)
+            .annotate(
+                response_data=RawSQL(
+                    """select jsonb_object_agg(key, value)
                     from (
                         select 
                             id, key, jsonb_agg(distinct value) as value
@@ -165,38 +191,117 @@ class Survey(models.Model):
                         group by id, key
                     ) as sub4
                     group by id""",
-                (),
-                output_field=models.JSONField(),
+                    (),
+                    output_field=models.JSONField(),
+                )
             )
-        ).filter(surveys_q)
+            .filter(surveys_q)
+        )
 
         return candidates
-    
+
     def get_next_building_to_survey(self):
         return self.get_target_population().first()
 
-    # Source dataset
-    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
+    def map_to_qb_field(
+        self, schema_field: dict, field_id: str, survey_name: str
+    ) -> list[dict]:
+        """
+        Map between the DB schema field type and the QueryBuilder schema models
+        """
+        field_type = schema_field["type"]
+        if field_type in ["string", "text"]:
+            # For Survey string type fields, if we were given a set of possible choices
+            # we'll create a querybuilder checkbox input for these.
+            # In all cases, return a text input to search for arbitrary values
 
-    # Filter on the upstream dataset's columns and json attributes
-    # JSON necessary to construct a Q object on the source dataset
-    # Can be fed to Q to create an ORM filter
-    dataset_filter = models.JSONField(null=True, blank=True)
+            qb_schemas = []
 
-    # Survey schema is a mapping of field_id -> (field_label, type, question_text, widget)
-    schema = JSONField()
-    
-    # Holds modal HTML 
-    modals = JSONField(null=True, blank=True)
+            if "options" in schema_field:
+                qb_schemas.append(
+                    {
+                        "id": field_id,
+                        "field": field_id,
+                        "label": schema_field["label"]["en"],
+                        "type": "string",
+                        "input": "checkbox",
+                        "values": list(schema_field["options"].keys()),
+                        "operators": ["in", "not_in", "is_null", "is_not_null"],
+                        "optgroup": survey_name,
+                    },
+                )
 
-    # Filter on any existing survey results for the dataset
-    # a mapping of survey_id -> {[survey_field]: [conditions]}
-    # Can be fed to Q to create an ORM filter
-    surveys_filter = models.JSONField(null=True, blank=True)
+            qb_schemas.append(
+                {
+                    "id": field_id + "_search",
+                    "field": field_id,
+                    "label": schema_field["label"]["en"] + " (Search)",
+                    "type": "string",
+                    "input": "text",
+                    "operators": [
+                        "contains",
+                        "not_contains",
+                        "ends_with",
+                        "begins_with",
+                        "not_ends_with",
+                        "not_begins_with",
+                    ],
+                    "optgroup": survey_name,
+                }
+            )
+            return qb_schemas
 
-    date_added = models.DateTimeField("date added", default=timezone.now)
-    date_modified = models.DateTimeField("date modified", default=timezone.now)
+        elif field_type in ["integer"]:
+            return [
+                {
+                    "id": field_id,
+                    "field": field_id,
+                    "label": schema_field["label"]["en"],
+                    "type": "integer",
+                    "input": "number",
+                    "operators": [
+                        "equal",
+                        "not_equal",
+                        "less",
+                        "greater",
+                        "less_or_equal",
+                        "greater_or_equal",
+                        "between",
+                        "not_between",
+                        "is_null",
+                        "is_not_null",
+                    ],
+                    "optgroup": survey_name,
+                }
+            ]
+        elif field_type in ["boolean"]:
+            return [
+                {
+                    "id": field_id,
+                    "field": field_id,
+                    "label": schema_field["label"]["en"],
+                    "type": "boolean",
+                    "input": "radio",
+                    "values": ["true", "false"],
+                    "operators": ["in", "is_null", "is_not_null"],
+                    "optgroup": survey_name,
+                }
+            ]
+        else:
+            raise Exception(f"Unknown field type: {field_type}")
 
+    def get_query_builder_schema(self):
+        """
+        Returns a list of query builder schema fields for the survey
+        """
+        qb_fields = []
+        for field_name, field_object in self.schema.items():
+
+            field_id = f"s_{self.id}_{field_name}"
+
+            qb_field = self.map_to_qb_field(field_object, field_id, self.name)
+            qb_fields.extend(qb_field)
+        return qb_fields
 
 
 class Response(models.Model):

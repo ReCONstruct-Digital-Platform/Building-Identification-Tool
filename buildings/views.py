@@ -166,7 +166,7 @@ def datasets(request):
 def test(req):
 
     columns = [
-    {"id": "name", "label": "Name"},
+        {"id": "name", "label": "Name"},
         {"id": "title", "label": "Title"},
         {"id": "email", "label": "Email"},
         {"id": "role", "label": "Role"},
@@ -236,7 +236,6 @@ def do_survey(request, survey_slug):
         "previous_no_building_vote": None,
     }
 
-
     return render(request, "buildings/survey_rendering.html", context)
 
 
@@ -266,20 +265,39 @@ def query(request, dataset_slug):
 
 def get_surveys_qb_filters_and_optgroups(surveys):
 
-    def transform_survey_schema_field(schema_field: dict, field_id: str) -> list[dict]:
-        widget = schema_field["widget"]
-        if widget in ["multi_checkbox_specify", "multi_checkbox_specify_required"]:
-            return [
+    def transform_survey_schema_field(
+        schema_field: dict, field_id: str, survey_name: str
+    ) -> list[dict]:
+        """
+        Map between the DB schema field type and the QueryBuilder schema models
+        """
+        field_type = schema_field["type"]
+        if field_type in ["string", "text"]:
+            # For Survey string type fields, if we were given a set of possible choices
+            # we'll create a querybuilder checkbox input for these.
+            # In all cases, return a text input to search for arbitrary values
+
+            qb_schemas = []
+
+            if "options" in schema_field:
+                qb_schemas.append(
+                    {
+                        "id": field_id,
+                        "field": field_id,
+                        "label": schema_field["label"]["en"],
+                        "type": "string",
+                        "input": "checkbox",
+                        "values": list(schema_field["options"].keys()),
+                        "operators": ["in", "not_in", "is_null", "is_not_null"],
+                        "optgroup": survey_name,
+                    },
+                )
+
+            qb_schemas.append(
                 {
-                    "type": "string",
-                    "input": "checkbox",
-                    "values": list(schema_field["values"].keys()),
-                    "operators": ["in", "not_in", "is_null", "is_not_null"],
-                },
-                {
-                    # Override the field and label
                     "id": field_id + "_search",
-                    "label": schema_field["label"] + " (Search)",
+                    "field": field_id,
+                    "label": schema_field["label"]["en"] + " (Search)",
                     "type": "string",
                     "input": "text",
                     "operators": [
@@ -290,11 +308,17 @@ def get_surveys_qb_filters_and_optgroups(surveys):
                         "not_ends_with",
                         "not_begins_with",
                     ],
-                },
-            ]
-        elif widget in ["integer", "radio_specify_integer"]:
+                    "optgroup": survey_name,
+                }
+            )
+            return qb_schemas
+
+        elif field_type in ["integer"]:
             return [
                 {
+                    "id": field_id,
+                    "field": field_id,
+                    "label": schema_field["label"]["en"],
                     "type": "integer",
                     "input": "number",
                     "operators": [
@@ -309,45 +333,32 @@ def get_surveys_qb_filters_and_optgroups(surveys):
                         "is_null",
                         "is_not_null",
                     ],
+                    "optgroup": survey_name,
                 }
             ]
-        elif widget in ["boolean"]:
+        elif field_type in ["boolean"]:
             return [
                 {
+                    "id": field_id,
+                    "field": field_id,
+                    "label": schema_field["label"]["en"],
                     "type": "boolean",
                     "input": "radio",
                     "values": ["true", "false"],
                     "operators": ["in", "is_null", "is_not_null"],
+                    "optgroup": survey_name,
                 }
             ]
         else:
-            raise Exception(f"Unknown widget: {widget}")
+            raise Exception(f"Unknown field type: {field_type}")
 
     combined = []
     optgroups = {}
 
     for survey in surveys:
-        schema = survey.schema
         survey_name = survey.name
-        survey_id = survey.id
-
         optgroups[survey_name] = {"en": survey_name}
-
-        for field_name, field_object in schema.items():
-
-            field_id = f"s_{survey_id}_{field_name}"
-
-            qb_fields_config = transform_survey_schema_field(field_object, field_id)
-
-            for config in qb_fields_config:
-                qb_filter = {
-                    "id": field_id,
-                    "field": field_id,
-                    "label": field_object["label"],
-                    "optgroup": survey_name,
-                    **config,
-                }
-                combined.append(qb_filter)
+        combined.extend(survey.get_query_builder_schema())
 
     return {"filters": combined, "optgroups": optgroups}
 
@@ -412,10 +423,6 @@ def newsurvey(request, dataset_slug):
         dataset_query = query["dataset_query"]
         dataset_q_parser = DatasetQParser(schema=dataset.schema)
         dataset_q = dataset_q_parser.parse_query(dataset_query)
-        # log.debug(q)
-        # buildings = Building.objects.filter(dataset_id=dataset.id).filter(dataset_q)
-
-        # print(buildings.count())
 
         surveys_query = query["surveys_query"]
 
@@ -617,7 +624,6 @@ class EvalUnitDetailView(generic.DetailView):
 
     model = EvalUnit
     template_name = "buildings/detail.html"
-
 
 
 @login_required(login_url="account_login")
