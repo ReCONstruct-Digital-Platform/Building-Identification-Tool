@@ -1,0 +1,32 @@
+{% extends "buildings/base.html" %}
+{% load static %}
+{% load i18n %}
+{% load allauth %}
+
+
+{% block content %}
+
+<div class="relative isolate px-6 lg:px-8 flex-col h-[100vh] items-center justify-center">
+
+  <div class="home-content mx-auto max-w-6xl py-32 sm:py-48 lg:py-32">
+
+    <section class="flex flex-col justify-start">
+
+      <h1 class="w-full mb-2 text-2xl font-bold tracking-tight text-gray-900">Dataset {{ dataset.name }}</h1>
+      <hr>
+
+      <div class="grid grid-cols-3 gap-2 py-2">
+
+        {% for survey in surveys %}
+
+        {% url 'buildings:survey' survey.slug as survey_url %}
+        {% card title=survey.name body=survey.description href=survey_url %}
+
+        {% endfor %}
+      </div>
+
+    </section>
+  </div>
+
+
+  {% endblock %}

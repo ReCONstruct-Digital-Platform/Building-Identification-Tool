@@ -158,9 +158,19 @@ def all_buildings(request):
 def datasets(request):
 
     datasets = Dataset.objects.all()
-    print(datasets)
-    context = {"datasets": datasets}
+    surveys = Survey.objects.all()
+    context = {"datasets": datasets, "surveys": surveys}
     return render(request, "buildings/datasets.html", context)
+
+
+@login_required(login_url="account_login")
+def dataset(request, dataset_slug: str):
+
+    dataset = Dataset.objects.get(slug=dataset_slug)
+    surveys = Survey.objects.filter(dataset=dataset)
+
+    context = {"dataset": dataset, "surveys": surveys}
+    return render(request, "buildings/dataset.html", context)
 
 
 def test(req):
@@ -221,14 +231,17 @@ def do_survey(request, survey_slug):
 
     form = DynamicSurveyForm(survey)
 
+    pprint(building.__dict__)
+
     context = {
         "survey": survey,
         "building": building,
         "key": settings.GOOGLE_MAPS_API_KEY,
-        "building_coords": {
-            "lat": building.lat,
-            "lng": building.lng,
-        },
+        # "building_coords": {
+        #     "lat": building.lat,
+        #     "lng": building.lng,
+        # },
+        "building_coords": {"lat": 48.33044355465415, "lng": -72.13260152870924},
         "geojson": None,
         "latest_view_data_value": None,
         "next_building_id": building.id + 1,
@@ -236,7 +249,7 @@ def do_survey(request, survey_slug):
         "previous_no_building_vote": None,
     }
 
-    return render(request, "buildings/survey_rendering.html", context)
+    return render(request, "buildings/survey_rendering_full.html", context)
 
 
 @login_required(login_url="account_login")

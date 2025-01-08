@@ -1,2 +1,3 @@
 components:
   button: "components/button.html"
+  card: "components/card.html"

@@ -14,16 +14,61 @@
     <section class="flex flex-col justify-start">
 
       <h1 class="w-full mb-2 text-2xl font-bold tracking-tight text-gray-900">My Datasets</h1>
+
       <hr>
 
-      <div class="flex flex-row">
-
+      <div class="grid grid-cols-3 gap-2 py-2">
         {% for dataset in datasets %}
-        <a href="#"
-          class="flex flex-col max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 m-4">
-          <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white"> {{ dataset.name }}</h5>
-          <p class="font-normal text-gray-700 dark:text-gray-400">description</p>
+        {% url 'buildings:dataset' dataset.slug as dataset_url %}
+
+        {% #card title=dataset.name body=dataset.description href=dataset_url %}
+
+        <a href="#">
+          <button type="button"
+            class="bg-teal-600 hover:bg-teal-500 focus-visible:outline-teal-600block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+            View Buildings
+          </button>
         </a>
+
+        {% /card %}
+        {% endfor %}
+      </div>
+
+    </section>
+
+    <section class="flex flex-col justify-start">
+
+      <h1 class="w-full mb-2 text-2xl font-bold tracking-tight text-gray-900">My Surveys</h1>
+
+      <hr>
+
+      <div class="grid grid-cols-3 gap-2 py-2">
+        {% for survey in surveys %}
+        {% url 'buildings:survey' survey.slug as survey_url %}
+
+        {% #card title=survey.name body=survey.description href=survey_url %}
+        <div class="flex flex-row gap-4">
+        <!-- <div class="grid grid-cols-3 gap-2"> -->
+          
+          <a href="#">
+            {% #button %}
+            View Results
+            {% /button %}
+          </a>
+
+          <a class="" href="{% url 'buildings:do_survey' survey.slug %}" >
+            {% #button type="primary"%}
+            Survey
+            <svg class="inline-block rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+              fill="none" viewBox="0 0 14 10">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M1 5h12m0 0L9 1m4 4L9 9" />
+            </svg>
+            {% /button %}
+          </a>
+        </div>
+
+        {% /card %}
         {% endfor %}
       </div>
 

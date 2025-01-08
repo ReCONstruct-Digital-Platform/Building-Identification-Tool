@@ -1425,10 +1425,6 @@ input:checked + .toggle-bg {
   float: inline-end !important;
 }
 
-.m-4 {
-  margin: 1rem !important;
-}
-
 .-mx-1\.5 {
   margin-left: -0.375rem !important;
   margin-right: -0.375rem !important;
@@ -1447,16 +1443,6 @@ input:checked + .toggle-bg {
 .my-0\.5 {
   margin-top: 0.125rem !important;
   margin-bottom: 0.125rem !important;
-}
-
-.my-3 {
-  margin-top: 0.75rem !important;
-  margin-bottom: 0.75rem !important;
-}
-
-.my-2 {
-  margin-top: 0.5rem !important;
-  margin-bottom: 0.5rem !important;
 }
 
 .my-1 {
@@ -1661,6 +1647,10 @@ input:checked + .toggle-bg {
   height: 0.75rem !important;
 }
 
+.h-3\.5 {
+  height: 0.875rem !important;
+}
+
 .h-4 {
   height: 1rem !important;
 }
@@ -1733,6 +1723,10 @@ input:checked + .toggle-bg {
   width: 0.75rem !important;
 }
 
+.w-3\.5 {
+  width: 0.875rem !important;
+}
+
 .w-4 {
   width: 1rem !important;
 }
@@ -1775,10 +1769,6 @@ input:checked + .toggle-bg {
 
 .w-full {
   width: 100% !important;
-}
-
-.w-\[100px\] {
-  width: 100px !important;
 }
 
 .min-w-full {
@@ -1898,12 +1888,28 @@ input:checked + .toggle-bg {
           appearance: none !important;
 }
 
+.grid-flow-row {
+  grid-auto-flow: row !important;
+}
+
+.grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
 .grid-cols-4 {
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
 }
 
 .grid-cols-7 {
   grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+}
+
+.grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.grid-rows-3 {
+  grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
 }
 
 .flex-row {
@@ -1956,6 +1962,18 @@ input:checked + .toggle-bg {
 
 .justify-between {
   justify-content: space-between !important;
+}
+
+.gap-2 {
+  gap: 0.5rem !important;
+}
+
+.gap-3 {
+  gap: 0.75rem !important;
+}
+
+.gap-4 {
+  gap: 1rem !important;
 }
 
 .space-x-1 > :not([hidden]) ~ :not([hidden]) {
@@ -2224,6 +2242,10 @@ input:checked + .toggle-bg {
   --tw-bg-opacity: 0.7 !important;
 }
 
+.bg-opacity-75 {
+  --tw-bg-opacity: 0.75 !important;
+}
+
 .bg-gradient-to-tr {
   background-image: linear-gradient(to top right, var(--tw-gradient-stops)) !important;
 }
@@ -2363,6 +2385,14 @@ input:checked + .toggle-bg {
 
 .pt-3 {
   padding-top: 0.75rem !important;
+}
+
+.ps-4 {
+  padding-inline-start: 1rem !important;
+}
+
+.ps-5 {
+  padding-inline-start: 1.25rem !important;
 }
 
 .text-left {
@@ -2565,6 +2595,10 @@ input:checked + .toggle-bg {
   opacity: 0.5 !important;
 }
 
+.opacity-75 {
+  opacity: 0.75 !important;
+}
+
 .shadow {
   --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1) !important;
   --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color) !important;
@@ -2743,11 +2777,6 @@ input:checked + .toggle-bg {
   background-color: rgb(255 255 255 / var(--tw-bg-opacity)) !important;
 }
 
-.hover\:bg-teal-700:hover {
-  --tw-bg-opacity: 1 !important;
-  background-color: rgb(37 96 91 / var(--tw-bg-opacity)) !important;
-}
-
 .hover\:text-blue-600:hover {
   --tw-text-opacity: 1 !important;
   color: rgb(14 108 187 / var(--tw-text-opacity)) !important;
@@ -2834,20 +2863,16 @@ input:checked + .toggle-bg {
   outline-offset: 2px !important;
 }
 
+.focus-visible\:outline-blue-700:focus-visible {
+  outline-color: #0d5697 !important;
+}
+
 .focus-visible\:outline-red-600:focus-visible {
   outline-color: #E02424 !important;
 }
 
 .focus-visible\:outline-teal-600:focus-visible {
   outline-color: #2d7f78 !important;
-}
-
-.focus-visible\:outline-teal-700:focus-visible {
-  outline-color: #25605b !important;
-}
-
-.focus-visible\:outline-blue-700:focus-visible {
-  outline-color: #0d5697 !important;
 }
 
 .active\:bg-gray-50:active {
@@ -2989,6 +3014,11 @@ input:checked + .toggle-bg {
 .dark\:hover\:text-white:hover:is(.dark *) {
   --tw-text-opacity: 1 !important;
   color: rgb(255 255 255 / var(--tw-text-opacity)) !important;
+}
+
+.dark\:focus\:ring-blue-800:focus:is(.dark *) {
+  --tw-ring-opacity: 1 !important;
+  --tw-ring-color: rgb(15 74 125 / var(--tw-ring-opacity)) !important;
 }
 
 .dark\:focus\:ring-gray-600:focus:is(.dark *) {
