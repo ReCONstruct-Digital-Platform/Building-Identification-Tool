@@ -116,6 +116,9 @@ def order_schema_by_question_number(schema):
     return dict(sorted(schema.items(), key=lambda x: x[1]["question_number"]))
 
 class DynamicSurveyForm(Form):
+    """
+    Dynamically generate a form based on a survey schema.
+    """
     def __init__(self, survey: Survey, *args, **kwargs):
         super().__init__(*args, **kwargs)
         schema = order_schema_by_question_number(survey.schema)

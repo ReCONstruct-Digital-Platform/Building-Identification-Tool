@@ -422,23 +422,9 @@ tr:hover .delete-row-icon {
   flex-direction: row-reverse;
 }
 
-.streetview-and-map-container {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-}
-
 .streetview-container {
   height: 100%;
   width: 50%;
-}
-
-.map-and-survey-container {
-  height: 100%;
-  width: auto;
-  flex: 1;
-  flex-direction: column;
 }
 
 .map-container {
@@ -481,18 +467,6 @@ tr:hover .delete-row-icon {
 
 .user-stats-container {
   font-size: large;
-}
-
-.tab-content {
-  max-height: 100%;
-  background-color: rgba(250, 250, 250, .65);
-}
-
-#scroll {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
 }
 
 .tab-pane {

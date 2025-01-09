@@ -253,7 +253,7 @@ async function findPanorama(
         );
       }
 
-      // console.debug(`Data: ${JSON.stringify(data, null, 2)}`)
+      console.debug(`Data: ${JSON.stringify(data, null, 2)}`);
 
       let heading;
       let zoom = (pitch = 0);
@@ -510,7 +510,7 @@ async function findPanorama(
     // Check if we were doing a radius search
     else if (panoRequest.radius) {
       var radius = panoRequest.radius;
-
+      console.debug(data, status)
       if (radius >= 100) {
         console.debug(
           `Status ${status}: Could not find panorama within ${radius}m! Giving up.`

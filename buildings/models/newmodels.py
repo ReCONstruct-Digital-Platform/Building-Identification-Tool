@@ -1,3 +1,4 @@
+import random
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.db.models import JSONField
@@ -147,6 +148,8 @@ class Survey(models.Model):
     def get_target_population(
         self, dataset_schema=None, dataset_filter=None, surveys_filter=None
     ):
+        # Support calling this method with different filters
+        # or the Survey instance's filters if not provided
         if dataset_schema is None:
             dataset_schema = self.dataset.schema
         if dataset_filter is None:
@@ -154,54 +157,83 @@ class Survey(models.Model):
         if surveys_filter is None:
             surveys_filter = self.surveys_filter
 
-        dataset_q_parser = DatasetQParser(schema=dataset_schema)
-        dataset_q = dataset_q_parser.parse_query(dataset_filter)
+        # Start with all buildings in the source dataset
+        candidates = Building.objects.filter()
 
-        survey_q_parser = SurveyQParser()
-        surveys_q = survey_q_parser.parse_query(surveys_filter)
+        # Filter on building attributes if applicable
+        if dataset_filter is not None:
+            dataset_q_parser = DatasetQParser(schema=dataset_schema)
+            dataset_q = dataset_q_parser.parse_query(dataset_filter)
+            candidates = candidates.filter(dataset_q)
 
-        candidates = (
-            Building.objects.filter(dataset_q)
-            .annotate(
+        # Filter on past surveys results if applicable.
+        # Annotate Buildings of the source dataset with all the response
+        # data for any survey. Then filter using our surveys_filter.
+        # An optimized version of this would check which surveys are being filtered
+        # and only join the responses for these ones.
+        if surveys_filter is not None:
+            survey_q_parser = SurveyQParser()
+            surveys_q = survey_q_parser.parse_query(surveys_filter)
+
+            candidates = candidates.annotate(
                 response_data=RawSQL(
                     """select jsonb_object_agg(key, value)
-                    from (
-                        select 
-                            id, key, jsonb_agg(distinct value) as value
-                            from (
-                                select 
-                                    id, key, jsonb_array_elements(value) as value
+                        from (
+                            select 
+                                id, key, jsonb_agg(distinct value) as value
                                 from (
                                     select 
-                                        id, key,
-                                        case jsonb_typeof(value)
-                                            when 'array' then value
-                                            else jsonb_build_array(value)
-                                        end as value
+                                        id, key, jsonb_array_elements(value) as value
                                     from (
                                         select 
-                                            r.building_id as id,
-                                            concat('s_', r.survey_id, '_', (jsonb_each(r.data)).key) as key, 
-                                            (jsonb_each(r.data)).value 
-                                        from responses r
-                                        where r.building_id = buildings.id
-                                    ) as sub
-                                ) as sub2
-                            ) as sub3    
-                        group by id, key
-                    ) as sub4
-                    group by id""",
+                                            id, key,
+                                            case jsonb_typeof(value)
+                                                when 'array' then value
+                                                else jsonb_build_array(value)
+                                            end as value
+                                        from (
+                                            select 
+                                                r.building_id as id,
+                                                concat('s_', r.survey_id, '_', (jsonb_each(r.data)).key) as key, 
+                                                (jsonb_each(r.data)).value 
+                                            from responses r
+                                            where r.building_id = buildings.id
+                                        ) as sub
+                                    ) as sub2
+                                ) as sub3    
+                            group by id, key
+                        ) as sub4
+                        group by id""",
                     (),
                     output_field=models.JSONField(),
                 )
-            )
-            .filter(surveys_q)
-        )
+            ).filter(surveys_q)
 
         return candidates
 
     def get_next_building_to_survey(self):
-        return self.get_target_population().first()
+        """
+        Returns a random building from the target population
+        that has not been surveyed yet, or the one with the
+        least amount of responses if they have all been surveyed.
+        """
+        buildings_w_response_counts = self.get_target_population().annotate(
+            response_count=RawSQL(
+                """select count(*) from responses r where r.survey_id = %s and r.building_id = buildings.id""",
+                (self.id,),
+                output_field=models.IntegerField(),
+            )
+        )
+
+        non_surveyed_buildings = buildings_w_response_counts.filter(response_count=0)
+        pks = non_surveyed_buildings.values_list("pk", flat=True)
+        # Check if we have results
+        if pks:
+            random_pk = random.choice(pks)
+            return Building.objects.get(pk=random_pk)
+
+        # Else we'll return a building with the least amount of responses
+        return buildings_w_response_counts.order_by("response_count").first()
 
     def map_to_qb_field(
         self, schema_field: dict, field_id: str, survey_name: str

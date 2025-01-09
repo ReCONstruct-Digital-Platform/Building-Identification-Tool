@@ -4,92 +4,50 @@
 {% load humanize %}
 {% load compress %}
 
-  <link rel="stylesheet"
-        type="text/css"
-        href="{% static 'buildings/style.css' %}" />
-
+  <!-- Used for the toast notification -->
   <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
     <symbol id="check-circle-fill" viewBox="0 0 16 16">
     <path fill="white" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
     </symbol>
   </svg>
 
-  <section class="container-wide">
 
-    <div class="survey-top-row" style="display: none">
-      <div class="building-nav building-nav-left">
-        <a id="prev-building-link">&laquo;&laquo; Prev</a>
-      </div>
-      <div class="building-info">
-        <div class="building-info-col">
-          <div class="building-address">
-            <h5>
-              {{ building.address }}<small>, {{ building.muni }}</small>
-            </h5>
-          </div>
-          <div>
-          </div>
-        </div>
-        <div class="building-info-col">
-          <div>
-            {% if building.num_dwelling %}
-              Dwellings:
-              {{ building.num_dwelling }}
-            {% endif %}
-          </div>
-          <div>
-            {% if building.const_yr %}
-              Built in:
-              {{ building.const_yr }}
-            {% endif %}
-          </div>
-          <div>
-            {% if building.max_floors %}
-              Max floors:
-              {{ building.max_floors }}
-            {% endif %}
-          </div>
-        </div>
 
-        <div class="building-info-col">
-          {% if hlms %}
-            <div>
-              Avg disrepair:
-              {% include "buildings/utils/disrepair_state_badge.html" with state=avg_disrepair
-              ivp=hlm_info.avg_ivp %}
-            </div>
-          {% endif %}
-          <div>
-            {% if building.phys_link %}
-              {{ building.phys_link | title }}
-            {% endif %}
-          </div>
-          <div>
-            {% if building.floor_area %}
-              Floor area:
-              {{ building.floor_area|intcomma }} m<sup>2</sup>
-            {% endif %}
-          </div>
-        </div>
+  <div class="px-2">
 
-      </div>
-
-      <div class="building-nav building-nav-right">
-        <a id="next" href="#">Next &raquo;&raquo;</a>
-      </div>
+    <div class="h-[20px]">
+      <div>Top row</div>
     </div>
-  </section>
 
-  <section class="container-wide">
+    
+
+
+
+
     <!--overall container-->
     <div id="streetview-and-map-container"
-         class="streetview-and-map-container">
+         class="flex flex-row w-full content-center overflow-hidden">
 
-      <div id="streetview-container" class="streetview-container ms-2">
+      <div id="streetview-container" class="flex flex-col h-full">
+        <div class="h-[40px]">
+          Streetview header
+        </div>
         <div id="streetview">
           <div id="unit-info" class="unit-info">
             <div class="building-info text-xs text-white flex flex-col py-[6px] px-[8px] rounded-r-sm">
-
+              <div class="flex flex-col">
+                <div class="font-semibold">
+                  {{ building.address }}
+                </div>
+                <div class="text-[11px] text-gray-100">
+                  {{ building.muni }}
+                </div>
+                <div class="building-badges">
+                  <div class="badge text-bg-primary">
+                    {{ survey.dataset.name }}
+                  </div>
+                </div>
+              </div>
               <div class="flex mt-2 space-x-3">
 
                 <div class="flex flex-col items-start">
@@ -100,38 +58,35 @@
                     {% endif %}
                   </div>
                   <div>
-                    {% if building.const_yr %}
+                    {% if building.const_year %}
                       Built in:
-                      {{ building.const_yr }}
-                      {% if building.const_yr_real == 'E' %}
-                        (est.)
-                      {% endif %}
+                      {{ building.const_year }}
                     {% endif %}
                   </div>
                   <div>
-                    {% if building.max_floors %}
-                      Max floors:
-                      {{ building.max_floors }}
+                    {% if building.num_floors %}
+                      Num floors:
+                      {{ building.num_floors }}
                     {% endif %}
                   </div>
                 </div>
 
                 <div class="flex flex-col items-start">
-                  {% if hlms %}
+                  {% if building.attrs.ivp and building.attrs.disrepair_state %}
                     <div>
                       Avg disrepair:
-                      {% include "buildings/utils/disrepair_state_badge.html" with state=avg_disrepair ivp=hlm_info.avg_ivp %}
+                      {% include "buildings/utils/disrepair_state_badge.html" with state=building.attrs.disrepair_state ivp=building.attrs.ivp %}
                     </div>
                   {% endif %}
                   <div>
-                    {% if building.phys_link %}
-                      {{ building.phys_link | title }}
+                    {% if building.attrs.category %}
+                      {{ building.attrs.category | title }}
                     {% endif %}
                   </div>
                   <div>
-                    {% if building.floor_area %}
-                      Floor area:
-                      {{ building.floor_area|intcomma }} m<sup>2</sup>
+                    {% if building.attrs.area_footprint %}
+                      Footprint area:
+                      {{ building.attrs.area_footprint|intcomma }} m<sup>2</sup>
                     {% endif %}
                   </div>
                 </div>
@@ -228,75 +183,54 @@
         </div>
       </div>
 
-      <div id="dragbar">
-      </div>
+      <div id="dragbar"></div>
 
-      <div id="map-and-survey-container w-[33%] max-w-[600px]"
-           class="map-and-survey-container me-3"
-           style='min-width: 33%'>
+      <div id="map-and-survey-container" class="flex flex-col flex-1 h-full w-full min-w-[30%]">
 
         <!-- Tabs -->
-        <nav class="flex">
-
-          <div id="nav-tab" class="nav nav-tabs text-sm" role="tablist">
-            <button id="nav-satellite-tab"
-                    class="nav-link bg-gray-100 hover:bg-gray-50 hover:outline-gray-100 text-gray-900 outline outline-gray-200 active:bg-gray-50 active:outline-gray-100 active"
-                    data-bs-toggle="tab"
-                    data-bs-target="#nav-satellite"
-                    type="button"
-                    role="tab"
-                    aria-controls="nav-satellite"
-                    aria-selected="true">
-              Satellite
-            </button>
+        <nav class="flex h-[40px]">
+          <div id="nav-tab" class="nav nav-tabs text-sm gap-[1px]" role="tablist">
             <button id="nav-survey-tab"
-                    class="nav-link bg-gray-100 hover:bg-gray-50 hover:outline-gray-100 text-gray-900 outline outline-gray-200 active:bg-gray-50 active:outline-gray-100"
-                    data-bs-toggle="tab"
-                    data-bs-target="#nav-survey"
-                    type="button"
-                    role="tab"
-                    aria-controls="nav-survey"
-                    aria-selected="false">
+              class="nav-link text-gray-900 bg-white bg-opacity-25 hover:bg-gray-50 hover:outline-gray-100 outline outline-1 outline-gray-200 active:bg-white active:bg-opacity-65 active:outline-gray-200 focus:outline-gray-200 "
+              data-bs-toggle="tab" data-bs-target="#nav-survey" type="button" role="tab" aria-controls="nav-survey"
+              aria-selected="false">
               Survey
             </button>
-            {% if hlms %}
-              <button id="nav-hlms-tab"
-                      class="nav-link bg-gray-100 hover:bg-gray-50 hover:outline-gray-100 text-gray-900 outline outline-gray-200 active:bg-gray-50 active:outline-gray-100"
-                      data-bs-toggle="tab"
-                      data-bs-target="#nav-hlms"
-                      type="button"
-                      role="tab"
-                      aria-controls="nav-hlms"
-                      aria-selected="false">
-                HLMs
-              </button>
-            {% endif %}
+        
+            <button id="nav-satellite-tab" 
+              class="nav-link text-gray-900 bg-white bg-opacity-25 hover:bg-gray-50 hover:outline-gray-100 outline outline-1 outline-gray-200 active 
+                      active:bg-white active:bg-opacity-65 active:outline-gray-500 focus:outline-gray-200" data-bs-toggle="tab"
+              data-bs-target="#nav-satellite" type="button" role="tab" aria-controls="nav-satellite" aria-selected="true">
+              Satellite
+            </button>
+
 
             <div class="absolute right-[17px] rounded-md bg-teal-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
-              <a id="next" href="#">Next &gt;&gt;</a>
+              <a id="next" href="{{ next_building_url }}">Next &gt;&gt;</a>
             </div>
           </div>
         </nav>
 
-        <div id="tab-content-container" class="tab-content text-sm">
+
+        <div id="tab-content-container" class="tab-content bg-white bg-opacity-65 text-sm h-full">
 
           <!-- Satellite view -->
           <div id="nav-satellite"
                class="tab-pane active"
                role="tabpanel"
                aria-labelledby="nav-satellite-tab">
-            <div id="satellite">
-            </div>
+
+            <!-- Instantiated by google maps -->
+            <div id="satellite"></div>
           </div>
 
           <!-- Survey -->
           <div id="nav-survey"
-               class="tab-pane"
+               class="tab-pane "
                role="tabpanel"
                aria-labelledby="nav-survey-tab">
-
-            <!--below is the first scrolling survey -->
-            <div id="scroll">
+            
+            <div class="flex flex-col h-full overflow-y-auto" >
 
               <div class="text-center pt-3">
 
@@ -313,8 +247,8 @@
               </div>
 
               <form id="building-submission-form" 
-                class="mt-2" 
-                action="{% url 'buildings:do_survey' survey_slug=survey.slug %}"
+                class="" 
+                action="{% url 'buildings:do_survey' survey_slug=survey.slug building_slug=building.slug %}"
                 method="post">
                 {% csrf_token %}
 
@@ -336,7 +270,7 @@
       </div>
 
     </div>
-  </section>
+  </div>
 
   <input type="hidden" id="sv_uploaded" data-uploaded="" />
   <input type="hidden"
@@ -409,7 +343,7 @@
   {% compress js %}
   <script defer src="{% static 'scripts/html2canvas.min.js' %}"></script>
   <script defer src="{% static 'scripts/gmaps_2.js' %}"></script>
-  <script defer src="{% static 'scripts/survey.js' %}"></script>  
+  <script defer src="{% static 'scripts/survey_2.js' %}"></script>  
   {% endcompress %}
 
 {% endblock page_scripts %}

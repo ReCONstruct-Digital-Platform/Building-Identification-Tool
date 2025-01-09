@@ -1,9 +1,10 @@
 import json
 import traceback
-
+import random
 from datetime import datetime
 
 from allauth.account.models import EmailAddress
+from django.urls import reverse
 from django.views import generic
 from django.conf import settings
 from django.db import transaction
@@ -224,27 +225,47 @@ def test(req):
     return render(req, "buildings/test.html", context)
 
 
-def do_survey(request, survey_slug):
+@login_required(login_url="account_login")
+def do_survey_redirect(_, survey_slug):
+    # TODO: Change how we get a random value
 
     survey = get_object_or_404(Survey, slug=survey_slug)
-    building = survey.get_next_building_to_survey()
+    random_building = survey.get_next_building_to_survey()
+
+    return redirect(
+        "buildings:do_survey",
+        survey_slug=survey_slug,
+        building_slug=random_building.slug,
+    )
+
+
+def do_survey(request, survey_slug, building_slug):
+
+    survey = get_object_or_404(Survey, slug=survey_slug)
+    building = get_object_or_404(Building, slug=building_slug)
+
+    next_building = survey.get_next_building_to_survey()
+    next_building_url = reverse(
+        "buildings:do_survey", args=[survey_slug, next_building.slug]
+    )
+    print(next_building_url)
 
     form = DynamicSurveyForm(survey)
 
-    pprint(building.__dict__)
+    if request.method == "POST":
+        pprint(request.POST)
 
     context = {
         "survey": survey,
         "building": building,
         "key": settings.GOOGLE_MAPS_API_KEY,
-        # "building_coords": {
-        #     "lat": building.lat,
-        #     "lng": building.lng,
-        # },
-        "building_coords": {"lat": 48.33044355465415, "lng": -72.13260152870924},
+        "building_coords": {
+            "lat": building.lat,
+            "lng": building.lng,
+        },
         "geojson": None,
         "latest_view_data_value": None,
-        "next_building_id": building.id + 1,
+        "next_building_url": next_building_url,
         "form": form,
         "previous_no_building_vote": None,
     }

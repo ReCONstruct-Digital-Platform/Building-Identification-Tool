@@ -36,5 +36,14 @@ urlpatterns = [
         name="newsurvey_questions",
     ),
     path("test", views.test, name="test"),
-    path("surveys/<str:survey_slug>/survey", views.do_survey, name="do_survey"),
+    path(
+        "surveys/<str:survey_slug>/survey",
+        views.do_survey_redirect,
+        name="do_survey_redirect",
+    ),
+    path(
+        "surveys/<str:survey_slug>/<str:building_slug>",
+        views.do_survey,
+        name="do_survey",
+    ),
 ]
