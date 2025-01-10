@@ -1,25 +1,25 @@
-{% with id=widget.attrs.id %}
+{% with id=widget.attrs.id widget_value=widget.value %}
 <div id="{{ id }}" class="{{ widget.attrs.class }}">
+  <!-- <br>  Widget value: {{ widget.value }} <br> -->
   {% for _, options, _ in widget.optgroups %}
-  {% for option in options %}
-  {% if widget.has_specify and option.value == widget.specify_option_value %}
-  <div id="{{ id }}_specify_container" class="flex items-center">
-    <label onclick="activateSpecifyEntryField('{{ id }}_specify');">
-      <input id="{{ id }}_specify" type="{{ widget.input_type }}" class="{{ widget.attrs.checkbox_class }}"
-        name="{{ widget.name }}" {% if 'on' in widget.initial %} checked{% endif %}>{{ option.label }}:</label>
-    <input class="{{ widget.attrs.specify_class }}" id="{{ id }}_specify_value" type="{{ widget.specify_input_type }}"
-      name="{{ widget.name }}" {% if 'on' in widget.initial %} value="{{ widget.initial|last }}" {% else %} disabled 
-      {% endif %} />
-  </div>
-  {% else %}
-  <label class="flex items-center my-0.5">
-    <input id="{{ option.attrs.id }}" class="{{ widget.attrs.checkbox_class }}" type="{{ widget.input_type }}"
-      name="{{ option.name }}" value="{{ option.value|stringformat:'s' }}" {% if option.value in widget.initial %}
-      checked{% endif %}>{{ option.label }}
-  </label>
-  {% endif %}
+    {% for option in options %}
+    {% if widget.has_specify and option.value == widget.specify_option_value %}
+    <div id="{{ id }}_specify_container" class="flex items-center">
+      <label onclick="activateSpecifyEntryField('{{ id }}_specify');">
+        <input id="{{ id }}_specify" type="{{ widget.input_type }}" class="{{ widget.attrs.checkbox_class }}"
+          name="{{ widget.name }}" {% if widget.value_was_specified %} checked{% endif %}>{{ option.label }}:</label>
+      <input class="{{ widget.attrs.specify_class }}" id="{{ id }}_specify_value" type="{{ widget.specify_input_type }}"
+        name="{{ widget.name }}" {% if widget.value_was_specified %} value="{{ widget.specified_value }}" {% else %} disabled 
+        {% endif %} />
+    </div>
+    {% else %}
+    <label class="flex items-center my-0.5">
+      <input id="{{ option.attrs.id }}" class="{{ widget.attrs.checkbox_class }}" type="{{ widget.input_type }}"
+        name="{{ option.name }}" value="{{ option.value }}" {% if option.value in widget_value %}
+        checked{% endif %}>{{ option.label }}
+    </label>
+    {% endif %}
+    {% endfor %}
   {% endfor %}
-  {% endfor %}
-
 </div>
 {% endwith %}

@@ -20,6 +20,16 @@ def print_query_dict(data: QueryDict):
     print('}')
 
 
+def querydict_to_dict(query_dict: QueryDict):
+    data = {}
+    for key in query_dict.keys():
+        v = query_dict.getlist(key)
+        if len(v) == 1:
+            v = v[0]
+        data[key] = v
+    return data
+
+
 def split_list_in_n(array, n):
     """ Split up a list in n lists evenly size chuncks """
     ret = []

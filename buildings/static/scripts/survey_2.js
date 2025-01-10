@@ -183,16 +183,16 @@ function setUpButtons() {
   );
 
   // No building button
-  document.getElementById("btn-no-building").addEventListener("click", (e) => {
+  document.getElementById("btn-problem-flag").addEventListener("click", (e) => {
     e.preventDefault();
 
     const form = document.getElementById("building-submission-form");
 
-    const no_building_input = document.createElement("input");
-    no_building_input.setAttribute("type", "hidden");
-    no_building_input.setAttribute("name", "no_building");
-    no_building_input.setAttribute("value", "no_building");
-    form.appendChild(no_building_input);
+    const problem_flag_input = document.createElement("input");
+    problem_flag_input.setAttribute("type", "hidden");
+    problem_flag_input.setAttribute("name", "problem_flag");
+    problem_flag_input.setAttribute("value", "problem_flag");
+    form.appendChild(problem_flag_input);
     try {
       const latest_view_data = getLatestViewData();
       document.getElementById("latest_view_data").value =

@@ -9,7 +9,7 @@ from django.views import generic
 from django.conf import settings
 from django.db import transaction
 from django.contrib import messages
-from django.http import HttpResponse
+from django.http import HttpResponse, QueryDict
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count, Sum, JSONField
 from django.db.models.functions import Round
@@ -27,8 +27,15 @@ from pprint import pformat, pprint
 
 from buildings.forms import ChangeEmailForm, ChangePasswordForm
 from buildings.models import Dataset
-from buildings.models.newmodels import Building, Survey
-from buildings.models.surveys import DynamicSurveyForm, SurveyV1Form
+from buildings.models.newmodels import (
+    Building,
+    LatestViewData,
+    ProblemFlag,
+    Response,
+    Survey,
+)
+from buildings.models.surveys import SurveyV1Form
+from buildings.models.newsurveys import DynamicSurveyForm
 from buildings.utils.constants import CUBF_TO_NAME_MAP
 from buildings.models.models import (
     EvalUnit,
@@ -250,10 +257,90 @@ def do_survey(request, survey_slug, building_slug):
     )
     print(next_building_url)
 
-    form = DynamicSurveyForm(survey)
+    prev_response = None
+    previous_problem_flag = None
+
+    print(request.body)
+
+    # request.POST = QueryDict(
+    #     b"csrfmiddlewaretoken=dtYsl4JchMakRFNUIu0cSeQpNI7BoSLlkQpqrANc124qqWaTF0y4ue0o3aDmSSJN&self_similar_cluster=&has_simple_footprint=true&has_simple_volume=true&num_storeys=&has_basement=false&site_obstructions=on&site_obstructions=dfgdfg&site_obstructions=trees_or_landscaping&appendages=on&appendages=dfgfd&appendages=vestibules&appendages=canopies_eaves&exterior_cladding=on&exterior_cladding=fdgdfgfd&exterior_cladding=unsure&exterior_cladding=concrete&exterior_cladding=brick_masonry&facade_condition=other&window_wall_ratio=false&large_irregular_windows=irregular_windows&roof_geometry=curved&roof_geometry=complex&new_or_renovated=recently_renovated&latest_view_data=%7B%22sv_pano%22%3A%22JnwVh-J1K-58efB4FF91ow%22%2C%22sv_heading%22%3A3.762761423109746%2C%22sv_pitch%22%3A0%2C%22sv_zoom%22%3A0.9363053246826107%2C%22marker_lat%22%3A48.7888976%2C%22marker_lng%22%3A-79.1937477%7D"
+    # )
 
     if request.method == "POST":
-        pprint(request.POST)
+
+        print(request.POST)
+
+        # Save the last orientation/zoom for the building for later visits
+        if "latest_view_data" in request.POST:
+            data = request.POST.getlist("latest_view_data")[0]
+            if len(data) > 0:
+                data = json.loads(data)
+                latest_view_data = LatestViewData(
+                    building=building,
+                    created_by=request.user,
+                    sv_pano=data["sv_pano"],
+                    sv_heading=data["sv_heading"],
+                    sv_pitch=data["sv_pitch"],
+                    sv_zoom=data["sv_zoom"],
+                    marker_lat=data["marker_lat"],
+                    marker_lng=data["marker_lng"],
+                )
+                latest_view_data.save()
+
+        if "problem_flag" in request.POST:
+            # TODO: Add a note to the no_building flag
+            # TODO: Rename to problem flag
+            flag = ProblemFlag(building=building, created_by=request.user)
+            flag.save()
+
+            return redirect(
+                "buildings:do_survey",
+                survey_slug=survey_slug,
+                building_slug=next_building.slug,
+            )
+
+        # Else, we're submitting a survey response
+        form = DynamicSurveyForm(survey, request.POST)
+
+        if form.is_valid():
+            print(form.cleaned_data)
+
+            # Delete any previous problem flag at this location
+            previous_problem_flag = ProblemFlag.objects.filter(
+                building=building, created_by=request.user
+            ).first()
+            if previous_problem_flag:
+                previous_problem_flag.delete()
+
+            # Create a Response
+            Response.objects.update_or_create(
+                defaults={"data": form.cleaned_data},
+                building=building,
+                survey=survey,
+                created_by=request.user,
+            )
+
+            return redirect(
+                "buildings:do_survey",
+                survey_slug=survey_slug,
+                building_slug=next_building.slug,
+            )
+        else:
+            print("form invalid")
+            print(form.errors)
+
+    else:
+        # GET request
+        previous_problem_flag = ProblemFlag.objects.filter(
+            building=building, created_by=request.user
+        ).first()
+
+        if not previous_problem_flag:
+            prev_response = Response.objects.filter(
+                created_by=request.user, survey=survey, building=building
+            ).first()
+
+        form = DynamicSurveyForm(survey, prev_response.data if prev_response else None)
 
     context = {
         "survey": survey,
@@ -267,10 +354,187 @@ def do_survey(request, survey_slug, building_slug):
         "latest_view_data_value": None,
         "next_building_url": next_building_url,
         "form": form,
-        "previous_no_building_vote": None,
+        "had_previous_response": not prev_response is None,
+        "previous_problem_flag": previous_problem_flag,
     }
 
     return render(request, "buildings/survey_rendering_full.html", context)
+
+
+@login_required(login_url="account_login")
+def survey(_):
+
+    # TODO: Split this into HLMs and Metal Buildings
+    random_unscored_unit = EvalUnit.objects.get_next_unit_to_survey()
+    eval_unit_id = random_unscored_unit.id
+    return redirect("buildings:survey_v1", eval_unit_id=eval_unit_id)
+
+
+@login_required(login_url="account_login")
+def survey_v1(request, eval_unit_id):
+    eval_unit = get_object_or_404(EvalUnit, pk=eval_unit_id)
+
+    hlm_info = None
+    avg_disrepair = None
+
+    # if eval_unit.associated is not None and 'hlm' in eval_unit.associated:
+    hlms = HLMBuilding.objects.filter(eval_unit=eval_unit).order_by("street_num")
+    if len(hlms) > 0:
+        hlm_info = hlms.aggregate(
+            num_hlms=Count("*"),
+            total_dwellings=Sum("num_dwellings"),
+            avg_ivp=Round(Avg("ivp"), precision=1),
+        )
+        avg_disrepair = HLMBuilding.get_disrepair_state(hlm_info["avg_ivp"])
+
+    # Fetch any previous survey v1 entry for this building
+    # If none exist, initialize a survey with the building and user ids
+    # TODO: This might become slow once there are many Votes
+    previous_survey_vote = Vote.objects.filter(
+        user=request.user, eval_unit=eval_unit, surveyv1__isnull=False
+    ).first()
+
+    if previous_survey_vote:
+        log.debug("Found previous survey instance!")
+        # We know the survey is not null here since we filtered on that above
+        prev_survey_instance = previous_survey_vote.surveyv1
+    else:
+        prev_survey_instance = None
+
+    previous_no_building_vote = Vote.objects.filter(
+        user=request.user, eval_unit=eval_unit, nobuildingflag__isnull=False
+    ).first()
+
+    if previous_no_building_vote:
+        log.debug("Previously voted no building!")
+
+    if request.method == "POST":
+        pprint(request.POST.__dict__)
+        pprint(request.POST.getlist("site_obstructions"))
+        pprint(request.POST.getlist("exterior_cladding"))
+        pprint(request.POST.getlist("appendages"))
+
+        # Save the last orientation/zoom for the building for later visits
+        if "latest_view_data" in request.POST:
+            data = request.POST.getlist("latest_view_data")[0]
+            if len(data) > 0:
+                data = json.loads(data)
+                latest_view_data = EvalUnitLatestViewData(
+                    eval_unit=eval_unit,
+                    user=request.user,
+                    sv_pano=data["sv_pano"],
+                    sv_heading=data["sv_heading"],
+                    sv_pitch=data["sv_pitch"],
+                    sv_zoom=data["sv_zoom"],
+                    marker_lat=data["marker_lat"],
+                    marker_lng=data["marker_lng"],
+                )
+                latest_view_data.save()
+
+        if "no_building" in request.POST:
+            # Because we'll be creating multiple DB objects with relations to each other,
+            # we want either all of them to be created, or none if a problem occurs.
+            with transaction.atomic():
+                # If the user had previously submitted a survey for the building
+                # delete it and create a new no building vote instead
+                if previous_survey_vote:
+                    previous_survey_vote.delete()
+                # Form submission - need to create a new Vote object
+                # That will be references by a set of MaterialScores and an optional Note
+                new_vote = Vote(eval_unit=eval_unit, user=request.user)
+                new_vote.save()
+
+                no_building = NoBuildingFlag(vote=new_vote)
+                no_building.save()
+
+            next_eval_unit_id = EvalUnit.objects.get_next_unit_to_survey(
+                exclude_id=eval_unit.id, id_only=True
+            )
+            return redirect("buildings:survey_v1", eval_unit_id=next_eval_unit_id)
+
+        # Handle submission of the survey
+        else:
+            # If previous_survey_answer is not None, we will modify the previous entry
+            form = SurveyV1Form(request.POST, instance=prev_survey_instance)
+
+            if form.is_valid():
+                with transaction.atomic():
+                    # Delete any previous no building vote for this building
+                    # I.e. we're overwriting it.
+                    if previous_no_building_vote:
+                        previous_no_building_vote.delete()
+
+                    form = form.save(commit=False)
+                    # If there was a previous vote by this user on this building
+                    # we want to replace the previous vote and delete the previous survey
+                    if previous_survey_vote:
+                        # Update the modified timestamp on the vote
+                        previous_survey_vote.date_modified = datetime.now()
+                        previous_survey_vote.save()
+                        form.vote = previous_survey_vote
+                        prev_survey_instance.delete()
+                    # Otherwise, we create a new vote and associate the survey to it.
+                    else:
+                        new_vote = Vote(eval_unit=eval_unit, user=request.user)
+                        new_vote.save()
+                        form.vote = new_vote
+                    form.save()
+
+                # Update the eval unit to a new one
+                next_eval_unit_id = EvalUnit.objects.get_next_unit_to_survey(
+                    exclude_id=eval_unit.id, id_only=True
+                )
+                # We redirect so the URL updates to the next building ID
+                return redirect("buildings:survey_v1", eval_unit_id=next_eval_unit_id)
+            else:
+                log.error(form.errors)
+
+    # Fetch the latest view data for the current building if it exists
+    latest_view_data_value = EvalUnitLatestViewData.objects.get_latest_view_data(
+        eval_unit.id, request.user.id
+    )
+
+    if latest_view_data_value:
+        latest_view_data_value = model_to_dict(
+            latest_view_data_value, exclude=["id", "user", "date_added"]
+        )
+
+    # Get the next building
+    next_eval_unit_id = EvalUnit.objects.get_next_unit_to_survey(
+        exclude_id=eval_unit.id, id_only=True
+    )
+
+    form = SurveyV1Form(instance=prev_survey_instance)
+
+    # Load the lot polygon
+    # https://django.readthedocs.io/en/stable/ref/contrib/gis/functions.html
+    # https://django.readthedocs.io/en/stable/ref/contrib/gis/serializers.html
+    lot_geojson = (
+        json.loads(
+            serialize("geojson", [eval_unit.lot], geometry_field="geom", fields=["gid"])
+        )
+        if eval_unit.lot
+        else None
+    )
+
+    context = {
+        "key": settings.GOOGLE_MAPS_API_KEY,
+        "eval_unit": eval_unit,
+        "eval_unit_coords": {
+            "lat": eval_unit.lat,
+            "lng": eval_unit.lng,
+        },
+        "geojson": lot_geojson,
+        "latest_view_data_value": latest_view_data_value,
+        "next_eval_unit_id": next_eval_unit_id,
+        "form": form,
+        "previous_no_building_vote": previous_no_building_vote,
+        "cubf_resolved": CUBF_TO_NAME_MAP[eval_unit.cubf],
+        "hlms": hlms,
+        "hlm_info": hlm_info,
+        "avg_disrepair": avg_disrepair,
+    }
+    return render(request, "buildings/survey.html", context)
 
 
 @login_required(login_url="account_login")
@@ -446,176 +710,6 @@ def newsurvey_questions(request, dataset_slug):
         "survey_filters": survey_filters_and_optgroups,
     }
     return render(request, "buildings/newsurvey_questions.html", context)
-
-
-@login_required(login_url="account_login")
-def survey(_):
-    # TODO: Split this into HLMs and Metal Buildings
-    random_unscored_unit = EvalUnit.objects.get_next_unit_to_survey()
-    eval_unit_id = random_unscored_unit.id
-    return redirect("buildings:survey_v1", eval_unit_id=eval_unit_id)
-
-
-@login_required(login_url="account_login")
-def survey_v1(request, eval_unit_id):
-    eval_unit = get_object_or_404(EvalUnit, pk=eval_unit_id)
-
-    hlm_info = None
-    avg_disrepair = None
-
-    # if eval_unit.associated is not None and 'hlm' in eval_unit.associated:
-    hlms = HLMBuilding.objects.filter(eval_unit=eval_unit).order_by("street_num")
-    if len(hlms) > 0:
-        hlm_info = hlms.aggregate(
-            num_hlms=Count("*"),
-            total_dwellings=Sum("num_dwellings"),
-            avg_ivp=Round(Avg("ivp"), precision=1),
-        )
-        avg_disrepair = HLMBuilding.get_disrepair_state(hlm_info["avg_ivp"])
-
-    # Fetch any previous survey v1 entry for this building
-    # If none exist, initialize a survey with the building and user ids
-    # TODO: This might become slow once there are many Votes
-    previous_survey_vote = Vote.objects.filter(
-        user=request.user, eval_unit=eval_unit, surveyv1__isnull=False
-    ).first()
-
-    if previous_survey_vote:
-        log.debug("Found previous survey instance!")
-        # We know the survey is not null here since we filtered on that above
-        prev_survey_instance = previous_survey_vote.surveyv1
-    else:
-        prev_survey_instance = None
-
-    previous_no_building_vote = Vote.objects.filter(
-        user=request.user, eval_unit=eval_unit, nobuildingflag__isnull=False
-    ).first()
-
-    if previous_no_building_vote:
-        log.debug("Previously voted no building!")
-
-    if request.method == "POST":
-        # Save the last orientation/zoom for the building for later visits
-        if "latest_view_data" in request.POST:
-            data = request.POST.getlist("latest_view_data")[0]
-            if len(data) > 0:
-                data = json.loads(data)
-                latest_view_data = EvalUnitLatestViewData(
-                    eval_unit=eval_unit,
-                    user=request.user,
-                    sv_pano=data["sv_pano"],
-                    sv_heading=data["sv_heading"],
-                    sv_pitch=data["sv_pitch"],
-                    sv_zoom=data["sv_zoom"],
-                    marker_lat=data["marker_lat"],
-                    marker_lng=data["marker_lng"],
-                )
-                latest_view_data.save()
-
-        if "no_building" in request.POST:
-            # Because we'll be creating multiple DB objects with relations to each other,
-            # we want either all of them to be created, or none if a problem occurs.
-            with transaction.atomic():
-                # If the user had previously submitted a survey for the building
-                # delete it and create a new no building vote instead
-                if previous_survey_vote:
-                    previous_survey_vote.delete()
-                # Form submission - need to create a new Vote object
-                # That will be references by a set of MaterialScores and an optional Note
-                new_vote = Vote(eval_unit=eval_unit, user=request.user)
-                new_vote.save()
-
-                no_building = NoBuildingFlag(vote=new_vote)
-                no_building.save()
-
-            next_eval_unit_id = EvalUnit.objects.get_next_unit_to_survey(
-                exclude_id=eval_unit.id, id_only=True
-            )
-            return redirect("buildings:survey_v1", eval_unit_id=next_eval_unit_id)
-
-        # Handle submission of the survey
-        else:
-            # If previous_survey_answer is not None, we will modify the previous entry
-            form = SurveyV1Form(request.POST, instance=prev_survey_instance)
-
-            if form.is_valid():
-                with transaction.atomic():
-                    # Delete any previous no building vote for this building
-                    # I.e. we're overwriting it.
-                    if previous_no_building_vote:
-                        previous_no_building_vote.delete()
-
-                    form = form.save(commit=False)
-                    # If there was a previous vote by this user on this building
-                    # we want to replace the previous vote and delete the previous survey
-                    if previous_survey_vote:
-                        # Update the modified timestamp on the vote
-                        previous_survey_vote.date_modified = datetime.now()
-                        previous_survey_vote.save()
-                        form.vote = previous_survey_vote
-                        prev_survey_instance.delete()
-                    # Otherwise, we create a new vote and associate the survey to it.
-                    else:
-                        new_vote = Vote(eval_unit=eval_unit, user=request.user)
-                        new_vote.save()
-                        form.vote = new_vote
-                    form.save()
-
-                # Update the eval unit to a new one
-                next_eval_unit_id = EvalUnit.objects.get_next_unit_to_survey(
-                    exclude_id=eval_unit.id, id_only=True
-                )
-                # We redirect so the URL updates to the next building ID
-                return redirect("buildings:survey_v1", eval_unit_id=next_eval_unit_id)
-            else:
-                log.error(form.errors)
-
-    # Fetch the latest view data for the current building if it exists
-    latest_view_data_value = EvalUnitLatestViewData.objects.get_latest_view_data(
-        eval_unit.id, request.user.id
-    )
-
-    if latest_view_data_value:
-        latest_view_data_value = model_to_dict(
-            latest_view_data_value, exclude=["id", "user", "date_added"]
-        )
-
-    # Get the next building
-    next_eval_unit_id = EvalUnit.objects.get_next_unit_to_survey(
-        exclude_id=eval_unit.id, id_only=True
-    )
-
-    form = SurveyV1Form(instance=prev_survey_instance)
-
-    # Load the lot polygon
-    # https://django.readthedocs.io/en/stable/ref/contrib/gis/functions.html
-    # https://django.readthedocs.io/en/stable/ref/contrib/gis/serializers.html
-    lot_geojson = (
-        json.loads(
-            serialize("geojson", [eval_unit.lot], geometry_field="geom", fields=["gid"])
-        )
-        if eval_unit.lot
-        else None
-    )
-
-    context = {
-        "key": settings.GOOGLE_MAPS_API_KEY,
-        "eval_unit": eval_unit,
-        "eval_unit_coords": {
-            "lat": eval_unit.lat,
-            "lng": eval_unit.lng,
-        },
-        "geojson": lot_geojson,
-        "latest_view_data_value": latest_view_data_value,
-        "next_eval_unit_id": next_eval_unit_id,
-        "form": form,
-        "previous_no_building_vote": previous_no_building_vote,
-        "cubf_resolved": CUBF_TO_NAME_MAP[eval_unit.cubf],
-        "hlms": hlms,
-        "hlm_info": hlm_info,
-        "avg_disrepair": avg_disrepair,
-    }
-    return render(request, "buildings/survey.html", context)
 
 
 class EvalUnitDetailView(generic.DetailView):

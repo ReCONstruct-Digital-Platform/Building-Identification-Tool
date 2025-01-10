@@ -1,4 +1,4 @@
-{% with id=widget.attrs.id %}
+{% with id=widget.attrs.id widget_value=widget.value.0 %}
 <div id="{{ id }}" class="{{ widget.attrs.class }}">
   {% for _, options, _ in widget.optgroups %}
     {% for option in options %}
@@ -11,14 +11,14 @@
           {% if widget.value_was_specified %} checked{% endif %} required>{{ option.label }}
         </label>
         <input id="{{ id }}_specify_value" class="{{ widget.attrs.specify_class }}" type="{{ widget.specify_input_type }}" name="{{ widget.name }}"
-        {% if widget.value_was_specified %} value="{{ widget.initial }}" {% else %} disabled {% endif %} />
+        {% if widget.value_was_specified %} value="{{ widget_value }}" {% else %} disabled {% endif %} />
       </div>
       {% else %}
         <label>
           <input id="{{ option.attrs.id }}" class="{{ widget.attrs.option_class }}" type="{{ option.type }}"
             onclick="turnOffSpecify('{{ id }}_specify_value')"
-            name="{{ option.name }}" value="{{ option.value|stringformat:'s' }}" 
-            {% if not widget.value_was_specified and option.value == widget.initial %} checked{% endif %} 
+            name="{{ option.name }}" value="{{ option.value }}" 
+            {% if not widget.value_was_specified and option.value == widget_value %} checked{% endif %} 
             required>{{ option.label }}</label>
       {% endif %}
     {% endfor %}

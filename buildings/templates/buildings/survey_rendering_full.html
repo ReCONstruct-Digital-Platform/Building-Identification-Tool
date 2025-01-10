@@ -93,7 +93,7 @@
               </div>
 
               <div class="mt-2">
-                <button id="btn-no-building"
+                <button id="btn-problem-flag"
                         type="button"
                         class="flex items-center bg-red-500 hover:bg-red-600 px-2 py-1.5 text-white rounded-md space-x-1">
                   <svg xmlns="http://www.w3.org/2000/svg"
@@ -234,14 +234,15 @@
 
               <div class="text-center pt-3">
 
-                {% if form.was_filled %}
-                  <div class="bg-green-400">
-                    Survey was previously submitted - Submit again to overwrite your answers.
+                {% if had_previous_response %}
+                  <div class="bg-green-300 p-2 rounded-md mb-2">
+                    You've already surveyed this location! <br>
+                    Your previous answers are below. Resubmit to modify them.
                   </div>
                 {% endif %}
-                {% if previous_no_building_vote %}
-                  <div class="bg-red-400">
-                    You previously voted 'No Building' - Submit the survey to change this.
+                {% if previous_problem_flag %}
+                  <div class="bg-red-400 p-2 rounded-md mb-2">
+                    You previously flagged a problem with this location. Submit the survey to change this.
                   </div>
                 {% endif %}
               </div>

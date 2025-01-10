@@ -1,5 +1,6 @@
 {{ form.media }}
 {% for field in form %}
+{{ field.errors }}
 <fieldset class="q-container">
   <legend class="q-header">
     <strong>Q{{field.field.question_number}}: {{ field.field.question_text }}</strong>
@@ -8,8 +9,10 @@
     {% endif %}
   </legend>
   {{ field }}
+  <div>
+    {% if field.field.has_modal %}
+    {% include "buildings/utils/modal_template.html" with field_name=field.auto_id modal=field.field.modal %}
+    {% endif %}
+  </div>
 </fieldset>
-{% if field.field.has_modal %}
-  {% include "buildings/utils/modal_template.html" with field_name=field.auto_id modal=field.field.modal %}
-{% endif %}
 {% endfor %}

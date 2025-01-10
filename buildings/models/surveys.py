@@ -1,6 +1,5 @@
+import json
 import logging
-from pprint import pprint
-from copy import deepcopy
 
 from django import forms
 from django.db import models
@@ -12,12 +11,9 @@ from buildings.models.models import Vote
 from buildings.models.newmodels import Survey
 from buildings.widgets import (
     MultiCheckboxSpecify,
-    MultiCheckboxSpecify2,
-    MultiCheckboxSpecifyRequired2,
     RadioSelect,
     NumberOrUnsure,
     MultiCheckboxSpecifyRequired,
-    RadioWithSpecify2,
     SelfSimilarClusterWidget,
 )
 
@@ -84,71 +80,6 @@ NEW_OR_RENOVATED = [
     ("newly_built", _("Newly built")),
     ("recently_renovated", _("Recently renovated")),
 ]
-
-
-def get_widget_for_field(widget_type):
-    if widget_type == "radio":
-        return RadioSelect(attrs={"class": "survey-1col"})
-    if widget_type == "radio_w_specify":
-        return RadioWithSpecify2(attrs={"class": "survey-1col"})
-    if widget_type == "multi_checkbox":
-        return MultiCheckboxSpecify2(attrs={"class": "survey-1col"}, has_specify=False)
-    if widget_type == "multi_checkbox_specify":
-        return MultiCheckboxSpecify2(attrs={"class": "survey-1col"}, has_specify=True)
-    if widget_type == "multi_checkbox_required":
-        return MultiCheckboxSpecifyRequired2(attrs={"class": "survey-3col"})
-    if widget_type == "multi_checkbox_required_specify":
-        return MultiCheckboxSpecifyRequired2(
-            attrs={"class": "survey-3col"}, has_specify=True
-        )
-    raise Exception(f"Unknown widget type: {widget_type}")
-
-
-FIELD_TYPES = {
-    "integer": forms.IntegerField,
-    "boolean": forms.BooleanField,
-    "text": forms.CharField,
-}
-
-
-def order_schema_by_question_number(schema):
-    """Ordering not garanteed to persist through JSON/dict serde"""
-    return dict(sorted(schema.items(), key=lambda x: x[1]["question_number"]))
-
-class DynamicSurveyForm(Form):
-    """
-    Dynamically generate a form based on a survey schema.
-    """
-    def __init__(self, survey: Survey, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        schema = order_schema_by_question_number(survey.schema)
-        modals = survey.modals
-
-        for field, config in schema.items():
-            self.fields[field] = FIELD_TYPES[config["type"]]()
-            self.fields[field].label = config["label"]["en"]
-            self.fields[field].widget = get_widget_for_field(config["widget"])
-            self.fields[field].question_text = config["question_text"]["en"]
-            self.fields[field].question_number = config["question_number"]
-
-            if "widget_config" in config:
-                for k, v in config["widget_config"].items():
-                    # We don't want to overwrite any existing attrs
-                    if k == "attrs":
-                        for k, v in config["widget_config"]["attrs"].items():
-                            self.fields[field].widget.attrs[k] = v
-                    else:
-                        setattr(self.fields[field].widget, k, v)
-
-            if "options" in config:
-                self.fields[field].widget.choices = [
-                    (k, _(v["option_text"]["en"])) for k, v in config["options"].items()
-                ]
-
-            if "has_modal" in config and config["has_modal"]:
-                self.fields[field].has_modal = True
-                self.fields[field].modal = modals[field]
-
 
 class JSONFieldForSpecify(models.JSONField):
     """Field that holds an array of values, including user specified ones.

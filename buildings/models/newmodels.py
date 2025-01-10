@@ -181,26 +181,29 @@ class Survey(models.Model):
                         from (
                             select 
                                 id, key, jsonb_agg(distinct value) as value
+                            from (
+                                select 
+                                    id, key, jsonb_array_elements(value) as value
                                 from (
+                                    --- Collect all responses in a survey in jsonb arrays 
                                     select 
-                                        id, key, jsonb_array_elements(value) as value
+                                        id, key,
+                                        case jsonb_typeof(value)
+                                            when 'array' then value
+                                            else jsonb_build_array(value)
+                                        end as value
                                     from (
+                                        --- For each building, explode response data
+                                        --- prepend the survey id to each response data key
                                         select 
-                                            id, key,
-                                            case jsonb_typeof(value)
-                                                when 'array' then value
-                                                else jsonb_build_array(value)
-                                            end as value
-                                        from (
-                                            select 
-                                                r.building_id as id,
-                                                concat('s_', r.survey_id, '_', (jsonb_each(r.data)).key) as key, 
-                                                (jsonb_each(r.data)).value 
-                                            from responses r
-                                            where r.building_id = buildings.id
-                                        ) as sub
-                                    ) as sub2
-                                ) as sub3    
+                                            r.building_id as id,
+                                            concat('s_', r.survey_id, '_', (jsonb_each(r.data)).key) as key, 
+                                            (jsonb_each(r.data)).value 
+                                        from responses r
+                                        where r.building_id = buildings.id
+                                    ) as sub
+                                ) as sub2
+                            ) as sub3    
                             group by id, key
                         ) as sub4
                         group by id""",
@@ -354,3 +357,31 @@ class Response(models.Model):
 
     date_added = models.DateTimeField("date added", default=timezone.now)
     date_modified = models.DateTimeField("date modified", default=timezone.now)
+
+
+class LatestViewData(models.Model):
+
+    # User saved data about a building
+    building = models.ForeignKey(Building, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    date_added = models.DateTimeField("date added", default=timezone.now)
+    sv_pano = models.TextField(blank=True, null=True)
+    sv_heading = models.FloatField(blank=True, null=True)
+    sv_pitch = models.FloatField(blank=True, null=True)
+    sv_zoom = models.FloatField(blank=True, null=True)
+    marker_lat = models.FloatField(blank=True, null=True)
+    marker_lng = models.FloatField(blank=True, null=True)
+
+
+class ProblemFlag(models.Model):
+    building = models.OneToOneField(Building, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
+    def __str__(self):
+        return f"Problem with building {self.building}"
