@@ -3,5 +3,6 @@
 
 from .models import *
 from .surveys import *
+from .newsurveys import *
 from .newmodels import *
 from .lookups import *

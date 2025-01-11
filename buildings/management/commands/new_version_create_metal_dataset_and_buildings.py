@@ -10,6 +10,7 @@ from dotenv import dotenv_values
 from django.contrib.gis.geos import Point
 from psycopg2.extras import execute_values
 from django.core.management.base import BaseCommand
+from buildings.models.models import User
 from buildings.models.newmodels import Building, Dataset
 
 # Read in the database configuration from a .env file
@@ -51,7 +52,7 @@ def upsert_evalunits(dry_run=True):
     )
     to_cur = to_db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-    print(f"Upserting evalunits from local DB to prod")
+    print(f"Creating metal buildings dataset from vqa results")
 
     from_cur.execute(
         f"""
@@ -63,12 +64,15 @@ def upsert_evalunits(dry_run=True):
     )
     num_units = from_cur.fetchone()["count"]
 
-    NUM_CHUNKS = 10
+    NUM_CHUNKS = 2
     chunk_length = math.ceil(num_units / NUM_CHUNKS)
 
+    SYSTEM_USER = User.objects.get(pk=33)
+
     dataset, _ = Dataset.objects.get_or_create(
-        name="SHQ HLMs",
-        description="Set of HLMs in Quebec managed by the SHQ.",
+        name="Potential Metal Buildings",
+        created_by=SYSTEM_USER,
+        description="Set of potential prefab metal buildings in Quebec. Output of a metal building detector AI model.",
         schema=[
             {
                 "id": "ext_id",
@@ -159,100 +163,22 @@ def upsert_evalunits(dry_run=True):
                 "validation": {"min": 0, "step": 0.01},
             },
             {
-                "id": "attrs__organism",
-                "field": "attrs__organism",
-                "label": {"en": "Organism"},
-                "optgroup": "attributes",
-                "type": "string",
-                "input": "text",
-            },
-            {
-                "id": "attrs__service_center",
-                "field": "attrs__service_center",
-                "label": {"en": "Service Center"},
-                "optgroup": "attributes",
-                "type": "string",
-                "input": "text",
-            },
-            {
-                "id": "attrs__area_footprint",
-                "field": "attrs__area_footprint",
-                "label": {"en": "Footprint Area"},
+                "id": "attrs__p_bldg",
+                "field": "attrs__p_bldg",
+                "label": {"en": "Prob. Building"},
                 "optgroup": "attributes",
                 "type": "double",
                 "input": "number",
                 "validation": {"min": 0, "step": 0.01},
             },
             {
-                "id": "attrs__area_total",
-                "field": "attrs__area_total",
-                "label": {"en": "Total Area"},
+                "id": "attrs__p_metal",
+                "field": "attrs__p_metal",
+                "label": {"en": "Prob. Metal"},
                 "optgroup": "attributes",
                 "type": "double",
                 "input": "number",
                 "validation": {"min": 0, "step": 0.01},
-            },
-            {
-                "id": "attrs__ivp",
-                "field": "attrs__ivp",
-                "label": {"en": "IVP"},
-                "optgroup": "attributes",
-                "type": "double",
-                "input": "number",
-                "validation": {"min": 0, "step": 0.01},
-            },
-            {
-                "id": "attrs__disrepair_state",
-                "field": "attrs__disrepair_state",
-                "label": {"en": "Disrepair State"},
-                "optgroup": "attributes",
-                "type": "string",
-                "input": "checkbox",
-                "values": ["A", "B", "C", "D", "E"],
-            },
-            {
-                "id": "attrs__interest_adjust_date",
-                "field": "attrs__interest_adjust_date",
-                "label": {"en": "Interest Adjustment Date"},
-                "optgroup": "attributes",
-                "type": "date",
-                "plugin": "datepicker",
-                "plugin_config": {
-                    "format": "yyyy-mm-dd",
-                    "todayBtn": "linked",
-                    "todayHighlight": True,
-                    "autoclose": True,
-                },
-            },
-            {
-                "id": "attrs__contract_end_date",
-                "field": "attrs__contract_end_date",
-                "label": {"en": "Contract End Date"},
-                "optgroup": "attributes",
-                "type": "date",
-                "plugin": "datepicker",
-                "plugin_config": {
-                    "format": "yyyy-mm-dd",
-                    "todayBtn": "linked",
-                    "todayHighlight": True,
-                    "autoclose": True,
-                },
-            },
-            {
-                "id": "attrs__category",
-                "field": "attrs__category",
-                "label": {"en": "Category"},
-                "optgroup": "attributes",
-                "type": "string",
-                "input": "text",
-            },
-            {
-                "id": "attrs__building_id",
-                "field": "attrs__building_id",
-                "label": {"en": "Building ID"},
-                "type": "string",
-                "input": "text",
-                "optgroup": "attributes",
             },
             {
                 "id": "attrs__phys_link",
@@ -404,33 +330,20 @@ def upsert_evalunits(dry_run=True):
 
     for offset in tqdm(
         range(0, num_units, chunk_length),
-        desc="Upsert Buildings from EvalUnits",
     ):
         try:
             from_cur.execute(
                 f"""SELECT 
-                    h.id as id, h.lat as lat, h.lng as lng, h.point as point, 
-                    h.address as address, 
-                    h.street_name as street_name, 
-                    h.street_num as street_num, 
-                    h.muni as muni, 
+                    e.id as id, e.lat as lat, e.lng as lng, e.point as point, 
+                    e.address as address, 
+                    e.street_name as street_name, 
+                    concat(e.num_adr_inf, e.num_adr_inf_2, e.num_adr_sup, e.num_adr_sup_2) as street_num, 
+                    e.muni as muni, 
                     e.arrond as submuni,
-                    h.postal_code as postal_code,
-                    h.num_dwellings as num_dwellings, 
-                    h.num_floors as num_floors, 
+                    e.num_dwelling as num_dwellings, 
+                    e.max_floors as num_floors, 
                     e.floor_area as floor_area, 
                     e.const_yr as const_yr,
-                    h.project_id as project_id, 
-                    h.organism as organism, 
-                    h.service_center as service_center, 
-                    h.area_footprint as area_footprint, 
-                    h.area_total as area_total, 
-                    h.ivp as ivp, 
-                    h.disrepair_state as disrepair_state, 
-                    h.interest_adjust_date as interest_adjust_date, 
-                    h.contract_end_date as contract_end_date, 
-                    h.category as category, 
-                    h.building_id as building_id,
                     e.phys_link as phys_link, 
                     e.const_type as const_type, 
                     e.owner_date as owner_date, 
@@ -442,10 +355,13 @@ def upsert_evalunits(dry_run=True):
                     e.lot_value as lot_value, 
                     e.building_value as building_value, 
                     e.value as value, 
-                    e.prev_value as prev_value 
+                    e.prev_value as prev_value,
+                    v.p_bldg as p_bldg,
+                    v.p_metal as p_metal
                 FROM {EVALUNITS_TABLE} e
-                INNER JOIN {HLM_TABLE} h ON
-                    e.id = h.eval_unit_id
+                INNER JOIN vqa_results v ON
+                    e.id = v.id
+                WHERE v.p_bldg > 0.5 and v.p_metal > 0.5
                 ORDER BY e.id DESC
                 LIMIT {chunk_length} offset {offset}
             """
@@ -458,22 +374,8 @@ def upsert_evalunits(dry_run=True):
             for unit in unit_batch:
 
                 attrs = {
-                    "organism": unit["organism"],
-                    "service_center": unit["service_center"],
-                    "area_footprint": unit["area_footprint"],
-                    "area_total": unit["area_total"],
-                    "ivp": unit["ivp"],
-                    "disrepair_state": unit["disrepair_state"],
-                    "interest_adjust_date": unit["interest_adjust_date"].strftime(
-                        "%Y-%m-%d"
-                    ),
-                    "contract_end_date": unit["contract_end_date"].strftime("%Y-%m-%d"),
-                    "category": (
-                        unit["category"].lower().capitalize()
-                        if unit["category"]
-                        else None
-                    ),
-                    "building_id": unit["building_id"],
+                    "p_metal": float(unit["p_metal"]),
+                    "p_bldg": float(unit["p_bldg"]),
                     "phys_link": unit["phys_link"],
                     "const_type": unit["const_type"],
                     "owner_date": unit["owner_date"].strftime("%Y-%m-%d"),
@@ -498,12 +400,11 @@ def upsert_evalunits(dry_run=True):
                     "street_num": unit["street_num"],
                     "muni": unit["muni"],
                     "submuni": unit["submuni"],
-                    "postal_code": unit["postal_code"],
                     "const_year": unit["const_yr"],
                     "num_floors": unit["num_floors"],
                     "floor_area": unit["floor_area"],
                     "attrs": attrs,
-                    "dataset": Dataset.objects.get(pk=2),
+                    "dataset": dataset,
                 }
 
                 buildings_to_write.append(Building(**new_model))

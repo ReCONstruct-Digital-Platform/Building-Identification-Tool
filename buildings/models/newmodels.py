@@ -7,6 +7,7 @@ from autoslug import AutoSlugField
 
 from django.db.models import Q
 from django.db.models.expressions import RawSQL
+from django.utils.translation import gettext_lazy as _
 
 from buildings.utils.query_utils import DatasetQParser, SurveyQParser
 
@@ -74,6 +75,9 @@ class Building(models.Model):
 
     muni = models.TextField(null=True, blank=True)
     submuni = models.TextField(null=True, blank=True)
+    # Provinces / States
+    # See https://developers.google.com/maps/documentation/geocoding/requests-geocoding#Types
+    admin_area_level_1 = models.TextField(null=True, blank=True)
     postal_code = models.TextField(null=True, blank=True)
 
     # # construction year
@@ -111,6 +115,14 @@ class Survey(models.Model):
             "dataset_filter",
             "surveys_filter",
         )
+
+    class Status(models.TextChoices):
+        CREATED = "CREATED", _("Created")
+        ACTIVE = "ACTIVE", _("Active")
+        COMPLETED = "COMPLETED", _("Completed")
+        ARCHIVED = "ARCHIVED", _("Archived")
+
+    status = models.TextField(choices=Status.choices, default=Status.CREATED)
 
     name = models.TextField()
     description = models.TextField(null=True, blank=True)
@@ -237,6 +249,14 @@ class Survey(models.Model):
 
         # Else we'll return a building with the least amount of responses
         return buildings_w_response_counts.order_by("response_count").first()
+
+    def get_completion_status(self):
+        num_candidate_buildings = self.get_target_population().count()
+        # We have to get unique buildings surveyed, as respondents can survey the same building
+        num_buildings_surveyed = (
+            Response.objects.filter(survey=self).values("building").distinct().count()
+        )
+        return num_buildings_surveyed / num_candidate_buildings
 
     def map_to_qb_field(
         self, schema_field: dict, field_id: str, survey_name: str
