@@ -188,35 +188,28 @@
       <div id="map-and-survey-container" class="flex flex-col flex-1 h-full w-full min-w-[30%]">
 
         <!-- Tabs -->
-        <nav class="flex h-[40px]">
-          <div id="nav-tab" class="nav nav-tabs text-sm gap-[1px]" role="tablist">
-            <button id="nav-survey-tab"
-              class="nav-link text-gray-900 bg-white bg-opacity-25 hover:bg-gray-50 hover:outline-gray-100 outline outline-1 outline-gray-200 active:bg-white active:bg-opacity-65 active:outline-gray-200 focus:outline-gray-200 "
-              data-bs-toggle="tab" data-bs-target="#nav-survey" type="button" role="tab" aria-controls="nav-survey"
-              aria-selected="false">
+        <nav class="flex h-[35px]">
+          <div id="tabs-right" class="flex text-sm" role="tablist">
+            <button id="nav-survey-tab" 
+              class="tab px-2 py-1.5 rounded-t-md text-gray-900 outline outline-1 outline-gray-200"
+               type="button" role="tab" aria-controls="nav-survey" aria-selected="false">
               Survey
             </button>
         
             <button id="nav-satellite-tab" 
-              class="nav-link text-gray-900 bg-white bg-opacity-25 hover:bg-gray-50 hover:outline-gray-100 outline outline-1 outline-gray-200 active 
-                      active:bg-white active:bg-opacity-65 active:outline-gray-500 focus:outline-gray-200" data-bs-toggle="tab"
-              data-bs-target="#nav-satellite" type="button" role="tab" aria-controls="nav-satellite" aria-selected="true">
+              class="tab px-2 py-1.5 rounded-t-md text-gray-900 outline outline-1 outline-gray-200" 
+               type="button" role="tab" aria-controls="nav-satellite" aria-selected="false">
               Satellite
             </button>
-
-
-            <div class="absolute right-[17px] rounded-md bg-teal-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
-              <a id="next" href="{{ next_building_url }}">Next &gt;&gt;</a>
-            </div>
           </div>
         </nav>
 
 
-        <div id="tab-content-container" class="tab-content bg-white bg-opacity-65 text-sm h-full">
+        <div id="tab-content-container" class="bg-white bg-opacity-65 text-sm h-full">
 
           <!-- Satellite view -->
           <div id="nav-satellite"
-               class="tab-pane active"
+               class="tabcontent h-full"
                role="tabpanel"
                aria-labelledby="nav-satellite-tab">
 
@@ -226,7 +219,7 @@
 
           <!-- Survey -->
           <div id="nav-survey"
-               class="tab-pane "
+               class="tabcontent h-full"
                role="tabpanel"
                aria-labelledby="nav-survey-tab">
             
@@ -287,6 +280,10 @@
 
 {% block page_scripts %}
   {% load static %}
+
+  <script>
+
+  </script>
 
   <!-- A way to pass data from backend to scripts -->
   {{ building_coords | json_script:"building_coords" }}

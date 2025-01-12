@@ -652,11 +652,27 @@ tr:hover .delete-row-icon {
   mix-blend-mode: exclusion;
 }
 
-#nav-tab.nav-tabs>button.nav-link.active {
-  background-color: rgb(255, 255, 255) !important;
-  border-color: rgb(255, 255, 255);
-}
-
 label {
   margin: 2px 5px;
+}
+
+/* Style the buttons inside the tab */
+.tab {
+  cursor: pointer;
+  background-color: rgb(255, 255, 255, .25);
+  transition: 0.3s;
+}
+
+.tab:hover {
+  background-color: rgb(255, 255, 255, .50);
+}
+
+/* Create an active/current tablink class */
+.tab.active {
+  background-color: rgb(255, 255, 255, .65);
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
 }
