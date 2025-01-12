@@ -9,7 +9,7 @@ from django.views import generic
 from django.conf import settings
 from django.db import transaction
 from django.contrib import messages
-from django.http import HttpResponse, QueryDict
+from django.http import Http404, HttpResponse, QueryDict
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count, Sum, JSONField
 from django.db.models.functions import Round
@@ -27,6 +27,7 @@ from pprint import pformat, pprint
 
 from buildings.forms import ChangeEmailForm, ChangePasswordForm
 from buildings.models import Dataset
+from buildings.models import models
 from buildings.models.newmodels import (
     Building,
     LatestViewData,
@@ -248,27 +249,37 @@ def do_survey_redirect(_, survey_slug):
 
 def do_survey(request, survey_slug, building_slug):
 
-    survey = get_object_or_404(Survey, slug=survey_slug)
     building = get_object_or_404(Building, slug=building_slug)
+    survey = get_object_or_404(Survey, slug=survey_slug)
+
+    # Verify the building is in the survey's target population or 404
+    if not survey.is_building_in_target_pop(building):
+        raise Http404(
+            f"Building {building.address} was not found in survey {survey.name}!"
+        )
 
     next_building = survey.get_next_building_to_survey()
     next_building_url = reverse(
         "buildings:do_survey", args=[survey_slug, next_building.slug]
     )
-    print(next_building_url)
 
     prev_response = None
     previous_problem_flag = None
 
-    print(request.body)
-
-    # request.POST = QueryDict(
-    #     b"csrfmiddlewaretoken=dtYsl4JchMakRFNUIu0cSeQpNI7BoSLlkQpqrANc124qqWaTF0y4ue0o3aDmSSJN&self_similar_cluster=&has_simple_footprint=true&has_simple_volume=true&num_storeys=&has_basement=false&site_obstructions=on&site_obstructions=dfgdfg&site_obstructions=trees_or_landscaping&appendages=on&appendages=dfgfd&appendages=vestibules&appendages=canopies_eaves&exterior_cladding=on&exterior_cladding=fdgdfgfd&exterior_cladding=unsure&exterior_cladding=concrete&exterior_cladding=brick_masonry&facade_condition=other&window_wall_ratio=false&large_irregular_windows=irregular_windows&roof_geometry=curved&roof_geometry=complex&new_or_renovated=recently_renovated&latest_view_data=%7B%22sv_pano%22%3A%22JnwVh-J1K-58efB4FF91ow%22%2C%22sv_heading%22%3A3.762761423109746%2C%22sv_pitch%22%3A0%2C%22sv_zoom%22%3A0.9363053246826107%2C%22marker_lat%22%3A48.7888976%2C%22marker_lng%22%3A-79.1937477%7D"
-    # )
-
     if request.method == "POST":
 
-        print(request.POST)
+        logging.debug(f"POST: {request.POST}")
+
+        if "problem_flag" in request.POST:
+            # TODO: Add a note to the no_building flag
+            flag = ProblemFlag(building=building, created_by=request.user)
+            flag.save()
+
+            return redirect(
+                "buildings:do_survey",
+                survey_slug=survey_slug,
+                building_slug=next_building.slug,
+            )
 
         # Save the last orientation/zoom for the building for later visits
         if "latest_view_data" in request.POST:
@@ -287,24 +298,10 @@ def do_survey(request, survey_slug, building_slug):
                 )
                 latest_view_data.save()
 
-        if "problem_flag" in request.POST:
-            # TODO: Add a note to the no_building flag
-            # TODO: Rename to problem flag
-            flag = ProblemFlag(building=building, created_by=request.user)
-            flag.save()
-
-            return redirect(
-                "buildings:do_survey",
-                survey_slug=survey_slug,
-                building_slug=next_building.slug,
-            )
-
         # Else, we're submitting a survey response
         form = DynamicSurveyForm(survey, request.POST)
 
         if form.is_valid():
-            print(form.cleaned_data)
-
             # Delete any previous problem flag at this location
             previous_problem_flag = ProblemFlag.objects.filter(
                 building=building, created_by=request.user
@@ -326,8 +323,9 @@ def do_survey(request, survey_slug, building_slug):
                 building_slug=next_building.slug,
             )
         else:
-            print("form invalid")
-            print(form.errors)
+            logging.error("form invalid - shouldn't happen!")
+            logging.error(form.errors)
+            # We'll return the form with errors below, although this shouldn't happend
 
     else:
         # GET request
@@ -354,7 +352,6 @@ def do_survey(request, survey_slug, building_slug):
         "latest_view_data_value": None,
         "next_building_url": next_building_url,
         "form": form,
-        "had_previous_response": not prev_response is None,
         "previous_problem_flag": previous_problem_flag,
     }
 

@@ -170,7 +170,7 @@ class Survey(models.Model):
             surveys_filter = self.surveys_filter
 
         # Start with all buildings in the source dataset
-        candidates = Building.objects.filter()
+        candidates = Building.objects.filter(dataset=self.dataset)
 
         # Filter on building attributes if applicable
         if dataset_filter is not None:
@@ -226,6 +226,9 @@ class Survey(models.Model):
 
         return candidates
 
+    def is_building_in_target_pop(self, building: Building):
+        return bool(self.get_target_population().filter(pk=building.id).count())
+
     def get_next_building_to_survey(self):
         """
         Returns a random building from the target population
@@ -241,11 +244,13 @@ class Survey(models.Model):
         )
 
         non_surveyed_buildings = buildings_w_response_counts.filter(response_count=0)
-        pks = non_surveyed_buildings.values_list("pk", flat=True)
+        random_non_surveyed_pk = (
+            non_surveyed_buildings.values_list("pk", flat=True).order_by("?").first()
+        )
+
         # Check if we have results
-        if pks:
-            random_pk = random.choice(pks)
-            return Building.objects.get(pk=random_pk)
+        if random_non_surveyed_pk:
+            return Building.objects.get(pk=random_non_surveyed_pk)
 
         # Else we'll return a building with the least amount of responses
         return buildings_w_response_counts.order_by("response_count").first()
