@@ -1,17 +1,21 @@
-{% with id=widget.attrs.id widget_value=widget.initial %}
+{% with id=widget.attrs.id widget_val=widget.value.0 %}
 <div id="{{ id }}" class="{{ widget.attrs.class }}">
   {% for _, options, _ in widget.optgroups %}
-  widget real value: {{ widget.value }} <br>
-  widget_value: {{ widget_value }} <br>
-  {% for option in options %}
-  option_value: {{ option.value }} <br>
-  {% if option.value == widget_value %}
+
+    {% for option in options %}
+
+    {% comment %}
+    widget value: {{ widget_val }} <br>
+    widget is bound?: {{ widget.is_bound }} <br>  
+    option_value: {{ option.value }} <br>
+    {% if option.value == widget_val %}
     are equal <br>
-  {% else %}
+    {% else %}
     are not equal <br>
-  {% endif %}
+    {% endif %}
+    option selected? {{ option.selected }} <br>
+    {% endcomment %}
   
-    <!-- option.name is the field name for all options - value is the option's unique "name" -->
       {% if widget.specify_option_value == option.value %}
       <div id="{{ id }}_specify_container" class = "flex items-center">
         <label>
@@ -20,14 +24,14 @@
           {% if widget.value_was_specified %} checked{% endif %} required>{{ option.label }}
         </label>
         <input id="{{ id }}_specify_value" class="{{ widget.attrs.specify_class }}" type="{{ widget.specify_input_type }}" name="{{ widget.name }}"
-        {% if widget.value_was_specified %} value="{{ widget_value }}" {% else %} disabled {% endif %} />
+        {% if widget.value_was_specified %} value="{{ widget_val }}" {% else %} disabled {% endif %} />
       </div>
       {% else %}
         <label>
           <input id="{{ option.attrs.id }}" class="{{ widget.attrs.option_class }}" type="{{ option.type }}"
             onclick="turnOffSpecify('{{ id }}_specify_value')"
             name="{{ option.name }}" value="{{ option.value }}" 
-            {% if not widget.value_was_specified and option.value == widget_value %} checked{% endif %} 
+            {% if widget.is_bound and option.value == widget_val %} checked{% endif %} 
             required>{{ option.label }}</label>
       {% endif %}
     {% endfor %}

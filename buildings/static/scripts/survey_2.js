@@ -143,6 +143,8 @@ function setUpDragBar() {
 
 /**
  * This function dynamically sets the height of the right panel (satellite view and survey)
+ * TODO: Try to get rid of this. Setting h-full on the survey tab content div makes the submit
+ * button be covered for some reason
  */
 function setUpScrollHeightObserver() {
   const svElement = document.getElementById("streetview");
@@ -156,8 +158,8 @@ function setUpScrollHeightObserver() {
       `Setting tab content height to ${svHeight}-${tabHeight}=${textHeight}px`
     );
 
-    document.getElementById("tab-content-container").style.height =
-      textHeight + "px";
+    // document.getElementById("tab-content-container").style.height =
+    //   textHeight + "px";
     document.getElementById("nav-survey").style.height = svHeight + "px";
   });
   observer.observe(svElement, { childList: true, subtree: true });

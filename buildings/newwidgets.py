@@ -16,12 +16,12 @@ class RadioSelect(widgets.RadioSelect):
 
     def __init__(self, attrs=None, **kwargs):
         super().__init__(attrs=attrs, **kwargs)
-        self.initial = None  # filled in by the form __init__()
+        self.is_bound = False
         self.attrs["radio_class"] = TW_RADIO_CLASS
 
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
-        context["widget"]["initial"] = self.initial
+        context["widget"]["is_bound"] = self.is_bound
         return context
 
 
@@ -37,18 +37,10 @@ class RadioWithSpecify2(widgets.RadioSelect):
             "scripts/specify.js",
         ]
 
-    def format_value(self, value):
-        """Return selected values as a list."""
-        # Try returning None here
-        if value is None and self.allow_multiple_selected:
-            return None
-        if not isinstance(value, (tuple, list)):
-            value = [value]
-        return [str(v) for v in value]
-
     def __init__(self, attrs=None, **kwargs):
         super().__init__(attrs=attrs, **kwargs)
         self.initial = None
+        self.is_bound = False
         self.specify_input_type = None
         self.specify_option_value = None
         self.has_modal = None
@@ -57,17 +49,18 @@ class RadioWithSpecify2(widgets.RadioSelect):
         self.attrs["specify_class"] = TW_SPECIFY_CLASS
 
     # Add attributes you want available in the template to the context
+    # Note that while value in the optgroups method is and array of strings
+    # here it is the actual value contained within
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
-        # The choices are a list of tuples, extract just the first member
-        choice_keys = [c[0] for c in self.choices]
-        # If initial exists, is not empty and is not in the choices then it was manually specified
-        context["widget"]["initial"] = self.initial
-        context["widget"]["value_was_specified"] = value and (value not in choice_keys)
         context["widget"]["specify_input_type"] = self.specify_input_type
         context["widget"]["specify_option_value"] = self.specify_option_value
         context["widget"]["modal"] = self.modal
         context["widget"]["has_modal"] = self.has_modal
+        context["widget"]["is_bound"] = self.is_bound
+
+        choice_keys = [c[0] for c in self.choices]
+        context["widget"]["value_was_specified"] = value and (value not in choice_keys)
         return context
 
 
@@ -83,6 +76,7 @@ class MultiCheckboxSpecify2(widgets.CheckboxSelectMultiple):
     def __init__(self, has_specify=False, attrs=None, **kwargs):
         super().__init__(attrs=attrs, **kwargs)
         self.has_specify = has_specify
+        self.is_bound = False
         self.specify_input_type = "text"
         self.specify_option_value = "other"
         self.attrs["checkbox_class"] = TW_RADIO_CLASS
@@ -91,6 +85,10 @@ class MultiCheckboxSpecify2(widgets.CheckboxSelectMultiple):
     # Add attributes you want available in the template to the context
     # Gets called with the value of the bound field
     def get_context(self, name, value, attrs):
+        # Value is an array of all selected - no subarray at this stage
+        # or None if unbound
+        # When non-required field was left empty, value will be empty array as well
+        # and field will be marked as bound as there is a key for field in data
         if not value:
             value = []
         context = super().get_context(name, value, attrs)
@@ -98,6 +96,7 @@ class MultiCheckboxSpecify2(widgets.CheckboxSelectMultiple):
         context["widget"]["has_specify"] = self.has_specify
         context["widget"]["specify_input_type"] = self.specify_input_type
         context["widget"]["specify_option_value"] = self.specify_option_value
+
         # The choices are a list of tuples, extract just the first member
         choice_keys = {c[0] for c in self.choices}
 
@@ -112,6 +111,7 @@ class MultiCheckboxSpecify2(widgets.CheckboxSelectMultiple):
         else:
             context["widget"]["value_was_specified"] = False
             context["widget"]["specified_value"] = None
+
         return context
 
 

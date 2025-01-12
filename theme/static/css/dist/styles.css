@@ -1687,6 +1687,10 @@ input:checked + .toggle-bg {
   height: 25px !important;
 }
 
+.h-\[35px\] {
+  height: 35px !important;
+}
+
 .h-\[40px\] {
   height: 40px !important;
 }
@@ -1697,10 +1701,6 @@ input:checked + .toggle-bg {
 
 .h-full {
   height: 100% !important;
-}
-
-.h-\[35px\] {
-  height: 35px !important;
 }
 
 .max-h-full {
@@ -1980,10 +1980,6 @@ input:checked + .toggle-bg {
   gap: 1rem !important;
 }
 
-.gap-\[1px\] {
-  gap: 1px !important;
-}
-
 .space-x-1 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-x-reverse: 0 !important;
   margin-right: calc(0.25rem * var(--tw-space-x-reverse)) !important;
@@ -2033,10 +2029,6 @@ input:checked + .toggle-bg {
 .divide-gray-700 > :not([hidden]) ~ :not([hidden]) {
   --tw-divide-opacity: 1 !important;
   border-color: rgb(70 84 88 / var(--tw-divide-opacity)) !important;
-}
-
-.justify-self-end {
-  justify-self: end !important;
 }
 
 .overflow-hidden {
@@ -2254,10 +2246,6 @@ input:checked + .toggle-bg {
 
 .bg-white\/\[0\.75\] {
   background-color: rgb(255 255 255 / 0.75) !important;
-}
-
-.bg-opacity-25 {
-  --tw-bg-opacity: 0.25 !important;
 }
 
 .bg-opacity-50 {
@@ -2639,20 +2627,8 @@ input:checked + .toggle-bg {
   outline-width: 1px !important;
 }
 
-.outline-2 {
-  outline-width: 2px !important;
-}
-
 .outline-gray-200 {
   outline-color: #cfd8d2 !important;
-}
-
-.outline-gray-400 {
-  outline-color: #7f948e !important;
-}
-
-.outline-gray-100 {
-  outline-color: #e6eae6 !important;
 }
 
 .ring-1 {
@@ -2861,10 +2837,6 @@ input:checked + .toggle-bg {
   outline-offset: 2px !important;
 }
 
-.focus\:outline-gray-200:focus {
-  outline-color: #cfd8d2 !important;
-}
-
 .focus\:ring-2:focus {
   --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;
   --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;
@@ -2930,25 +2902,8 @@ input:checked + .toggle-bg {
   background-color: rgb(247 248 247 / var(--tw-bg-opacity)) !important;
 }
 
-.active\:bg-white:active {
-  --tw-bg-opacity: 1 !important;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity)) !important;
-}
-
-.active\:bg-opacity-65:active {
-  --tw-bg-opacity: 0.65 !important;
-}
-
 .active\:outline-gray-100:active {
   outline-color: #e6eae6 !important;
-}
-
-.active\:outline-gray-200:active {
-  outline-color: #cfd8d2 !important;
-}
-
-.active\:outline-gray-500:active {
-  outline-color: #687876 !important;
 }
 
 .group:hover .group-hover\:bg-teal-700 {

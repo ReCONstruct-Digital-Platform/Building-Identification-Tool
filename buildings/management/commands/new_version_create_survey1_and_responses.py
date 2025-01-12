@@ -76,13 +76,25 @@ def migrate_responses(dry_run=True):
                 "type": "text",
                 "label": {"en": "Appendages"},
                 "widget": "multi_checkbox_specify",
-                "options": {
-                    "other": {"option_text": {"en": "Other (specify)"}},
-                    "balconies": {"option_text": {"en": "Balconies"}},
-                    "vestibules": {"option_text": {"en": "Exterior Vestibules"}},
-                    "canopies_eaves": {"option_text": {"en": "Roof overhangs/eaves"}},
-                    "porches_stoops": {"option_text": {"en": "Porches/stoops"}},
-                },
+                "options": [
+                    {"val": "balconies", "label": {"en": "Balconies"}, "pos": 0},
+                    {
+                        "val": "vestibules",
+                        "label": {"en": "Exterior Vestibules"},
+                        "pos": 1,
+                    },
+                    {
+                        "val": "canopies_eaves",
+                        "label": {"en": "Roof overhangs/eaves"},
+                        "pos": 2,
+                    },
+                    {
+                        "val": "porches_stoops",
+                        "label": {"en": "Porches/stoops"},
+                        "pos": 3,
+                    },
+                    {"val": "other", "label": {"en": "Other (specify)"}, "pos": 4},
+                ],
                 "has_modal": True,
                 "question_text": {
                     "en": "Select any and all significant appendages to the building faces."
@@ -92,16 +104,20 @@ def migrate_responses(dry_run=True):
                     "specify_input_type": "text",
                     "specify_option_value": "other",
                 },
-                "question_number": 7,
+                "pos": 7,
             },
             "num_storeys": {
                 "type": "integer",
                 "label": {"en": "Number of Storeys"},
                 "widget": "radio_w_specify",
-                "options": {
-                    "": {"option_text": {"en": "Unsure"}},
-                    "num_storeys": {"option_text": {"en": "Number of storeys:"}},
-                },
+                "options": [
+                    {
+                        "val": "num_storeys",
+                        "label": {"en": "Number of storeys"},
+                        "pos": 0,
+                    },
+                    {"val": None, "label": {"en": "Unsure"}, "pos": 1},
+                ],
                 "has_modal": True,
                 "question_text": {
                     "en": "How many storeys above-ground does the building have?"
@@ -111,85 +127,97 @@ def migrate_responses(dry_run=True):
                     "specify_input_type": "number",
                     "specify_option_value": "num_storeys",
                 },
-                "question_number": 4,
+                "pos": 4,
             },
             "has_basement": {
                 "type": "boolean",
                 "label": {"en": "Has Basement"},
                 "widget": "radio",
-                "options": {
-                    True: {"option_text": {"en": "Yes"}},
-                    False: {"option_text": {"en": "No"}},
-                    None: {"option_text": {"en": "Unsure"}},
-                },
+                "options": [
+                    {"val": True, "label": {"en": "Yes"}, "pos": 0},
+                    {"val": False, "label": {"en": "No"}, "pos": 1},
+                    {"val": None, "label": {"en": "Unsure"}, "pos": 2},
+                ],
                 "has_modal": True,
                 "question_text": {"en": "Does the building appear to have a basement?"},
                 "widget_config": {"attrs": {"class": "survey-1col"}},
-                "question_number": 5,
+                "pos": 5,
             },
             "roof_geometry": {
                 "type": "text",
                 "label": {"en": "Roof Geometry"},
                 "widget": "multi_checkbox_required",
-                "options": {
-                    "flat": {"option_text": {"en": "Flat"}},
-                    "curved": {"option_text": {"en": "Curved"}},
-                    "unsure": {"option_text": {"en": "Unsure"}},
-                    "complex": {"option_text": {"en": "Complex"}},
-                    "pitch_low": {"option_text": {"en": "Low Pitched"}},
-                    "pitch_high": {"option_text": {"en": "High Pitched"}},
-                },
+                "options": [
+                    {"val": "flat", "label": {"en": "Flat"}, "pos": 0},
+                    {"val": "curved", "label": {"en": "Curved"}, "pos": 1},
+                    {"val": "unsure", "label": {"en": "Unsure"}, "pos": 2},
+                    {"val": "complex", "label": {"en": "Complex"}, "pos": 3},
+                    {"val": "pitch_low", "label": {"en": "Low Pitched"}, "pos": 4},
+                    {"val": "pitch_high", "label": {"en": "High Pitched"}, "pos": 5},
+                ],
                 "has_modal": True,
                 "question_text": {"en": "Select all that describes the roof geometry."},
                 "widget_config": {"attrs": {"class": "survey-3col"}},
-                "question_number": 12,
+                "pos": 12,
             },
             "facade_condition": {
                 "type": "boolean",
                 "label": {"en": "Facade Condition"},
                 "widget": "radio",
-                "options": {
-                    True: {"option_text": {"en": "Yes"}},
-                    False: {"option_text": {"en": "No"}},
-                    None: {"option_text": {"en": "Unsure"}},
-                },
+                "options": [
+                    {"val": True, "label": {"en": "Yes"}, "pos": 0},
+                    {"val": False, "label": {"en": "No"}, "pos": 1},
+                    {"val": None, "label": {"en": "Unsure"}, "pos": 2},
+                ],
                 "has_modal": True,
                 "question_text": {
                     "en": "Are the façades in poor condition and in need of replacement?"
                 },
                 "widget_config": {"attrs": {"class": "survey-1col"}},
-                "question_number": 9,
+                "pos": 9,
             },
             "new_or_renovated": {
                 "type": "text",
                 "label": {"en": "New or Renovated"},
                 "widget": "multi_checkbox",
-                "options": {
-                    "newly_built": {"option_text": {"en": "Newly built"}},
-                    "recently_renovated": {"option_text": {"en": "Recently renovated"}},
-                },
+                "options": [
+                    {"val": "newly_built", "label": {"en": "Newly built"}, "pos": 0},
+                    {
+                        "val": "recently_renovated",
+                        "label": {"en": "Recently renovated"},
+                        "pos": 1,
+                    },
+                ],
                 "has_modal": True,
                 "question_text": {
                     "en": "Does the building look newly built or recently renovated?"
                 },
-                "question_number": 13,
+                "pos": 13,
             },
             "exterior_cladding": {
                 "type": "text",
                 "label": {"en": "Exterior Cladding"},
                 "widget": "multi_checkbox_required_specify",
-                "options": {
-                    "wood": {"option_text": {"en": "Wood"}},
-                    "metal": {"option_text": {"en": "Metal"}},
-                    "other": {"option_text": {"en": "Other (Specify)"}},
-                    "vinyl": {"option_text": {"en": "Vinyl"}},
-                    "unsure": {"option_text": {"en": "Unsure"}},
-                    "plaster": {"option_text": {"en": "Plaster"}},
-                    "concrete": {"option_text": {"en": "Concrete"}},
-                    "curtain_wall": {"option_text": {"en": "Curtain Wall"}},
-                    "brick_masonry": {"option_text": {"en": "Brick Masonry"}},
-                    "stone_masonry": {"option_text": {"en": "Stone Masonry"}},
-                },
+                "options": [
+                    {"val": "wood", "label": {"en": "Wood"}, "pos": 0},
+                    {"val": "metal", "label": {"en": "Metal"}, "pos": 1},
+                    {"val": "vinyl", "label": {"en": "Vinyl"}, "pos": 2},
+                    {"val": "plaster", "label": {"en": "Plaster"}, "pos": 3},
+                    {"val": "concrete", "label": {"en": "Concrete"}, "pos": 4},
+                    {"val": "curtain_wall", "label": {"en": "Curtain Wall"}, "pos": 5},
+                    {
+                        "val": "brick_masonry",
+                        "label": {"en": "Brick Masonry"},
+                        "pos": 6,
+                    },
+                    {
+                        "val": "stone_masonry",
+                        "label": {"en": "Stone Masonry"},
+                        "pos": 7,
+                    },
+                    {"val": "unsure", "label": {"en": "Unsure"}, "pos": 8},
+                    {"val": "other", "label": {"en": "Other (Specify)"}, "pos": 9},
+                ],
                 "has_modal": True,
                 "question_text": {
                     "en": "Select all widgets of exterior cladding does the building appear to have."
@@ -199,82 +227,88 @@ def migrate_responses(dry_run=True):
                     "specify_input_type": "text",
                     "specify_option_value": "other",
                 },
-                "question_number": 8,
+                "pos": 8,
             },
             "has_simple_volume": {
                 "type": "boolean",
                 "label": {"en": "Simple Volume"},
                 "widget": "radio",
-                "options": {
-                    True: {"option_text": {"en": "Yes"}},
-                    False: {"option_text": {"en": "No"}},
-                },
+                "options": [
+                    {"val": True, "label": {"en": "Yes"}, "pos": 0},
+                    {"val": False, "label": {"en": "No"}, "pos": 1},
+                ],
                 "has_modal": True,
                 "question_text": {
                     "en": "Does the building have a simple volumetric form?"
                 },
-                "question_number": 3,
+                "pos": 3,
             },
             "site_obstructions": {
                 "type": "text",
                 "label": {"en": "Site Obstructions"},
                 "widget": "multi_checkbox_specify",
-                "options": {
-                    "buildings": {"option_text": {"en": "Buildings"}},
-                    "overhead_wires": {
-                        "option_text": {
+                "options": [
+                    {
+                        "val": "trees_or_landscaping",
+                        "label": {"en": "Important trees or landscaping"},
+                        "pos": 0,
+                    },
+                    {"val": "buildings", "label": {"en": "Buildings"}, "pos": 1},
+                    {
+                        "val": "overhead_wires",
+                        "label": {
                             "en": "Overhead wires, incl. those blocking general access to site"
-                        }
+                        },
+                        "pos": 2,
                     },
-                    "trees_or_landscaping": {
-                        "option_text": {"en": "Important trees or landscaping"}
-                    },
-                    "other": {"option_text": {"en": "Other (Specify)"}},
-                },
+                    {"val": "other", "label": {"en": "Other (Specify)"}, "pos": 3},
+                ],
                 "has_modal": True,
                 "question_text": {
                     "en": "Select any and all obstructions to machine access around the building."
                 },
-                "question_number": 6,
+                "pos": 6,
             },
             "window_wall_ratio": {
                 "type": "boolean",
                 "label": {"en": "Window-to-Wall Ratio"},
                 "widget": "radio",
-                "options": {
-                    True: {"option_text": {"en": "Yes"}},
-                    False: {"option_text": {"en": "No"}},
-                    None: {"option_text": {"en": "Unsure"}},
-                },
+                "options": [
+                    {"val": True, "label": {"en": "Yes"}, "pos": 0},
+                    {"val": False, "label": {"en": "No"}, "pos": 1},
+                    {"val": None, "label": {"en": "Unsure"}, "pos": 2},
+                ],
                 "has_modal": True,
                 "question_text": {
                     "en": "Does glazing make up more than 40% of the total visible façade area?"
                 },
                 "widget_config": {"attrs": {"class": "survey-1col"}},
-                "question_number": 10,
+                "pos": 10,
             },
             "has_simple_footprint": {
                 "type": "boolean",
                 "label": {"en": "Simple Footprint"},
                 "widget": "radio",
-                "options": {
-                    True: {"option_text": {"en": "Yes"}},
-                    False: {"option_text": {"en": "No"}},
-                },
+                "options": [
+                    {"val": True, "label": {"en": "Yes"}, "pos": 0},
+                    {"val": False, "label": {"en": "No"}, "pos": 1},
+                ],
                 "has_modal": True,
                 "question_text": {"en": "Does the building have a simple footprint?"},
-                "question_number": 2,
+                "pos": 2,
             },
             "self_similar_cluster": {
                 "type": "integer",
                 "label": {"en": "Self Similar Cluster"},
                 "widget": "radio_w_specify",
-                "options": {
-                    "": {"option_text": {"en": "No"}},
-                    "num_buildings_in_cluster": {
-                        "option_text": {"en": "Buildings in cluster:"}
+                "options": [
+                    {
+                        "val": "num_buildings_in_cluster",
+                        "label": {"en": "Buildings in cluster"},
+                        "pos": 0,
                     },
-                },
+                    {"val": None, "label": {"en": "No"}, "pos": 1},
+                ],
                 "has_modal": True,
                 "question_text": {
                     "en": "Is the building part of a self-similar cluster? If so, how many buildings are in the cluster?"
@@ -283,22 +317,30 @@ def migrate_responses(dry_run=True):
                     "specify_input_type": "number",
                     "specify_option_value": "num_buildings_in_cluster",
                 },
-                "question_number": 1,
+                "pos": 1,
             },
             "large_irregular_windows": {
                 "type": "text",
                 "label": {"en": "Large/Irregular Windows"},
                 "widget": "multi_checkbox",
-                "options": {
-                    "irregular_windows": {"option_text": {"en": "Irregularly shaped"}},
-                    "very_large_windows": {"option_text": {"en": "Very large"}},
-                },
+                "options": [
+                    {
+                        "val": "irregular_windows",
+                        "label": {"en": "Irregularly shaped"},
+                        "pos": 1,
+                    },
+                    {
+                        "val": "very_large_windows",
+                        "label": {"en": "Very large"},
+                        "pos": 0,
+                    },
+                ],
                 "has_modal": True,
                 "question_text": {
                     "en": "Are there very large and/or irregularly shaped windows?"
                 },
                 "widget_config": {"attrs": {"class": "survey-1col"}},
-                "question_number": 11,
+                "pos": 11,
             },
         },
         modals={
