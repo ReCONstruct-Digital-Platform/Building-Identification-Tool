@@ -37,8 +37,18 @@ class RadioWithSpecify2(widgets.RadioSelect):
             "scripts/specify.js",
         ]
 
+    def format_value(self, value):
+        """Return selected values as a list."""
+        # Try returning None here
+        if value is None and self.allow_multiple_selected:
+            return None
+        if not isinstance(value, (tuple, list)):
+            value = [value]
+        return [str(v) for v in value]
+
     def __init__(self, attrs=None, **kwargs):
         super().__init__(attrs=attrs, **kwargs)
+        self.initial = None
         self.specify_input_type = None
         self.specify_option_value = None
         self.has_modal = None
@@ -52,6 +62,7 @@ class RadioWithSpecify2(widgets.RadioSelect):
         # The choices are a list of tuples, extract just the first member
         choice_keys = [c[0] for c in self.choices]
         # If initial exists, is not empty and is not in the choices then it was manually specified
+        context["widget"]["initial"] = self.initial
         context["widget"]["value_was_specified"] = value and (value not in choice_keys)
         context["widget"]["specify_input_type"] = self.specify_input_type
         context["widget"]["specify_option_value"] = self.specify_option_value

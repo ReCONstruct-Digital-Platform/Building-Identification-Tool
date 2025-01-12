@@ -413,6 +413,7 @@ document.addEventListener("DOMContentLoaded", function () {
   setStreetviewAndMapContainerHeight();
   setUpTabGroups("tabs-right");
   setUpDragBar();
+  setUpScrollHeightObserver();
   setUpButtons();
   satelliteTabScreenshotOnHide();
   setUpSatelliteImageObserver();

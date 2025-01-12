@@ -1,7 +1,16 @@
-{% with id=widget.attrs.id widget_value=widget.value.0 %}
+{% with id=widget.attrs.id widget_value=widget.initial %}
 <div id="{{ id }}" class="{{ widget.attrs.class }}">
   {% for _, options, _ in widget.optgroups %}
-    {% for option in options %}
+  widget real value: {{ widget.value }} <br>
+  widget_value: {{ widget_value }} <br>
+  {% for option in options %}
+  option_value: {{ option.value }} <br>
+  {% if option.value == widget_value %}
+    are equal <br>
+  {% else %}
+    are not equal <br>
+  {% endif %}
+  
     <!-- option.name is the field name for all options - value is the option's unique "name" -->
       {% if widget.specify_option_value == option.value %}
       <div id="{{ id }}_specify_container" class = "flex items-center">

@@ -1,10 +1,11 @@
 import json
 import logging
 from pprint import pprint
-
 from django import forms
 from django.forms import Form
+from django.utils import formats
 from django.http import QueryDict
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from buildings.models.newmodels import Survey
@@ -34,9 +35,36 @@ def get_widget_for_field(widget_type):
     raise Exception(f"Unknown widget type: {widget_type}")
 
 
+class MyNullIntegerField(forms.IntegerField):
+
+    def to_python(self, value):
+        """
+        The parent class will throw an error if int() fails on the value.
+        TO support passing in "null" we'll catch that special case and
+        convert it to None
+        """
+        try:
+            value = super().to_python(value)
+        except ValidationError as e:
+            if value == "null":
+                return None
+            raise e
+        return value
+
+    def bound_data(self, data, initial):
+        """
+        Here we convert a None bound data to "null" for the widget
+        """
+        data = super().bound_data(data, initial)
+        if data is None:
+            return "null"
+        return data
+
+
 class MyJSONField(forms.JSONField):
     """
-    Custom field to hold a list of values
+    Custom field to hold a list of values.
+    We don't actually want to convert to and from JSON.
     """
 
     def to_python(self, value):
@@ -47,11 +75,15 @@ class MyJSONField(forms.JSONField):
         return value
 
     def bound_data(self, data, initial):
+        """
+        Override completely, don't try to json.loads"""
         if self.disabled:
             return initial
         return data
 
     def prepare_value(self, value):
+        """
+        Override completely - don't try to json.dumps"""
         return value
 
 
@@ -127,12 +159,7 @@ class DynamicSurveyForm(Form):
                     (k, _(v["option_text"]["en"])) for k, v in config["options"].items()
                 ]
 
-            # We set the initial value on radio widgets to workaround
-            # when the widget value is None and django thinking we selected
-            # the third option when we have a boolean radio widget
-            if (
-                config["widget"] == "radio"
-                and config["type"] == "boolean"
-                and field in self.data
-            ):
+            if self.data and field in self.data:
+                print(f"Field {field} is bound")
+                self.fields[field].widget.is_bound = True
                 self.fields[field].widget.initial = self.data[field]

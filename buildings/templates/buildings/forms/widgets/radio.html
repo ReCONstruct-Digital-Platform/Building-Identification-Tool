@@ -1,7 +1,19 @@
 {% with id=widget.attrs.id initial_val=widget.value.0 %}
 <div id="{{ id }}" class="{{ widget.attrs.class }}">
   {% for _, options, _ in widget.optgroups %}
+
+  widget value: {{ widget.value }} <br>
+  initial value: {{ widget.initial }} <br>
+
     {% for option in options %}
+
+    option_value: {{ option.value }} <br>
+    {% if option.value == widget_value %}
+      are equal <br>
+    {% else %}
+      are not equal <br>
+    {% endif %}
+    
       <label class="flex items-center my-0.5">
         <input id="{{ option.attrs.id }}" class="{{ widget.attrs.radio_class }}" type="{{ option.type }}" 
           name="{{ option.name }}" value="{{ option.value }}" 
