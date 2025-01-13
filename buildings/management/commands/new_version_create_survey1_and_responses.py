@@ -95,7 +95,6 @@ def migrate_responses(dry_run=True):
                     },
                     {"val": "other", "label": {"en": "Other (specify)"}, "pos": 4},
                 ],
-                "has_modal": True,
                 "question_text": {
                     "en": "Select any and all significant appendages to the building faces."
                 },
@@ -118,7 +117,6 @@ def migrate_responses(dry_run=True):
                     },
                     {"val": None, "label": {"en": "Unsure"}, "pos": 1},
                 ],
-                "has_modal": True,
                 "question_text": {
                     "en": "How many storeys above-ground does the building have?"
                 },
@@ -138,7 +136,6 @@ def migrate_responses(dry_run=True):
                     {"val": False, "label": {"en": "No"}, "pos": 1},
                     {"val": None, "label": {"en": "Unsure"}, "pos": 2},
                 ],
-                "has_modal": True,
                 "question_text": {"en": "Does the building appear to have a basement?"},
                 "widget_config": {"attrs": {"class": "survey-1col"}},
                 "pos": 5,
@@ -155,7 +152,6 @@ def migrate_responses(dry_run=True):
                     {"val": "pitch_low", "label": {"en": "Low Pitched"}, "pos": 4},
                     {"val": "pitch_high", "label": {"en": "High Pitched"}, "pos": 5},
                 ],
-                "has_modal": True,
                 "question_text": {"en": "Select all that describes the roof geometry."},
                 "widget_config": {"attrs": {"class": "survey-3col"}},
                 "pos": 12,
@@ -169,7 +165,6 @@ def migrate_responses(dry_run=True):
                     {"val": False, "label": {"en": "No"}, "pos": 1},
                     {"val": None, "label": {"en": "Unsure"}, "pos": 2},
                 ],
-                "has_modal": True,
                 "question_text": {
                     "en": "Are the façades in poor condition and in need of replacement?"
                 },
@@ -188,7 +183,6 @@ def migrate_responses(dry_run=True):
                         "pos": 1,
                     },
                 ],
-                "has_modal": True,
                 "question_text": {
                     "en": "Does the building look newly built or recently renovated?"
                 },
@@ -218,7 +212,6 @@ def migrate_responses(dry_run=True):
                     {"val": "unsure", "label": {"en": "Unsure"}, "pos": 8},
                     {"val": "other", "label": {"en": "Other (Specify)"}, "pos": 9},
                 ],
-                "has_modal": True,
                 "question_text": {
                     "en": "Select all widgets of exterior cladding does the building appear to have."
                 },
@@ -237,7 +230,6 @@ def migrate_responses(dry_run=True):
                     {"val": True, "label": {"en": "Yes"}, "pos": 0},
                     {"val": False, "label": {"en": "No"}, "pos": 1},
                 ],
-                "has_modal": True,
                 "question_text": {
                     "en": "Does the building have a simple volumetric form?"
                 },
@@ -263,7 +255,6 @@ def migrate_responses(dry_run=True):
                     },
                     {"val": "other", "label": {"en": "Other (Specify)"}, "pos": 3},
                 ],
-                "has_modal": True,
                 "question_text": {
                     "en": "Select any and all obstructions to machine access around the building."
                 },
@@ -278,7 +269,6 @@ def migrate_responses(dry_run=True):
                     {"val": False, "label": {"en": "No"}, "pos": 1},
                     {"val": None, "label": {"en": "Unsure"}, "pos": 2},
                 ],
-                "has_modal": True,
                 "question_text": {
                     "en": "Does glazing make up more than 40% of the total visible façade area?"
                 },
@@ -293,7 +283,6 @@ def migrate_responses(dry_run=True):
                     {"val": True, "label": {"en": "Yes"}, "pos": 0},
                     {"val": False, "label": {"en": "No"}, "pos": 1},
                 ],
-                "has_modal": True,
                 "question_text": {"en": "Does the building have a simple footprint?"},
                 "pos": 2,
             },
@@ -309,7 +298,6 @@ def migrate_responses(dry_run=True):
                     },
                     {"val": None, "label": {"en": "No"}, "pos": 1},
                 ],
-                "has_modal": True,
                 "question_text": {
                     "en": "Is the building part of a self-similar cluster? If so, how many buildings are in the cluster?"
                 },
@@ -335,7 +323,6 @@ def migrate_responses(dry_run=True):
                         "pos": 0,
                     },
                 ],
-                "has_modal": True,
                 "question_text": {
                     "en": "Are there very large and/or irregularly shaped windows?"
                 },

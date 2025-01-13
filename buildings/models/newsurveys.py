@@ -70,7 +70,7 @@ class MyJSONField(forms.JSONField):
     def to_python(self, value):
         super().to_python(value)
         # Return an empty list if no input was given.
-        if "on" in value:
+        if value and "on" in value:
             value.remove("on")
         return value
 
@@ -109,6 +109,10 @@ class DynamicSurveyForm(Form):
     """
 
     def __init__(self, survey: Survey, *args, **kwargs):
+        """
+        Iterate through the given schema, creating fields with
+        appropriate types and widgets, binding them to data if given.
+        """
         super(DynamicSurveyForm, self).__init__(*args, **kwargs)
 
         logging.debug(f"Form is bound? {self.is_bound}\nData: {self.data}")
@@ -124,7 +128,6 @@ class DynamicSurveyForm(Form):
             self.fields[field].question_text = config["question_text"]["en"]
             self.fields[field].question_number = config["pos"]
 
-            # TODO: remove has_modal from schema
             if modals and field in modals:
                 self.fields[field].has_modal = True
                 self.fields[field].modal = modals[field]
