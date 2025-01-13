@@ -148,26 +148,11 @@ strong {
   height: 100%;
 }
 
-.home-content {
-  height: 85%;
-}
-
 
 .activity-tab-content {
-  width: 85%;
   margin-bottom: 1.5rem;
   border: 1px solid #dddddd;
   border-radius: 10px;
-}
-
-@media(max-width: 868px) {
-  .activity-tab-content {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    margin-bottom: 0.5rem;
-  }
 }
 
 .spread-apart-container {

@@ -58,31 +58,35 @@ log = logging.getLogger(__name__)
 def index(request):
     template = "buildings/index.html"
 
-    total_votes = Vote.objects.count() or 1
-    latest_votes = Vote.objects.order_by("-date_modified").all()
+    datasets = Dataset.objects.all()
+    surveys = Survey.objects.all()
 
-    num_user_votes = Vote.objects.filter(user=request.user).count()
-    user_votes = Vote.objects.filter(user=request.user).order_by("-date_modified").all()
+    total_votes = Response.objects.count() or 1
+    latest_votes = Response.objects.order_by("-date_modified").all()
 
-    top_3_users = User.objects.get_top_n(3)
-    top_3_total_votes = sum(t.num_votes for t in top_3_users)
-    top_3_vote_percentage = int(top_3_total_votes / total_votes * 100)
+    num_user_votes = Response.objects.filter(created_by=request.user).count()
+    user_votes = (
+        Response.objects.filter(created_by=request.user)
+        .order_by("-date_modified")
+        .all()
+    )
 
     page_num_latest = request.GET.get("latest_votes_page", 1)
     page_num_user = request.GET.get("user_votes_page", 1)
     latest_votes_page = Paginator(latest_votes, 10).get_page(page_num_latest)
     user_votes_page = Paginator(user_votes, 10).get_page(page_num_user)
-    active_tab = request.GET.get("active_tab", "leaderboard")
+
+    # TODO: how does this work?
+    active_tab = request.GET.get("active_tab", "latest")
 
     context = {
+        "datasets": datasets,
+        "surveys": surveys,
         "total_votes": total_votes,
         "num_user_votes": num_user_votes,
         "latest_votes_page": latest_votes_page,
         "user_votes_page": user_votes_page,
         "active_tab": active_tab,
-        "top_3_users": top_3_users,
-        "top_3_total_votes": top_3_total_votes,
-        "top_3_vote_percentage": top_3_vote_percentage,
     }
     # This returns partial HTML content only for the activity tab
     if request.htmx:
