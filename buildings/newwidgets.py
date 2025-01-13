@@ -2,9 +2,9 @@ from django.forms import widgets
 import logging
 from pprint import pprint
 
-TW_RADIO_CLASS = """me-2 text-xs border-0 text-teal-600 accent-teal-600 focus:accent-teal-700 shadow-sm ring-1 focus:ring-2 focus:ring-teal-600"""
+TW_RADIO_CLASS = """me-2 text-base border-0 text-teal-600 accent-teal-600 focus:accent-teal-700 shadow-sm ring-1 focus:ring-2 focus:ring-teal-600"""
 
-TW_SPECIFY_CLASS = """ms-1 text-xs specify rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
+TW_SPECIFY_CLASS = """ms-1 h-[30px] text-base rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600"""
 
 
 class RadioSelect(widgets.RadioSelect):

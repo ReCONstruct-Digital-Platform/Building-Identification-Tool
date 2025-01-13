@@ -16,7 +16,7 @@
     option selected? {{ option.selected }} <br>
     {% endcomment %}
     
-      <label class="flex items-center my-0.5">
+      <label class="flex items-center h-[30px]">
         <input id="{{ option.attrs.id }}" class="{{ widget.attrs.radio_class }}" type="{{ option.type }}" 
           name="{{ option.name }}" value="{{ option.value }}" 
           {% if widget.is_bound and option.selected %} checked

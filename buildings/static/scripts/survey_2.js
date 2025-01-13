@@ -141,30 +141,6 @@ function setUpDragBar() {
   });
 }
 
-/**
- * This function dynamically sets the height of the right panel (satellite view and survey)
- * TODO: Try to get rid of this. Setting h-full on the survey tab content div makes the submit
- * button be covered for some reason
- */
-function setUpScrollHeightObserver() {
-  const svElement = document.getElementById("streetview");
-  const tabElement = document.getElementById("tabs-right");
-
-  const observer = new MutationObserver(() => {
-    const svHeight = svElement.offsetHeight;
-    const tabHeight = tabElement.offsetHeight;
-    const textHeight = svHeight - tabHeight;
-    console.debug(
-      `Setting tab content height to ${svHeight}-${tabHeight}=${textHeight}px`
-    );
-
-    // document.getElementById("tab-content-container").style.height =
-    //   textHeight + "px";
-    document.getElementById("nav-survey").style.height = svHeight + "px";
-  });
-  observer.observe(svElement, { childList: true, subtree: true });
-}
-
 function setUpButtons() {
   // Screenshot functionality
   const screenshotButton = document.getElementById("btn-screenshot");
@@ -364,11 +340,36 @@ function setUpInitialSurveyMutationChecker() {
   observer.observe(form, { subtree: true, attributes: true });
 }
 
+/**
+ * We have to set heights dynamically bc the streetview get loaded at runtime.
+ * Setting height = 100% did not work.
+ * Otherwise, it will have a height of 0. We don't set an absolute height from the 
+ * start to accomodate any screen height.
+ */
 function setStreetviewAndMapContainerHeight() {
   const container = document.getElementById("streetview-and-map-container");
   const windowHeight = window.innerHeight;
+  // Leave some space for navbar, tabs and some padding at the bottom
+  const navbarHeight = document.getElementById("navbar").offsetHeight;
+  const tabHeight = document.getElementById("tabs-left").offsetHeight;
+  
+  // const topRowHeight = document.getElementById("survey-top-row").offsetHeight;
+  const topRowHeight = 0;
+
   // Leave some space at the bottom
-  container.style.height = `${Math.floor(windowHeight * 0.91)}px`;
+  const padding = getComputedStyle(
+    document.getElementById("survey-page-container")
+  ).paddingLeft.replace("px", "");
+  const containerHeight = windowHeight - navbarHeight - topRowHeight -padding;
+
+  console.debug(
+    `${windowHeight} - ${navbarHeight} - ${padding} - ${topRowHeight} = ${containerHeight}`
+  );
+  container.style.height = containerHeight + "px";
+
+  const streetViewHeight = containerHeight - tabHeight;
+  document.getElementById("streetview").style.height = streetViewHeight + "px";
+  document.getElementById("nav-survey").style.height = streetViewHeight + "px";
 }
 
 function setUpTabGroups(tabGroupId) {
@@ -413,9 +414,9 @@ function setUpTabGroups(tabGroupId) {
 
 document.addEventListener("DOMContentLoaded", function () {
   setStreetviewAndMapContainerHeight();
+  setUpTabGroups("tabs-left");
   setUpTabGroups("tabs-right");
   setUpDragBar();
-  setUpScrollHeightObserver();
   setUpButtons();
   satelliteTabScreenshotOnHide();
   setUpSatelliteImageObserver();

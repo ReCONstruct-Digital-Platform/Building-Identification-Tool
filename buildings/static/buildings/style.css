@@ -478,17 +478,6 @@ tr:hover .delete-row-icon {
   grid-column: span 2;
 }
 
-.q-container {
-  padding-left: 1.5rem;
-  padding-bottom: 1rem;
-}
-
-.q-header {
-  font-size: .9rem;
-  display: flex;
-  align-items: center;
-  margin-bottom: -0.10rem;
-}
 
 .survey-3col {
   display: grid;
@@ -511,7 +500,6 @@ tr:hover .delete-row-icon {
   right: 0px;
   z-index: 10;
   margin-top: 10px;
-  font-family: Roboto, Arial, sans-serif;
 }
 
 .time-travel-container {
@@ -519,19 +507,6 @@ tr:hover .delete-row-icon {
   border-bottom-left-radius: 2px;
   border-top-left-radius: 2px;
   padding: 6px 8px;
-}
-
-#screenshot-btn-container {
-  background-color: #222222cc;
-  border-bottom-left-radius: 2px;
-  border-top-left-radius: 2px;
-  padding: 6px 8px;
-}
-
-.time-travel-label {
-  color: #ffffff;
-  font-weight: bold;
-  font-size: 12px;
 }
 
 
@@ -629,7 +604,13 @@ tr:hover .delete-row-icon {
       #6f788a 20%,
       #379aeb 25%,
       #5f788a 30%);
-  background-image: var(--stripes), var(--rainbow);
+  --rainbow2: repeating-linear-gradient(100deg,
+        #815f8a 10%,
+        #a279d1 15%,
+        #815f8a 20%,
+        #a279d1 25%,
+        #815f8a 30%);
+    background-image: var(--stripes), var(--rainbow);
   background-size: 100%, 100%;
   background-position: 50% 50%, 100% 50%;
 
@@ -652,10 +633,6 @@ tr:hover .delete-row-icon {
   mix-blend-mode: exclusion;
 }
 
-label {
-  margin: 2px 5px;
-}
-
 /* Style the buttons inside the tab */
 .tab {
   cursor: pointer;
@@ -664,12 +641,12 @@ label {
 }
 
 .tab:hover {
-  background-color: rgb(255, 255, 255, .50);
+  background-color: rgb(255, 255, 255, .85);
 }
 
 /* Create an active/current tablink class */
 .tab.active {
-  background-color: rgb(255, 255, 255, .65);
+  background-color: rgb(255, 255, 255, .85);
 }
 
 /* Style the tab content */

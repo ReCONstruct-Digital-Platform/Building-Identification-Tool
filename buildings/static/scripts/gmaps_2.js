@@ -284,7 +284,7 @@ async function findPanorama(
       const map = new Map(document.getElementById("satellite"), {
         center: evalUnitCoord,
         mapTypeId: "hybrid",
-        zoom: 18,
+        zoom: 20,
         controlSize: 25,
         fullscreenControl: false,
         mapTypeControl: false,

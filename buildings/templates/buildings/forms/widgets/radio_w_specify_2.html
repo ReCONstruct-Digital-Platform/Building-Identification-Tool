@@ -18,7 +18,7 @@
   
       {% if widget.specify_option_value == option.value %}
       <div id="{{ id }}_specify_container" class = "flex items-center">
-        <label>
+        <label class="">
           <input id = "{{ id }}_specify" type="{{ option.type }}" class = "{{ widget.attrs.option_class }}"
           onclick="turnOnSpecify('{{ id }}_specify_value')" name="{{ widget.name }}"
           {% if widget.value_was_specified %} checked{% endif %} required>{{ option.label }}
@@ -27,7 +27,7 @@
         {% if widget.value_was_specified %} value="{{ widget_val }}" {% else %} disabled {% endif %} />
       </div>
       {% else %}
-        <label>
+        <label class="flex items-center h-[30px]">
           <input id="{{ option.attrs.id }}" class="{{ widget.attrs.option_class }}" type="{{ option.type }}"
             onclick="turnOffSpecify('{{ id }}_specify_value')"
             name="{{ option.name }}" value="{{ option.value }}" 

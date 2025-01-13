@@ -26,7 +26,7 @@
         {% endif %} />
     </div>
     {% else %}
-    <label class="flex items-center my-0.5">
+    <label class="flex items-center h-[30px]">
       <input id="{{ option.attrs.id }}" class="{{ widget.attrs.checkbox_class }}" type="{{ widget.input_type }}"
         name="{{ option.name }}" value="{{ option.value }}" {% if option.value in widget_value %}
         checked{% endif %}>{{ option.label }}
