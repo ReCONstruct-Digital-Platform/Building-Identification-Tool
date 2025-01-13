@@ -64,6 +64,11 @@ def migrate_responses(dry_run=True):
         created_by=SYSTEM_USER,
     )
 
+    # Fetch the first survey
+    survey1 = Survey.objects.get_or_create(
+        name="Recon Survey V1", created_by=SYSTEM_USER
+    )
+
     survey, _ = Survey.objects.get_or_create(
         name="Recon Survey V2: Montreal HLMs with brick facade",
         description="Reconstruct sub-survey on SHQ HLMs in Montréal with brick facade",
@@ -84,11 +89,12 @@ def migrate_responses(dry_run=True):
         surveys_filter={
             "condition": "AND",
             "rules": [
-                {"field": "survey_id", "operator": "equal", "value": 2},
                 {
-                    "field": "data__exterior_cladding",
-                    "operator": "contains",
-                    "value": "brick_masonry",
+                    "id": f"s_{survey1.id}_exterior_cladding",
+                    "field": f"s_{survey1.id}_exterior_cladding",
+                    "operator": "in",
+                    "type": "string",
+                    "value": ["brick_masonry"],
                 },
             ],
         },
