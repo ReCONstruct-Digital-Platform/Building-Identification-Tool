@@ -285,7 +285,7 @@ class Survey(models.Model):
                         "label": schema_field["label"]["en"],
                         "type": "string",
                         "input": "checkbox",
-                        "values": list(schema_field["options"].keys()),
+                        "values": [o["val"] for o in schema_field["options"]],
                         "operators": ["in", "not_in", "is_null", "is_not_null"],
                         "optgroup": survey_name,
                     },
