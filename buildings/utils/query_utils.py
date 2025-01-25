@@ -224,7 +224,7 @@ class SurveyQParser(object):
 
         if type in ["integer", "boolean"]:
             # Gather values for special cases
-            if rule_operator == "is_null":
+            if rule_operator in ["is_null", "is_not_null"]:
                 value = Value("null")
             elif operator.text == "range":
                 value = (rule["value"][0], rule["value"][1])
@@ -238,7 +238,7 @@ class SurveyQParser(object):
                 operator = Op("contains", operator.negated)
 
             # If arrays contains null
-            if rule_operator == "is_null":
+            if rule_operator in ["is_null", "is_not_null"]:
                 value = Value("null")
             # Add the wildcard character to the value for string lookups
             elif "contains" in rule_operator:
