@@ -13,7 +13,8 @@ class Migration(migrations.Migration):
         migrations.RunSQL(
             """
                 CREATE or replace FUNCTION jsonb_to_int_array(jsonb) RETURNS int[] AS $f$
-                SELECT coalesce(array_agg(x)::int[], 
+                --- We cast from JSON null to SQL null here to avodi crashes when querying null integers
+                SELECT coalesce(array_agg(nullif(x, 'null'))::int[], 
                     CASE WHEN $1 is null THEN null ELSE ARRAY[]::int[] END)
                 FROM jsonb_array_elements($1) t(x);
                 $f$ LANGUAGE sql IMMUTABLE;

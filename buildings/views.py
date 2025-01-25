@@ -256,7 +256,6 @@ def survey_results(request, survey_slug):
         results = results.filter(dataset_q).filter(surveys_q)
 
         print(results)
-        print(results.count())
 
     # Need to use F to hide nulls, otherwise order_by descneding would show them first
     if orderby_dir == "asc":

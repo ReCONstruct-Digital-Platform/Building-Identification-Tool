@@ -113,8 +113,7 @@ class Building(models.Model):
         return [
             {"id": a["id"], "label": a["label"]["en"]}
             for a in self.dataset.schema
-            if a["id"]
-            in ["lat", "lng", "submuni", "const_year", "num_floors", "floor_area"]
+            if a["id"] in ["submuni", "const_year", "num_floors", "floor_area"]
         ]
 
     def get_attrs(self):
