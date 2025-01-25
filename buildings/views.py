@@ -195,6 +195,10 @@ def survey_results(request, survey_slug):
 
     # Could even be 3 values - ALL, COMPLETED, INCOMPLETE
     show_all = request.GET.get("show_all") or False
+
+    num_results_per_page = 10
+    orderby_field = request.GET.get("field") or "address"
+    orderby_dir = request.GET.get("dir") or "asc"
     # dataset_query = json.loads(request.GET.get("dataset_query") or "{}")
     # survey_query = json.loads(request.GET.get("dataset_query") or "{}")
     dataset_query = json.loads(
@@ -253,7 +257,11 @@ def survey_results(request, survey_slug):
         print(results)
         print(results.count())
 
-    page_obj = Paginator(results[:4], per_page=2).get_page(pagenum)
+    order_by = f"{'-' if orderby_dir == 'desc' else ''}{orderby_field}"
+    print(f"Order by: {order_by}")
+    page_obj = Paginator(
+        results.order_by(order_by), per_page=num_results_per_page
+    ).get_page(pagenum)
 
     context = {
         "survey": survey,
@@ -263,6 +271,8 @@ def survey_results(request, survey_slug):
         "s_schema_cols": s_schema_cols,
         "qb_dataset_filters": dataset_schema,
         "qb_surveys_filters": survey_filters_and_optgroups,
+        "orderby_field": orderby_field,
+        "orderby_dir": orderby_dir,
     }
 
     if request.htmx:

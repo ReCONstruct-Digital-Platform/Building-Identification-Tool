@@ -47,6 +47,47 @@
           </div>
         </section>
 
+        <section id="order-by-config" class="my-4">
+          <div class="text-xl">
+            Order by
+          </div>
+          <div class="flex gap-3 items-center">
+            <select id="order-by-field" class='block font-light text-sm ps-2 mt-1 rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600'>
+              <optgroup label="Building Attributes">
+                {% for col in ds_schema_cols %}
+                <option id="{{ col.id }}" value="{{ col.id }}" class="appearance-none"
+                  {% if col.id == orderby_field %} selected {% endif %}
+                >{{ col.label }}</option>
+                {% endfor %}
+              </optgroup>
+              <optgroup label="Survey Responses">
+                {% for col in columns %}
+                <option id="{{ col.id }}" value="{{ col.id }}" class="appearance-none"
+                {% if col.id == orderby_field %} selected {% endif %}
+                >{{ col.label }}</option>
+                {% endfor %}
+              </optgroup>
+            </select>
+
+            <div>
+              <label for="asc">
+                <input type="radio" id="order-by-asc" name="order-by-dir" value="asc" 
+                class="me-2 text-base border-0 text-teal-600 accent-teal-600 focus:accent-teal-700 shadow-sm ring-1 focus:ring-2 focus:ring-teal-600"
+                checked />
+                Ascending
+              </label>
+            </div>
+            <div>
+              <label for="desc">
+                <input type="radio" id="order-by-desc" name="order-by-dir" value="desc"
+                class="me-2 text-base border-0 text-teal-600 accent-teal-600 focus:accent-teal-700 shadow-sm ring-1 focus:ring-2 focus:ring-teal-600"
+                 />
+                Descending
+              </label>
+            </div>
+          </div>
+        </section>
+
         <section>
           <button id="submitQueryButton" 
             hx-get="{% url 'buildings:survey_results' survey.slug %}"
@@ -159,7 +200,7 @@
           <button 
             {% if page_obj.has_previous %}
             hx-target="#results-container" 
-            hx-swap="outerHTML"
+            hx-swap="outerHTML schow:top"
             hx-get="{% url 'buildings:survey_results' survey.slug %}?page={{ page_obj.previous_page_number }}"
             hx-vals='js:{...getCurrentQuery()}'
             hx-replace-url="true"
@@ -183,7 +224,7 @@
           <button 
             {% if page_obj.has_next %}
             hx-target="#results-container" 
-            hx-swap="outerHTML" 
+            hx-swap="outerHTML show:top" 
             hx-get="{% url 'buildings:survey_results' survey.slug %}?page={{ page_obj.next_page_number }}" 
             hx-vals='js:{...getCurrentQuery()}'
             hx-replace-url="true"

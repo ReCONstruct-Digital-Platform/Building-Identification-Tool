@@ -2,7 +2,12 @@ const datasetQueryBuilderId = "#query-builder-dataset";
 const surveyQueryBuilderId = "#query-builder-surveys";
 
 function getCurrentQuery() {
+  const orderByConfig = {
+    field: document.getElementById("order-by-field").value,
+    dir: document.querySelector('input[name="order-by-dir"]:checked').value,
+  };
   return {
+    ...orderByConfig,
     ...getQueryBuilderQuery(datasetQueryBuilderId, "dataset_query"),
     ...getQueryBuilderQuery(surveyQueryBuilderId, "survey_query"),
   };
