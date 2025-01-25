@@ -1,6 +1,6 @@
 import json
 import traceback
-import random
+import base64
 from datetime import datetime
 from typing import List
 
@@ -195,8 +195,14 @@ def survey_results(request, survey_slug):
 
     # Could even be 3 values - ALL, COMPLETED, INCOMPLETE
     show_all = request.GET.get("show_all") or False
-    dataset_filter = json.loads(request.GET.get("dataset_filter") or "{}")
-    surveys_filter = json.loads(request.GET.get("surveys_filter") or "{}")
+    # dataset_query = json.loads(request.GET.get("dataset_query") or "{}")
+    # survey_query = json.loads(request.GET.get("dataset_query") or "{}")
+    dataset_query = json.loads(
+        base64.b64decode(request.GET.get("dataset_query") or "").decode("utf-8") or "{}"
+    )
+    survey_query = json.loads(
+        base64.b64decode(request.GET.get("survey_query") or "").decode("utf-8") or "{}"
+    )
 
     # TODO - set ds cols invisible by default - we care about the results here
     col_config = None
@@ -230,16 +236,16 @@ def survey_results(request, survey_slug):
 
     columns = s_schema_cols
 
-    if dataset_filter or surveys_filter:
+    if dataset_query or survey_query:
         print("got filters")
         dataset_q_parser = DatasetQParser(
             schema=dataset.schema, json_field_name="attrs"
         )
-        dataset_q = dataset_q_parser.parse_query(dataset_filter)
+        dataset_q = dataset_q_parser.parse_query(dataset_query)
         print(dataset_q)
 
         survey_q_parser = SurveyQParser(prefix=None)
-        surveys_q = survey_q_parser.parse_query(surveys_filter)
+        surveys_q = survey_q_parser.parse_query(survey_query)
         print(surveys_q)
 
         results = results.filter(dataset_q).filter(surveys_q)
@@ -247,9 +253,10 @@ def survey_results(request, survey_slug):
         print(results)
         print(results.count())
 
-    page_obj = Paginator(results, per_page=10).get_page(pagenum)
+    page_obj = Paginator(results[:4], per_page=2).get_page(pagenum)
 
     context = {
+        "survey": survey,
         "page_obj": page_obj,
         "columns": columns,
         "ds_schema_cols": ds_schema_cols,

@@ -1,25 +1,37 @@
 const datasetQueryBuilderId = "#query-builder-dataset";
 const surveyQueryBuilderId = "#query-builder-surveys";
 
-function getDatasetFilterRules() {
-  return document.querySelector(datasetQueryBuilderId).childElementCount
-    ? $(datasetQueryBuilderId).queryBuilder("getRules", {
-        get_flags: true,
-        skip_empty: true,
-      })
-    : null;
+function getCurrentQuery() {
+  return {
+    ...getQueryBuilderQuery(datasetQueryBuilderId, "dataset_query"),
+    ...getQueryBuilderQuery(surveyQueryBuilderId, "survey_query"),
+  };
 }
-function getSurveysFilterRules() {
-  return document.querySelector(surveyQueryBuilderId).childElementCount
-    ? $(surveyQueryBuilderId).queryBuilder("getRules", {
-        get_flags: true,
-        skip_empty: true,
-      })
-    : null;
+
+function getQueryBuilderQuery(queryBuilderId, returnKey) {
+  // If querybuilder has no children, it doesn't exist
+  if (!document.querySelector(queryBuilderId).childElementCount) return null;
+
+  const rules = $(queryBuilderId).queryBuilder("getRules", {
+    get_flags: true,
+    skip_empty: true,
+  });
+
+  // Rule can exist be be empty
+  if (!rules.rules.length) return null;
+  var query = {};
+  query[returnKey] = b64EncodeUnicode(JSON.stringify(rules));
+  return query;
 }
 
 // Filters code
 document.addEventListener("DOMContentLoaded", () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlDatasetQuery = JSON.parse(b64DecodeUnicode(urlParams.get("dataset_query")));
+  const urlSurveyQuery = JSON.parse(b64DecodeUnicode(urlParams.get("survey_query")));
+  console.debug(urlDatasetQuery);
+  console.debug(urlSurveyQuery);
+
   const qb_dataset_filters = JSON.parse(document.getElementById("qb_dataset_filters").textContent);
   const qb_surveys_filters = JSON.parse(document.getElementById("qb_surveys_filters").textContent);
 
@@ -77,16 +89,16 @@ document.addEventListener("DOMContentLoaded", () => {
           "not_in",
         ],
         filters: qb_dataset_filters,
-        rules: {
+        rules: urlDatasetQuery ?? {
           condition: "AND",
           rules: [
             {
-              id: "const_year",
-              field: "const_year",
-              type: "date",
+              id: "muni",
+              field: "muni",
+              type: "text",
               input: "text",
-              operator: "between",
-              value: [1950, 2000],
+              operator: "contains",
+              value: "Mont",
             },
           ],
         },
@@ -133,7 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ],
         // filters: survey_filters_fake,
         filters: qb_surveys_filters["filters"],
-        rules: {
+        rules: urlSurveyQuery ?? {
           condition: "AND",
           rules: [
             {
@@ -151,70 +163,73 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  document
-    .getElementById("submitQueryButton")
-    // .addEventListener("htmx:configRequest", (e) => {
-    //   console.log(e);
-    // })
-    .addEventListener("click", (e) => {
-      e.preventDefault();
+  urlDatasetQuery && document.getElementById("add-dataset-filter").dispatchEvent(new Event("click"));
+  urlSurveyQuery && document.getElementById("add-surveys-filter").dispatchEvent(new Event("click"));
 
-      const datasetRules = document.querySelector(datasetQueryBuilderId).childElementCount
-        ? $(datasetQueryBuilderId).queryBuilder("getRules", {
-            get_flags: true,
-            skip_empty: true,
-          })
-        : null;
+  // document
+  //   .getElementById("submitQueryButton")
+  //   // .addEventListener("htmx:configRequest", (e) => {
+  //   //   console.log(e);
+  //   // })
+  //   .addEventListener("click", (e) => {
+  //     e.preventDefault();
 
-      const surveyRules = document.querySelector(surveyQueryBuilderId).childElementCount
-        ? $(surveyQueryBuilderId).queryBuilder("getRules", {
-            get_flags: true,
-            skip_empty: true,
-          })
-        : null;
+  //     const datasetRules = document.querySelector(datasetQueryBuilderId).childElementCount
+  //       ? $(datasetQueryBuilderId).queryBuilder("getRules", {
+  //           get_flags: true,
+  //           skip_empty: true,
+  //         })
+  //       : null;
 
-      if (datasetRules === null && surveyRules === null) return;
+  //     const surveyRules = document.querySelector(surveyQueryBuilderId).childElementCount
+  //       ? $(surveyQueryBuilderId).queryBuilder("getRules", {
+  //           get_flags: true,
+  //           skip_empty: true,
+  //         })
+  //       : null;
 
-      console.log(datasetRules);
-      console.log(surveyRules);
+  //     if (datasetRules === null && surveyRules === null) return;
 
-      return;
+  //     console.log(datasetRules);
+  //     console.log(surveyRules);
 
-      htmx
-        .ajax("POST", "", {
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCookie("csrftoken"), // So django accepts the request
-          },
-          values: { dataset_query: datasetRules, surveys_query: surveyRules },
-        })
-        .then(() => {
-          // this code will be executed after the 'htmx:afterOnLoad' event,
-          // and before the 'htmx:xhr:loadend' event
-          console.log("Content inserted successfully!");
-        });
+  //     return;
 
-      fetch("", {
-        method: "POST",
-        mode: "same-origin",
-        cache: "no-cache",
-        credentials: "same-origin",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"), // So django accepts the request
-        },
-        body: JSON.stringify({
-          dataset_query: datasetRules,
-          surveys_query: surveyRules,
-        }),
-      }).then((resp) => {
-        if (resp.status === 200) {
-          console.debug("Query uploaded");
-        } else {
-          console.debug(`ERROR running query ${resp}`);
-        }
-      });
-    });
+  //     htmx
+  //       .ajax("POST", "", {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           "X-CSRFToken": getCookie("csrftoken"), // So django accepts the request
+  //         },
+  //         values: { dataset_query: datasetRules, surveys_query: surveyRules },
+  //       })
+  //       .then(() => {
+  //         // this code will be executed after the 'htmx:afterOnLoad' event,
+  //         // and before the 'htmx:xhr:loadend' event
+  //         console.log("Content inserted successfully!");
+  //       });
+
+  //     fetch("", {
+  //       method: "POST",
+  //       mode: "same-origin",
+  //       cache: "no-cache",
+  //       credentials: "same-origin",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "X-CSRFToken": getCookie("csrftoken"), // So django accepts the request
+  //       },
+  //       body: JSON.stringify({
+  //         dataset_query: datasetRules,
+  //         surveys_query: surveyRules,
+  //       }),
+  //     }).then((resp) => {
+  //       if (resp.status === 200) {
+  //         console.debug("Query uploaded");
+  //       } else {
+  //         console.debug(`ERROR running query ${resp}`);
+  //       }
+  //     });
+  //   });
 });
 
 // Table Code

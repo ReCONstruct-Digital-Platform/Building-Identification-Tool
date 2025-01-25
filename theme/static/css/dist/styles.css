@@ -1909,6 +1909,10 @@ input:checked + .toggle-bg {
   flex-shrink: 0 !important;
 }
 
+.flex-grow {
+  flex-grow: 1 !important;
+}
+
 .table-auto {
   table-layout: auto !important;
 }
@@ -2634,6 +2638,11 @@ input:checked + .toggle-bg {
 .py-5 {
   padding-top: 1.25rem !important;
   padding-bottom: 1.25rem !important;
+}
+
+.py-6 {
+  padding-top: 1.5rem !important;
+  padding-bottom: 1.5rem !important;
 }
 
 .py-\[6px\] {
