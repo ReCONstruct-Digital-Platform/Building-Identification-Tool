@@ -109,11 +109,19 @@ class Building(models.Model):
     date_added = models.DateTimeField("date added", default=timezone.now)
     date_modified = models.DateTimeField("date modified", default=timezone.now)
 
+    def get_fields_to_display(self):
+        return [
+            {"id": a["id"], "label": a["label"]["en"]}
+            for a in self.dataset.schema
+            if a["id"]
+            in ["lat", "lng", "submuni", "const_year", "num_floors", "floor_area"]
+        ]
+
     def get_attrs(self):
         attrs_fields = [
             {"id": a["id"].replace("attrs__", ""), "label": a["label"]["en"]}
             for a in self.dataset.schema
-            if "attrs__" in a["id"]
+            if ("attrs__" in a["id"])
         ]
         return attrs_fields
 

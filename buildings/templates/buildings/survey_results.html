@@ -117,6 +117,7 @@
           <div class="flex flex-row items-end">
             <div class="text-xl font-semibold text-gray-900 self-end">{{ row.address }}</div>
             <div class="ps-2 text-xl"> - {{ row.muni }}, {{ row.admin_area_level_1 }}</div>
+            <div class="ps-2 text-lg"> ({{ row.lat }}, {{row.lng}})</div>
           </div>
 
           <div class="flex flex-row w-full gap-3 items-center">
@@ -132,6 +133,12 @@
               <div class="col-span-1">
                 <div class="text-xl font-semibold px-2 underline underline-offset-4 pb-2 pt-1">Building Attributes</div>
               </div>
+              {% for field in row.get_fields_to_display %}
+              <div class="px-2">
+                <p class="font-semibold">{{ field.label }}</p>
+                <p>{{ row|get_attr:field.id }}</p>
+              </div>
+              {% endfor %}
               {% for attr in row.get_attrs %}
               <div class="px-2">
                 <p class="font-semibold">{{ attr.label }}</p>

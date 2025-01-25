@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.views import generic
 from django.conf import settings
 from django.db import transaction
+from django.db.models import F
 from django.contrib import messages
 from django.http import Http404, HttpResponse, QueryDict
 from django.core.paginator import Paginator
@@ -257,7 +258,12 @@ def survey_results(request, survey_slug):
         print(results)
         print(results.count())
 
-    order_by = f"{'-' if orderby_dir == 'desc' else ''}{orderby_field}"
+    # Need to use F to hide nulls, otherwise order_by descneding would show them first
+    if orderby_dir == "asc":
+        order_by = F(orderby_field).asc(nulls_last=True)
+    else:
+        order_by = F(orderby_field).desc(nulls_last=True)
+
     print(f"Order by: {order_by}")
     page_obj = Paginator(
         results.order_by(order_by), per_page=num_results_per_page
