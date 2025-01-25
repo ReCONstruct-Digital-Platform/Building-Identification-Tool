@@ -1,0 +1,160 @@
+{% extends "buildings/base.html" %}
+{% load static %}
+{% load i18n %}
+{% load allauth %}
+{% load extra_tags %}
+
+{% block css_imports %}
+<link rel="stylesheet" type="text/css" href="{% static 'buildings/query-builder.default.css' %}" />
+<link rel="stylesheet" type="text/css"
+  href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker3.standalone.min.css" />
+{% endblock %}
+
+{% block content %}
+
+<div class="flex items-center justify-center pb-4 px-4 mb-4">
+  <div class="w-[80%] relative">
+
+    <div class="w-full flex flex-column bg-white bg-opacity-50 pb-3 mb-3 px-5 rounded-md text-md">
+      <form>
+        {% csrf_token %}
+
+        <section id="data-filter" class="my-4">
+
+          <div class="text-2xl">Dataset filter</div>
+          <p>Filter results on dataset properties</p>
+
+          {% #button id="add-dataset-filter" %}
+          Add dataset filter
+          {% /button %}
+
+          <div class="block w-2/3 py-2">
+            <div id="query-builder-dataset" class="col-start-2 col-span-6"></div>
+          </div>
+        </section>
+
+        <section id="surveys-filter" class="my-4">
+
+          <div class="text-2xl">Surveys filter</div>
+          <p>Filter results on survey responses</p>
+
+          {% #button id="add-surveys-filter" %}
+          Add survey filter
+          {% /button %}
+
+          <div class="block w-2/3 py-2">
+            <div id="query-builder-surveys" class="col-start-2 col-span-6"></div>
+          </div>
+        </section>
+
+        <section>
+          <button id="submitQueryButton" hx-get=""
+            hx-vals='js:{dataset_filters: getDatasetFilterRules(), surveys_filter: getSurveysFilterRules()}'
+            class=" bg-teal-600 hover:bg-teal-500 focus-visible:outline-teal-600 
+          block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+            {% trans "Refresh Results" %}
+          </button>
+        </section>
+      </form>
+
+    </div>
+
+
+    <div class="mb-4 flex flex-col gap-3">
+
+      {% for row in page_obj %}
+      <div class="bg-white bg-opacity-65 rounded-xl p-4 text-base gap-3">
+        <div class="flex flex-col items-top gap-2">
+          <div class="flex flex-row items-end">
+            <div class="text-xl font-semibold text-gray-900 self-end">{{ row.address }}</div>
+            <div class="ps-2 text-xl"> - {{ row.muni }}, {{ row.admin_area_level_1 }}</div>
+            <!-- <div class="mb-1 ms-2 px-2.5 bg-emerald-100 rounded-full justify-center items-baseline gap-1">
+              <div class="font-medium text-emerald-600 flex flex-row">{{ row.response_set.count }} Responses</div>
+            </div> -->
+          </div>
+
+          <div class="flex flex-row w-full gap-3 items-center">
+            <div>
+              <object class="rounded-md w-[320px]" data="{{ row.get_thumbnail_url }}" tabindex="-1" type="image/jpeg">
+                <div class="flex rounded-md h-[205px] w-[350px] bg-gray-100 justify-center items-center">
+                    No image found
+                </div>
+              </object>
+            </div>
+            <div id="building-attrs-{{ forloop.counter }}"
+              class="attrs-box bg-teal-50 bg-opacity-50  w-full grid grid-cols-3 xl:grid-cols-5 rounded-lg p-2 overflow-hidden">
+              <div class="col-span-1">
+                <div class="text-xl font-semibold px-2 underline underline-offset-4 pb-2 pt-1">Building Attributes</div>
+              </div>
+              {% for attr in row.get_attrs %}
+              <div class="px-2">
+                <p class="font-semibold">{{ attr.label }}</p>
+                <p>{{ row.attrs|get_dict_item:attr.id }}</p>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          <div>
+            <div id="responses-{{ forloop.counter }}" class="flex flex-col gap-3 bg-white overflow-x-auto">
+              <table id="dataTable" class="table-auto min-w-full border-collapse">
+                <thead id="tableHeader" class="border border-gray-200">
+                  <tr class="bg-teal-50 divide-x divide-gray-200 divide-dotted">
+                    <th scope="col"
+                      class="ps-3 pe-5 py-2 w-auto text-left whitespace-nowrap text-sm leading-6 font-semibold text-gray-900 capitalize">
+                      Respondent
+                    </th>
+                    {% for column in columns %}
+                    <th scope="col"
+                      class="ps-3 pe-5 py-2 w-autotext-left whitespace-nowrap text-sm leading-6 font-semibold text-gray-900 capitalize">
+                      {{ column.label }}
+                    </th>
+                    {% endfor %}
+                  </tr>
+                </thead>
+                <tbody id="tableBody" class="divide-y divide-gray-300 ">
+                  {% for response in row.response_set.all %}
+                  <tr
+                    class="bg-white bg-opacity-95 transition-all duration-50 divide-x divide-gray-200 divide-dotted hover:bg-teal-50">
+                    <td class="flex flex-row ps-2 pe-5 w-max py-2 whitespace-nowrap items-center gap-2">
+                      <img src="{{ response.created_by.get_avatar_url }}" class="rounded-full">
+                      <div class="flex flex-col items-start">
+                        <p class="font-normal text-sm text-gray-900">{{ response.created_by.username }}</p>
+                        <p class="font-normal text-xs leading-5 text-gray-400 ">on {{ response.date_modified.date }}</p>
+                      </div>
+                    </td>
+                    {% for column in columns %}
+                    <td class="ps-3 pe-5 py-3 whitespace-nowrap">
+                      <p class="font-normal text-sm text-gray-900">{{ response.data|get_dict_item:column.id|join:", " }}
+                      </p>
+                    </td>
+                    {% endfor %}
+                  </tr>
+                  {% endfor %}
+
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+      {% endfor %}
+    </div>
+
+
+
+  </div>
+
+  {% endblock %}
+
+  {% block page_scripts %}
+  {{ columns | json_script:"columns" }}
+  {{ qb_dataset_filters | json_script:"qb_dataset_filters" }}
+  {{ qb_surveys_filters | json_script:"qb_surveys_filters" }}
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
+  <script src="{% static 'scripts/query-builder.standalone.js' %}"></script>
+  <script src="{% static 'scripts/survey_results.js' %}"></script>
+
+  {% endblock %}

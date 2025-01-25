@@ -11,6 +11,9 @@ body {
 
 /* custom scrollbar in the info overlay */
 ::-webkit-scrollbar {
+  /* Horizontal scrollbar height */
+    height: 17px;
+    /* Vertical scrollbar width */
   width: 20px;
 }
 
@@ -18,14 +21,14 @@ body::-webkit-scrollbar-track {
   background-image: var(--background-gradient);
 }
 ::-webkit-scrollbar-thumb {
-  background-color: #808384;
+  background-color: #989898;
   border-radius: 20px;
   border: 6px solid transparent;
   background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #555656;
+  background-color: #646464;
 }
 
 
@@ -246,7 +249,7 @@ input[disabled] {
 }
 
 
-th:hover,
+/* th:hover,
 th:focus-within,
 tr:hover,
 tr:focus-within {
@@ -254,6 +257,7 @@ tr:focus-within {
   outline: none;
 }
 
+*/
 .td-building {
   padding: 0;
   height: 25px;
@@ -636,5 +640,13 @@ tr:hover .delete-row-icon {
 
 /* Style the tab content */
 .tabcontent {
+  display: none;
+}
+#controls-slidedown {
+  /* display: none; */
+  height: 0px;
+}
+
+#controls-slidedown-inner {
   display: none;
 }

@@ -28,6 +28,21 @@ class Dataset(models.Model):
     # the associated models. Static fields that are not present are null.
     schema = JSONField()
 
+    def get_schema(self, prefix=None):
+        if prefix:
+            # Prepend prefix to the id of each field
+            return list(
+                map(
+                    lambda f: {
+                        **f,
+                        "id": f"{prefix}{f['id']}",
+                        "field": f"{prefix}{f['field']}",
+                    },
+                    self.schema,
+                )
+            )
+        return self.schema
+
     date_added = models.DateTimeField("date added", default=timezone.now)
     date_modified = models.DateTimeField("date modified", default=timezone.now)
 
@@ -94,6 +109,17 @@ class Building(models.Model):
     date_added = models.DateTimeField("date added", default=timezone.now)
     date_modified = models.DateTimeField("date modified", default=timezone.now)
 
+    def get_attrs(self):
+        attrs_fields = [
+            {"id": a["id"].replace("attrs__", ""), "label": a["label"]["en"]}
+            for a in self.dataset.schema
+            if "attrs__" in a["id"]
+        ]
+        return attrs_fields
+
+    def get_thumbnail_url(self):
+        return f"https://f005.backblazeb2.com/file/bit-prod/reconstruct/{self.dataset.slug}/thumbnails/{self.slug}/thumbnail.jpg"
+
     def __str__(self):
         return f"Building {self.id}: {self.address}, {self.muni}, {self.postal_code}"
 
@@ -152,6 +178,53 @@ class Survey(models.Model):
     date_added = models.DateTimeField("date added", default=timezone.now)
     date_modified = models.DateTimeField("date modified", default=timezone.now)
 
+    def get_results(self):
+        return Building.objects.filter(dataset=self.dataset).annotate(
+            response_data=RawSQL(
+                """
+                    --- Create JSON objects for each building containing all the response data for each survey
+                    select jsonb_object_agg(key, value)
+                    from (
+                        --- Merge response data by building id and by key. 
+                        --- For each Building, there is a line for each key containing an array 
+                        --- of all values that were present in the response data. 
+                        select 
+                            id, key, jsonb_agg(distinct value) as value
+                        from (
+                            --- Explode the data again. Now for each response data key, there is a line 
+                            --- for each value present originally, either in an array or as a scalar. 
+                            select 
+                                id, key, jsonb_array_elements(value) as value
+                            from (
+                                --- Convert all values to arrays. 
+                                select 
+                                    id, key,
+                                    case jsonb_typeof(value)
+                                        when 'array' then value
+                                        else jsonb_build_array(value)
+                                    end as value
+                                from (
+                                    --- For each Response, return one line per key in the response data JSON
+                                    --- prepend the survey id to each response data key. 
+                                    --- Some values are arrays, some are scalars.
+                                    select 
+                                        r.building_id as id,
+                                        (jsonb_each(r.data)).key as key, 
+                                        (jsonb_each(r.data)).value 
+                                    from responses r
+                                    where r.building_id = buildings.id
+                                    and r.survey_id = %s
+                                ) as sub
+                            ) as sub2
+                        ) as sub3    
+                        group by id, key
+                    ) as sub4
+                    group by id""",
+                (self.id,),
+                output_field=models.JSONField(),
+            )
+        )
+
     # If this gets slow, implement a view for the target population
     # mapping building_id -> aggregated response data
     # IT will have to refresh everytime a new response is added
@@ -189,36 +262,44 @@ class Survey(models.Model):
 
             candidates = candidates.annotate(
                 response_data=RawSQL(
-                    """select jsonb_object_agg(key, value)
+                    """
+                    --- Create JSON objects for each building containing all the response data for each survey
+                    select jsonb_object_agg(key, value)
+                    from (
+                        --- Merge response data by building id and by key. 
+                        --- For each Building, there is a line for each key containing an array 
+                        --- of all values that were present in the response data. 
+                        select 
+                            id, key, jsonb_agg(distinct value) as value
                         from (
+                            --- Explode the data again. Now for each response data key, there is a line 
+                            --- for each value present originally, either in an array or as a scalar. 
                             select 
-                                id, key, jsonb_agg(distinct value) as value
+                                id, key, jsonb_array_elements(value) as value
                             from (
+                                --- Convert all values to arrays. 
                                 select 
-                                    id, key, jsonb_array_elements(value) as value
+                                    id, key,
+                                    case jsonb_typeof(value)
+                                        when 'array' then value
+                                        else jsonb_build_array(value)
+                                    end as value
                                 from (
-                                    --- Collect all responses in a survey in jsonb arrays 
+                                    --- For each Response, return one line per key in the response data JSON
+                                    --- prepend the survey id to each response data key. 
+                                    --- Some values are arrays, some are scalars.
                                     select 
-                                        id, key,
-                                        case jsonb_typeof(value)
-                                            when 'array' then value
-                                            else jsonb_build_array(value)
-                                        end as value
-                                    from (
-                                        --- For each building, explode response data
-                                        --- prepend the survey id to each response data key
-                                        select 
-                                            r.building_id as id,
-                                            concat('s_', r.survey_id, '_', (jsonb_each(r.data)).key) as key, 
-                                            (jsonb_each(r.data)).value 
-                                        from responses r
-                                        where r.building_id = buildings.id
-                                    ) as sub
-                                ) as sub2
-                            ) as sub3    
-                            group by id, key
-                        ) as sub4
-                        group by id""",
+                                        r.building_id as id,
+                                        concat('s_', r.survey_id, '_', (jsonb_each(r.data)).key) as key, 
+                                        (jsonb_each(r.data)).value 
+                                    from responses r
+                                    where r.building_id = buildings.id
+                                ) as sub
+                            ) as sub2
+                        ) as sub3    
+                        group by id, key
+                    ) as sub4
+                    group by id""",
                     (),
                     output_field=models.JSONField(),
                 )
@@ -350,14 +431,18 @@ class Survey(models.Model):
         else:
             raise Exception(f"Unknown field type: {field_type}")
 
-    def get_query_builder_schema(self):
+    def get_query_builder_schema(self, field_prefix: str = None):
         """
         Returns a list of query builder schema fields for the survey
         """
         qb_fields = []
+
+        if not field_prefix:
+            field_prefix = f"s_{self.id}_"
+
         for field_name, field_object in self.schema.items():
 
-            field_id = f"s_{self.id}_{field_name}"
+            field_id = f"{field_prefix}{field_name}"
 
             qb_field = self.map_to_qb_field(field_object, field_id, self.name)
             qb_fields.extend(qb_field)

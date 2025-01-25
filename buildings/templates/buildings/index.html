@@ -24,13 +24,19 @@
         {% url 'buildings:do_survey_redirect' survey.slug as survey_url %}
 
         {% #card title=survey.name body=survey.description href=survey_url %}
-        <div class="flex flex-row gap-4">
+        <div class="py-1.5 px-2.5 bg-emerald-50 rounded-full flex justify-center w-20 items-center gap-1">
+          <svg width="5" height="6" viewBox="0 0 5 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="2.5" cy="3" r="2.5" fill="#059669"></circle>
+          </svg>
+          <span class="font-medium text-xs text-emerald-600">Active</span>
+        </div>
 
+        <div class="flex flex-row gap-4">
           <a href="#">
             {% #button %}
             View Results
             {% /button %}
-        </a>
+          </a>
 
           <!-- <button id="survey-results-button"
             class="rounded-md bg-gray-200 px-3 py-1.5 text-sm font-semibold leading-6 text-slate-900 shadow-sm 

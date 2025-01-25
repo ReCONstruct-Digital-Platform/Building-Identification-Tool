@@ -2,6 +2,7 @@ import json
 import traceback
 import random
 from datetime import datetime
+from typing import List
 
 from allauth.account.models import EmailAddress
 from django.urls import reverse
@@ -186,55 +187,84 @@ def dataset(request, dataset_slug: str):
     return render(request, "buildings/dataset.html", context)
 
 
-def test(req):
+def survey_results(request, survey_slug):
 
-    columns = [
-        {"id": "name", "label": "Name"},
-        {"id": "title", "label": "Title"},
-        {"id": "email", "label": "Email"},
-        {"id": "role", "label": "Role"},
+    template_name = "buildings/survey_results.html"
+
+    pagenum = request.GET.get("page") or 1
+
+    # Could even be 3 values - ALL, COMPLETED, INCOMPLETE
+    show_all = request.GET.get("show_all") or False
+    dataset_filter = json.loads(request.GET.get("dataset_filter") or "{}")
+    surveys_filter = json.loads(request.GET.get("surveys_filter") or "{}")
+
+    # TODO - set ds cols invisible by default - we care about the results here
+    col_config = None
+
+    # TODO
+    sort_config = None
+
+    survey = Survey.objects.get(slug=survey_slug)
+
+    survey_name = survey.name
+
+    results = survey.get_results()
+
+    if not show_all:
+        results = results.filter(response_data__isnull=False)
+
+    survey_filters_and_optgroups = {
+        "optgroups": {survey_name: {"en": survey_name}},
+        "filters": survey.get_query_builder_schema(field_prefix="response_data__"),
+    }
+
+    dataset = survey.dataset
+    dataset_schema = dataset.get_schema(prefix="")
+
+    ds_schema_cols = [
+        {"id": f["id"], "label": f["label"]["en"]} for f in dataset.schema
     ]
-    data = [
-        {
-            "id": "1",
-            "name": "John Doe",
-            "title": "Software Engineer",
-            "email": "john@example.com",
-            "role": "Admin",
-        },
-        {
-            "id": "2",
-            "name": "Jane Smith",
-            "title": "Product Manager",
-            "email": "jane@example.com",
-            "role": "User",
-        },
-        {
-            "id": "3",
-            "name": "Bob Johnson",
-            "title": "Designer",
-            "email": "bob@example.com",
-            "role": "User",
-        },
-        {
-            "id": "4",
-            "name": "Alice Brown",
-            "title": "Data Analyst",
-            "email": "alice@example.com",
-            "role": "Admin",
-        },
-        {
-            "id": "5",
-            "name": "Charlie Wilson",
-            "title": "Marketing Specialist",
-            "email": "charlie@example.com",
-            "role": "User",
-        },
+    s_schema_cols = [
+        {"id": f, "label": v["label"]["en"]} for f, v in survey.schema.items()
     ]
 
-    context = {"columns": columns, "data": data}
+    columns = s_schema_cols
 
-    return render(req, "buildings/test.html", context)
+    if dataset_filter or surveys_filter:
+        print("got filters")
+        dataset_q_parser = DatasetQParser(
+            schema=dataset.schema, json_field_name="attrs"
+        )
+        dataset_q = dataset_q_parser.parse_query(dataset_filter)
+        print(dataset_q)
+
+        survey_q_parser = SurveyQParser(prefix=None)
+        surveys_q = survey_q_parser.parse_query(surveys_filter)
+        print(surveys_q)
+
+        results = results.filter(dataset_q).filter(surveys_q)
+
+        print(results)
+        print(results.count())
+
+    page_obj = Paginator(results, per_page=10).get_page(pagenum)
+
+    context = {
+        "page_obj": page_obj,
+        "columns": columns,
+        "ds_schema_cols": ds_schema_cols,
+        "s_schema_cols": s_schema_cols,
+        "qb_dataset_filters": dataset_schema,
+        "qb_surveys_filters": survey_filters_and_optgroups,
+    }
+
+    if request.htmx:
+        rendered_block = render_block_to_string(
+            template_name, "page-and-paging-controls", context=context, request=request
+        )
+        return HttpResponse(content=rendered_block)
+
+    return render(request, template_name, context)
 
 
 @login_required(login_url="account_login")
@@ -562,7 +592,19 @@ def query(request, dataset_slug):
     return render(request, "buildings/query.html", context)
 
 
-def get_surveys_qb_filters_and_optgroups(surveys):
+def get_surveys_qb_filters_and_optgroups_for_results(survey: Survey):
+
+    filters = []
+    survey_name = survey.name
+
+    optgroups = {survey_name: {"en": survey_name}}
+
+    filters = survey.get_query_builder_schema(field_prefix="data_")
+
+    return {"filters": filters, "optgroups": optgroups}
+
+
+def get_surveys_qb_filters_and_optgroups(surveys: List[Survey]):
 
     combined = []
     optgroups = {}
@@ -790,7 +832,7 @@ def profile(request):
 
 @require_POST
 @login_required(login_url="account_login")
-def upload_imgs(request, eval_unit_id):
+def upload_imgs(request, building_id):
     """
     We'll process the image uploading asynchronously using a PythonAnywhere (PA) Always-on Task
     We have to do this because PA doesn't support launching background threads.
@@ -801,7 +843,7 @@ def upload_imgs(request, eval_unit_id):
     if settings.DEBUG:
         return HttpResponse("debug mode job not created")
     data = json.loads(request.body)
-    eval_unit = get_object_or_404(EvalUnit, pk=eval_unit_id)
+    eval_unit = get_object_or_404(EvalUnit, pk=building_id)
     UploadImageJob(
         eval_unit=eval_unit,
         user=request.user,

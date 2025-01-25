@@ -183,8 +183,12 @@ class SurveyQParser(object):
     We run these queries on JSON objects of key->array of various types
     """
 
-    def __init__(self, json_field_name="response_data"):
-        self.json_field_name = json_field_name
+    def __init__(self, prefix="response_data"):
+
+        if prefix:
+            self.prefix = prefix + "__"
+        else:
+            self.prefix = ""
 
     def parse_query(self, query: dict) -> Q:
         """
@@ -192,10 +196,10 @@ class SurveyQParser(object):
         """
         if not query:
             return Q()
-        
+
         if "query" in query:
             query = query["query"]
-        
+
         rules = query["rules"]
         rules_q_objects = self.parse_rules(rules)
         condition = query["condition"].upper()
@@ -249,7 +253,7 @@ class SurveyQParser(object):
         else:
             raise NotImplementedError(f"Unkown type {type}")
 
-        q_args = {f"{self.json_field_name}__{field}__{operator.text}": value}
+        q_args = {f"{self.prefix}{field}__{operator.text}": value}
 
         # print(f"Rule {rule} generated Q: {q_args}")
 

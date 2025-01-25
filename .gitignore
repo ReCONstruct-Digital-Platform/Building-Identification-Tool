@@ -11,3 +11,5 @@ CACHE/
 *db.sqlite*
 
 **/.env
+
+**/__notes/*

@@ -22,9 +22,9 @@ app_name = "buildings"
 
 urlpatterns = [
     path("", views.index, name="index"),
-    path("survey/", views.survey, name="survey"),
-    path("survey/v1/<str:eval_unit_id>", views.survey_v1, name="survey_v1"),
-    path("upload_imgs/<str:eval_unit_id>", views.upload_imgs, name="upload_imgs"),
+    # path("survey/", views.survey, name="survey"),
+    # path("survey/v1/<str:eval_unit_id>", views.survey_v1, name="survey_v1"),
+    path("upload_imgs/<str:building_id>", views.upload_imgs, name="upload_imgs"),
     path("profile", views.profile, name="profile"),
     path("query/<str:dataset_slug>", views.query, name="query"),
     path("datasets", views.datasets, name="datasets"),
@@ -35,7 +35,10 @@ urlpatterns = [
         views.newsurvey_questions,
         name="newsurvey_questions",
     ),
-    path("test", views.test, name="test"),
+    path(
+        "surveys/<str:survey_slug>/results", views.survey_results, name="survey_results"
+    ),
+    # TODO: All surveys
     path(
         "surveys/<str:survey_slug>/survey",
         views.do_survey_redirect,
