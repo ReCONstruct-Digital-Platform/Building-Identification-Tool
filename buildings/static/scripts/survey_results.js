@@ -59,10 +59,11 @@ function getColumnConfigs(userColumnConfigId, listId) {
 
 function setUpDraggableList(draggableListId, defaultValues) {
   const draggableList = document.getElementById(draggableListId);
-  const resetButton = draggableList.parentElement.getElementsByTagName("button")[0];
+  const resetButton = draggableList.parentElement.getElementsByClassName("reset-button")[0];
+  const selectAllButton = draggableList.parentElement.getElementsByClassName("select-all-button")[0];
 
-  console.debug(draggableList);
   console.debug(resetButton);
+  console.debug(selectAllButton);
 
   resetButton.addEventListener("click", (e) => {
     e.preventDefault();
@@ -87,6 +88,19 @@ function setUpDraggableList(draggableListId, defaultValues) {
         draggableList.appendChild(newLi);
       });
     }
+  });
+
+  var selectAll = false;
+
+  selectAllButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    const labels = draggableList.querySelectorAll("label");
+
+    Array.from(labels).forEach((e) => {
+      e.children[0].checked = selectAll;
+    });
+    selectAll = !selectAll;
+    selectAllButton.innerText = selectAll ? "Select all" : "Unselect all";
   });
 
   let draggedItem = null;
@@ -137,13 +151,15 @@ function setUpDraggableList(draggableListId, defaultValues) {
   };
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+function setUpColumnConfig() {
   const defaultBuildingCols = JSON.parse(document.getElementById("default_bldg_cols").textContent);
   const defaultSurveyCols = JSON.parse(document.getElementById("default_survey_cols").textContent);
-
   setUpDraggableList("draggable-list", defaultBuildingCols);
   setUpDraggableList("draggable-list-survey", defaultSurveyCols);
+}
 
+function setUpModal() {
+  console.debug("Running setup modal");
   const modalBackdrop = document.getElementById("modal-backdrop");
   const columnConfigModal = document.getElementById("col-config-modal");
   const showColumnConfigButton = document.getElementById("show-col-config");
@@ -174,6 +190,16 @@ document.addEventListener("DOMContentLoaded", () => {
       columnConfigModal.classList.remove("block");
       modalBackdrop.classList.remove("block");
     }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setUpColumnConfig();
+  setUpModal();
+
+  document.addEventListener("htmx:afterRequest", (e) => {
+    setUpColumnConfig();
+    setUpModal();
   });
 
   const urlParams = new URLSearchParams(window.location.search);

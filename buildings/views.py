@@ -241,14 +241,15 @@ def survey_results(request, survey_slug):
     user_config, _ = UserConfigs.objects.get_or_create(pk=request.user.id)
 
     # If we got a config from params, save in DB
-    if p_bldg_cols:
+    # Empty array means empty user config - if no param it would be empty dict
+    if p_bldg_cols or p_bldg_cols == []:
         user_bldg_cols = user_config.res_page_bldg_cols = p_bldg_cols
         user_config.save()
     else:
         user_bldg_cols = user_config.res_page_bldg_cols or default_bldg_cols
 
     # If we got a config from params, save in DB
-    if p_survey_cols:
+    if p_survey_cols or p_survey_cols == []:
         user_survey_cols = user_config.res_page_survey_cols = p_survey_cols
         user_config.save()
     else:
