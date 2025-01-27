@@ -213,7 +213,7 @@ def migrate_responses(dry_run=True):
                     {"val": "other", "label": {"en": "Other (Specify)"}, "pos": 9},
                 ],
                 "question_text": {
-                    "en": "Select all widgets of exterior cladding does the building appear to have."
+                    "en": "Select all types of exterior cladding does the building appear to have."
                 },
                 "widget_config": {
                     "attrs": {"class": "survey-3col"},
@@ -705,6 +705,8 @@ def migrate_responses(dry_run=True):
                 f"""select
                         s.*,
                         v.user_id as user_id,
+                        v.date_added as date_added,
+                        v.date_modified as date_modified,
                         b.id as building_id
                     from buildings_surveyv1 s 
                     join buildings_vote v on s.vote_id = v.id 
@@ -743,6 +745,8 @@ def migrate_responses(dry_run=True):
                         building=Building.objects.get(pk=resp["building_id"]),
                         survey=survey,
                         created_by=User.objects.get(pk=resp["user_id"]),
+                        date_added=resp["date_added"],
+                        date_modified=resp["date_modified"],
                     )
                 )
 

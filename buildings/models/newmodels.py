@@ -46,6 +46,29 @@ class Dataset(models.Model):
     date_added = models.DateTimeField("date added", default=timezone.now)
     date_modified = models.DateTimeField("date modified", default=timezone.now)
 
+    def get_fields_to_display(self):
+        return [
+            {"id": a["id"], "label": a["label"]["en"]}
+            for a in self.schema
+            if a["id"] in ["submuni", "const_year", "num_floors", "floor_area"]
+            or "attrs" in a["id"]
+        ]
+
+
+class UserConfigs(models.Model):
+    """
+    Hold various user display configs
+    """
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        primary_key=True,
+    )
+    res_page_bldg_cols = models.JSONField(null=True, blank=True)
+    res_page_survey_cols = models.JSONField(null=True, blank=True)
+    sur_page_bldg_cols = models.JSONField(null=True, blank=True)
+
 
 class Building(models.Model):
     """

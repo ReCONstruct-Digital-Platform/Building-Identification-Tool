@@ -2,15 +2,24 @@ const datasetQueryBuilderId = "#query-builder-dataset";
 const surveyQueryBuilderId = "#query-builder-surveys";
 
 function getCurrentQuery() {
-  const orderByConfig = {
-    field: document.getElementById("order-by-field").value,
-    dir: document.querySelector('input[name="order-by-dir"]:checked').value,
-  };
   return {
-    ...orderByConfig,
+    ...getOrderByConfig(),
+    ...getColumnConfigs("user_bldg_cols", "draggable-list"),
+    ...getColumnConfigs("user_survey_cols", "draggable-list-survey"),
     ...getQueryBuilderQuery(datasetQueryBuilderId, "dataset_query"),
     ...getQueryBuilderQuery(surveyQueryBuilderId, "survey_query"),
   };
+}
+
+function getOrderByConfig() {
+  const field = document.getElementById("order-by-field").value;
+  const dir = document.querySelector('input[name="order-by-dir"]:checked').value;
+  if (!(field === "address" && dir === "asc")) {
+    return {
+      field: field,
+      dir: dir,
+    };
+  }
 }
 
 function getQueryBuilderQuery(queryBuilderId, returnKey) {
@@ -29,8 +38,144 @@ function getQueryBuilderQuery(queryBuilderId, returnKey) {
   return query;
 }
 
-// Filters code
+function getColumnConfigs(userColumnConfigId, listId) {
+  const userColumnConfig = JSON.parse(document.getElementById(userColumnConfigId).textContent);
+
+  const list = document.getElementById(listId);
+
+  const currentColumnConfig = Array.from(list.querySelectorAll("label"))
+    .map((e) => (e.children[0].checked ? { id: e.children[0].id, label: e.innerText.trim() } : null))
+    .filter((x) => x);
+
+  if (JSON.stringify(currentColumnConfig) !== JSON.stringify(userColumnConfig)) {
+    // If the current col config is different from the user config originally sent
+    // by server - send it back to server to be saved. Otherwise, don't include it.
+    // scenario 1: user never changed defaults.
+    let r = {};
+    r[userColumnConfigId] = b64EncodeUnicode(JSON.stringify(currentColumnConfig));
+    return r;
+  }
+}
+
+function setUpDraggableList(draggableListId, defaultValues) {
+  const draggableList = document.getElementById(draggableListId);
+  const resetButton = draggableList.parentElement.getElementsByTagName("button")[0];
+
+  console.debug(draggableList);
+  console.debug(resetButton);
+
+  resetButton.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    const listItems = draggableList.querySelectorAll("li");
+    const labels = draggableList.querySelectorAll("label");
+
+    const currentListValues = Array.from(labels)
+      .map((e) => (e.children[0].checked ? { id: e.children[0].id, label: e.innerText.trim() } : null))
+      .filter((x) => x);
+
+    if (JSON.stringify(currentListValues) !== JSON.stringify(defaultValues)) {
+      const firstElem = listItems[0];
+      // delete all items
+      draggableList.innerHTML = "";
+
+      // recreate default items
+      defaultValues.forEach((e, i) => {
+        const newLi = firstElem.cloneNode(true);
+        newLi.children[0].innerHTML = `
+          <input type="checkbox" id="${e.id}" class="mr-4 h-5 w-5 text-teal-500 focus:ring-2 focus:ring-teal-300" checked>${e.label}`;
+        draggableList.appendChild(newLi);
+      });
+    }
+  });
+
+  let draggedItem = null;
+  draggableList.addEventListener("dragstart", (e) => {
+    draggedItem = e.target;
+    draggedItem.classList.remove("shadow-sm");
+    draggedItem.classList.add("shadow-lg");
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", null);
+  });
+
+  draggableList.addEventListener("dragend", (e) => {
+    draggedItem.classList.remove("shadow-lg");
+    draggedItem.classList.add("shadow-sm");
+    draggedItem = null;
+  });
+
+  draggableList.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    const afterElement = getDragAfterElement(draggableList, e.clientY);
+    if (afterElement == null) {
+      draggableList.appendChild(draggedItem);
+    } else {
+      draggableList.insertBefore(draggedItem, afterElement);
+    }
+  });
+
+  const getDragAfterElement = (container, y) => {
+    const draggableElements = [...container.querySelectorAll("li")];
+
+    return draggableElements.reduce(
+      (closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return {
+            offset: offset,
+            element: child,
+          };
+        } else {
+          return closest;
+        }
+      },
+      {
+        offset: Number.NEGATIVE_INFINITY,
+      }
+    ).element;
+  };
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  const defaultBuildingCols = JSON.parse(document.getElementById("default_bldg_cols").textContent);
+  const defaultSurveyCols = JSON.parse(document.getElementById("default_survey_cols").textContent);
+
+  setUpDraggableList("draggable-list", defaultBuildingCols);
+  setUpDraggableList("draggable-list-survey", defaultSurveyCols);
+
+  const modalBackdrop = document.getElementById("modal-backdrop");
+  const columnConfigModal = document.getElementById("col-config-modal");
+  const showColumnConfigButton = document.getElementById("show-col-config");
+  const columnConfigModalCloseButton = document.getElementById("close-modal");
+  // When the user clicks on the button, open the modal
+  showColumnConfigButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    columnConfigModal.classList.remove("hidden");
+    modalBackdrop.classList.remove("hidden");
+    columnConfigModal.classList.add("block");
+    modalBackdrop.classList.add("block");
+  });
+
+  // When the user clicks on <span> (x), close the modal
+  columnConfigModalCloseButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    columnConfigModal.classList.add("hidden");
+    modalBackdrop.classList.add("hidden");
+    columnConfigModal.classList.remove("block");
+    modalBackdrop.classList.remove("block");
+  });
+
+  // When the user clicks anywhere outside of the modal, close it
+  window.addEventListener("click", (e) => {
+    if (e.target === columnConfigModal) {
+      columnConfigModal.classList.add("hidden");
+      modalBackdrop.classList.add("hidden");
+      columnConfigModal.classList.remove("block");
+      modalBackdrop.classList.remove("block");
+    }
+  });
+
   const urlParams = new URLSearchParams(window.location.search);
   const urlDatasetQuery = JSON.parse(b64DecodeUnicode(urlParams.get("dataset_query")));
   const urlSurveyQuery = JSON.parse(b64DecodeUnicode(urlParams.get("survey_query")));
@@ -170,71 +315,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   urlDatasetQuery && document.getElementById("add-dataset-filter").dispatchEvent(new Event("click"));
   urlSurveyQuery && document.getElementById("add-surveys-filter").dispatchEvent(new Event("click"));
-
-  // document
-  //   .getElementById("submitQueryButton")
-  //   // .addEventListener("htmx:configRequest", (e) => {
-  //   //   console.log(e);
-  //   // })
-  //   .addEventListener("click", (e) => {
-  //     e.preventDefault();
-
-  //     const datasetRules = document.querySelector(datasetQueryBuilderId).childElementCount
-  //       ? $(datasetQueryBuilderId).queryBuilder("getRules", {
-  //           get_flags: true,
-  //           skip_empty: true,
-  //         })
-  //       : null;
-
-  //     const surveyRules = document.querySelector(surveyQueryBuilderId).childElementCount
-  //       ? $(surveyQueryBuilderId).queryBuilder("getRules", {
-  //           get_flags: true,
-  //           skip_empty: true,
-  //         })
-  //       : null;
-
-  //     if (datasetRules === null && surveyRules === null) return;
-
-  //     console.log(datasetRules);
-  //     console.log(surveyRules);
-
-  //     return;
-
-  //     htmx
-  //       .ajax("POST", "", {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           "X-CSRFToken": getCookie("csrftoken"), // So django accepts the request
-  //         },
-  //         values: { dataset_query: datasetRules, surveys_query: surveyRules },
-  //       })
-  //       .then(() => {
-  //         // this code will be executed after the 'htmx:afterOnLoad' event,
-  //         // and before the 'htmx:xhr:loadend' event
-  //         console.log("Content inserted successfully!");
-  //       });
-
-  //     fetch("", {
-  //       method: "POST",
-  //       mode: "same-origin",
-  //       cache: "no-cache",
-  //       credentials: "same-origin",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         "X-CSRFToken": getCookie("csrftoken"), // So django accepts the request
-  //       },
-  //       body: JSON.stringify({
-  //         dataset_query: datasetRules,
-  //         surveys_query: surveyRules,
-  //       }),
-  //     }).then((resp) => {
-  //       if (resp.status === 200) {
-  //         console.debug("Query uploaded");
-  //       } else {
-  //         console.debug(`ERROR running query ${resp}`);
-  //       }
-  //     });
-  //   });
 });
 
 // Table Code

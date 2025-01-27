@@ -36,6 +36,7 @@ from buildings.models.newmodels import (
     ProblemFlag,
     Response,
     Survey,
+    UserConfigs,
 )
 from buildings.models.surveys import SurveyV1Form
 from buildings.models.newsurveys import DynamicSurveyForm
@@ -52,6 +53,7 @@ from buildings.models.models import (
 import logging
 
 from buildings.utils.query_utils import DatasetQParser, SurveyQParser
+from buildings.utils.utility import get_or_none
 
 log = logging.getLogger(__name__)
 
@@ -188,6 +190,7 @@ def dataset(request, dataset_slug: str):
     return render(request, "buildings/dataset.html", context)
 
 
+@login_required(login_url="account_login")
 def survey_results(request, survey_slug):
 
     template_name = "buildings/survey_results.html"
@@ -200,8 +203,6 @@ def survey_results(request, survey_slug):
     num_results_per_page = 10
     orderby_field = request.GET.get("field") or "address"
     orderby_dir = request.GET.get("dir") or "asc"
-    # dataset_query = json.loads(request.GET.get("dataset_query") or "{}")
-    # survey_query = json.loads(request.GET.get("dataset_query") or "{}")
     dataset_query = json.loads(
         base64.b64decode(request.GET.get("dataset_query") or "").decode("utf-8") or "{}"
     )
@@ -209,15 +210,9 @@ def survey_results(request, survey_slug):
         base64.b64decode(request.GET.get("survey_query") or "").decode("utf-8") or "{}"
     )
 
-    # TODO - set ds cols invisible by default - we care about the results here
-    col_config = None
-
-    # TODO
-    sort_config = None
-
     survey = Survey.objects.get(slug=survey_slug)
-
-    survey_name = survey.name
+    dataset = survey.dataset
+    dataset_schema = dataset.get_schema(prefix="")
 
     results = survey.get_results()
 
@@ -225,12 +220,42 @@ def survey_results(request, survey_slug):
         results = results.filter(response_data__isnull=False)
 
     survey_filters_and_optgroups = {
-        "optgroups": {survey_name: {"en": survey_name}},
+        "optgroups": {survey.name: {"en": survey.name}},
         "filters": survey.get_query_builder_schema(field_prefix="response_data__"),
     }
 
-    dataset = survey.dataset
-    dataset_schema = dataset.get_schema(prefix="")
+    default_bldg_cols = dataset.get_fields_to_display()
+    default_survey_cols = [
+        {"id": f, "label": v["label"]["en"]} for f, v in survey.schema.items()
+    ]
+
+    p_bldg_cols = json.loads(
+        base64.b64decode(request.GET.get("user_bldg_cols") or "").decode("utf-8")
+        or "{}"
+    )
+    p_survey_cols = json.loads(
+        base64.b64decode(request.GET.get("user_survey_cols") or "").decode("utf-8")
+        or "{}"
+    )
+
+    user_config, _ = UserConfigs.objects.get_or_create(pk=request.user.id)
+
+    # If we got a config from params, save in DB
+    if p_bldg_cols:
+        user_bldg_cols = user_config.res_page_bldg_cols = p_bldg_cols
+        user_config.save()
+    else:
+        user_bldg_cols = user_config.res_page_bldg_cols or default_bldg_cols
+
+    # If we got a config from params, save in DB
+    if p_survey_cols:
+        user_survey_cols = user_config.res_page_survey_cols = p_survey_cols
+        user_config.save()
+    else:
+        user_survey_cols = user_config.res_page_survey_cols or default_survey_cols
+
+    # user_bldg_cols = user_bldg_cols[-2:-1] + user_bldg_cols[:5]
+    # user_survey_cols = user_bldg_cols[-2:-1].extend(user_survey_cols[:5])
 
     ds_schema_cols = [
         {"id": f["id"], "label": f["label"]["en"]} for f in dataset.schema
@@ -264,13 +289,13 @@ def survey_results(request, survey_slug):
         order_by = F(orderby_field).desc(nulls_last=True)
 
     print(f"Order by: {order_by}")
-    page_obj = Paginator(
+    page = Paginator(
         results.order_by(order_by), per_page=num_results_per_page
     ).get_page(pagenum)
 
     context = {
         "survey": survey,
-        "page_obj": page_obj,
+        "page": page,
         "columns": columns,
         "ds_schema_cols": ds_schema_cols,
         "s_schema_cols": s_schema_cols,
@@ -278,6 +303,10 @@ def survey_results(request, survey_slug):
         "qb_surveys_filters": survey_filters_and_optgroups,
         "orderby_field": orderby_field,
         "orderby_dir": orderby_dir,
+        "user_bldg_cols": user_bldg_cols,
+        "default_bldg_cols": default_bldg_cols,
+        "user_survey_cols": user_survey_cols,
+        "default_survey_cols": default_survey_cols,
     }
 
     if request.htmx:
