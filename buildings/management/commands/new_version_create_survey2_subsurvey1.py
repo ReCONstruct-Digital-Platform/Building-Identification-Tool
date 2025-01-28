@@ -72,9 +72,9 @@ def migrate_responses(dry_run=True):
     survey, _ = Survey.objects.get_or_create(
         name="Recon Survey V2: Montreal HLMs with brick facade",
         description="Reconstruct sub-survey on SHQ HLMs in Montréal with brick facade",
-        # Frank
         created_by=SYSTEM_USER,
         dataset=dataset,
+        status=Survey.Status.ACTIVE,
         # Q Object for dataset filter
         dataset_filter={
             "condition": "AND",

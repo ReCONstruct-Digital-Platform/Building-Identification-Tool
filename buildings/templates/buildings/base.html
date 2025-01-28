@@ -52,6 +52,7 @@
 
     <body>
         <!-- Importing scripts here is much faster than at the end of page body, especially for survey -->
+        <script src="{% static 'scripts/utils.js' %}"></script>
         <script async src="{% url 'javascript-catalog' %}"></script>
         <script async src="https://unpkg.com/htmx.org@1.8.6"></script>
         <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
@@ -61,7 +62,6 @@
                 integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
                 crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
-        <script src="{% static 'scripts/utils.js' %}"></script>
         {% block page_scripts %}
         {% endblock %}
 
@@ -74,11 +74,17 @@
             </script>
         {% endif %}
 
+        <div class="absolute inset-0 -z-[1] overflow-hidden bg-blue-100">
+          <div class="jumbo transform-gpu absolute -inset-[10px] opacity-30 -z-[1]">
+          </div>
+        </div>
+
+
         <header id="header" class="z-[10]">
             {% include 'buildings/navbar.html' %}
         </header>
 
-        <main role="main" class="h-full overflow-hidden bg-blue-100">
+        <main role="main" class="h-full overflow-hidden">
             <!-- Offset the content body by the height of the navbar, and have body be scrollable under the navbar -->
             <div class="mt-[56px] max-h-[calc(100vh-56px)] overflow-y-auto w-full">
               {% block content %}
@@ -87,9 +93,6 @@
           <div id="modal-backdrop" class="hidden bg-black bg-opacity-50 w-full h-full fixed top-0 left-0 z-[1050]"></div>
         </main>
 
-        <div class="absolute inset-0 -z-[10] overflow-hidden">
-          <div class="jumbo transform-gpu absolute -inset-[10px] opacity-30 z-[1]">
-          </div>
-        </div>
+
     </body>
 </html>

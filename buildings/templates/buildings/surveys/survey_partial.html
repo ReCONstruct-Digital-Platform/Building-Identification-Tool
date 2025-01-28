@@ -11,7 +11,9 @@
   {{ field }}
   <div>
     {% if field.field.has_modal %}
-    {% include "buildings/utils/modal_template.html" with field_name=field.auto_id modal=field.field.modal %}
+    {% #modal id=field.auto_id title=field.field.modal.title %}
+      {{ field.field.modal.body|safe }}
+    {% /modal %}
     {% endif %}
   </div>
 </fieldset>

@@ -11,7 +11,7 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import F
 from django.contrib import messages
-from django.http import Http404, HttpResponse, QueryDict
+from django.http import Http404, HttpResponse
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count, Sum, JSONField
 from django.db.models.functions import Round
@@ -29,7 +29,6 @@ from pprint import pformat, pprint
 
 from buildings.forms import ChangeEmailForm, ChangePasswordForm
 from buildings.models import Dataset
-from buildings.models import models
 from buildings.models.newmodels import (
     Building,
     LatestViewData,
@@ -47,13 +46,11 @@ from buildings.models.models import (
     HLMBuilding,
     NoBuildingFlag,
     UploadImageJob,
-    User,
     Vote,
 )
 import logging
 
 from buildings.utils.query_utils import DatasetQParser, SurveyQParser
-from buildings.utils.utility import get_or_none
 
 log = logging.getLogger(__name__)
 
@@ -62,8 +59,8 @@ log = logging.getLogger(__name__)
 def index(request):
     template = "buildings/index.html"
 
-    datasets = Dataset.objects.all()
-    surveys = Survey.objects.all()
+    datasets = Dataset.objects.all().order_by("id")
+    surveys = Survey.objects.all().order_by("id")
 
     total_votes = Response.objects.count() or 1
     latest_votes = Response.objects.order_by("-date_modified").all()

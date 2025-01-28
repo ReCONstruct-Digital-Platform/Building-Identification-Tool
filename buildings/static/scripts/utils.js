@@ -36,3 +36,76 @@ function b64DecodeUnicode(str) {
       return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
   }).join(''));
 }
+
+
+/**
+ * Our own simple modals.
+ * Modals have an open button, two close buttons (top and bottom).
+ * Clicking anywhere outside or pressing the escape key will also close the modal.
+ * All modals share a backdrop.
+ */
+function setUpModal(modal) {
+  const modalBackdrop = document.getElementById("modal-backdrop");
+  console.debug(modal);
+
+  const modalIdPrefix = modal.dataset.modalIdPrefix;
+  const closeButtonTop = document.getElementById(modalIdPrefix + "_close_top");
+  const closeButtonBottom = document.getElementById(modalIdPrefix + "_close_bottom");
+
+  closeButtonTop.addEventListener("click", (e) => {
+    e.preventDefault();
+    modal.classList.add("hidden");
+    modalBackdrop.classList.add("hidden");
+    modal.classList.remove("block");
+    modalBackdrop.classList.remove("block");
+  });
+
+  closeButtonBottom.addEventListener("click", (e) => {
+    e.preventDefault();
+    modal.classList.add("hidden");
+    modalBackdrop.classList.add("hidden");
+    modal.classList.remove("block");
+    modalBackdrop.classList.remove("block");
+  });
+
+  // When the user clicks anywhere outside of the modal, close it
+  window.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.classList.add("hidden");
+      modalBackdrop.classList.add("hidden");
+      modal.classList.remove("block");
+      modalBackdrop.classList.remove("block");
+    }
+  });
+}
+
+function setUpModals() {
+  const modals = document.getElementsByClassName("my-modal");
+  const modalOpenButtons = document.getElementsByClassName("modal-open-button");
+  const modalBackdrop = document.getElementById("modal-backdrop");
+
+  window.addEventListener("keydown", (e) => {
+    Array.from(modals).forEach((modal) => {
+      if (modal.checkVisibility()) {
+        modal.classList.add("hidden");
+        modalBackdrop.classList.add("hidden");
+        modal.classList.remove("block");
+        modalBackdrop.classList.remove("block");
+      }
+    });
+  });
+
+  Array.from(modals).forEach((modal) => setUpModal(modal));
+
+  Array.from(modalOpenButtons).forEach((button) => {
+    const target = document.getElementById(button.dataset.targetModal);
+    button.addEventListener("click", (e) => {
+      e.preventDefault();
+      console.debug("clicked", e);
+      target.classList.remove("hidden");
+      modalBackdrop.classList.remove("hidden");
+      target.classList.add("block");
+      modalBackdrop.classList.add("block");
+    });
+  });
+}

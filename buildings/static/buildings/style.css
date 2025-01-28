@@ -361,7 +361,7 @@ tr:hover .delete-row-icon {
   background-color: rgba(34, 34, 34, 0.8);
   align-items: start;
   flex-wrap: wrap;
-  z-index: 1990;
+  z-index: 1049;
   margin-top: 10px;
 }
 
@@ -599,7 +599,7 @@ tr:hover .delete-row-icon {
         #815f8a 20%,
         #a279d1 25%,
         #815f8a 30%);
-    background-image: var(--stripes), var(--rainbow);
+    background-image: var(--stripes), var(--rainbow2);
   background-size: 100%, 100%;
   background-position: 50% 50%, 100% 50%;
 
@@ -615,7 +615,7 @@ tr:hover .delete-row-icon {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: var(--stripes), var(--rainbow);
+  background-image: var(--stripes), var(--rainbow2);
   background-size: 200%, 100%;
   animation: jumbo 240s linear infinite;
   background-attachment: fixed;

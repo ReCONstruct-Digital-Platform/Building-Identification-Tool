@@ -68,7 +68,7 @@ def migrate_responses(dry_run=True):
     survey, _ = Survey.objects.get_or_create(
         name="Recon Survey V1",
         description="Reconstruct's initial survey to find good deep energy retrofit candidates among HLMs",
-        # Frank
+        status=Survey.Status.ACTIVE,
         created_by=SYSTEM_USER,
         dataset=dataset,
         schema={

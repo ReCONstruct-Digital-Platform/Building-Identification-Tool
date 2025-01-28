@@ -158,48 +158,14 @@ function setUpColumnConfig() {
   setUpDraggableList("draggable-list-survey", defaultSurveyCols);
 }
 
-function setUpModal() {
-  console.debug("Running setup modal");
-  const modalBackdrop = document.getElementById("modal-backdrop");
-  const columnConfigModal = document.getElementById("col-config-modal");
-  const showColumnConfigButton = document.getElementById("show-col-config");
-  const columnConfigModalCloseButton = document.getElementById("close-modal");
-  // When the user clicks on the button, open the modal
-  showColumnConfigButton.addEventListener("click", (e) => {
-    e.preventDefault();
-    columnConfigModal.classList.remove("hidden");
-    modalBackdrop.classList.remove("hidden");
-    columnConfigModal.classList.add("block");
-    modalBackdrop.classList.add("block");
-  });
-
-  // When the user clicks on <span> (x), close the modal
-  columnConfigModalCloseButton.addEventListener("click", (e) => {
-    e.preventDefault();
-    columnConfigModal.classList.add("hidden");
-    modalBackdrop.classList.add("hidden");
-    columnConfigModal.classList.remove("block");
-    modalBackdrop.classList.remove("block");
-  });
-
-  // When the user clicks anywhere outside of the modal, close it
-  window.addEventListener("click", (e) => {
-    if (e.target === columnConfigModal) {
-      columnConfigModal.classList.add("hidden");
-      modalBackdrop.classList.add("hidden");
-      columnConfigModal.classList.remove("block");
-      modalBackdrop.classList.remove("block");
-    }
-  });
-}
 
 document.addEventListener("DOMContentLoaded", () => {
   setUpColumnConfig();
-  setUpModal();
+  setUpModals();
 
   document.addEventListener("htmx:afterRequest", (e) => {
     setUpColumnConfig();
-    setUpModal();
+    setUpModals();
   });
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -211,8 +177,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const qb_dataset_filters = JSON.parse(document.getElementById("qb_dataset_filters").textContent);
   const qb_surveys_filters = JSON.parse(document.getElementById("qb_surveys_filters").textContent);
 
-  console.log(qb_dataset_filters);
-  console.log(qb_surveys_filters);
+  console.debug(qb_dataset_filters);
+  console.debug(qb_surveys_filters);
 
   // Fix for Bootstrap Datepicker
   $(datasetQueryBuilderId).on("afterUpdateRuleValue.queryBuilder", function (e, rule) {
@@ -343,121 +309,4 @@ document.addEventListener("DOMContentLoaded", () => {
   urlSurveyQuery && document.getElementById("add-surveys-filter").dispatchEvent(new Event("click"));
 });
 
-// Table Code
-const sortConfig = { colId: null, direction: "asc" };
 
-document.addEventListener("DOMContentLoaded", () => {
-  const columns = document.getElementById("columns").textContent;
-  console.debug(columns);
-
-  const header = document.getElementById("tableHeader");
-
-  // Drag and drop functionality
-  header.addEventListener("dragstart", (e) => {
-    let dragTarget = e.target;
-    console.debug("drag target:", dragTarget);
-
-    if (e.target.tagName !== "TH") {
-      // Since we have children elements inside the th, we need to get the closest th element
-      dragTarget = e.target.closest("th");
-      console.debug("updated drag target to closest TH:", dragTarget);
-    }
-
-    draggedColumnIndex = Array.from(header.children[0].children).indexOf(dragTarget);
-    console.debug("dragged column index:", draggedColumnIndex);
-  });
-
-  header.addEventListener("dragover", (e) => {
-    e.preventDefault();
-  });
-
-  header.addEventListener("drop", (e) => {
-    e.preventDefault();
-    let dropTarget = e.target;
-    console.debug("drop target:", dropTarget);
-    if (e.target.tagName !== "TH") {
-      // Since we have children elements inside the th, we need to get the closest th element
-      dropTarget = e.target.closest("th");
-      console.debug("updated drop target:", dropTarget);
-    }
-    const dropTargetIndex = Array.from(header.children[0].children).indexOf(dropTarget);
-    console.debug("drop target index:", dropTargetIndex);
-
-    if (draggedColumnIndex !== dropTargetIndex) {
-      const rows = document.querySelectorAll("table tr");
-      rows.forEach((row) => {
-        const cells = Array.from(row.children);
-        // If we drag from a lower index to a higher index with insertBefore,
-        // the dragged column will be 1 position too far left. I.e. drag col 0 -> 1,
-        // col 0 will be inserted before col 1, but it should be inserted after col 1.
-        draggedColumnIndex < dropTargetIndex
-          ? row.insertBefore(cells[draggedColumnIndex], cells[dropTargetIndex].nextSibling)
-          : row.insertBefore(cells[draggedColumnIndex], cells[dropTargetIndex]);
-      });
-    }
-
-    draggedColumnIndex = null;
-  });
-
-  // Attach the sortTable function to each header cell
-  Array.from(header.children[0].children).forEach((th, index) => {
-    th.addEventListener("click", () => {
-      sortColumn(th.id, index);
-    });
-  });
-
-  let draggedColumnIndex = null;
-
-  // Column toggle functionality
-  document.querySelectorAll(".column-toggle").forEach(function (checkbox) {
-    checkbox.addEventListener("change", function () {
-      const column = this.dataset.columnKey;
-      const columnIndex = Array.from(header.children[0].children).indexOf(document.getElementById(column));
-      const cells = document.querySelectorAll(`table tr > *:nth-child(${+columnIndex + 1})`);
-      cells.forEach((cell) => cell.classList.toggle("hidden", !this.checked));
-    });
-  });
-
-  // Sorting functionality
-  function sortColumn(sortedColumnId, columnIndex) {
-    // Sort key will be null the first time we click on a column
-    // If equal, we're clicking on the same column a second time so we toggle the direction
-    if (sortConfig.colId === sortedColumnId) {
-      sortConfig.direction = sortConfig.direction === "asc" ? "desc" : "asc";
-    } else {
-      sortConfig.colId = sortedColumnId;
-      sortConfig.direction = "asc";
-    }
-    console.debug("applying sortconfig:", sortConfig);
-    sortTableData(columnIndex);
-    updateSortIcons();
-  }
-
-  function sortTableData(columnIndex) {
-    const table = document.getElementById("tableBody");
-    const rows = Array.from(table.querySelectorAll("tr"));
-    const sortedRows = rows.sort((a, b) => {
-      const aText = a.querySelector(`td:nth-child(${columnIndex + 1})`).textContent.trim();
-      const bText = b.querySelector(`td:nth-child(${columnIndex + 1})`).textContent.trim();
-      if (aText < bText) return sortConfig.direction === "asc" ? -1 : 1;
-      if (aText > bText) return sortConfig.direction === "asc" ? 1 : -1;
-      return 0;
-    });
-    sortedRows.forEach((row) => table.appendChild(row));
-  }
-
-  function updateSortIcons() {
-    const headers = document.querySelectorAll("#tableHeader th");
-    headers.forEach((header) => {
-      const sortIcon = header.querySelector(".sort-icon");
-      if (sortConfig.colId === header.id) {
-        sortIcon.innerHTML =
-          sortConfig.direction === "asc"
-            ? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>'
-            : '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
-      } else {
-        sortIcon.innerHTML = "";
-      }
-    });
-  }
-});

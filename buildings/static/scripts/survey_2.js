@@ -421,4 +421,5 @@ document.addEventListener("DOMContentLoaded", function () {
   satelliteTabScreenshotOnHide();
   setUpSatelliteImageObserver();
   setUpInitialSurveyMutationChecker();
+  setUpModals();
 });

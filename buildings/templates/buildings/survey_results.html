@@ -53,8 +53,8 @@
 
         <section>
           <div class="text-2xl">Fields to display</div>
-          <button id="show-col-config"
-            class="bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-600 
+          <button id="show-col-config" data-target-modal="column_config_modal"
+            class="modal-open-button bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-600 
           block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
             Choose columns
           </button>
@@ -117,7 +117,7 @@
 
     {% block page-and-paging-controls %}
 
-    <div id="col-config-modal" class="hidden fixed overflow-hidden w-full top-[56px] left-0 z-[1055]">
+    <!-- <div id="col-config-modal" class="hidden fixed overflow-hidden w-full top-[56px] left-0 z-[1055]">
       <div class="block mx-auto w-[50%] h-[calc(100vh-56px-56px)] bg-white rounded-lg p-5 shadow-lg z-[1056]">
         <div class="flex flex-col h-full">
           <div class="flex">
@@ -246,8 +246,116 @@
 
       </div>
 
-    </div>
+    </div> -->
 
+    {% #modal id="column_config" %}
+    <div class="flex-grow rounded-2xl px-10 pt-4">
+      <h1 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Building Attributes</h1>
+      <div class="flex justify-between">
+        <button class="reset-button py-2 underline">Reset defaults</button>
+        <button class="select-all-button py-2 underline">Unselect all</button>
+      </div>
+      <ul id="draggable-list" class="space-y-2">
+        {% for col in user_bldg_cols %}
+        <li class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm cursor-grab"
+          draggable="true">
+          <label class="text-gray-700">
+            <input type="checkbox" id="{{ col.id }}"
+              class="mr-4 h-5 w-5 text-teal-500 focus:ring-2 focus:ring-teal-300" checked>{{ col.label }}
+          </label>
+          <div class="mr-4 text-gray-400 cursor-grab">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-grip-vertical">
+              <circle cx="9" cy="12" r="1" />
+              <circle cx="9" cy="5" r="1" />
+              <circle cx="9" cy="19" r="1" />
+              <circle cx="15" cy="12" r="1" />
+              <circle cx="15" cy="5" r="1" />
+              <circle cx="15" cy="19" r="1" />
+            </svg>
+          </div>
+        </li>
+        {% endfor %}
+        {% with default_bldg_cols|sub_lists:user_bldg_cols as remaining_cols %}
+        {% for col in remaining_cols %}
+        <li class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm cursor-grab"
+          draggable="true">
+          <label class="text-gray-700">
+            <input type="checkbox" id="{{ col.id }}"
+              class="mr-4 h-5 w-5 text-teal-500 focus:ring-2 focus:ring-teal-300">{{ col.label }}
+          </label>
+          <div class="mr-4 text-gray-400 cursor-grab">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-grip-vertical">
+              <circle cx="9" cy="12" r="1" />
+              <circle cx="9" cy="5" r="1" />
+              <circle cx="9" cy="19" r="1" />
+              <circle cx="15" cy="12" r="1" />
+              <circle cx="15" cy="5" r="1" />
+              <circle cx="15" cy="19" r="1" />
+            </svg>
+          </div>
+        </li>
+        {% endfor %}
+        {% endwith %}
+      </ul>
+    </div>
+    <div class="flex-grow rounded-2xl px-10 pt-4">
+      <h1 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Survey Response Fields</h1>
+      <div class="flex justify-between">
+        <button class="reset-button py-2 underline">Reset defaults</button>
+        <button class="select-all-button py-2 underline">Unselect all</button>
+      </div>
+      <ul id="draggable-list-survey" class="space-y-3">
+        {% for col in user_survey_cols %}
+        <li class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm cursor-grab gap-1"
+          draggable="true">
+          <label class="text-gray-700">
+            <input type="checkbox" id="{{ col.id }}"
+              class="mr-4 h-5 w-5 text-teal-500 focus:ring-2 focus:ring-teal-300" checked>{{ col.label }}
+          </label>
+          <div class="mr-4 text-gray-400 cursor-grab">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-grip-vertical">
+              <circle cx="9" cy="12" r="1" />
+              <circle cx="9" cy="5" r="1" />
+              <circle cx="9" cy="19" r="1" />
+              <circle cx="15" cy="12" r="1" />
+              <circle cx="15" cy="5" r="1" />
+              <circle cx="15" cy="19" r="1" />
+            </svg>
+          </div>
+        </li>
+        {% endfor %}
+        {% with default_survey_cols|sub_lists:user_survey_cols as remaining_cols %}
+        {% for col in remaining_cols %}
+        <li class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm cursor-grab"
+          draggable="true">
+          <label class="text-gray-700">
+            <input type="checkbox" id="{{ col.id }}"
+              class="mr-4 h-5 w-5 text-teal-500 focus:ring-2 focus:ring-teal-300">{{ col.label }}
+          </label>
+          <div class="mr-4 text-gray-400 cursor-grab">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-grip-vertical">
+              <circle cx="9" cy="12" r="1" />
+              <circle cx="9" cy="5" r="1" />
+              <circle cx="9" cy="19" r="1" />
+              <circle cx="15" cy="12" r="1" />
+              <circle cx="15" cy="5" r="1" />
+              <circle cx="15" cy="19" r="1" />
+            </svg>
+          </div>
+        </li>
+        {% endfor %}
+        {% endwith %}
+      </ul>
+    </div>
+    {% /modal %}
 
     <div id="results-container" class="mb-4 flex flex-col">
 
@@ -435,7 +543,6 @@
   <script
     src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
   <script src="{% static 'scripts/query-builder.standalone.js' %}"></script>
-  <script src="{% static 'scripts/survey_results.js' %}"></script>
-
+  <script defer src="{% static 'scripts/survey_results.js' %}"></script>
 
   {% endblock %}
