@@ -147,6 +147,9 @@ class Building(models.Model):
         ]
         return attrs_fields
 
+    def get_responses_for_survey(self, survey):
+        return self.response_set.filter(survey=survey)
+
     def get_thumbnail_url(self):
         return f"https://f005.backblazeb2.com/file/bit-prod/reconstruct/{self.dataset.slug}/thumbnails/{self.slug}/thumbnail.jpg"
 

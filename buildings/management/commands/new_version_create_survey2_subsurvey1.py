@@ -65,7 +65,7 @@ def migrate_responses(dry_run=True):
     )
 
     # Fetch the first survey
-    survey1 = Survey.objects.get_or_create(
+    survey1, _ = Survey.objects.get_or_create(
         name="Recon Survey V1", created_by=SYSTEM_USER
     )
 
@@ -734,15 +734,15 @@ def migrate_responses(dry_run=True):
                     r.created_by_id,
                     r.building_id,
                     r.date_added as date_added,
-                    r.date_modified as date_modified,
+                    r.date_modified as date_modified
                 from buildings b 
                 join responses r on r.building_id = b.id
                 WHERE
-                    r.survey_id = 2
+                    r.survey_id = {survey1.id}
                     and (r.data->'exterior_cladding') @> '["brick_masonry"]' and b.attrs->>'service_center' like '%Montr%'
                 ORDER BY r.id DESC
                 LIMIT {chunk_length} offset {offset}
-            """
+            """,
             )
             responses_batch = from_cur.fetchall()
 

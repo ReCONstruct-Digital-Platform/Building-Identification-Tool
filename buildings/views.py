@@ -252,17 +252,10 @@ def survey_results(request, survey_slug):
     else:
         user_survey_cols = user_config.res_page_survey_cols or default_survey_cols
 
-    # user_bldg_cols = user_bldg_cols[-2:-1] + user_bldg_cols[:5]
-    # user_survey_cols = user_bldg_cols[-2:-1].extend(user_survey_cols[:5])
-
     ds_schema_cols = [
         {"id": f["id"], "label": f["label"]["en"]} for f in dataset.schema
     ]
-    s_schema_cols = [
-        {"id": f, "label": v["label"]["en"]} for f, v in survey.schema.items()
-    ]
-
-    columns = s_schema_cols
+    columns = [{"id": f, "label": v["label"]["en"]} for f, v in survey.schema.items()]
 
     if dataset_query or survey_query:
         print("got filters")
@@ -296,7 +289,6 @@ def survey_results(request, survey_slug):
         "page": page,
         "columns": columns,
         "ds_schema_cols": ds_schema_cols,
-        "s_schema_cols": s_schema_cols,
         "qb_dataset_filters": dataset_schema,
         "qb_surveys_filters": survey_filters_and_optgroups,
         "orderby_field": orderby_field,

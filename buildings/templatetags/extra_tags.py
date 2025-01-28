@@ -1,6 +1,6 @@
 from django import template
 
-from buildings.models.newmodels import Building
+from buildings.models.newmodels import Building, Survey
 
 register = template.Library()
 
@@ -26,3 +26,8 @@ def get_bldg_field(building: Building, key):
 def sub_lists(l1: list, l2: list):
     r = [o for o in l1 if o not in l2]
     return r
+
+
+@register.filter
+def get_responses_for_survey(building: Building, survey: Survey):
+    return building.get_responses_for_survey(survey)
