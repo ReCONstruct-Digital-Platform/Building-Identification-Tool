@@ -24,8 +24,8 @@
         {% url 'buildings:do_survey_redirect' survey.slug as survey_url %}
 
         <div class="max-w-sm flex flex-col p-6 bg-white bg-opacity-70 border border-gray-300 rounded-lg shadow-md">
-          <div class="flex items-center gap-2 mb-2">
-            <div class="text-2xl font-bold tracking-tight text-gray-900 ">{{ survey.name }}</div>
+          <div class="flex items-center gap-2 mb-2 h-[100px]">
+            <div class="text-2xl font-bold tracking-tight text-gray-900 line-clamp-2">{{ survey.name }}</div>
             <div class="h-fit py-1 px-2 
             {% if survey.status == 'ACTIVE' %}
             bg-emerald-100 
@@ -55,8 +55,7 @@
           </div>
           <hr>
           <div class="h-full flex flex-col justify-between">
-            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ survey.description }}</p>
-
+            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 py-5">{{ survey.description }}</p>
     
             <div class="flex flex-row gap-4">
     

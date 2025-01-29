@@ -1,11 +1,9 @@
-import random
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.db.models import JSONField
 from django.utils import timezone
 from autoslug import AutoSlugField
 
-from django.db.models import Q
 from django.db.models.expressions import RawSQL
 from django.utils.translation import gettext_lazy as _
 
@@ -47,10 +45,14 @@ class Dataset(models.Model):
     date_modified = models.DateTimeField("date modified", default=timezone.now)
 
     def get_fields_to_display(self):
+        """
+        Returns a few select fields from the shared fields, and all the dynamic attributes
+        """
         return [
             {"id": a["id"], "label": a["label"]["en"]}
             for a in self.schema
-            if a["id"] in ["submuni", "const_year", "num_floors", "floor_area"]
+            if a["id"]
+            in ["ext_id", "submuni", "const_year", "num_floors", "floor_area"]
             or "attrs" in a["id"]
         ]
 
@@ -131,13 +133,6 @@ class Building(models.Model):
 
     date_added = models.DateTimeField("date added", default=timezone.now)
     date_modified = models.DateTimeField("date modified", default=timezone.now)
-
-    def get_fields_to_display(self):
-        return [
-            {"id": a["id"], "label": a["label"]["en"]}
-            for a in self.dataset.schema
-            if a["id"] in ["submuni", "const_year", "num_floors", "floor_area"]
-        ]
 
     def get_attrs(self):
         attrs_fields = [

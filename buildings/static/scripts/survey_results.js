@@ -158,10 +158,17 @@ function setUpColumnConfig() {
   setUpDraggableList("draggable-list-survey", defaultSurveyCols);
 }
 
+function setUpResultsViewSelect() {
+  const select = document.getElementById("results-viewer-select");
+  select.addEventListener("change", (e) => {
+    window.location.href = e.target.value;
+  });
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   setUpColumnConfig();
   setUpModals();
+  setUpResultsViewSelect();
 
   document.addEventListener("htmx:afterRequest", (e) => {
     setUpColumnConfig();
@@ -255,12 +262,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (document.querySelector(surveyQueryBuilderId).childElementCount > 0) {
       $(surveyQueryBuilderId).queryBuilder("destroy");
-      e.target.textContent = "Add surveys filter";
+      e.target.textContent = "Add survey filter";
       e.target.classList.remove("bg-red-600", "hover:bg-red-500", "focus-visible:outline-red-600");
       e.target.classList.add("bg-blue-600", "hover:bg-blue-500", "focus-visible:outline-blue-700");
       return;
     } else {
-      e.target.textContent = "Remove surveys filter";
+      e.target.textContent = "Remove survey filter";
       e.target.classList.remove("bg-blue-600", "hover:bg-blue-500", "focus-visible:outline-blue-700");
       e.target.classList.add("bg-red-600", "hover:bg-red-500", "focus-visible:outline-red-600");
       $(surveyQueryBuilderId).queryBuilder({

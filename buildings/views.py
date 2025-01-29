@@ -207,6 +207,7 @@ def survey_results(request, survey_slug):
         base64.b64decode(request.GET.get("survey_query") or "").decode("utf-8") or "{}"
     )
 
+    surveys = Survey.objects.all()
     survey = Survey.objects.get(slug=survey_slug)
     dataset = survey.dataset
     dataset_schema = dataset.get_schema(prefix="")
@@ -285,7 +286,8 @@ def survey_results(request, survey_slug):
     ).get_page(pagenum)
 
     context = {
-        "survey": survey,
+        "current_survey": survey,
+        "surveys": surveys,
         "page": page,
         "columns": columns,
         "ds_schema_cols": ds_schema_cols,
