@@ -1807,6 +1807,14 @@ input:checked + .toggle-bg {
   height: 100% !important;
 }
 
+.h-\[90\] {
+  height: 90 !important;
+}
+
+.h-\[90px\] {
+  height: 90px !important;
+}
+
 .max-h-\[40px\] {
   max-height: 40px !important;
 }
@@ -1931,6 +1939,10 @@ input:checked + .toggle-bg {
 .w-max {
   width: -moz-max-content !important;
   width: max-content !important;
+}
+
+.w-\[125px\] {
+  width: 125px !important;
 }
 
 .min-w-\[200px\] {
@@ -3242,6 +3254,10 @@ input:checked + .toggle-bg {
   transition-duration: 500ms !important;
 }
 
+.duration-200 {
+  transition-duration: 200ms !important;
+}
+
 .ease-in-out {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
@@ -3603,6 +3619,12 @@ input:checked + .toggle-bg {
 .hover\:shadow-lg:hover {
   --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
   --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color) !important;
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) !important;
+}
+
+.hover\:shadow-md:hover {
+  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
+  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color) !important;
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) !important;
 }
 
