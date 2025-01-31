@@ -1,8 +1,11 @@
+import io
 import json
 import traceback
 import base64
 from datetime import datetime
 from typing import List
+from openpyxl import Workbook
+from openpyxl.worksheet.table import Table, TableStyleInfo
 
 from allauth.account.models import EmailAddress
 from django.urls import reverse
@@ -16,6 +19,7 @@ from django.core.paginator import Paginator
 from django.db.models import Avg, Count, Sum, JSONField
 from django.db.models.functions import Round
 from django.forms.models import model_to_dict
+import openpyxl
 from render_block import render_block_to_string
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
@@ -51,6 +55,7 @@ from buildings.models.models import (
 import logging
 
 from buildings.utils.query_utils import DatasetQParser, SurveyQParser
+from buildings.utils.utility import get_b64_encoded_json
 
 log = logging.getLogger(__name__)
 
@@ -187,54 +192,211 @@ def dataset(request, dataset_slug: str):
     return render(request, "buildings/dataset.html", context)
 
 
+@require_POST
+@login_required(login_url="account_login")
+def gen_excel(request):
+
+    body = json.loads(request.body)
+
+    config = body.get("export_config")
+
+    # TODO: Want to support exporting Dataset and Survey candidates as well
+    if config["type"] not in ["survey"]:
+        raise Exception(f"Unsupported export type {config['type']}")
+
+    survey = Survey.objects.get(pk=config["id"])
+    dataset = survey.dataset
+
+    default_bldg_cols = dataset.get_orderby_fields()
+    default_survey_cols = survey.get_columns_to_display()
+
+    orderby_field = body.get("field") or "address"
+    orderby_dir = body.get("dir") or "asc"
+    dataset_query = get_b64_encoded_json(body.get("dataset_query"))
+    survey_query = get_b64_encoded_json(body.get("survey_query"))
+
+    # Take the columns from curfrent query or default otherwise
+    bldg_cols = get_b64_encoded_json(body.get("user_bldg_cols")) or default_bldg_cols
+    survey_cols = (
+        get_b64_encoded_json(body.get("user_survey_cols")) or default_survey_cols
+    )
+
+    results = survey.get_results()
+    if dataset_query:
+        dataset_q_parser = DatasetQParser(
+            schema=dataset.schema, json_field_name="attrs"
+        )
+        dataset_q = dataset_q_parser.parse_query(dataset_query)
+        results = results.filter(dataset_q)
+
+    if survey_query:
+        survey_q_parser = SurveyQParser(prefix=None)
+        surveys_q = survey_q_parser.parse_query(survey_query)
+        results = results.filter(surveys_q)
+
+    # Need to use F to hide nulls, otherwise order_by descending would show them first
+    order_by = getattr(F(orderby_field), orderby_dir)(nulls_last=True)
+
+    paginator = Paginator(results.order_by(order_by), per_page=50)
+
+    bldg_fields = [f["id"] for f in bldg_cols]
+    survey_fields = [f["id"] for f in survey_cols]
+
+    bldg_header = [f["label"] for f in bldg_cols]
+    survey_header = [f["label"] for f in survey_cols]
+    # all columns currently configured
+    header = bldg_header + survey_header
+
+    binary_object = io.BytesIO()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Buildings with their Responses"
+    ws.append(header)
+
+    ws2 = wb.create_sheet(title="Individual Responses")
+    header2 = (
+        ["Respondent", "Respondent Email", "Date Created", "Date Modified"]
+        + survey_header
+        + bldg_header
+    )
+    ws2.append(header2)
+
+    for i in range(1, paginator.num_pages):
+        page = paginator.get_page(i)
+
+        for building in page:
+
+            row = []
+
+            for field in bldg_fields:
+                if "attrs__" in field:
+                    val = building.attrs[field.replace("attrs__", "")]
+                else:
+                    val = getattr(building, field)
+                row.append(val)
+
+            for field in survey_fields:
+                # These are all lists
+                val = building.response_data.get(field)
+                if not val:
+                    row.append("")
+                    continue
+
+                # Convert each inner value to something nice
+                converted = []
+                for v in val:
+                    if v == None:
+                        continue
+
+                    if not isinstance(v, str):
+                        converted.append(str(v))
+                    else:
+                        converted.append(v)
+
+                val = ", ".join(converted)
+                row.append(val)
+
+            ws.append(row)
+
+            # Now process individual responses
+            for resp in building.response_set.all():
+                row2 = []
+                row2.extend(
+                    [
+                        resp.created_by.username,
+                        resp.created_by.email,
+                        resp.date_added.strftime("%Y-%m-%dT%H:%M:%S"),
+                        resp.date_modified.strftime("%Y-%m-%dT%H:%M:%S"),
+                    ]
+                )
+                for field in survey_fields:
+                    val = resp.data.get(field)
+
+                    if val == None:
+                        val = ""
+
+                    elif not isinstance(val, list):
+                        if not isinstance(val, str):
+                            val = str(val)
+                    else:
+                        # Convert each inner value to something nice
+                        converted = []
+                        for v in val:
+                            if v == None:
+                                continue
+
+                            if not isinstance(v, str):
+                                converted.append(str(v))
+                            else:
+                                converted.append(v)
+
+                        val = ", ".join(converted)
+                    row2.append(val)
+
+                for field in bldg_fields:
+                    if "attrs__" in field:
+                        val = resp.building.attrs[field.replace("attrs__", "")]
+                    else:
+                        val = getattr(resp.building, field)
+
+                    row2.append(val)
+
+                ws2.append(row2)
+
+    # ws.auto_filter.ref = ws.dimensions
+    table1 = Table(displayName="Table1", ref=ws.dimensions)
+    table2 = Table(displayName="Table2", ref=ws2.dimensions)
+
+    # Add a default style with striped rows and banded columns
+    style = TableStyleInfo(
+        name="TableStyleMedium9",
+        showRowStripes=True,
+    )
+    table1.tableStyleInfo = table2.tableStyleInfo = style
+
+    """
+    Table must be added using ws.add_table() method to avoid duplicate names.
+    Using this method ensures table name is unque through out defined names and all other table name. 
+    """
+    ws.add_table(table1)
+    ws2.add_table(table2)
+
+    wb.save(binary_object)
+    binary_object.seek(0)
+    binary_data = binary_object.read()
+
+    response = HttpResponse(
+        # full list of content_types can be found here
+        # https://stackoverflow.com/a/50860387/13946204
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response.write(binary_data)
+    return response
+
+
 @login_required(login_url="account_login")
 def survey_results(request, survey_slug):
 
+    num_results_per_page = 10
     template_name = "buildings/survey_results.html"
 
     pagenum = request.GET.get("page") or 1
-
-    # Could even be 3 values - ALL, COMPLETED, INCOMPLETE
-    show_all = request.GET.get("show_all") or False
-
-    num_results_per_page = 10
     orderby_field = request.GET.get("field") or "address"
     orderby_dir = request.GET.get("dir") or "asc"
-    dataset_query = json.loads(
-        base64.b64decode(request.GET.get("dataset_query") or "").decode("utf-8") or "{}"
-    )
-    survey_query = json.loads(
-        base64.b64decode(request.GET.get("survey_query") or "").decode("utf-8") or "{}"
-    )
+    dataset_query = get_b64_encoded_json(request.GET.get("dataset_query"))
+    survey_query = get_b64_encoded_json(request.GET.get("survey_query"))
+    p_bldg_cols = get_b64_encoded_json(request.GET.get("user_bldg_cols"))
+    p_survey_cols = get_b64_encoded_json(request.GET.get("user_survey_cols"))
 
     surveys = Survey.objects.all()
     survey = Survey.objects.get(slug=survey_slug)
     dataset = survey.dataset
-    dataset_schema = dataset.get_schema(prefix="")
 
-    results = survey.get_results()
-
-    if not show_all:
-        results = results.filter(response_data__isnull=False)
-
-    survey_filters_and_optgroups = {
-        "optgroups": {survey.name: {"en": survey.name}},
-        "filters": survey.get_query_builder_schema(field_prefix="response_data__"),
-    }
+    results = survey.get_results().filter(response_data__isnull=False)
 
     default_bldg_cols = dataset.get_fields_to_display()
-    default_survey_cols = [
-        {"id": f, "label": v["label"]["en"]} for f, v in survey.schema.items()
-    ]
-
-    p_bldg_cols = json.loads(
-        base64.b64decode(request.GET.get("user_bldg_cols") or "").decode("utf-8")
-        or "{}"
-    )
-    p_survey_cols = json.loads(
-        base64.b64decode(request.GET.get("user_survey_cols") or "").decode("utf-8")
-        or "{}"
-    )
+    default_survey_cols = survey.get_columns_to_display()
 
     user_config, _ = UserConfigs.objects.get_or_create(pk=request.user.id)
 
@@ -246,59 +408,66 @@ def survey_results(request, survey_slug):
     else:
         user_bldg_cols = user_config.res_page_bldg_cols or default_bldg_cols
 
-    # If we got a config from params, save in DB
     if p_survey_cols or p_survey_cols == []:
         user_survey_cols = user_config.res_page_survey_cols = p_survey_cols
         user_config.save()
     else:
         user_survey_cols = user_config.res_page_survey_cols or default_survey_cols
 
-    ds_schema_cols = [
-        {"id": f["id"], "label": f["label"]["en"]} for f in dataset.schema
-    ]
-    columns = [{"id": f, "label": v["label"]["en"]} for f, v in survey.schema.items()]
+    # Includes all columns we can order by
+    bldg_orderby_cols = [
+        {"id": "num_responses", "label": "Number of Responses"}
+    ] + dataset.get_orderby_fields()
+    survey_orderby_cols = default_survey_cols
 
-    if dataset_query or survey_query:
-        print("got filters")
+    if dataset_query:
         dataset_q_parser = DatasetQParser(
             schema=dataset.schema, json_field_name="attrs"
         )
         dataset_q = dataset_q_parser.parse_query(dataset_query)
         print(dataset_q)
+        results = results.filter(dataset_q)
+        print(results.count())
 
+    if survey_query:
         survey_q_parser = SurveyQParser(prefix=None)
         surveys_q = survey_q_parser.parse_query(survey_query)
         print(surveys_q)
 
-        results = results.filter(dataset_q).filter(surveys_q)
-
-        print(results)
+        results = results.filter(surveys_q)
+        print(results.count())
 
     # Need to use F to hide nulls, otherwise order_by descneding would show them first
-    if orderby_dir == "asc":
-        order_by = F(orderby_field).asc(nulls_last=True)
-    else:
-        order_by = F(orderby_field).desc(nulls_last=True)
+    order_by = getattr(F(orderby_field), orderby_dir)(nulls_last=True)
 
-    print(f"Order by: {order_by}")
     page = Paginator(
         results.order_by(order_by), per_page=num_results_per_page
     ).get_page(pagenum)
+
+    qb_dataset_filters = dataset.get_schema(prefix="")
+    qb_surveys_filters = {
+        "optgroups": {survey.name: {"en": survey.name}},
+        "filters": survey.get_query_builder_schema(field_prefix="response_data__"),
+    }
+
+    gen_excel_url = reverse("buildings:gen_excel")
 
     context = {
         "current_survey": survey,
         "surveys": surveys,
         "page": page,
-        "columns": columns,
-        "ds_schema_cols": ds_schema_cols,
-        "qb_dataset_filters": dataset_schema,
-        "qb_surveys_filters": survey_filters_and_optgroups,
+        "survey_orderby_cols": survey_orderby_cols,
+        "bldg_orderby_cols": bldg_orderby_cols,
+        "qb_dataset_filters": qb_dataset_filters,
+        "qb_surveys_filters": qb_surveys_filters,
         "orderby_field": orderby_field,
         "orderby_dir": orderby_dir,
         "user_bldg_cols": user_bldg_cols,
         "default_bldg_cols": default_bldg_cols,
         "user_survey_cols": user_survey_cols,
         "default_survey_cols": default_survey_cols,
+        "gen_excel_url": gen_excel_url,
+        "export_config": {"id": survey.id, "type": "survey"},
     }
 
     if request.htmx:

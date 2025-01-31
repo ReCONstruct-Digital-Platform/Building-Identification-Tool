@@ -28,6 +28,7 @@ urlpatterns = [
     path("profile", views.profile, name="profile"),
     path("query/<str:dataset_slug>", views.query, name="query"),
     path("datasets", views.datasets, name="datasets"),
+    path("excel", views.gen_excel, name="gen_excel"),
     path("datasets/<str:dataset_slug>", views.dataset, name="dataset"),
     path("datasets/<str:dataset_slug>/newsurvey", views.newsurvey, name="newsurvey"),
     path(
@@ -36,7 +37,7 @@ urlpatterns = [
         name="newsurvey_questions",
     ),
     path(
-        "surveys/<str:survey_slug>/results", views.survey_results, name="survey_results"
+        "results/survey/<str:survey_slug>", views.survey_results, name="survey_results"
     ),
     # TODO: All surveys
     path(

@@ -165,21 +165,65 @@ function setUpResultsViewSelect() {
   });
 }
 
+function setUpDownloadButton() {
+  const button = document.getElementById("download");
+  const excelGenURL = document.getElementById("gen_excel_url").dataset.url;
+  const exportConfig = JSON.parse(document.getElementById("export_config").textContent);
+
+  button.addEventListener("click", (e) => {
+    e.preventDefault();
+    console.debug(exportConfig);
+
+    const body = JSON.stringify({
+      export_config: exportConfig,
+      ...getCurrentQuery(),
+    });
+
+    console.debug(body);
+    // do a post request to backend to generate excel using current query params
+
+    // create downloadable file (if latency is OK, otherwise we will send an email)
+
+    fetch(excelGenURL, {
+      method: "POST",
+      mode: "same-origin",
+      cache: "no-cache",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: body,
+    })
+      .then((res) => {
+        if (res.status != 200) {
+          return false;
+        }
+        console.log(res.headers);
+        res.blob().then((excelBlob) => downloadBlob(excelBlob, `survey_results_${Date.now()}.xlsx`));
+      })
+      .catch((error) => {
+        console.log("Error downloading file:", error);
+        return false;
+      });
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   setUpColumnConfig();
   setUpModals();
   setUpResultsViewSelect();
+  setUpDownloadButton();
 
   document.addEventListener("htmx:afterRequest", (e) => {
     setUpColumnConfig();
     setUpModals();
+    setUpDownloadButton();
   });
 
   const urlParams = new URLSearchParams(window.location.search);
   const urlDatasetQuery = JSON.parse(b64DecodeUnicode(urlParams.get("dataset_query")));
   const urlSurveyQuery = JSON.parse(b64DecodeUnicode(urlParams.get("survey_query")));
-  console.debug(urlDatasetQuery);
-  console.debug(urlSurveyQuery);
 
   const qb_dataset_filters = JSON.parse(document.getElementById("qb_dataset_filters").textContent);
   const qb_surveys_filters = JSON.parse(document.getElementById("qb_surveys_filters").textContent);

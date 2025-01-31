@@ -1,3 +1,4 @@
+import json
 import os
 import hmac
 import base64
@@ -189,3 +190,7 @@ def get_or_none(classmodel, **kwargs):
         return classmodel.objects.get(**kwargs)
     except classmodel.DoesNotExist:
         return None
+
+
+def get_b64_encoded_json(data):
+    return json.loads(base64.b64decode(data or "").decode("utf-8") or "{}")

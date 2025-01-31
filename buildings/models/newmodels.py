@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.gis.db import models
-from django.db.models import JSONField
+from django.db.models import JSONField, Count
 from django.utils import timezone
 from autoslug import AutoSlugField
 
@@ -52,9 +52,22 @@ class Dataset(models.Model):
             {"id": a["id"], "label": a["label"]["en"]}
             for a in self.schema
             if a["id"]
-            in ["ext_id", "submuni", "const_year", "num_floors", "floor_area"]
+            in [
+                "ext_id",
+                "submuni",
+                "const_year",
+                "num_floors",
+                "floor_area",
+                "postal_code",
+            ]
             or "attrs" in a["id"]
         ]
+
+    def get_orderby_fields(self):
+        """
+        Returns all fields from the schema for ordering
+        """
+        return [{"id": a["id"], "label": a["label"]["en"]} for a in self.schema]
 
 
 class UserConfigs(models.Model):
@@ -206,8 +219,20 @@ class Survey(models.Model):
     date_added = models.DateTimeField("date added", default=timezone.now)
     date_modified = models.DateTimeField("date modified", default=timezone.now)
 
-    def get_results(self):
-        return Building.objects.filter(dataset=self.dataset).annotate(
+    def get_columns_to_display(self):
+        """
+        Returns the schema columns in a nice format to be displayed
+        """
+        return [{"id": f, "label": v["label"]["en"]} for f, v in self.schema.items()]
+
+    def get_results(self, add_num_responses=True):
+        # Ensure the dataset and the linked responses survey matches
+        qs = Building.objects.filter(dataset=self.dataset, response__survey=self)
+
+        if add_num_responses:
+            qs = qs.annotate(num_responses=Count("response"))
+
+        return qs.annotate(
             response_data=RawSQL(
                 """
                     --- Create JSON objects for each building containing all the response data for each survey

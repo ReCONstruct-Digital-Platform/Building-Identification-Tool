@@ -1404,6 +1404,18 @@ input:checked + .toggle-bg {
   top: 56px !important;
 }
 
+.-top-2 {
+  top: -0.5rem !important;
+}
+
+.-top-1 {
+  top: -0.25rem !important;
+}
+
+.-top-3 {
+  top: -0.75rem !important;
+}
+
 .isolate {
   isolation: isolate !important;
 }
