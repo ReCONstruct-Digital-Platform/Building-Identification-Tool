@@ -126,6 +126,8 @@ def survey_results(request, survey_slug):
     num_results_per_page = 10
     template_name = "buildings/survey_results.html"
 
+    print(f"META PATH_INFO: {request.META['PATH_INFO']}")
+
     pagenum = request.GET.get("page") or 1
     orderby_field = request.GET.get("field") or "address"
     orderby_dir = request.GET.get("dir") or "asc"

@@ -148,3 +148,49 @@ function downloadBlob(blob, filename) {
   // in order to attach it to the DOM or use it in some other way
   return a;
 }
+
+/**
+ * Custom tab group. Needs each tab's id to be the id of the pane it controls + "-tab".
+ * Pass in the classes to add and remove when activating.
+ */
+function setUpTabGroups(tabGroupId, activeClasses = [], inactiveClasses = []) {
+  const allTabLinks = Array.from(document.getElementById(tabGroupId).children);
+
+  allTabLinks.forEach((tablink, i) => {
+    // Set the first tab as active
+    if (i === 0) {
+      const activeTabContentId = tablink.id.replace("-tab", "");
+      tablink.classList.remove(...inactiveClasses);
+      tablink.classList.add(...activeClasses);
+      tablink.setAttribute("aria-selected", "true");
+      document.getElementById(activeTabContentId).style.display = "block";
+      console.debug(tablink);
+    }
+
+    // Add an event listener to each tab
+    tablink.addEventListener("click", (e) => {
+      const clickedTab = e.target;
+
+      // Set the clicked tab to visible
+      clickedTab.classList.remove(...inactiveClasses);
+      clickedTab.classList.add(...activeClasses);
+      clickedTab.setAttribute("aria-selected", "true");
+
+      const clickedTabContentId = clickedTab.id.replace("-tab", "");
+      document.getElementById(clickedTabContentId).style.display = "block";
+
+      // Hide all other tablinks
+      for (const otherTab of allTabLinks) {
+        if (otherTab.id !== clickedTab.id) {
+          const tabContentElementId = otherTab.id.replace("-tab", "");
+          const associatedTabContent = document.getElementById(tabContentElementId);
+          otherTab.classList.remove(...activeClasses);
+          otherTab.classList.add(...inactiveClasses);
+          otherTab.setAttribute("aria-selected", "false");
+          associatedTabContent.style.display = "none";
+          console.debug(otherTab);
+        }
+      }
+    });
+  });
+}

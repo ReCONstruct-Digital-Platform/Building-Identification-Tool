@@ -166,23 +166,13 @@ strong {
   justify-content: space-between;
 }
 
-.latest-activity-box {
-  background: rgba(255, 255, 255, .7);
-  border-radius: 10px;
-  padding: 10px 20px;
-  overflow-y: auto;
-}
 
 .latest-activity-box-col {
   width: 41.666667%;
 }
 
-.activity-header {
-  display: flex;
-  align-items: baseline;
-  margin-bottom: 0.5rem;
-}
 
+*/
 label {
   float: left;
   margin: 0px 0px;
@@ -249,15 +239,6 @@ input[disabled] {
 }
 
 
-/* th:hover,
-th:focus-within,
-tr:hover,
-tr:focus-within {
-  background: #e9ecef;
-  outline: none;
-}
-
-*/
 .td-building {
   padding: 0;
   height: 25px;
@@ -282,18 +263,6 @@ td>a:first-child {
 }
 
 
-.bottom-navigation {
-  width: 25%;
-  display: flex;
-  align-self: center;
-  justify-content: space-between;
-}
-
-.activity-top-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
 
 .vote-user {
   display: flex;
@@ -620,22 +589,6 @@ tr:hover .delete-row-icon {
   animation: jumbo 240s linear infinite;
   background-attachment: fixed;
   mix-blend-mode: exclusion;
-}
-
-/* Style the buttons inside the tab */
-.tab {
-  cursor: pointer;
-  background-color: rgb(255, 255, 255, .25);
-  transition: 0.3s;
-}
-
-.tab:hover {
-  background-color: rgb(255, 255, 255, .85);
-}
-
-/* Create an active/current tablink class */
-.tab.active {
-  background-color: rgb(255, 255, 255, .85);
 }
 
 /* Style the tab content */

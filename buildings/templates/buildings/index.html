@@ -4,16 +4,19 @@
 {% load humanize %}
 
 <div class="flex flex-row w-full h-full px-5 py-5 justify-between 2xl:px-16">
+  
+  <div class="flex flex-col gap-5 me-3">
+    <div class="absolute -z-[1] w-[90vh] h-[90vh] bg-white bg-opacity-25 rounded-full aspect-square">
+  
+    </div>
 
-  <div class="flex flex-col gap-5 bg-white bg-opacity-25 rounded-full me-3">
+    <section class="mt-12">
 
-    <section>
-
-      <!-- <div class="text-2xl">Welcome back {{ user.username }}</div> -->
+      <div class="text-5xl font-semibold">Reconstruct Dashboard</div>
 
     </section>
 
-    <section id="sections-surveys" class="flex flex-col justify-start w-fit mt-16">
+    <section id="sections-surveys" class="flex flex-col justify-start w-fit mt-6">
       <div class="mb-2 text-4xl font-bold tracking-tight text-gray-900">
         Surveys
       </div>
@@ -112,22 +115,20 @@
 
   </div>
 
-  <div class="h-[calc(100vh-56px-56px)] w-1/3 px-2 overflow-hidden">
+  <div class="h-[calc(100vh-56px-56px)] w-[36%] px-2 overflow-hidden">
     <div id="activity-target" class="flex flex-col w-full max-h-full justify-between">
       <div>
-        <nav class="nav nav-underline flex flex-row flex-nowrap">
-          <li class="nav-item activity-nav-item">
-            <a id="latest-activity-link" class="nav-link {% if active_tab == 'latest' %} active {% endif %}"
-              data-bs-toggle="tab" data-bs-target="#latest-activity" type="button" role="tab"
-              aria-controls="latest-activity"
-              aria-selected="{% if active_tab == 'latest' %} true  {% else %} false {% endif %}">Latest Activity</a>
-          </li>
-          <li class="nav-item activity-nav-item">
-            <a id="user-activity-link" class="nav-link {% if active_tab == 'user' %} active {% endif %}"
-              data-bs-toggle="tab" data-bs-target="#user-activity" type="button" role="tab"
-              aria-controls="user-activity"
-              aria-selected="{% if active_tab == 'user' %} true {% else %} false {% endif %}">Your Activity</a>
-          </li>
+        <nav id="tabs-activity" class="flex flex-row flex-nowrap" role="tablist">
+          <button id="latest-activity-tab"
+            class="px-2 py-1.5 text-gray-900 
+            hover:text-black hover:underline hover:underline-offset-[11px] hover:decoration-gray-900 hover:decoration-[3px]" type="button" role="tab" aria-controls="latest-activity" aria-selected="false">
+            Latest Activity
+          </button>
+          <button id="user-activity-tab"
+            class="px-2 py-1.5 text-gray-900 
+            hover:text-black hover:underline hover:underline-offset-[11px] hover:decoration-gray-900 hover:decoration-[3px]" type="button" role="tab" aria-controls="user-activity" aria-selected="false">
+            Your Activity
+          </button>
         </nav>
       </div>
 
@@ -136,18 +137,17 @@
       <div id="activity-tab-content" class="activity-tab-content tab-content overflow-y-auto">
 
         <div id="latest-activity"
-          class="latest-activity-box tab-pane {% if active_tab == 'latest' %}show active {% endif %}" role="tabpanel"
-          aria-labelledby="latest-activity-link" tabindex="0">
-          <div class="activity-header flex-column flex-md-row">
+          class="bg-white bg-opacity-70 rounded-md px-3 py-5 overflow-y-auto tab-pane {% if active_tab == 'latest' %}show active {% endif %}" role="tabpanel" aria-labelledby="latest-activity-tab" tabindex="0">
+          <div class="flex items-baseline mb-1 flex-col md:flex-row">
             <div>
               {{ total_votes }} responses total
             </div>
           </div>
-          <ul class="list-group">
+          <ul class="flex flex-col rounded-md gap-2">
             {% for vote in latest_votes_page %}
-            <li class="list-group-item list-group-item-light card mb-3 shadow-sm">
-              <div class="activity-top-row mb-2">
-                <div class="vote-user">
+            <li class="bg-white bg-opacity-80 flex flex-col px-3 py-2 border border-gray-100 rounded-md shadow-sm">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center">
                   <img class="profile-pic-icon border me-2" src="{{ vote.created_by.get_avatar_url }}" />
                   <strong>
                     {{ vote.created_by.username }}
@@ -167,13 +167,13 @@
             </li>
 
             {% empty %}
-            <li class="list-group-item list-group-item-light">
+            <li class="bg-white bg-opacity-80 flex flex-col px-3 py-2 border border-gray-100 rounded-md shadow-sm">
               No recent activity
             </li>
             {% endfor %}
           </ul>
           <div class="mt-3">
-            <span class="step-links">
+            <span class="flex gap-2">
               {% if latest_votes_page.has_previous %}
               <a href='#' hx-swap="outerHTML" hx-target='#activity-tab-content'
                 hx-get="?latest_votes_page=1&active_tab=latest&user_votes_page={{ user_votes_page.number }}">&laquo;
@@ -198,9 +198,10 @@
         </div>
 
         <div id="user-activity"
-          class="latest-activity-box tab-pane {% if active_tab == 'user' %} show active {% endif %}" role="tabpanel"
-          aria-labelledby="user-activity-link" tabindex="1">
-          <div class="activity-header flex-column flex-md-row">
+          class="bg-white bg-opacity-60 rounded-md px-3 py-5 overflow-y-auto tab-pane 
+          {% if active_tab == 'user' %} show active {% endif %}" 
+          role="tabpanel" aria-labelledby="user-activity-tab" tabindex="1">
+          <div class="flex items-baseline mb-1 flex-col md:flex-row">
             <div>
               You've surveyed {{ num_user_votes }} buildings.
               {% if num_user_votes > 100 %}
@@ -214,11 +215,11 @@
               {% endif %}
             </div>
           </div>
-          <ul class="list-group">
+          <ul class="flex flex-col rounded-md gap-2">
             {% for vote in user_votes_page %}
-            <li class="list-group-item list-group-item-light card mb-3">
-              <div class="activity-top-row mb-2">
-                <div class="vote-user">
+            <li class="bg-white bg-opacity-80 flex flex-col px-3 py-2 border border-gray-100 rounded-md shadow-sm">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center">
                   <img class="profile-pic-icon border me-2" src="{{ vote.created_by.get_avatar_url }}" />
                   <strong>
                     {{ vote.created_by.username }}
@@ -237,7 +238,7 @@
               </div>
             </li>
             {% empty %}
-            <li class="list-group-item list-group-item-light">
+            <li class="bg-white bg-opacity-80 flex flex-col px-3 py-2 border border-gray-100 rounded-md shadow-sm">
               No recent activity
             </li>
             {% endfor %}
@@ -274,3 +275,11 @@
 </div>
 
 {% endblock %}
+
+{% block page_scripts %}
+{% load static %}
+{% load compress %}
+{% compress js %}
+<script defer src="{% static 'scripts/index.js' %}"></script>
+{% endcompress %}
+{% endblock page_scripts %}

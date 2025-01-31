@@ -372,50 +372,52 @@ function setStreetviewAndMapContainerHeight() {
   document.getElementById("nav-survey").style.height = streetViewHeight + "px";
 }
 
-function setUpTabGroups(tabGroupId) {
-  const allTabLinks = Array.from(document.getElementById(tabGroupId).children);
+// function setUpTabGroups(tabGroupId) {
+//   const allTabLinks = Array.from(document.getElementById(tabGroupId).children);
 
-  allTabLinks.forEach((tablink, i) => {
-    // Set the first tab as active
-    if (i === 0) {
-      const activeTabContentId = tablink.id.replace("-tab", "");
-      tablink.classList.add("active");
-      tablink.setAttribute("aria-selected", "true");
-      document.getElementById(activeTabContentId).style.display = "block";
-      console.log(tablink);
-    }
+//   allTabLinks.forEach((tablink, i) => {
+//     // Set the first tab as active
+//     if (i === 0) {
+//       const activeTabContentId = tablink.id.replace("-tab", "");
+//       tablink.classList.add("active");
+//       tablink.setAttribute("aria-selected", "true");
+//       document.getElementById(activeTabContentId).style.display = "block";
+//       console.debug(tablink);
+//     }
 
-    // Add an event listener to each tab
-    tablink.addEventListener("click", (e) => {
-      const clickedTab = e.target;
+//     // Add an event listener to each tab
+//     tablink.addEventListener("click", (e) => {
+//       const clickedTab = e.target;
 
-      // Set the clicked tab to visible
-      clickedTab.classList.add("active");
-      clickedTab.setAttribute("aria-selected", "true");
+//       // Set the clicked tab to visible
+//       clickedTab.classList.add("active");
+//       clickedTab.setAttribute("aria-selected", "true");
 
-      const clickedTabContentId = clickedTab.id.replace("-tab", "");
-      document.getElementById(clickedTabContentId).style.display = "block";
+//       const clickedTabContentId = clickedTab.id.replace("-tab", "");
+//       document.getElementById(clickedTabContentId).style.display = "block";
 
-      // Hide all other tablinks
-      for (const otherTab of allTabLinks) {
-        if (otherTab.id !== clickedTab.id) {
-          const tabContentElementId = otherTab.id.replace("-tab", "");
-          const associatedTabContent =
-            document.getElementById(tabContentElementId);
-          otherTab.classList.remove("active");
-          otherTab.setAttribute("aria-selected", "false");
-          associatedTabContent.style.display = "none";
-          console.log(otherTab);
-        }
-      }
-    });
-  });
-}
+//       // Hide all other tablinks
+//       for (const otherTab of allTabLinks) {
+//         if (otherTab.id !== clickedTab.id) {
+//           const tabContentElementId = otherTab.id.replace("-tab", "");
+//           const associatedTabContent = document.getElementById(tabContentElementId);
+//           otherTab.classList.remove("active");
+//           otherTab.setAttribute("aria-selected", "false");
+//           associatedTabContent.style.display = "none";
+//           console.debug(otherTab);
+//         }
+//       }
+//     });
+//   });
+// }
 
 document.addEventListener("DOMContentLoaded", function () {
   setStreetviewAndMapContainerHeight();
-  setUpTabGroups("tabs-left");
-  setUpTabGroups("tabs-right");
+
+  const tabsActiveClasses = ["bg-opacity-85"];
+  const tabsInactiveClasses = ["bg-opacity-25"];
+  setUpTabGroups("tabs-left", tabsActiveClasses, tabsInactiveClasses);
+  setUpTabGroups("tabs-right", tabsActiveClasses, tabsInactiveClasses);
   setUpDragBar();
   setUpButtons();
   satelliteTabScreenshotOnHide();
