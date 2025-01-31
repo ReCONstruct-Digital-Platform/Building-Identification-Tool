@@ -14,21 +14,17 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from . import views
 from django.urls import path
+from buildings.views import views, api
 
 # This sets the application namespace
 app_name = "buildings"
 
 urlpatterns = [
     path("", views.index, name="index"),
-    # path("survey/", views.survey, name="survey"),
-    # path("survey/v1/<str:eval_unit_id>", views.survey_v1, name="survey_v1"),
-    path("upload_imgs/<str:building_id>", views.upload_imgs, name="upload_imgs"),
     path("profile", views.profile, name="profile"),
     path("query/<str:dataset_slug>", views.query, name="query"),
     path("datasets", views.datasets, name="datasets"),
-    path("excel", views.gen_excel, name="gen_excel"),
     path("datasets/<str:dataset_slug>", views.dataset, name="dataset"),
     path("datasets/<str:dataset_slug>/newsurvey", views.newsurvey, name="newsurvey"),
     path(
@@ -50,4 +46,7 @@ urlpatterns = [
         views.do_survey,
         name="do_survey",
     ),
+    # API only URLs
+    path("excel", api.gen_excel, name="gen_excel"),
+    path("upload_imgs/<str:building_id>", api.upload_imgs, name="upload_imgs"),
 ]

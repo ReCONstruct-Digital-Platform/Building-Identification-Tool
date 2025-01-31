@@ -1,11 +1,8 @@
 import io
 import json
 import traceback
-import base64
 from datetime import datetime
 from typing import List
-from openpyxl import Workbook
-from openpyxl.worksheet.table import Table, TableStyleInfo
 
 from allauth.account.models import EmailAddress
 from django.urls import reverse
@@ -19,7 +16,6 @@ from django.core.paginator import Paginator
 from django.db.models import Avg, Count, Sum, JSONField
 from django.db.models.functions import Round
 from django.forms.models import model_to_dict
-import openpyxl
 from render_block import render_block_to_string
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
@@ -105,74 +101,6 @@ def index(request):
     return HttpResponse(content=rendered_content)
 
 
-def _get_current_html_query_str(query):
-    if len(query) == 0:
-        return ""
-    curr_query = ""
-
-    if "order_by" in query:
-        del query["order_by"]
-    if "dir" in query:
-        del query["dir"]
-
-    for k, v in query.items():
-        curr_query += f"&{k}={v}"
-    return curr_query
-
-
-def _populate_query(request):
-    query = {}
-    for k, v in request.GET.items():
-        if v and v != "":
-            query[k] = v
-    return query
-
-
-def _validate_query(query):
-    if "q_num_votes" in query and "q_num_votes_op" not in query:
-        query["q_num_votes_op"] = "gte"
-
-    elif "q_num_votes_op" in query and "q_num_votes" not in query:
-        del query["q_num_votes_op"]
-
-    return query
-
-
-@login_required(login_url="account_login")
-def all_buildings(request):
-    # Get all the query elements and assemble them in a query dictionary
-    query = _populate_query(request)
-    query = _validate_query(query)
-    log.info(f"Query: {query}")
-
-    order_by = request.GET.get("order_by")
-    dir = request.GET.get("dir")
-
-    ordering, direction = EvalUnit.get_ordering(order_by, dir)
-    log.debug(f"Ordering: {ordering}, direction: {direction}")
-    qs = EvalUnit.objects.search(query=query, ordering=ordering)
-
-    paginator = Paginator(qs, 25)  # Show 25 contacts per page.
-
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-
-    current_search_query = _get_current_html_query_str(query)
-
-    context = {
-        "page_obj": page_obj,
-        "order_by": order_by,
-        "dir": direction,
-        "current_search_query": current_search_query,
-    }
-    template = "buildings/all_buildings.html"
-
-    if request.htmx:
-        template = "buildings/partials/all_buildings.html"
-
-    return render(request, template, context)
-
-
 @login_required(login_url="account_login")
 def datasets(request):
 
@@ -190,189 +118,6 @@ def dataset(request, dataset_slug: str):
 
     context = {"dataset": dataset, "surveys": surveys}
     return render(request, "buildings/dataset.html", context)
-
-
-@require_POST
-@login_required(login_url="account_login")
-def gen_excel(request):
-
-    body = json.loads(request.body)
-
-    config = body.get("export_config")
-
-    # TODO: Want to support exporting Dataset and Survey candidates as well
-    if config["type"] not in ["survey"]:
-        raise Exception(f"Unsupported export type {config['type']}")
-
-    survey = Survey.objects.get(pk=config["id"])
-    dataset = survey.dataset
-
-    default_bldg_cols = dataset.get_orderby_fields()
-    default_survey_cols = survey.get_columns_to_display()
-
-    orderby_field = body.get("field") or "address"
-    orderby_dir = body.get("dir") or "asc"
-    dataset_query = get_b64_encoded_json(body.get("dataset_query"))
-    survey_query = get_b64_encoded_json(body.get("survey_query"))
-
-    # Take the columns from curfrent query or default otherwise
-    bldg_cols = get_b64_encoded_json(body.get("user_bldg_cols")) or default_bldg_cols
-    survey_cols = (
-        get_b64_encoded_json(body.get("user_survey_cols")) or default_survey_cols
-    )
-
-    results = survey.get_results()
-    if dataset_query:
-        dataset_q_parser = DatasetQParser(
-            schema=dataset.schema, json_field_name="attrs"
-        )
-        dataset_q = dataset_q_parser.parse_query(dataset_query)
-        results = results.filter(dataset_q)
-
-    if survey_query:
-        survey_q_parser = SurveyQParser(prefix=None)
-        surveys_q = survey_q_parser.parse_query(survey_query)
-        results = results.filter(surveys_q)
-
-    # Need to use F to hide nulls, otherwise order_by descending would show them first
-    order_by = getattr(F(orderby_field), orderby_dir)(nulls_last=True)
-
-    paginator = Paginator(results.order_by(order_by), per_page=50)
-
-    bldg_fields = [f["id"] for f in bldg_cols]
-    survey_fields = [f["id"] for f in survey_cols]
-
-    bldg_header = [f["label"] for f in bldg_cols]
-    survey_header = [f["label"] for f in survey_cols]
-    # all columns currently configured
-    header = bldg_header + survey_header
-
-    binary_object = io.BytesIO()
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Buildings with their Responses"
-    ws.append(header)
-
-    ws2 = wb.create_sheet(title="Individual Responses")
-    header2 = (
-        ["Respondent", "Respondent Email", "Date Created", "Date Modified"]
-        + survey_header
-        + bldg_header
-    )
-    ws2.append(header2)
-
-    for i in range(1, paginator.num_pages):
-        page = paginator.get_page(i)
-
-        for building in page:
-
-            row = []
-
-            for field in bldg_fields:
-                if "attrs__" in field:
-                    val = building.attrs[field.replace("attrs__", "")]
-                else:
-                    val = getattr(building, field)
-                row.append(val)
-
-            for field in survey_fields:
-                # These are all lists
-                val = building.response_data.get(field)
-                if not val:
-                    row.append("")
-                    continue
-
-                # Convert each inner value to something nice
-                converted = []
-                for v in val:
-                    if v == None:
-                        continue
-
-                    if not isinstance(v, str):
-                        converted.append(str(v))
-                    else:
-                        converted.append(v)
-
-                val = ", ".join(converted)
-                row.append(val)
-
-            ws.append(row)
-
-            # Now process individual responses
-            for resp in building.response_set.all():
-                row2 = []
-                row2.extend(
-                    [
-                        resp.created_by.username,
-                        resp.created_by.email,
-                        resp.date_added.strftime("%Y-%m-%dT%H:%M:%S"),
-                        resp.date_modified.strftime("%Y-%m-%dT%H:%M:%S"),
-                    ]
-                )
-                for field in survey_fields:
-                    val = resp.data.get(field)
-
-                    if val == None:
-                        val = ""
-
-                    elif not isinstance(val, list):
-                        if not isinstance(val, str):
-                            val = str(val)
-                    else:
-                        # Convert each inner value to something nice
-                        converted = []
-                        for v in val:
-                            if v == None:
-                                continue
-
-                            if not isinstance(v, str):
-                                converted.append(str(v))
-                            else:
-                                converted.append(v)
-
-                        val = ", ".join(converted)
-                    row2.append(val)
-
-                for field in bldg_fields:
-                    if "attrs__" in field:
-                        val = resp.building.attrs[field.replace("attrs__", "")]
-                    else:
-                        val = getattr(resp.building, field)
-
-                    row2.append(val)
-
-                ws2.append(row2)
-
-    # ws.auto_filter.ref = ws.dimensions
-    table1 = Table(displayName="Table1", ref=ws.dimensions)
-    table2 = Table(displayName="Table2", ref=ws2.dimensions)
-
-    # Add a default style with striped rows and banded columns
-    style = TableStyleInfo(
-        name="TableStyleMedium9",
-        showRowStripes=True,
-    )
-    table1.tableStyleInfo = table2.tableStyleInfo = style
-
-    """
-    Table must be added using ws.add_table() method to avoid duplicate names.
-    Using this method ensures table name is unque through out defined names and all other table name. 
-    """
-    ws.add_table(table1)
-    ws2.add_table(table2)
-
-    wb.save(binary_object)
-    binary_object.seek(0)
-    binary_data = binary_object.read()
-
-    response = HttpResponse(
-        # full list of content_types can be found here
-        # https://stackoverflow.com/a/50860387/13946204
-        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-    response.write(binary_data)
-    return response
 
 
 @login_required(login_url="account_login")
@@ -493,6 +238,7 @@ def do_survey_redirect(_, survey_slug):
     )
 
 
+@login_required(login_url="account_login")
 def do_survey(request, survey_slug, building_slug):
 
     building = get_object_or_404(Building, slug=building_slug)
@@ -1040,26 +786,3 @@ def profile(request):
         "current_email": current_email,
     }
     return render(request, "buildings/profile.html", context=context)
-
-
-@require_POST
-@login_required(login_url="account_login")
-def upload_imgs(request, building_id):
-    """
-    We'll process the image uploading asynchronously using a PythonAnywhere (PA) Always-on Task
-    We have to do this because PA doesn't support launching background threads.
-    If we switch to another VPS, we should implement the background thread solution
-    https://blog.pythonanywhere.com/198/
-    https://www.pythonanywhere.com/forums/topic/3627/
-    """
-    if settings.DEBUG:
-        return HttpResponse("debug mode job not created")
-    data = json.loads(request.body)
-    eval_unit = get_object_or_404(EvalUnit, pk=building_id)
-    UploadImageJob(
-        eval_unit=eval_unit,
-        user=request.user,
-        job_data=data,
-        status=UploadImageJob.Status.PENDING,
-    ).save()
-    return HttpResponse("Ok")
