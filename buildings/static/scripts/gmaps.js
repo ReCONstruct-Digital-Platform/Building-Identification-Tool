@@ -24,11 +24,11 @@ const dataset = document.currentScript.dataset;
   // No previously saved view data
   // we will search for the best panorama
   else {
+    evalUnitCoord = JSON.parse(
+      document.getElementById("building_coords").textContent
+    );
 
-    evalUnitCoord = JSON.parse(document.getElementById("eval_unit_coords").textContent);
-
-    if (!evalUnitCoord)
-      console.debug('No eval unit coords found')
+    if (!evalUnitCoord) console.debug("No eval unit coords found");
 
     panoRequest = {
       location: evalUnitCoord,
@@ -40,7 +40,6 @@ const dataset = document.currentScript.dataset;
 
   findPanorama(svService, latestViewData, panoRequest, evalUnitCoord);
 })();
-
 
 /**
  * Take an array of available panoramas and their dates
@@ -114,23 +113,24 @@ function generateTimeTravelOptions(panoArray, targetDate) {
  */
 function attachEventsToPegman(mutationList, _) {
   for (const mutation of mutationList) {
-    if (
-      mutation.target.getAttribute("class") === "yNHHyP-marker-view"
-    ) {
-      if (mutation.type === "attributes" && mutation.attributeName === "style") return;
+    if (mutation.target.getAttribute("class") === "yNHHyP-marker-view") {
+      if (mutation.type === "attributes" && mutation.attributeName === "style")
+        return;
 
-      if (mutation.type === "attributes" && mutation.attributeName === "aria-grabbed") {
+      if (
+        mutation.type === "attributes" &&
+        mutation.attributeName === "aria-grabbed"
+      ) {
         // https://stackoverflow.com/questions/11290007/is-mutationrecord-oldvalue-something-i-should-be-using
         // If oldValue of aria-grabbed was true, it means element was grabbed and is not released
         // hence the pegman just got dropped! Else if oldValue was false, then it was not grabbed and is now being grabbed.
         if (mutation.oldValue === "false") {
           if (!window.pegmanDragInitiated) {
-            console.debug("pegman drag initiated")
+            console.debug("pegman drag initiated");
             window.pegmanDropped = false;
             window.pegmanDragInitiated = true;
-          }
-          else {
-            console.debug("pegman drag ended")
+          } else {
+            console.debug("pegman drag ended");
             window.pegmanDragInitiated = false;
             window.pegmanDropped = true;
           }
@@ -145,8 +145,8 @@ function attachEventsToPegman(mutationList, _) {
  */
 function hideGmapsInfoboxMutationCallback(mutationList, _) {
   for (const mutation of mutationList) {
-    if (mutation.target.classList.contains('gm-iv-address'))
-      mutation.target.style.display = 'none';
+    if (mutation.target.classList.contains("gm-iv-address"))
+      mutation.target.style.display = "none";
   }
 }
 
@@ -156,40 +156,38 @@ function sleep(time) {
 
 const selectedLot = {
   feature: {},
-}
+};
 
 function onClick(e) {
-  if (e.feature.getProperty('clicked') === 'true') {
-    e.feature.setProperty('clicked', 'false');
+  if (e.feature.getProperty("clicked") === "true") {
+    e.feature.setProperty("clicked", "false");
     deletePoints(e.feature);
-  }
-  else {
+  } else {
     // If another feature is currently clicked
     if (Object.keys(selectedLot.feature).length) {
-      selectedLot.feature.setProperty('clicked', 'false');
+      selectedLot.feature.setProperty("clicked", "false");
       deletePoints(selectedLot.feature);
     }
-    e.feature.setProperty('clicked', 'true');
+    e.feature.setProperty("clicked", "true");
     showLotPoints(e.feature);
     selectedLot.feature = e.feature;
   }
 }
 
 function styleFeatures(feature) {
-
   return {
     fillColor: "#55eb34",
     fillOpacity: 0.35,
     strokeColor: "#2dbf0d",
     strokeWeight: 1,
-  }
+  };
 }
 
 async function deletePoints(feature) {
-  feature.getProperty('points').forEach((marker) => {
+  feature.getProperty("points").forEach((marker) => {
     marker.setMap(null);
-  })
-  feature.getProperty('points').length = 0;
+  });
+  feature.getProperty("points").length = 0;
 }
 
 async function showLotPoints(feature) {
@@ -205,49 +203,60 @@ async function showLotPoints(feature) {
     scale: 4,
   };
 
-  if (!feature.getProperty('points')) {
-    feature.setProperty('points', []);
+  if (!feature.getProperty("points")) {
+    feature.setProperty("points", []);
   }
 
   const addPoint = (coords) => {
-    console.debug(`creating point at ${coords}`)
-    feature.getProperty('points').push(new Marker({
-      position: coords,
-      map: window.map,
-      icon: svgMarker,
-    }))
-    feature.getProperty('points').push(new Marker({
-      position: coords,
-      map: window.sv,
-      icon: svgMarker,
-    }))
-  }
+    console.debug(`creating point at ${coords}`);
+    feature.getProperty("points").push(
+      new Marker({
+        position: coords,
+        map: window.map,
+        icon: svgMarker,
+      })
+    );
+    feature.getProperty("points").push(
+      new Marker({
+        position: coords,
+        map: window.sv,
+        icon: svgMarker,
+      })
+    );
+  };
   feature.getGeometry().forEachLatLng(addPoint);
 }
 
-
-async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoord) {
+async function findPanorama(
+  svService,
+  latestViewData,
+  panoRequest,
+  evalUnitCoord
+) {
   const { Map } = await google.maps.importLibrary("maps");
   const { event } = await google.maps.importLibrary("core");
   const { Marker } = await google.maps.importLibrary("marker");
   const { spherical } = await google.maps.importLibrary("geometry");
-  const { StreetViewStatus, StreetViewPanorama } = await google.maps.importLibrary("streetView");
+  const { StreetViewStatus, StreetViewPanorama } =
+    await google.maps.importLibrary("streetView");
 
   // Send a request to the panorama service
   svService.getPanorama(panoRequest, (data, status) => {
     if (status === StreetViewStatus.OK) {
-
       if (panoRequest.radius) {
-        console.debug(`Status ${status}: panorama found within ${panoRequest.radius}m`);
-      }
-      else {
-        console.debug(`Status ${status}: panorama ${panoRequest.pano} found by ID`);
+        console.debug(
+          `Status ${status}: panorama found within ${panoRequest.radius}m`
+        );
+      } else {
+        console.debug(
+          `Status ${status}: panorama ${panoRequest.pano} found by ID`
+        );
       }
 
-      // console.debug(`Data: ${JSON.stringify(data, null, 2)}`)
+      console.debug(`Data: ${JSON.stringify(data, null, 2)}`);
 
       let heading;
-      let zoom = pitch = 0;
+      let zoom = (pitch = 0);
 
       if (latestViewData) {
         heading = latestViewData["sv_heading"];
@@ -257,28 +266,25 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
         heading = spherical.computeHeading(data.location.latLng, evalUnitCoord);
       }
 
-      const sv = new StreetViewPanorama(
-        document.getElementById("streetview"),
-        {
-          position: evalUnitCoord,
-          center: evalUnitCoord,
-          zoom: zoom,
-          pov: {
-            heading: heading,
-            pitch: pitch,
-          },
-          imageDateControl: true,
-          fullscreenControl: false,
-          motionTracking: false,
-          motionTrackingControl: false,
-        }
-      );
+      const sv = new StreetViewPanorama(document.getElementById("streetview"), {
+        position: evalUnitCoord,
+        center: evalUnitCoord,
+        zoom: zoom,
+        pov: {
+          heading: heading,
+          pitch: pitch,
+        },
+        imageDateControl: true,
+        fullscreenControl: false,
+        motionTracking: false,
+        motionTrackingControl: false,
+      });
       sv.setPano(data.location.pano);
 
       const map = new Map(document.getElementById("satellite"), {
         center: evalUnitCoord,
         mapTypeId: "hybrid",
-        zoom: 18,
+        zoom: 20,
         controlSize: 25,
         fullscreenControl: false,
         mapTypeControl: false,
@@ -298,8 +304,8 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
             elementType: "labels.icon",
             stylers: [{ visibility: "off" }],
           },
-        ]
-      })
+        ],
+      });
 
       const sv_marker = new Marker({
         position: evalUnitCoord,
@@ -321,7 +327,6 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
         sv_marker.setPosition(m_marker.getPosition());
       });
 
-
       // Export all of these to be able to access them from other scripts
       window.sv = sv;
       window.map = map;
@@ -330,14 +335,20 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
       window.lastPanoDate = data.imageDate;
       window.lastPanoId = data.location.pano;
 
-      const lotShape = JSON.parse(document.getElementById("geojson").textContent);
+      const lotShape = JSON.parse(
+        document.getElementById("geojson").textContent
+      );
       console.debug(lotShape);
 
       // load the data
       map.data.addGeoJson(lotShape);
-      map.data.setStyle(styleFeatures)
-      map.data.addListener("mouseover", e => e.feature.setProperty("state", "hover"));
-      map.data.addListener("mouseout", e => e.feature.removeProperty("state"));
+      map.data.setStyle(styleFeatures);
+      map.data.addListener("mouseover", (e) =>
+        e.feature.setProperty("state", "hover")
+      );
+      map.data.addListener("mouseout", (e) =>
+        e.feature.removeProperty("state")
+      );
       map.data.forEach(showLotPoints);
 
       // map.data.addListener("click", onClick);
@@ -350,7 +361,11 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
 
       // Register a mutation observer to attach events to the pegman
       const observer = new MutationObserver(attachEventsToPegman);
-      const config = { attributes: true, subtree: true, attributeOldValue: true };
+      const config = {
+        attributes: true,
+        subtree: true,
+        attributeOldValue: true,
+      };
       observer.observe(document.getElementById("satellite"), config);
 
       // https://developers.google.com/maps/documentation/javascript/reference/street-view#StreetViewPanorama.status_changed
@@ -363,33 +378,44 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
   window.lastPanoId: ${window.lastPanoId}
   window.lastPanoDate: ${window.lastPanoDate}
   window.pegmanDropped: ${window.pegmanDropped}
-  window.lastManualPanoChangeDone: ${JSON.stringify(window.lastManualPanoChangeDone)}
-        `)
+  window.lastManualPanoChangeDone: ${JSON.stringify(
+    window.lastManualPanoChangeDone
+  )}
+        `);
         if (window.shouldBePano && sv.getPano() != window.shouldBePano) {
-          console.debug(`window.shouldBePano && sv.getPano() != window.shouldBePano - setting pano again`)
-          sv.setPano(window.shouldBePano)
+          console.debug(
+            `window.shouldBePano && sv.getPano() != window.shouldBePano - setting pano again`
+          );
+          sv.setPano(window.shouldBePano);
         }
         // Finally good state after a pegman drag-drop. Reset shouldBePano.
-        else if (
-          window.shouldBePano === window.lastPanoId
-        ) {
-          window.shouldBePano = undefined
+        else if (window.shouldBePano === window.lastPanoId) {
+          window.shouldBePano = undefined;
         }
 
-        document.getElementById("sv-top-right-controls-container").style.display = "flex";
+        document.getElementById(
+          "sv-top-right-controls-container"
+        ).style.display = "flex";
       });
 
-      const hideGmapsInfoboxObserver = new MutationObserver(hideGmapsInfoboxMutationCallback);
-      hideGmapsInfoboxObserver.observe(document.getElementById("streetview"), config);
+      const hideGmapsInfoboxObserver = new MutationObserver(
+        hideGmapsInfoboxMutationCallback
+      );
+      hideGmapsInfoboxObserver.observe(
+        document.getElementById("streetview"),
+        config
+      );
 
       // Custom event launched when pegman is dropped and we need a manual pano set
       sv.addListener("pano_change_needed", () => {
         sleep(0).then(() => {
-          console.debug(`Manually changing pano to ${window.shouldBePano} (${window.shouldBePanoDate})`);
+          console.debug(
+            `Manually changing pano to ${window.shouldBePano} (${window.shouldBePanoDate})`
+          );
           window.lastManualPanoChangeDone = {
             from: sv.getPano(),
-            to: window.shouldBePano
-          }
+            to: window.shouldBePano,
+          };
           sv.setPano(window.shouldBePano);
         });
       });
@@ -403,9 +429,8 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
         if (window.panoChangeNeeded) {
           window.panoChangeNeeded = false;
           console.debug(`Manually triggered pano change`);
-          return
+          return;
         }
-
 
         // Skip duplicate events
         if (window.lastPanoId === newPanoId) {
@@ -413,11 +438,12 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
           return;
         }
 
-        if (window.lastManualPanoChangeDone &&
+        if (
+          window.lastManualPanoChangeDone &&
           window.lastManualPanoChangeDone.from === newPanoId &&
           window.lastManualPanoChangeDone.to === window.shouldBePano
         ) {
-          console.debug("trying to undo manual pano change!")
+          console.debug("trying to undo manual pano change!");
           return;
         }
 
@@ -433,26 +459,36 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
   window.lastPanoId: ${window.lastPanoId}
   window.lastPanoDate: ${window.lastPanoDate}
   window.pegmanDropped: ${window.pegmanDropped}
-  window.lastManualPanoChangeDone: ${JSON.stringify(window.lastManualPanoChangeDone)}
-            `)
+  window.lastManualPanoChangeDone: ${JSON.stringify(
+    window.lastManualPanoChangeDone
+  )}
+            `);
 
             // If the pegman was just dropped and the new panorama's date is not equal
             // to the last panorama's date, we manually change the panorama to the
             // one closest in time to the pre-pegman drop date.
-            if (window.pegmanDropped && data.imageDate !== window.lastPanoDate) {
+            if (
+              window.pegmanDropped &&
+              data.imageDate !== window.lastPanoDate
+            ) {
               window.pegmanDropped = false;
-              console.debug("Pegman dropped and new pano date not equal to last.");
+              console.debug(
+                "Pegman dropped and new pano date not equal to last."
+              );
 
               // Get the ID of the panorama closest in time to the last date
-              const { closestPanoId, closestPanoDate } = generateTimeTravelOptions(data.time, window.lastPanoDate);
-              console.debug(`Will change to closest pano ${closestPanoId} (${closestPanoDate})`);
+              const { closestPanoId, closestPanoDate } =
+                generateTimeTravelOptions(data.time, window.lastPanoDate);
+              console.debug(
+                `Will change to closest pano ${closestPanoId} (${closestPanoDate})`
+              );
 
               // Set this variable so we know we need to change the pano
               window.panoChangeNeeded = true;
               window.shouldBePano = closestPanoId;
               window.shouldBePanoDate = closestPanoDate;
 
-              event.trigger(sv, "pano_change_needed")
+              event.trigger(sv, "pano_change_needed");
               return;
             }
 
@@ -460,7 +496,8 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
               data.time,
               data.imageDate
             );
-            document.getElementById("time-travel-select")
+            document
+              .getElementById("time-travel-select")
               .replaceChildren(...options);
 
             // save the current pano date for next time
@@ -473,7 +510,7 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
     // Check if we were doing a radius search
     else if (panoRequest.radius) {
       var radius = panoRequest.radius;
-
+      console.debug(data, status)
       if (radius >= 100) {
         console.debug(
           `Status ${status}: Could not find panorama within ${radius}m! Giving up.`
@@ -497,7 +534,9 @@ async function findPanorama(svService, latestViewData, panoRequest, evalUnitCoor
     }
     // Else we were doing an ID search - switch to radius search
     else {
-      console.debug(`Could not find pano ${panoRequest.pano}. Switching to radius search.`);
+      console.debug(
+        `Could not find pano ${panoRequest.pano}. Switching to radius search.`
+      );
 
       // Making a radius search request
       panoRequest = {
