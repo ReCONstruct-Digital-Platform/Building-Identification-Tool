@@ -83,13 +83,13 @@ STATIC_ROOT = env("STATIC_ROOT")
 
 STATICFILES_FINDERS = (
     # default
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
     # other finders
-    'compressor.finders.CompressorFinder',
+    "compressor.finders.CompressorFinder",
 )
 
-COMPRESS_ENABLED = True
+COMPRESS_ENABLED = not DEBUG
 
 TAILWIND_APP_NAME = "theme"
 NPM_BIN_PATH = env("NPM_BIN_PATH")
@@ -147,6 +147,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "mailer",
     "compressor",
+    "slippers",
 ]
 
 
@@ -187,6 +188,7 @@ TEMPLATES = [
             ],
             "builtins": [
                 "django.templatetags.static",
+                "slippers.templatetags.slippers",
             ],
         },
     },

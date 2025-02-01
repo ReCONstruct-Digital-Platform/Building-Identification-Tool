@@ -1,3 +1,4 @@
+import json
 import os
 import hmac
 import base64
@@ -18,6 +19,16 @@ def print_query_dict(data: QueryDict):
     for l in data.lists():
         print(f'\t{l[0]}: {l[1]},')
     print('}')
+
+
+def querydict_to_dict(query_dict: QueryDict):
+    data = {}
+    for key in query_dict.keys():
+        v = query_dict.getlist(key)
+        if len(v) == 1:
+            v = v[0]
+        data[key] = v
+    return data
 
 
 def split_list_in_n(array, n):
@@ -172,3 +183,14 @@ def sign_url(input_url=None, secret=None):
 
     # Return signed URL
     return original_url + "&signature=" + encoded_signature.decode()
+
+
+def get_or_none(classmodel, **kwargs):
+    try:
+        return classmodel.objects.get(**kwargs)
+    except classmodel.DoesNotExist:
+        return None
+
+
+def get_b64_encoded_json(data):
+    return json.loads(base64.b64decode(data or "").decode("utf-8") or "{}")

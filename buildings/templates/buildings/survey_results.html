@@ -1,0 +1,446 @@
+{% extends "buildings/base.html" %}
+{% load static %}
+{% load i18n %}
+{% load allauth %}
+{% load extra_tags %}
+
+{% block css_imports %}
+<link rel="stylesheet" type="text/css" href="{% static 'buildings/query-builder.default.css' %}" />
+<link rel="stylesheet" type="text/css"
+  href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker3.standalone.min.css" />
+{% endblock %}
+
+
+
+</body>
+
+{% block content %}
+
+<div class="flex justify-center pb-4 px-4 mb-4 h-full">
+  <div class="flex flex-col w-[80%] h-full">
+
+    <div class="w-full bg-white bg-opacity-50 py-3 mb-3 px-5 rounded-md text-md">
+      <div class="flex flex-col w-fit">
+        <div class="flex flex-row items-center gap-2">
+          <div class="flex flex-row items-center gap-2">
+            <div class="text-2xl">Results for</div>
+            <select id="results-viewer-select" class='block text-2xl font-semibold rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600'>
+              <optgroup label="Surveys" class="text-lg font-normal">
+                {% for survey in surveys %}
+                <option id="survey-{{ survey.id }}-link" value="{% url 'buildings:survey_results' survey.slug %}" class="appearance-none" 
+                  {% if survey.id == current_survey.id %}selected{% endif %} >
+                  {{ survey.name }}
+                </option>
+                {% endfor %}
+              </optgroup>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <form>
+        {% csrf_token %}
+
+        <section id="data-filter" class="my-4">
+
+          <div class="text-2xl">Dataset filter</div>
+          <p>Filter results on building attributes</p>
+
+          {% #button id="add-dataset-filter" %}
+          Add dataset filter
+          {% /button %}
+
+          <div class="block w-2/3 py-2">
+            <div id="query-builder-dataset" class="col-start-2 col-span-6"></div>
+          </div>
+        </section>
+
+        <section id="surveys-filter" class="my-4">
+
+          <div class="text-2xl">Surveys filter</div>
+          <p>Filter results on survey responses</p>
+
+          {% #button id="add-surveys-filter" %}
+          Add survey filter
+          {% /button %}
+
+          <div class="block w-2/3 py-2">
+            <div id="query-builder-surveys" class="col-start-2 col-span-6"></div>
+          </div>
+        </section>
+
+        <section>
+          <div class="text-2xl">Fields to display</div>
+          <button id="show-col-config" data-target-modal="column_config_modal"
+            class="modal-open-button bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-600 
+          block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+            Choose columns
+          </button>
+        </section>
+
+        <section id="order-by-config" class="my-4">
+          <div class="text-xl">
+            Order by
+          </div>
+          <div class="flex gap-3 items-center">
+            <select id="order-by-field"
+              class='block font-light text-sm ps-2 mt-1 rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600'>
+              <optgroup label="Building Attributes">
+                {% for col in bldg_orderby_cols %}
+                <option id="{{ col.id }}" value="{{ col.id }}" class="appearance-none" {% if col.id == orderby_field %}
+                  selected {% endif %}>{{ col.label }}</option>
+                {% endfor %}
+              </optgroup>
+              <optgroup label="Survey Responses">
+                {% for col in survey_orderby_cols %}
+                <option id="{{ col.id }}" value="{{ col.id }}" class="appearance-none" {% if col.id == orderby_field %}
+                  selected {% endif %}>{{ col.label }}</option>
+                {% endfor %}
+              </optgroup>
+            </select>
+
+            <div>
+              <div>
+
+                <label>
+                  <input type="radio" id="order-by-asc" name="order-by-dir" value="asc"
+                    class="me-2 text-base border-0 text-teal-600 accent-teal-600 focus:accent-teal-700 shadow-sm ring-1 focus:ring-2 focus:ring-teal-600"
+                    checked />
+                  Ascending
+                </label>
+              </div>
+              <div>
+
+                <label>
+                  <input type="radio" id="order-by-desc" name="order-by-dir" value="desc"
+                    class="me-2 text-base border-0 text-teal-600 accent-teal-600 focus:accent-teal-700 shadow-sm ring-1 focus:ring-2 focus:ring-teal-600" />
+                  Descending
+                </label>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <section class="flex flex-row justify-between">
+          <button id="submitQueryButton" hx-get="{% url 'buildings:survey_results' current_survey.slug %}"
+            hx-target="#results-container" hx-swap="outerHTML" hx-vals='js:{...getCurrentQuery()}' hx-replace-url="true"
+            class="bg-teal-600 hover:bg-teal-500 focus-visible:outline-teal-600 
+          block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+            {% trans "Refresh Results" %}
+          </button>
+          <button id="download"
+          class="bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-600 
+        block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+        <div class="flex flex-row items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1 lucide lucide-download">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>
+          </svg>
+          <div>
+            {% trans "Download" %}
+          </div>
+        </div>
+        </button>
+        </section>
+      </form>
+    </div>
+
+    {% block page-and-paging-controls %}
+
+    {% #modal id="column_config" %}
+    <div class="flex-grow rounded-2xl px-10 pt-4">
+      <h1 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Building Attributes</h1>
+      <div class="flex justify-between">
+        <button class="reset-button py-2 underline">Reset defaults</button>
+        <button class="select-all-button py-2 underline">Unselect all</button>
+      </div>
+      <ul id="draggable-list" class="space-y-2">
+        {% for col in user_bldg_cols %}
+        <li class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm cursor-grab"
+          draggable="true">
+          <label class="text-gray-700">
+            <input type="checkbox" id="{{ col.id }}"
+              class="mr-4 h-5 w-5 text-teal-500 focus:ring-2 focus:ring-teal-300" checked>{{ col.label }}
+          </label>
+          <div class="mr-4 text-gray-400 cursor-grab">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-grip-vertical">
+              <circle cx="9" cy="12" r="1" />
+              <circle cx="9" cy="5" r="1" />
+              <circle cx="9" cy="19" r="1" />
+              <circle cx="15" cy="12" r="1" />
+              <circle cx="15" cy="5" r="1" />
+              <circle cx="15" cy="19" r="1" />
+            </svg>
+          </div>
+        </li>
+        {% endfor %}
+        {% with default_bldg_cols|sub_lists:user_bldg_cols as remaining_cols %}
+        {% for col in remaining_cols %}
+        <li class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm cursor-grab"
+          draggable="true">
+          <label class="text-gray-700">
+            <input type="checkbox" id="{{ col.id }}"
+              class="mr-4 h-5 w-5 text-teal-500 focus:ring-2 focus:ring-teal-300">{{ col.label }}
+          </label>
+          <div class="mr-4 text-gray-400 cursor-grab">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-grip-vertical">
+              <circle cx="9" cy="12" r="1" />
+              <circle cx="9" cy="5" r="1" />
+              <circle cx="9" cy="19" r="1" />
+              <circle cx="15" cy="12" r="1" />
+              <circle cx="15" cy="5" r="1" />
+              <circle cx="15" cy="19" r="1" />
+            </svg>
+          </div>
+        </li>
+        {% endfor %}
+        {% endwith %}
+      </ul>
+    </div>
+    <div class="flex-grow rounded-2xl px-10 pt-4">
+      <h1 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Survey Response Fields</h1>
+      <div class="flex justify-between">
+        <button class="reset-button py-2 underline">Reset defaults</button>
+        <button class="select-all-button py-2 underline">Unselect all</button>
+      </div>
+      <ul id="draggable-list-survey" class="space-y-3">
+        {% for col in user_survey_cols %}
+        <li class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm cursor-grab gap-1"
+          draggable="true">
+          <label class="text-gray-700">
+            <input type="checkbox" id="{{ col.id }}"
+              class="mr-4 h-5 w-5 text-teal-500 focus:ring-2 focus:ring-teal-300" checked>{{ col.label }}
+          </label>
+          <div class="mr-4 text-gray-400 cursor-grab">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-grip-vertical">
+              <circle cx="9" cy="12" r="1" />
+              <circle cx="9" cy="5" r="1" />
+              <circle cx="9" cy="19" r="1" />
+              <circle cx="15" cy="12" r="1" />
+              <circle cx="15" cy="5" r="1" />
+              <circle cx="15" cy="19" r="1" />
+            </svg>
+          </div>
+        </li>
+        {% endfor %}
+        {% with default_survey_cols|sub_lists:user_survey_cols as remaining_cols %}
+        {% for col in remaining_cols %}
+        <li class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm cursor-grab"
+          draggable="true">
+          <label class="text-gray-700">
+            <input type="checkbox" id="{{ col.id }}"
+              class="mr-4 h-5 w-5 text-teal-500 focus:ring-2 focus:ring-teal-300">{{ col.label }}
+          </label>
+          <div class="mr-4 text-gray-400 cursor-grab">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-grip-vertical">
+              <circle cx="9" cy="12" r="1" />
+              <circle cx="9" cy="5" r="1" />
+              <circle cx="9" cy="19" r="1" />
+              <circle cx="15" cy="12" r="1" />
+              <circle cx="15" cy="5" r="1" />
+              <circle cx="15" cy="19" r="1" />
+            </svg>
+          </div>
+        </li>
+        {% endfor %}
+        {% endwith %}
+      </ul>
+    </div>
+    {% /modal %}
+
+    <div id="results-container" class="mb-4 flex flex-col">
+      {% if page.paginator.num_pages > 1 %}
+      <div class="w-full flex items-center justify-center">
+        <div class="flex items-center gap-8">
+          <button {% if page.has_previous %} hx-target="#results-container" hx-swap="outerHTML schow:top"
+            hx-get="{% url 'buildings:survey_results' current_survey.slug %}?page={{ page.previous_page_number }}"
+            hx-vals='js:{...getCurrentQuery()}' hx-replace-url="true" {% else %} disabled {% endif %} class="rounded-md border border-slate-300 p-2.5 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800 focus:text-white focus:bg-slate-800 focus:border-slate-800 active:border-slate-800 active:text-white active:bg-slate-800 
+          disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+              <path fill-rule="evenodd"
+                d="M11.03 3.97a.75.75 0 0 1 0 1.06l-6.22 6.22H21a.75.75 0 0 1 0 1.5H4.81l6.22 6.22a.75.75 0 1 1-1.06 1.06l-7.5-7.5a.75.75 0 0 1 0-1.06l7.5-7.5a.75.75 0 0 1 1.06 0Z"
+                clip-rule="evenodd" />
+            </svg>
+          </button>
+
+          <p class="text-slate-600">
+            Page <strong class="text-slate-800"> {{ page.number }} </strong> of&nbsp;<strong class="text-slate-800">
+              {{ page.paginator.num_pages }}
+            </strong>
+          </p>
+
+          <button {% if page.has_next %} hx-target="#results-container" hx-swap="outerHTML show:top"
+            hx-get="{% url 'buildings:survey_results' current_survey.slug %}?page={{ page.next_page_number }}"
+            hx-vals='js:{...getCurrentQuery()}' hx-replace-url="true" {% else %} disabled {% endif %}
+            class="rounded-md border border-slate-300 p-2.5 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800 focus:text-white focus:bg-slate-800 focus:border-slate-800 active:border-slate-800 active:text-white active:bg-slate-800 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+            type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+              <path fill-rule="evenodd"
+                d="M12.97 3.97a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06l6.22-6.22H3a.75.75 0 0 1 0-1.5h16.19l-6.22-6.22a.75.75 0 0 1 0-1.06Z"
+                clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="px-3">
+        <p>Showing {{ page.start_index }}-{{ page.end_index }} of {{ page.paginator.count }}</p>
+      </div>
+
+      <div class="flex flex-col gap-3">
+
+        {% for bldg in page %}
+        <div class="bg-white bg-opacity-65 rounded-xl p-4 text-base gap-3 shadow-md border border-gray-200">
+          <div class="flex flex-col items-top gap-2">
+            <div class="flex flex-row items-end">
+              <div class="text-xl font-semibold text-gray-900 self-end">{{ bldg.address }}</div>
+              <div class="ps-2 text-xl"> - {{ bldg.muni }}, {{ bldg.admin_area_level_1 }}</div>
+              <div class="ps-2 text-lg"> ({{ bldg.lat }}, {{bldg.lng}})</div>
+            </div>
+
+            <div class="flex flex-row w-full gap-3 items-center">
+              <div>
+                <object class="rounded-md w-[320px]" data="{{ bldg.get_thumbnail_url }}" tabindex="-1"
+                  type="image/jpeg">
+                  <div class="flex rounded-md h-[205px] w-[350px] bg-gray-100 justify-center items-center">
+                    No image found
+                  </div>
+                </object>
+              </div>
+              <div id="building-attrs-{{ forloop.counter }}"
+                class="attrs-box bg-teal-50 bg-opacity-50  w-full grid grid-cols-3 xl:grid-cols-5 rounded-lg p-2 overflow-hidden">
+                <div class="col-span-1">
+                  <div class="text-xl font-semibold px-2 underline underline-offset-4 pb-2 pt-1">Building Attributes
+                  </div>
+                </div>
+                {% for field in user_bldg_cols %}
+                <div class="px-2">
+                  <p class="font-semibold">{{ field.label }}</p>
+                  <p>{{ bldg|get_bldg_field:field.id }}</p>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            <div>
+              <div id="responses-{{ forloop.counter }}" class="flex flex-col gap-3 bg-white overflow-x-auto">
+                <table id="dataTable" class="table-auto min-w-full border-collapse">
+                  <thead id="tableHeader" class="border border-gray-200">
+                    <tr class="bg-teal-50 divide-x divide-gray-200 divide-dotted">
+                      <th scope="col"
+                        class="ps-3 pe-5 py-2 w-auto text-left whitespace-nowrap text-sm leading-6 font-semibold text-gray-900 capitalize">
+                        Respondent
+                      </th>
+                      {% for column in user_survey_cols %}
+                      <th scope="col"
+                        class="ps-3 pe-5 py-2 w-autotext-left whitespace-nowrap text-sm leading-6 font-semibold text-gray-900 capitalize">
+                        {{ column.label }}
+                      </th>
+                      {% endfor %}
+                    </tr>
+                  </thead>
+                  <tbody id="tableBody" class="divide-y divide-gray-300 ">
+                    {% for response in bldg|get_responses_for_survey:current_survey %}
+                    <tr
+                      class="bg-white bg-opacity-95 transition-all duration-50 divide-x divide-gray-200 divide-dotted hover:bg-teal-50">
+                      <td class="flex flex-row ps-2 pe-5 w-max py-2 whitespace-nowrap items-center gap-2">
+                        <img src="{{ response.created_by.get_avatar_url }}" class="rounded-full">
+                        <div class="flex flex-col items-start">
+                          <p class="font-normal text-sm text-gray-900">{{ response.created_by.username }}</p>
+                          <p class="font-normal text-xs leading-5 text-gray-400 ">on {{ response.date_modified.date }}
+                          </p>
+                        </div>
+                      </td>
+                      {% for column in user_survey_cols %}
+                      <td class="ps-3 pe-5 py-3 whitespace-nowrap">
+                        <p class="font-normal text-sm text-gray-900">{{ response.data|get_dict_item:column.id|join:", " }}
+                        </p>
+                      </td>
+                      {% endfor %}
+                    </tr>
+                    {% endfor %}
+
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {% endfor %}
+
+        {% if page.paginator.count == 0 %}
+        <div class="flex flex-grow flex-col w-full items-center justify-center py-6">
+          <p class="text-lg">
+            No results found
+          </p>
+        </div>
+        {% elif page.paginator.num_pages > 1 %}
+        <div class="w-full flex items-center justify-center">
+
+          <div class="flex items-center gap-8">
+
+            <button {% if page.has_previous %} hx-target="#results-container" hx-swap="outerHTML schow:top"
+              hx-get="{% url 'buildings:survey_results' current_survey.slug %}?page={{ page.previous_page_number }}"
+              hx-vals='js:{...getCurrentQuery()}' hx-replace-url="true" {% else %} disabled {% endif %} class="rounded-md border border-slate-300 p-2.5 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800 focus:text-white focus:bg-slate-800 focus:border-slate-800 active:border-slate-800 active:text-white active:bg-slate-800 
+          disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" type="button">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                <path fill-rule="evenodd"
+                  d="M11.03 3.97a.75.75 0 0 1 0 1.06l-6.22 6.22H21a.75.75 0 0 1 0 1.5H4.81l6.22 6.22a.75.75 0 1 1-1.06 1.06l-7.5-7.5a.75.75 0 0 1 0-1.06l7.5-7.5a.75.75 0 0 1 1.06 0Z"
+                  clip-rule="evenodd" />
+              </svg>
+            </button>
+
+            <p class="text-slate-600">
+              Page <strong class="text-slate-800"> {{ page.number }} </strong> of&nbsp;<strong class="text-slate-800">
+                {{ page.paginator.num_pages }}
+              </strong>
+            </p>
+
+            <button {% if page.has_next %} hx-target="#results-container" hx-swap="outerHTML show:top"
+              hx-get="{% url 'buildings:survey_results' current_survey.slug %}?page={{ page.next_page_number }}"
+              hx-vals='js:{...getCurrentQuery()}' hx-replace-url="true" {% else %} disabled {% endif %}
+              class="rounded-md border border-slate-300 p-2.5 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800 focus:text-white focus:bg-slate-800 focus:border-slate-800 active:border-slate-800 active:text-white active:bg-slate-800 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+              type="button">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                <path fill-rule="evenodd"
+                  d="M12.97 3.97a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06l6.22-6.22H3a.75.75 0 0 1 0-1.5h16.19l-6.22-6.22a.75.75 0 0 1 0-1.06Z"
+                  clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    {% endblock %}
+
+    <input type="hidden" id="gen_excel_url" data-url="{% url 'buildings:gen_excel' %}" />
+  </div>
+
+  {% endblock %}
+
+  {% block page_scripts %}
+  {{ qb_dataset_filters | json_script:"qb_dataset_filters" }}
+  {{ qb_surveys_filters | json_script:"qb_surveys_filters" }}
+  {{ user_bldg_cols | json_script:"user_bldg_cols" }}
+  {{ default_bldg_cols | json_script:"default_bldg_cols" }}
+  {{ user_survey_cols | json_script:"user_survey_cols" }}
+  {{ default_survey_cols | json_script:"default_survey_cols" }}
+  {{ export_config | json_script:"export_config" }}
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
+  <script src="{% static 'scripts/query-builder.standalone.js' %}"></script>
+  <script defer src="{% static 'scripts/survey_results.js' %}"></script>
+
+  {% endblock %}

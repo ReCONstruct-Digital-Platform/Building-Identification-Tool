@@ -1,11 +1,26 @@
-{% with id=widget.attrs.id initial_val=widget.initial was_filled=widget.was_filled %}
+{% with id=widget.attrs.id widget_val=widget.value.0 %}
 <div id="{{ id }}" class="{{ widget.attrs.class }}">
   {% for _, options, _ in widget.optgroups %}
+
     {% for option in options %}
-      <label class="flex items-center my-0.5">
+
+    {% comment %}
+    widget value: {{ widget_val }} <br>
+    widget is bound?: {{ widget.is_bound }} <br>  
+    option_value: {{ option.value }} <br>
+    {% if option.value == widget_val %}
+    are equal <br>
+    {% else %}
+    are not equal <br>
+    {% endif %}
+    option selected? {{ option.selected }} <br>
+    {% endcomment %}
+    
+      <label class="flex items-center h-[30px]">
         <input id="{{ option.attrs.id }}" class="{{ widget.attrs.radio_class }}" type="{{ option.type }}" 
-          name="{{ option.name }}" value="{{ option.value|stringformat:'s' }}" 
-          {% if was_filled and initial_val == option.value %} checked{% elif was_filled and initial_val is None and option.value == ''%} checked{% endif %} required>{{ option.label }}</label>
+          name="{{ option.name }}" value="{{ option.value }}" 
+          {% if widget.is_bound and option.selected %} checked
+          {% endif %} required>{{ option.label }}</label>
     {% endfor %}
   {% endfor %}
 </div>

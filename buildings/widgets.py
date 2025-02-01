@@ -2,9 +2,9 @@ from django.forms import widgets
 import logging
 from pprint import pprint
 
-TW_RADIO_CLASS = """me-2 border-0 text-teal-600 accent-teal-600 focus:accent-teal-700 shadow-sm ring-1 focus:ring-2 focus:ring-teal-600"""
+TW_RADIO_CLASS = """me-2 text-xs border-0 text-teal-600 accent-teal-600 focus:accent-teal-700 shadow-sm ring-1 focus:ring-2 focus:ring-teal-600"""
 
-TW_SPECIFY_CLASS = """ms-1 specify rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
+TW_SPECIFY_CLASS = """ms-1 text-xs specify rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
 
 
 class RadioSelect(widgets.RadioSelect):
@@ -17,18 +17,16 @@ class RadioSelect(widgets.RadioSelect):
     def __init__(self, attrs=None, **kwargs):
         super().__init__(attrs=attrs, **kwargs)
         self.initial = None  # filled in by the form __init__()
-        self.was_filled = None  # filled in by the form __init__()
         self.attrs["radio_class"] = TW_RADIO_CLASS
 
     # Add attributes you want available in the template to the context
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
         context["widget"]["initial"] = self.initial
-        context["widget"]["was_filled"] = self.was_filled
         return context
 
 
-class RadioWithSpecify(RadioSelect):
+class RadioWithSpecify(widgets.RadioSelect):
     """
     Radio select with CSS styling included
     """
