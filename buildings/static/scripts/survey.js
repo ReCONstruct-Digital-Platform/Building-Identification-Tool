@@ -64,16 +64,14 @@ async function screenshot(element_id) {
   });
 }
 
+
 /**
  * Screenshot the streetview. Called when the screenshot button is clicked.
  */
 async function screenshotStreetview(event) {
   event.preventDefault();
 
-  const toastElement = document.getElementById("screenshot-toast");
-  const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastElement);
-
-  // Screenshot the streetview as well
+  // Screenshot the streetview
   const imgData = {
     streetview: await screenshot("streetview"),
   };
@@ -96,10 +94,10 @@ async function screenshotStreetview(event) {
   }).then((resp) => {
     console.debug(resp);
     if (resp.status === 200) {
-      document
-        .getElementById("sv_uploaded")
-        .setAttribute("data-uploaded", "true");
-      toastBootstrap.show();
+      document.getElementById("sv_uploaded").setAttribute("data-uploaded", "true");
+
+      // Show the toast and set an interval for it to disappear
+      toasts["screenshot-toast"].show();
     }
   });
 }
@@ -372,44 +370,6 @@ function setStreetviewAndMapContainerHeight() {
   document.getElementById("nav-survey").style.height = streetViewHeight + "px";
 }
 
-// function setUpTabGroups(tabGroupId) {
-//   const allTabLinks = Array.from(document.getElementById(tabGroupId).children);
-
-//   allTabLinks.forEach((tablink, i) => {
-//     // Set the first tab as active
-//     if (i === 0) {
-//       const activeTabContentId = tablink.id.replace("-tab", "");
-//       tablink.classList.add("active");
-//       tablink.setAttribute("aria-selected", "true");
-//       document.getElementById(activeTabContentId).style.display = "block";
-//       console.debug(tablink);
-//     }
-
-//     // Add an event listener to each tab
-//     tablink.addEventListener("click", (e) => {
-//       const clickedTab = e.target;
-
-//       // Set the clicked tab to visible
-//       clickedTab.classList.add("active");
-//       clickedTab.setAttribute("aria-selected", "true");
-
-//       const clickedTabContentId = clickedTab.id.replace("-tab", "");
-//       document.getElementById(clickedTabContentId).style.display = "block";
-
-//       // Hide all other tablinks
-//       for (const otherTab of allTabLinks) {
-//         if (otherTab.id !== clickedTab.id) {
-//           const tabContentElementId = otherTab.id.replace("-tab", "");
-//           const associatedTabContent = document.getElementById(tabContentElementId);
-//           otherTab.classList.remove("active");
-//           otherTab.setAttribute("aria-selected", "false");
-//           associatedTabContent.style.display = "none";
-//           console.debug(otherTab);
-//         }
-//       }
-//     });
-//   });
-// }
 
 document.addEventListener("DOMContentLoaded", function () {
   setStreetviewAndMapContainerHeight();
@@ -418,6 +378,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const tabsInactiveClasses = ["bg-opacity-25"];
   setUpTabGroups("tabs-left", tabsActiveClasses, tabsInactiveClasses);
   setUpTabGroups("tabs-right", tabsActiveClasses, tabsInactiveClasses);
+  setUpToasts();
   setUpDragBar();
   setUpButtons();
   satelliteTabScreenshotOnHide();

@@ -1,25 +1,61 @@
+class Toast {
+  constructor(elem) {
+    this.elem = elem;
+  }
+  hide() {
+    console.debug("hiding");
+    this.elem.classList.add("hidden");
+    this.elem.classList.remove("flex");
+  }
+  show() {
+    console.debug("showing");
+    this.elem.classList.remove("hidden");
+    this.elem.classList.add("flex");
+    setTimeout(() => {
+      console.debug("timeout");
+      this.hide();
+    }, 2000);
+  }
+}
+
+const toasts = {};
+
+function setUpToasts() {
+  const toastElements = document.getElementsByClassName("my-toast");
+  Array.from(toastElements).forEach((toast) => {
+    console.debug("Setting up toast", toast);
+    const id = toast.id;
+    const closeButton = toast.querySelector(".close-toast-button");
+    closeButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      toast.classList.remove("flex");
+      toast.classList.add("hidden");
+    });
+    toasts[id] = new Toast(toast);
+  });
+}
 
 function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie !== "") {
-      var cookies = document.cookie.split(";");
-      for (var i = 0; i < cookies.length; i++) {
-        var cookie = jQuery.trim(cookies[i]);
-        // Does this cookie string begin with the name we want?
-        if (cookie.substring(0, name.length + 1) === name + "=") {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
+  var cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    var cookies = document.cookie.split(";");
+    for (var i = 0; i < cookies.length; i++) {
+      var cookie = jQuery.trim(cookies[i]);
+      // Does this cookie string begin with the name we want?
+      if (cookie.substring(0, name.length + 1) === name + "=") {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
       }
     }
-    return cookieValue;
   }
+  return cookieValue;
+}
 
 /**
  * Adapted from https://stackoverflow.com/a/30106551
  */
 function b64EncodeUnicode(str) {
-  if (!str) return null
+  if (!str) return null;
   // first we use encodeURIComponent to get percent-encoded Unicode,
   // then we convert the percent encodings into raw bytes which
   // can be fed into btoa.
@@ -30,13 +66,17 @@ function b64EncodeUnicode(str) {
   );
 }
 function b64DecodeUnicode(str) {
-  if (!str) return null
+  if (!str) return null;
   // Going backwards: from bytestream, to percent-encoding, to original string.
-  return decodeURIComponent(atob(str).split('').map(function(c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-  }).join(''));
+  return decodeURIComponent(
+    atob(str)
+      .split("")
+      .map(function (c) {
+        return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+      })
+      .join("")
+  );
 }
-
 
 /**
  * Our own simple modals.
@@ -45,8 +85,8 @@ function b64DecodeUnicode(str) {
  * All modals share a backdrop.
  */
 function setUpModal(modal) {
+  console.debug("Setting up modal", modal);
   const modalBackdrop = document.getElementById("modal-backdrop");
-  console.debug(modal);
 
   const modalIdPrefix = modal.dataset.modalIdPrefix;
   const closeButtonTop = document.getElementById(modalIdPrefix + "_close_top");
@@ -116,26 +156,26 @@ function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
 
   // Create a new anchor element
-  const a = document.createElement('a');
+  const a = document.createElement("a");
 
   // Set the href and download attributes for the anchor element
   // You can optionally set other attributes like `title`, etc
   // Especially, if the anchor element will be attached to the DOM
   a.href = url;
-  a.download = filename || 'download';
+  a.download = filename || "download";
 
   // Click handler that releases the object URL after the element has been clicked
   // This is required for one-off downloads of the blob content
   const clickHandler = () => {
     setTimeout(() => {
       URL.revokeObjectURL(url);
-      removeEventListener('click', clickHandler);
+      removeEventListener("click", clickHandler);
     }, 150);
   };
 
   // Add the click event listener on the anchor element
   // Comment out this line if you don't want a one-off download of the blob content
-  a.addEventListener('click', clickHandler, false);
+  a.addEventListener("click", clickHandler, false);
 
   // Programmatically trigger a click on the anchor element
   // Useful if you want the download to happen automatically
@@ -159,12 +199,12 @@ function setUpTabGroups(tabGroupId, activeClasses = [], inactiveClasses = []) {
   allTabLinks.forEach((tablink, i) => {
     // Set the first tab as active
     if (i === 0) {
+      console.debug("Setting up tab", tablink);
       const activeTabContentId = tablink.id.replace("-tab", "");
       tablink.classList.remove(...inactiveClasses);
       tablink.classList.add(...activeClasses);
       tablink.setAttribute("aria-selected", "true");
       document.getElementById(activeTabContentId).style.display = "block";
-      console.debug(tablink);
     }
 
     // Add an event listener to each tab
