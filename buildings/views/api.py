@@ -119,7 +119,7 @@ def gen_excel(request):
     )
     ws2.append(header2)
 
-    for i in range(1, paginator.num_pages):
+    for i in range(paginator.num_pages):
         page = paginator.get_page(i)
 
         for building in page:
@@ -157,7 +157,7 @@ def gen_excel(request):
             ws.append(row)
 
             # Now process individual responses
-            for resp in building.response_set.all():
+            for resp in building.response_set.filter(survey=survey):
                 row2 = []
                 row2.extend(
                     [
