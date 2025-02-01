@@ -2881,6 +2881,10 @@ input:checked + .toggle-bg {
   font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
 }
 
+.font-\[\'Poppins\'\] {
+  font-family: 'Poppins' !important;
+}
+
 .text-2xl {
   font-size: 1.5rem !important;
   line-height: 2rem !important;
@@ -2928,6 +2932,16 @@ input:checked + .toggle-bg {
 .text-xs {
   font-size: 0.75rem !important;
   line-height: 1rem !important;
+}
+
+.text-6xl {
+  font-size: 3.75rem !important;
+  line-height: 1 !important;
+}
+
+.text-8xl {
+  font-size: 6rem !important;
+  line-height: 1 !important;
 }
 
 .font-bold {
@@ -3268,6 +3282,10 @@ input:checked + .toggle-bg {
   transition-property: transform !important;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
   transition-duration: 150ms !important;
+}
+
+.delay-\[1500\] {
+  transition-delay: 1500 !important;
 }
 
 .duration-100 {

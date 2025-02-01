@@ -501,76 +501,70 @@ QueryBuilder.OPERATORS = {
  * @readonly
  */
 QueryBuilder.DEFAULTS = {
-    filters: [],
-    plugins: [],
+  filters: [],
+  plugins: [],
 
-    sort_filters: false,
-    display_errors: true,
-    allow_groups: -1,
-    allow_empty: false,
-    conditions: ['AND', 'OR'],
-    default_condition: 'AND',
-    inputs_separator: ' , ',
-    select_placeholder: '------',
-    display_empty_filter: true,
-    default_filter: null,
-    optgroups: {},
+  sort_filters: false,
+  display_errors: true,
+  allow_groups: -1,
+  allow_empty: false,
+  conditions: ["AND", "OR"],
+  default_condition: "AND",
+  inputs_separator: " , ",
+  select_placeholder: "------",
+  display_empty_filter: true,
+  default_filter: null,
+  optgroups: {},
 
-    default_rule_flags: {
-        filter_readonly: false,
-        operator_readonly: false,
-        value_readonly: false,
-        no_delete: false
-    },
+  default_rule_flags: {
+    filter_readonly: false,
+    operator_readonly: false,
+    value_readonly: false,
+    no_delete: false,
+  },
 
-    default_group_flags: {
-        condition_readonly: false,
-        no_add_rule: false,
-        no_add_group: false,
-        no_delete: false
-    },
+  default_group_flags: {
+    condition_readonly: false,
+    no_add_rule: false,
+    no_add_group: false,
+    no_delete: false,
+  },
 
-    templates: {
-        group: null,
-        rule: null,
-        filterSelect: null,
-        operatorSelect: null,
-        ruleValueSelect: null
-    },
+  templates: {
+    group: null,
+    rule: null,
+    filterSelect: null,
+    operatorSelect: null,
+    ruleValueSelect: null,
+  },
 
-    lang_code: 'en',
-    lang: {},
+  lang_code: "en",
+  lang: {},
 
-    operators: [
-        'equal',
-        'not_equal',
-        'in',
-        'not_in',
-        'less',
-        'less_or_equal',
-        'greater',
-        'greater_or_equal',
-        'between',
-        'not_between',
-        'begins_with',
-        'not_begins_with',
-        'contains',
-        'not_contains',
-        'ends_with',
-        'not_ends_with',
-        'is_empty',
-        'is_not_empty',
-        'is_null',
-        'is_not_null'
-    ],
+  operators: [
+    "equal",
+    "not_equal",
+    "in",
+    "not_in",
+    "less",
+    "less_or_equal",
+    "greater",
+    "greater_or_equal",
+    "between",
+    "not_between",
+    "begins_with",
+    "not_begins_with",
+    "contains",
+    "not_contains",
+    "ends_with",
+    "not_ends_with",
+    "is_empty",
+    "is_not_empty",
+    "is_null",
+    "is_not_null",
+  ],
 
-    icons: {
-        add_group:    'bi-plus-circle-fill',
-        add_rule:     'bi-plus-lg',
-        remove_group: 'bi-x-lg',
-        remove_rule:  'bi-x-lg',
-        error:        'bi-exclamation-triangle'
-    }
+  icons: {},
 };
 
 

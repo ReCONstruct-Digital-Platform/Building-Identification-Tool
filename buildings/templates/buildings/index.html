@@ -9,7 +9,7 @@
     <div class="absolute -z-[1] w-[90vh] h-[90vh] bg-white bg-opacity-25 rounded-full aspect-square"></div>
 
     <section class="mt-12">
-      <div class="text-5xl font-semibold">Reconstruct Dashboard</div>
+      <div class="text-6xl font-semibold">Reconstruct Dashboard</div>
     </section>
 
     <section id="sections-surveys" class="flex flex-col justify-start w-fit mt-6">
@@ -58,11 +58,13 @@
     
             <div class="flex flex-row gap-4">
     
-              <button id="survey-results-button"
-                class="block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 
-                bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-700 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-                <a id="next" href="{% url 'buildings:survey_results' survey.slug %}">View Results</a>
-              </button>
+              <a id="next" href="{% url 'buildings:survey_results' survey.slug %}">
+                <button id="survey-results-button"
+                  class="block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 
+                  bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-700 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                    View Results
+                </button>
+              </a>
     
               <a class="" href="{% url 'buildings:do_survey_redirect' survey.slug %}">
                 {% #button type="primary"%}
