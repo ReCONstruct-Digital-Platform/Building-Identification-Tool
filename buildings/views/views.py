@@ -1,6 +1,5 @@
 import json
 import traceback
-from datetime import datetime
 from typing import List
 
 from allauth.account.models import EmailAddress
@@ -12,12 +11,9 @@ from django.contrib import messages
 from django.http import Http404, HttpResponse
 from django.core.paginator import Paginator
 from django.db.models import JSONField
-from django.forms.models import model_to_dict
 from render_block import render_block_to_string
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
-from django.core.serializers import serialize
-from django.db.models import Q
 from django.db.models.expressions import RawSQL
 from allauth.account.views import EmailView
 
@@ -216,8 +212,6 @@ def survey_results(request, survey_slug):
 
 @login_required(login_url="account_login")
 def do_survey_redirect(_, survey_slug):
-    # TODO: Change how we get a random value
-
     survey = get_object_or_404(Survey, slug=survey_slug)
     random_building = survey.get_next_building_to_survey()
 
@@ -233,9 +227,11 @@ def do_survey(request, survey_slug, building_slug):
 
     building = get_object_or_404(Building, slug=building_slug)
     survey = get_object_or_404(Survey, slug=survey_slug)
+    surveys = Survey.objects.filter(status=Survey.Status.ACTIVE)
 
     # Verify the building is in the survey's target population or 404
     if not survey.is_building_in_target_pop(building):
+        # TODO: Have a nice 404 page template
         raise Http404(
             f"Building {building.address} was not found in survey {survey.name}!"
         )
@@ -322,6 +318,17 @@ def do_survey(request, survey_slug, building_slug):
 
         form = DynamicSurveyForm(survey, prev_response.data if prev_response else None)
 
+    # Columns config
+    default_bldg_cols = survey.dataset.get_fields_to_display()
+    # All the values for JS retrieval
+    bldg_cols_and_values = {
+        d["id"]: building.get_field(d["id"]) or "" for d in default_bldg_cols
+    }
+    user_config, _ = UserConfigs.objects.get_or_create(pk=request.user.id)
+    user_bldg_cols = user_config.sur_page_bldg_cols or default_bldg_cols
+
+    update_settings_url = reverse("buildings:update_user_settings")
+
     context = {
         "survey": survey,
         "building": building,
@@ -335,6 +342,11 @@ def do_survey(request, survey_slug, building_slug):
         "next_building_url": next_building_url,
         "form": form,
         "previous_problem_flag": previous_problem_flag,
+        "default_bldg_cols": default_bldg_cols,
+        "user_bldg_cols": user_bldg_cols,
+        "bldg_cols_and_values": bldg_cols_and_values,
+        "update_settings_url": update_settings_url,
+        "all_surveys": surveys,
     }
 
     return render(request, "buildings/survey_rendering_full.html", context)

@@ -2,7 +2,6 @@
 {% load static %}
 {% load i18n %}
 {% load allauth %}
-{% load extra_tags %}
 
 {% block css_imports %}
 <link rel="stylesheet" type="text/css" href="{% static 'buildings/query-builder.default.css' %}" />
@@ -352,7 +351,7 @@
                 </object>
               </div>
               <div id="building-attrs-{{ forloop.counter }}"
-                class="attrs-box bg-teal-50 bg-opacity-50  w-full grid grid-cols-3 xl:grid-cols-5 rounded-lg p-2 overflow-hidden">
+                class="attrs-box  w-full grid grid-cols-3 xl:grid-cols-5 rounded-lg p-2 overflow-hidden">
                 <div class="col-span-1">
                   <div class="text-xl font-semibold px-2 underline underline-offset-4 pb-2 pt-1">Building Attributes
                   </div>

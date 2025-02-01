@@ -189,6 +189,7 @@ TEMPLATES = [
             "builtins": [
                 "django.templatetags.static",
                 "slippers.templatetags.slippers",
+                "buildings.templatetags.extra_tags",
             ],
         },
     },

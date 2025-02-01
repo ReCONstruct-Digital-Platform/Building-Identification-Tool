@@ -48,5 +48,10 @@ urlpatterns = [
     ),
     # API only URLs
     path("excel", api.gen_excel, name="gen_excel"),
+    path(
+        "update_user_settings",
+        api.update_user_settings,
+        name="update_user_settings",
+    ),
     path("upload_imgs/<str:building_id>", api.upload_imgs, name="upload_imgs"),
 ]

@@ -349,7 +349,7 @@ function setStreetviewAndMapContainerHeight() {
   const windowHeight = window.innerHeight;
   // Leave some space for navbar, tabs and some padding at the bottom
   const navbarHeight = document.getElementById("navbar").offsetHeight;
-  const tabHeight = document.getElementById("tabs-left").offsetHeight;
+  const leftTopRow = document.getElementById("left-top-row").offsetHeight;
 
   // const topRowHeight = document.getElementById("survey-top-row").offsetHeight;
   const topRowHeight = 0;
@@ -363,17 +363,177 @@ function setStreetviewAndMapContainerHeight() {
   );
   container.style.height = containerHeight + "px";
 
-  const streetViewHeight = containerHeight - tabHeight;
+  const streetViewHeight = containerHeight - leftTopRow;
   document.getElementById("streetview").style.height = streetViewHeight + "px";
   document.getElementById("nav-survey").style.height = streetViewHeight + "px";
 }
 
+function renderSelectedFields(currentListValues) {
+  // take current col config
+  // use it to re-render the info box
+
+  const allValues = JSON.parse(document.getElementById("bldg_cols_and_values").textContent);
+
+  const infoBox = document.getElementById("bldg-cols-display");
+  infoBox.innerHTML = "";
+
+  // iterate through current selected fields and recreate the infobox using template and values
+  currentListValues.forEach((field) => {
+    const node = document.createElement("div");
+    node.id = `${field.id}-field`;
+    node.classList.add("flex", "gap-2");
+    node.innerHTML = `<div class="font-semibold">${field.label}:</div>${allValues[field.id]}`;
+    console.debug(node);
+    infoBox.appendChild(node);
+  });
+}
+
+function setUpDraggableList(draggableListId, defaultValues) {
+  const draggableList = document.getElementById(draggableListId);
+  const resetButton = draggableList.parentElement.getElementsByClassName("reset-button")[0];
+  const selectAllButton = draggableList.parentElement.getElementsByClassName("select-all-button")[0];
+
+  const updateButton = document.getElementById("button-update-fields");
+  const updateSettingsUrl = JSON.parse(document.getElementById("update_settings_url").textContent);
+
+  updateButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    console.debug("update fields");
+
+    const labels = draggableList.querySelectorAll("label");
+
+    const currentListValues = Array.from(labels)
+      .map((e) => (e.children[0].checked ? { id: e.children[0].id, label: e.innerText.trim() } : null))
+      .filter((x) => x);
+
+    renderSelectedFields(currentListValues);
+
+    fetch(updateSettingsUrl, {
+      method: "POST",
+      mode: "same-origin",
+      cache: "no-cache",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: JSON.stringify({
+        sur_page_bldg_cols: currentListValues,
+      }),
+    }).then((resp) => {
+      console.debug(resp);
+      if (resp.status === 200) {
+        console.debug("SUCCC");
+      }
+    });
+  });
+
+  console.debug(resetButton);
+  console.debug(selectAllButton);
+
+  resetButton.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    const listItems = draggableList.querySelectorAll("li");
+    const labels = draggableList.querySelectorAll("label");
+
+    const currentListValues = Array.from(labels)
+      .map((e) => (e.children[0].checked ? { id: e.children[0].id, label: e.innerText.trim() } : null))
+      .filter((x) => x);
+
+    if (JSON.stringify(currentListValues) !== JSON.stringify(defaultValues)) {
+      const firstElem = listItems[0];
+      // delete all items
+      draggableList.innerHTML = "";
+
+      // recreate default items
+      defaultValues.forEach((e, i) => {
+        const newLi = firstElem.cloneNode(true);
+        newLi.children[0].innerHTML = `
+          <input type="checkbox" id="${e.id}" class="mr-4 h-5 w-5 text-teal-500 focus:ring-2 focus:ring-teal-300" checked>${e.label}`;
+        draggableList.appendChild(newLi);
+      });
+    }
+  });
+
+  var selectAll = false;
+
+  selectAllButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    const labels = draggableList.querySelectorAll("label");
+
+    Array.from(labels).forEach((e) => {
+      e.children[0].checked = selectAll;
+    });
+    selectAll = !selectAll;
+    selectAllButton.innerText = selectAll ? "Select all" : "Unselect all";
+  });
+
+  let draggedItem = null;
+  draggableList.addEventListener("dragstart", (e) => {
+    draggedItem = e.target;
+    draggedItem.classList.remove("shadow-sm");
+    draggedItem.classList.add("shadow-lg");
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", null);
+  });
+
+  draggableList.addEventListener("dragend", (e) => {
+    draggedItem.classList.remove("shadow-lg");
+    draggedItem.classList.add("shadow-sm");
+    draggedItem = null;
+  });
+
+  draggableList.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    const afterElement = getDragAfterElement(draggableList, e.clientY);
+    if (afterElement == null) {
+      draggableList.appendChild(draggedItem);
+    } else {
+      draggableList.insertBefore(draggedItem, afterElement);
+    }
+  });
+
+  const getDragAfterElement = (container, y) => {
+    const draggableElements = [...container.querySelectorAll("li")];
+
+    return draggableElements.reduce(
+      (closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return {
+            offset: offset,
+            element: child,
+          };
+        } else {
+          return closest;
+        }
+      },
+      {
+        offset: Number.NEGATIVE_INFINITY,
+      }
+    ).element;
+  };
+}
+
+function setUpColumnConfig() {
+  const defaultBuildingCols = JSON.parse(document.getElementById("default_bldg_cols").textContent);
+  setUpDraggableList("draggable-list", defaultBuildingCols);
+}
+
+function setUpChangeSurveySelect() {
+  const select = document.getElementById("change-survey-select");
+  select.addEventListener("change", (e) => {
+    window.location.href = e.target.value;
+  });
+}
+
+const tabsActiveClasses = ["bg-opacity-85"];
+const tabsInactiveClasses = ["bg-opacity-25"];
+
 document.addEventListener("DOMContentLoaded", function () {
   setStreetviewAndMapContainerHeight();
-
-  const tabsActiveClasses = ["bg-opacity-85"];
-  const tabsInactiveClasses = ["bg-opacity-25"];
-  setUpTabGroups("tabs-left", tabsActiveClasses, tabsInactiveClasses);
   setUpTabGroups("tabs-right", tabsActiveClasses, tabsInactiveClasses);
   setUpToasts();
   setUpDragBar();
@@ -382,9 +542,11 @@ document.addEventListener("DOMContentLoaded", function () {
   setUpSatelliteImageObserver();
   setUpInitialSurveyMutationChecker();
   setUpModals();
+  setUpChangeSurveySelect();
+  setUpColumnConfig();
+});
 
-  window.addEventListener("resize", (e) => {
-    e.preventDefault();
-    setStreetviewAndMapContainerHeight();
-  });
+window.addEventListener("resize", (e) => {
+  e.preventDefault();
+  setStreetviewAndMapContainerHeight();
 });

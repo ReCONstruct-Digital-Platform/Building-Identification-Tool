@@ -15,6 +15,7 @@ from django.shortcuts import get_object_or_404
 
 from buildings.models.newmodels import (
     Survey,
+    UserConfigs,
 )
 from buildings.models.models import (
     EvalUnit,
@@ -36,16 +37,35 @@ def upload_imgs(request, building_id):
     https://blog.pythonanywhere.com/198/
     https://www.pythonanywhere.com/forums/topic/3627/
     """
-    if settings.DEBUG:
-        return HttpResponse("debug mode job not created")
     data = json.loads(request.body)
     eval_unit = get_object_or_404(EvalUnit, pk=building_id)
+    if settings.DEBUG:
+        print("debug mode job not created")
+        return HttpResponse("debug mode job not created")
     UploadImageJob(
         eval_unit=eval_unit,
         user=request.user,
         job_data=data,
         status=UploadImageJob.Status.PENDING,
     ).save()
+    return HttpResponse("Ok")
+
+
+@require_POST
+@login_required(login_url="account_login")
+def update_user_settings(request):
+    logging.debug(f"Update user settings: {request.body}")
+    body = json.loads(request.body)
+    user_config, _ = UserConfigs.objects.get_or_create(pk=request.user.id)
+    print(f"before: {user_config}")
+    for key, value in body.items():
+        try:
+            setattr(user_config, key, value)
+        except:
+            print(f"Unkown setting key: {key}")
+            continue
+    user_config.save()
+    print(f"after: {user_config}")
     return HttpResponse("Ok")
 
 

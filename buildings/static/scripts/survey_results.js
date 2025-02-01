@@ -50,7 +50,6 @@ function getColumnConfigs(userColumnConfigId, listId) {
   if (JSON.stringify(currentColumnConfig) !== JSON.stringify(userColumnConfig)) {
     // If the current col config is different from the user config originally sent
     // by server - send it back to server to be saved. Otherwise, don't include it.
-    // scenario 1: user never changed defaults.
     let r = {};
     r[userColumnConfigId] = b64EncodeUnicode(JSON.stringify(currentColumnConfig));
     return r;

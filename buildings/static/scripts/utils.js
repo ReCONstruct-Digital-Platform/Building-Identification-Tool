@@ -228,7 +228,6 @@ function setUpTabGroups(tabGroupId, activeClasses = [], inactiveClasses = []) {
           otherTab.classList.add(...inactiveClasses);
           otherTab.setAttribute("aria-selected", "false");
           associatedTabContent.style.display = "none";
-          console.debug(otherTab);
         }
       }
     });

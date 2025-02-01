@@ -147,6 +147,11 @@ class Building(models.Model):
     date_added = models.DateTimeField("date added", default=timezone.now)
     date_modified = models.DateTimeField("date modified", default=timezone.now)
 
+    def get_field(self, key):
+        if "attrs__" in key:
+            return self.attrs[key.replace("attrs__", "")]
+        return getattr(self, key)
+
     def get_attrs(self):
         attrs_fields = [
             {"id": a["id"].replace("attrs__", ""), "label": a["label"]["en"]}
