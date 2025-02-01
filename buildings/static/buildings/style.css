@@ -596,10 +596,21 @@ tr:hover .delete-row-icon {
   display: none;
 }
 #controls-slidedown {
-  /* display: none; */
   height: 0px;
 }
 
 #controls-slidedown-inner {
+  display: none;
+}
+
+.display-when-loading {
+  display: none;
+}
+
+.htmx-request>.display-when-loading {
+  display: flex;
+}
+
+.htmx-request>.display-when-not-loading {
   display: none;
 }

@@ -2074,6 +2074,16 @@ input:checked + .toggle-bg {
   transform: none !important;
 }
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite !important;
+}
+
 .cursor-default {
   cursor: default !important;
 }
@@ -2682,6 +2692,14 @@ input:checked + .toggle-bg {
   fill: #E02424 !important;
 }
 
+.fill-blue-600 {
+  fill: #0e6cbb !important;
+}
+
+.fill-white {
+  fill: #ffffff !important;
+}
+
 .stroke-black {
   stroke: #000000 !important;
 }
@@ -3123,6 +3141,15 @@ input:checked + .toggle-bg {
 .text-white {
   --tw-text-opacity: 1 !important;
   color: rgb(255 255 255 / var(--tw-text-opacity)) !important;
+}
+
+.text-gray-200 {
+  --tw-text-opacity: 1 !important;
+  color: rgb(207 216 210 / var(--tw-text-opacity)) !important;
+}
+
+.text-transparent {
+  color: transparent !important;
 }
 
 .underline {
@@ -3990,6 +4017,11 @@ input:checked + .toggle-bg {
 .dark\:text-white:is(.dark *) {
   --tw-text-opacity: 1 !important;
   color: rgb(255 255 255 / var(--tw-text-opacity)) !important;
+}
+
+.dark\:text-gray-600:is(.dark *) {
+  --tw-text-opacity: 1 !important;
+  color: rgb(82 100 102 / var(--tw-text-opacity)) !important;
 }
 
 .dark\:hover\:bg-blue-700:hover:is(.dark *) {

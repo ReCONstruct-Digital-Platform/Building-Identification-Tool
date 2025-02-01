@@ -170,9 +170,16 @@ function setUpDownloadButton() {
   const excelGenURL = document.getElementById("gen_excel_url").dataset.url;
   const exportConfig = JSON.parse(document.getElementById("export_config").textContent);
 
+  const spinner = document.getElementById("download-button-loading-icon");
+  const icon = document.getElementById("download-button-icon");
+
   button.addEventListener("click", (e) => {
     e.preventDefault();
     console.debug(exportConfig);
+
+    icon.classList.add("hidden");
+    spinner.classList.remove("hidden");
+    spinner.classList.add("block");
 
     const body = JSON.stringify({
       export_config: exportConfig,
@@ -181,9 +188,7 @@ function setUpDownloadButton() {
 
     console.debug(body);
     // do a post request to backend to generate excel using current query params
-
     // create downloadable file (if latency is OK, otherwise we will send an email)
-
     fetch(excelGenURL, {
       method: "POST",
       mode: "same-origin",
@@ -205,6 +210,12 @@ function setUpDownloadButton() {
       .catch((error) => {
         console.log("Error downloading file:", error);
         return false;
+      })
+      .finally(() => {
+        icon.classList.add("block");
+        icon.classList.remove("hidden");
+        spinner.classList.remove("block");
+        spinner.classList.add("hidden");
       });
   });
 }
