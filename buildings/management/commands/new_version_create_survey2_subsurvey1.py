@@ -35,11 +35,11 @@ SQL_UPSERT_BUILDING_TEMPLATE = f"""(%(ext_id)s, %(lat)s, %(lng)s, %(point)s, %(d
 def migrate_responses(dry_run=True):
 
     from_db = psycopg2.connect(
-        user="bitdbuser",
-        password="password",
-        host="127.0.0.1",
-        port=5433,
-        database="bitdb",
+        user=ENV["POSTGRES_USER"],
+        password=ENV["POSTGRES_PW"],
+        database=ENV["POSTGRES_NAME"],
+        port=ENV["POSTGRES_PORT"],
+        host=ENV["POSTGRES_HOST"],
     )
     # Do stuff inside the context manager block
     from_cur = from_db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)

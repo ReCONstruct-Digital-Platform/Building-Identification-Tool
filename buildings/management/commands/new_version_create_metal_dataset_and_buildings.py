@@ -41,7 +41,6 @@ def upsert_evalunits(dry_run=True):
         port=5432,
         database="bitdb4",
     )
-    # Do stuff inside the context manager block
     from_cur = from_db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     to_db = psycopg2.connect(

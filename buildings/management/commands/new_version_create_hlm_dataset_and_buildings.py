@@ -33,13 +33,13 @@ SQL_UPSERT_BUILDING_TEMPLATE = f"""(%(ext_id)s, %(lat)s, %(lng)s, %(point)s, %(d
 
 
 def upsert_evalunits(dry_run=True):
-
+    # Change if different
     from_db = psycopg2.connect(
-        user="bitdbuser",
-        password="new_password",
-        host="127.0.0.1",
-        port=5432,
-        database="bitdb4",
+        user=ENV["POSTGRES_USER"],
+        password=ENV["POSTGRES_PW"],
+        database=ENV["POSTGRES_NAME"],
+        port=ENV["POSTGRES_PORT"],
+        host=ENV["POSTGRES_HOST"],
     )
     # Do stuff inside the context manager block
     from_cur = from_db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
@@ -48,7 +48,8 @@ def upsert_evalunits(dry_run=True):
         user=ENV["POSTGRES_USER"],
         password=ENV["POSTGRES_PW"],
         database=ENV["POSTGRES_NAME"],
-        port=5433,
+        port=ENV["POSTGRES_PORT"],
+        host=ENV["POSTGRES_HOST"],
     )
     to_cur = to_db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
@@ -501,12 +502,16 @@ def upsert_evalunits(dry_run=True):
                     "prev_value": unit["prev_value"],
                 }
 
+                address = unit["address"] or " ".join(
+                    [unit["street_num"], unit["street_name"]]
+                )
+
                 new_model = {
                     "ext_id": unit["id"],
                     "lat": unit["lat"],
                     "lng": unit["lng"],
                     "point": unit["point"],
-                    "address": unit["address"],
+                    "address": address,
                     "street_name": unit["street_name"],
                     "street_num": unit["street_num"],
                     "muni": unit["muni"],
