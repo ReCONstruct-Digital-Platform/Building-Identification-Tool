@@ -146,7 +146,7 @@
       <div id="activity-tab-content" class="activity-tab-content tab-content overflow-y-auto">
 
         <div id="latest-activity"
-          class="bg-white bg-opacity-70 rounded-md px-3 py-5 overflow-y-auto tab-pane {% if active_tab == 'latest' %}show active {% endif %}" role="tabpanel" aria-labelledby="latest-activity-tab" tabindex="0">
+          class="tabcontent bg-white bg-opacity-70 rounded-md px-3 py-5 overflow-y-auto h-full" role="tabpanel" aria-labelledby="latest-activity-tab" tabindex="0">
           <div class="flex items-baseline mb-1 flex-col md:flex-row">
             <div class="ms-2">
               {{ total_votes }} responses total
@@ -214,8 +214,7 @@
         </div>
 
         <div id="user-activity"
-          class="bg-white bg-opacity-60 rounded-md px-3 py-5 overflow-y-auto tab-pane 
-          {% if active_tab == 'user' %} show active {% endif %}" 
+          class="tabcontent bg-white bg-opacity-60 rounded-md px-3 py-5 overflow-y-auto h-full" 
           role="tabpanel" aria-labelledby="user-activity-tab" tabindex="1">
           <div class="flex items-baseline mb-1 flex-col md:flex-row">
             <div>

@@ -1401,24 +1401,16 @@ input:checked + .toggle-bg {
   top: 50% !important;
 }
 
+.top-\[12px\] {
+  top: 12px !important;
+}
+
 .top-\[56px\] {
   top: 56px !important;
 }
 
 .top-\[calc\(75\%\)\] {
   top: calc(75%) !important;
-}
-
-.top-\[20px\] {
-  top: 20px !important;
-}
-
-.top-\[15px\] {
-  top: 15px !important;
-}
-
-.top-\[12px\] {
-  top: 12px !important;
 }
 
 .isolate {
@@ -1465,12 +1457,12 @@ input:checked + .toggle-bg {
   z-index: 1056 !important;
 }
 
-.z-\[10\] {
-  z-index: 10 !important;
-}
-
 .z-\[1057\] {
   z-index: 1057 !important;
+}
+
+.z-\[10\] {
+  z-index: 10 !important;
 }
 
 .col-span-1 {
@@ -1491,16 +1483,6 @@ input:checked + .toggle-bg {
 
 .m-auto {
   margin: auto !important;
-}
-
-.-mx-1\.5 {
-  margin-left: -0.375rem !important;
-  margin-right: -0.375rem !important;
-}
-
-.-my-1\.5 {
-  margin-top: -0.375rem !important;
-  margin-bottom: -0.375rem !important;
 }
 
 .mx-auto {
@@ -1742,10 +1724,6 @@ input:checked + .toggle-bg {
   height: 1.5rem !important;
 }
 
-.h-7 {
-  height: 1.75rem !important;
-}
-
 .h-8 {
   height: 2rem !important;
 }
@@ -1774,12 +1752,20 @@ input:checked + .toggle-bg {
   height: 30px !important;
 }
 
+.h-\[350px\] {
+  height: 350px !important;
+}
+
 .h-\[40px\] {
   height: 40px !important;
 }
 
 .h-\[50px\] {
   height: 50px !important;
+}
+
+.h-\[55px\] {
+  height: 55px !important;
 }
 
 .h-\[56px\] {
@@ -1809,22 +1795,6 @@ input:checked + .toggle-bg {
 
 .h-full {
   height: 100% !important;
-}
-
-.h-\[500px\] {
-  height: 500px !important;
-}
-
-.h-\[400px\] {
-  height: 400px !important;
-}
-
-.h-\[350px\] {
-  height: 350px !important;
-}
-
-.h-\[55px\] {
-  height: 55px !important;
 }
 
 .max-h-\[40px\] {
@@ -1887,10 +1857,6 @@ input:checked + .toggle-bg {
   width: 16rem !important;
 }
 
-.w-7 {
-  width: 1.75rem !important;
-}
-
 .w-8 {
   width: 2rem !important;
 }
@@ -1901,6 +1867,10 @@ input:checked + .toggle-bg {
 
 .w-\[125px\] {
   width: 125px !important;
+}
+
+.w-\[250px\] {
+  width: 250px !important;
 }
 
 .w-\[320px\] {
@@ -1951,10 +1921,6 @@ input:checked + .toggle-bg {
 .w-max {
   width: -moz-max-content !important;
   width: max-content !important;
-}
-
-.w-\[250px\] {
-  width: 250px !important;
 }
 
 .min-w-\[200px\] {
@@ -2122,10 +2088,6 @@ input:checked + .toggle-bg {
   -webkit-appearance: none !important;
      -moz-appearance: none !important;
           appearance: none !important;
-}
-
-.grid-cols-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
 }
 
 .grid-cols-3 {
@@ -2613,11 +2575,6 @@ input:checked + .toggle-bg {
   background-color: rgb(255 255 255 / 0.75) !important;
 }
 
-.bg-gray-500 {
-  --tw-bg-opacity: 1 !important;
-  background-color: rgb(104 120 118 / var(--tw-bg-opacity)) !important;
-}
-
 .bg-opacity-25 {
   --tw-bg-opacity: 0.25 !important;
 }
@@ -2650,34 +2607,14 @@ input:checked + .toggle-bg {
   --tw-bg-opacity: 0.95 !important;
 }
 
-.bg-opacity-30 {
-  --tw-bg-opacity: 0.3 !important;
-}
-
 .bg-gradient-to-tr {
   background-image: linear-gradient(to top right, var(--tw-gradient-stops)) !important;
-}
-
-.from-\[\#a279d1\] {
-  --tw-gradient-from: #a279d1 var(--tw-gradient-from-position) !important;
-  --tw-gradient-to: rgb(162 121 209 / 0) var(--tw-gradient-to-position) !important;
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
-}
-
-.from-\[\#dabaff\] {
-  --tw-gradient-from: #dabaff var(--tw-gradient-from-position) !important;
-  --tw-gradient-to: rgb(218 186 255 / 0) var(--tw-gradient-to-position) !important;
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
 }
 
 .from-\[\#379feb\] {
   --tw-gradient-from: #379feb var(--tw-gradient-from-position) !important;
   --tw-gradient-to: rgb(55 159 235 / 0) var(--tw-gradient-to-position) !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
-}
-
-.to-\[\#a279d1\] {
-  --tw-gradient-to: #a279d1 var(--tw-gradient-to-position) !important;
 }
 
 .to-\[\#d2abff\] {
@@ -2690,10 +2627,6 @@ input:checked + .toggle-bg {
 
 .fill-red-600 {
   fill: #E02424 !important;
-}
-
-.fill-blue-600 {
-  fill: #0e6cbb !important;
 }
 
 .fill-white {
@@ -2859,6 +2792,10 @@ input:checked + .toggle-bg {
   padding-inline-end: 1.25rem !important;
 }
 
+.ps-1 {
+  padding-inline-start: 0.25rem !important;
+}
+
 .ps-2 {
   padding-inline-start: 0.5rem !important;
 }
@@ -2879,10 +2816,6 @@ input:checked + .toggle-bg {
   padding-top: 1rem !important;
 }
 
-.ps-1 {
-  padding-inline-start: 0.25rem !important;
-}
-
 .text-left {
   text-align: left !important;
 }
@@ -2897,10 +2830,6 @@ input:checked + .toggle-bg {
 
 .font-sans {
   font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
-}
-
-.font-\[\'Poppins\'\] {
-  font-family: 'Poppins' !important;
 }
 
 .text-2xl {
@@ -2918,8 +2847,8 @@ input:checked + .toggle-bg {
   line-height: 2.5rem !important;
 }
 
-.text-5xl {
-  font-size: 3rem !important;
+.text-6xl {
+  font-size: 3.75rem !important;
   line-height: 1 !important;
 }
 
@@ -2950,16 +2879,6 @@ input:checked + .toggle-bg {
 .text-xs {
   font-size: 0.75rem !important;
   line-height: 1rem !important;
-}
-
-.text-6xl {
-  font-size: 3.75rem !important;
-  line-height: 1 !important;
-}
-
-.text-8xl {
-  font-size: 6rem !important;
-  line-height: 1 !important;
 }
 
 .font-bold {
@@ -3143,15 +3062,6 @@ input:checked + .toggle-bg {
   color: rgb(255 255 255 / var(--tw-text-opacity)) !important;
 }
 
-.text-gray-200 {
-  --tw-text-opacity: 1 !important;
-  color: rgb(207 216 210 / var(--tw-text-opacity)) !important;
-}
-
-.text-transparent {
-  color: transparent !important;
-}
-
 .underline {
   text-decoration-line: underline !important;
 }
@@ -3311,12 +3221,12 @@ input:checked + .toggle-bg {
   transition-duration: 150ms !important;
 }
 
-.delay-\[1500\] {
-  transition-delay: 1500 !important;
-}
-
 .duration-100 {
   transition-duration: 100ms !important;
+}
+
+.duration-200 {
+  transition-duration: 200ms !important;
 }
 
 .duration-300 {
@@ -3325,10 +3235,6 @@ input:checked + .toggle-bg {
 
 .duration-500 {
   transition-duration: 500ms !important;
-}
-
-.duration-200 {
-  transition-duration: 200ms !important;
 }
 
 .ease-in-out {
@@ -4017,11 +3923,6 @@ input:checked + .toggle-bg {
 .dark\:text-white:is(.dark *) {
   --tw-text-opacity: 1 !important;
   color: rgb(255 255 255 / var(--tw-text-opacity)) !important;
-}
-
-.dark\:text-gray-600:is(.dark *) {
-  --tw-text-opacity: 1 !important;
-  color: rgb(82 100 102 / var(--tw-text-opacity)) !important;
 }
 
 .dark\:hover\:bg-blue-700:hover:is(.dark *) {

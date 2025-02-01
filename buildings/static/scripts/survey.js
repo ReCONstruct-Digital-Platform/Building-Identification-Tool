@@ -350,18 +350,16 @@ function setStreetviewAndMapContainerHeight() {
   // Leave some space for navbar, tabs and some padding at the bottom
   const navbarHeight = document.getElementById("navbar").offsetHeight;
   const tabHeight = document.getElementById("tabs-left").offsetHeight;
-  
+
   // const topRowHeight = document.getElementById("survey-top-row").offsetHeight;
   const topRowHeight = 0;
 
   // Leave some space at the bottom
-  const padding = getComputedStyle(
-    document.getElementById("survey-page-container")
-  ).paddingLeft.replace("px", "");
-  const containerHeight = windowHeight - navbarHeight - topRowHeight -padding;
+  const padding = getComputedStyle(document.getElementById("survey-page-container")).paddingLeft.replace("px", "");
+  const containerHeight = windowHeight - navbarHeight - topRowHeight - padding;
 
   console.debug(
-    `${windowHeight} - ${navbarHeight} - ${padding} - ${topRowHeight} = ${containerHeight}`
+    `Setting container height to ${windowHeight} - ${navbarHeight} - ${padding} - ${topRowHeight} = ${containerHeight}px`
   );
   container.style.height = containerHeight + "px";
 
@@ -369,7 +367,6 @@ function setStreetviewAndMapContainerHeight() {
   document.getElementById("streetview").style.height = streetViewHeight + "px";
   document.getElementById("nav-survey").style.height = streetViewHeight + "px";
 }
-
 
 document.addEventListener("DOMContentLoaded", function () {
   setStreetviewAndMapContainerHeight();
@@ -385,4 +382,9 @@ document.addEventListener("DOMContentLoaded", function () {
   setUpSatelliteImageObserver();
   setUpInitialSurveyMutationChecker();
   setUpModals();
+
+  window.addEventListener("resize", (e) => {
+    e.preventDefault();
+    setStreetviewAndMapContainerHeight();
+  });
 });
