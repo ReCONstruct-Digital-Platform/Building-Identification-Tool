@@ -228,7 +228,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("htmx:afterRequest", (e) => {
     setUpColumnConfig();
     setUpModals();
-    setUpDownloadButton();
   });
 
   const urlParams = new URLSearchParams(window.location.search);
