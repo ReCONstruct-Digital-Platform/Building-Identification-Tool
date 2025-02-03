@@ -53,19 +53,16 @@ def upload_imgs(request, building_id):
 
 @require_POST
 @login_required(login_url="account_login")
-def update_user_settings(request):
-    logging.debug(f"Update user settings: {request.body}")
+def update_user_survey_column_settings(request):
+    logging.debug(f"Update user survey column settings: {request.body}")
     body = json.loads(request.body)
-    user_config, _ = UserConfigs.objects.get_or_create(pk=request.user.id)
-    print(f"before: {user_config}")
-    for key, value in body.items():
-        try:
-            setattr(user_config, key, value)
-        except:
-            print(f"Unkown setting key: {key}")
-            continue
-    user_config.save()
-    print(f"after: {user_config}")
+    survey = Survey.objects.get(slug=body["survey_slug"])
+
+    if sur_page_bldg_cols := body.get("sur_page_bldg_cols", None):
+        user_config, _ = UserConfigs.objects.get_or_create(pk=request.user.id)
+        user_config.sur_page_bldg_cols = {survey.id: sur_page_bldg_cols}
+        user_config.save()
+
     return HttpResponse("Ok")
 
 

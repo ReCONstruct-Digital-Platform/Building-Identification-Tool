@@ -70,8 +70,8 @@ def migrate_responses(dry_run=True):
     )
 
     survey, _ = Survey.objects.get_or_create(
-        name="Recon Survey V2: Montreal HLMs with brick facade",
-        description="Reconstruct sub-survey on SHQ HLMs in Montréal with brick facade",
+        name="Sub-survey Example: Montreal HLMs w brick facade",
+        description="Example of a sub-survey on SHQ HLMs in Montréal with brick facade. This survey filter the SHQ HLM dataset using responses to the V1 survey. Only buildings marked as having a brick exterior cladding are included as candidates.",
         created_by=SYSTEM_USER,
         dataset=dataset,
         status=Survey.Status.ACTIVE,

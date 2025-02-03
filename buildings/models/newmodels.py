@@ -74,15 +74,39 @@ class UserConfigs(models.Model):
     """
     Hold various user display configs
     """
-
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         primary_key=True,
     )
+    # JSON converts the keys from int to string
     res_page_bldg_cols = models.JSONField(null=True, blank=True)
     res_page_survey_cols = models.JSONField(null=True, blank=True)
     sur_page_bldg_cols = models.JSONField(null=True, blank=True)
+
+    def get_survey_page_building_columns(self, survey):
+        """
+        Returns the survey page columns to display config or None
+        """
+        if self.sur_page_bldg_cols:
+            return self.sur_page_bldg_cols.get(str(survey.id), None)
+        return None
+
+    def get_results_page_survey_column_config(self, survey):
+        """
+        Returns the survey page columns to display config or None
+        """
+        if self.res_page_survey_cols:
+            return self.res_page_survey_cols.get(str(survey.id), None)
+        return None
+
+    def get_results_page_dataset_column_config(self, dataset):
+        """
+        Returns the survey page columns to display config or None
+        """
+        if self.res_page_bldg_cols:
+            return self.res_page_bldg_cols.get(str(dataset.id), None)
+        return None
 
 
 class Building(models.Model):

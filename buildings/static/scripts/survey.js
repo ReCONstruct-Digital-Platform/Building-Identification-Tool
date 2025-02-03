@@ -408,6 +408,9 @@ function setUpDraggableList(draggableListId, defaultValues) {
 
     renderSelectedFields(currentListValues);
 
+    const surveySlug = JSON.parse(document.getElementById("survey_slug").textContent);
+    console.debug("SURVEY", surveySlug);
+
     fetch(updateSettingsUrl, {
       method: "POST",
       mode: "same-origin",
@@ -418,6 +421,7 @@ function setUpDraggableList(draggableListId, defaultValues) {
         "X-CSRFToken": getCookie("csrftoken"),
       },
       body: JSON.stringify({
+        survey_slug: surveySlug,
         sur_page_bldg_cols: currentListValues,
       }),
     }).then((resp) => {
