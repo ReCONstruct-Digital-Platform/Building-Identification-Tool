@@ -80,9 +80,9 @@ class UserConfigs(models.Model):
         primary_key=True,
     )
     # JSON converts the keys from int to string
-    res_page_bldg_cols = models.JSONField(null=True, blank=True)
-    res_page_survey_cols = models.JSONField(null=True, blank=True)
-    sur_page_bldg_cols = models.JSONField(null=True, blank=True)
+    res_page_bldg_cols = models.JSONField(null=True, blank=True, default=dict)
+    res_page_survey_cols = models.JSONField(null=True, blank=True, default=dict)
+    sur_page_bldg_cols = models.JSONField(null=True, blank=True, default=dict)
 
     def get_survey_page_building_columns(self, survey):
         """

@@ -190,15 +190,19 @@
 
         <div class="flex flex-row space-x-2">
         
+          <a id="next" href="{% url 'buildings:survey_results' survey.slug %}">
           <button id="survey-results-button"
             class="rounded-md bg-gray-200 px-3 py-1.5 font-semibold leading-6 text-slate-900 shadow-md hover:bg-teal-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
-            <a id="next" href="{% url 'buildings:survey_results' survey.slug %}">View Survey Results</a>
-          </button>
+              View Survey Results
+            </button>
+          </a>
         
-          <button id="next-building-button"
-            class="rounded-md shadow-md bg-teal-600 px-3 py-1.5 font-semibold leading-6 text-white  hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
-            <a id="next" href="{{ next_building_url }}">Next Building &gt;&gt;</a>
-          </button>
+          <a id="next" href="{{ next_building_url }}">
+            <button id="next-building-button"
+              class="rounded-md shadow-md bg-teal-600 px-3 py-1.5 font-semibold leading-6 text-white  hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
+              Next Building &gt;&gt;
+            </button>
+          </a>
         
         </div>
 

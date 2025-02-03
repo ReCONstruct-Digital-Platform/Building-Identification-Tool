@@ -58,7 +58,9 @@ def update_user_survey_column_settings(request):
     body = json.loads(request.body)
     survey = Survey.objects.get(slug=body["survey_slug"])
 
-    if sur_page_bldg_cols := body.get("sur_page_bldg_cols", None):
+    sur_page_bldg_cols = body.get("sur_page_bldg_cols")
+    # Need to catch empty array if user wants to see no columns
+    if sur_page_bldg_cols or sur_page_bldg_cols == []:
         user_config, _ = UserConfigs.objects.get_or_create(pk=request.user.id)
         user_config.sur_page_bldg_cols = {survey.id: sur_page_bldg_cols}
         user_config.save()

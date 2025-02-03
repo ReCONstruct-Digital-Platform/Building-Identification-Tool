@@ -133,41 +133,26 @@ def survey_results(request, survey_slug):
 
     # If we got a config from params, save in DB
     # Empty array means empty user config - if no param it would be empty dict
+    dataset_id = str(dataset.id)
     if p_bldg_cols or p_bldg_cols == []:
         # The user set their config, we need to update the DB value and set
         # the current user columns to the parameter value
-        if user_config.get_results_page_dataset_column_config(dataset):
-            user_bldg_cols = user_config.res_page_bldg_cols[dataset.id] = p_bldg_cols
-        else:
-            user_config.res_page_bldg_cols = {}
-            user_bldg_cols = user_config.res_page_bldg_cols[dataset.id] = p_bldg_cols
+        user_bldg_cols = user_config.res_page_bldg_cols[dataset_id] = p_bldg_cols
         user_config.save()
     else:
         # No param set, take previous saved value or defaults
-        user_bldg_cols = (
-            user_config.get_results_page_dataset_column_config(dataset)
-            or default_bldg_cols
+        user_bldg_cols = user_config.res_page_bldg_cols.get(
+            dataset_id, default_bldg_cols
         )
 
     # Same thing for survey config columns
+    survey_id = str(survey.id)
     if p_survey_cols or p_survey_cols == []:
-        # The user set their config, we need to update the DB value and set
-        # the current user columns to the parameter value
-        if user_config.get_results_page_survey_column_config(dataset):
-            user_survey_cols = user_config.res_page_survey_cols[survey.id] = (
-                p_survey_cols
-            )
-        else:
-            user_config.res_page_survey_cols = {}
-            user_survey_cols = user_config.res_page_survey_cols[survey.id] = (
-                p_survey_cols
-            )
+        user_survey_cols = user_config.res_page_survey_cols[survey_id] = p_survey_cols
         user_config.save()
     else:
-        # No param set, take previous saved value or defaults
-        user_survey_cols = (
-            user_config.get_results_page_dataset_column_config(survey)
-            or default_survey_cols
+        user_survey_cols = user_config.res_page_survey_cols.get(
+            survey_id, default_survey_cols
         )
 
     # Includes all columns we can order by
@@ -351,8 +336,11 @@ def do_survey(request, survey_slug, building_slug):
     }
     # Get the saved user column config or the default if not set for the survey
     user_config, _ = UserConfigs.objects.get_or_create(pk=request.user.id)
+    saved_col_config = user_config.get_survey_page_building_columns(survey)
     user_bldg_cols = (
-        user_config.get_survey_page_building_columns(survey) or default_bldg_cols
+        saved_col_config
+        if saved_col_config or saved_col_config == []
+        else default_bldg_cols
     )
 
     update_settings_url = reverse("buildings:update_user_survey_column_settings")
