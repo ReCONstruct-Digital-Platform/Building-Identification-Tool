@@ -1573,10 +1573,6 @@ input:checked + .toggle-bg {
   margin-top: 0.25rem !important;
 }
 
-.mt-12 {
-  margin-top: 3rem !important;
-}
-
 .mt-16 {
   margin-top: 4rem !important;
 }
@@ -1748,10 +1744,6 @@ input:checked + .toggle-bg {
   height: 30px !important;
 }
 
-.h-\[350px\] {
-  height: 350px !important;
-}
-
 .h-\[40px\] {
   height: 40px !important;
 }
@@ -1807,10 +1799,6 @@ input:checked + .toggle-bg {
 
 .max-h-full {
   max-height: 100% !important;
-}
-
-.min-h-\[50\%\] {
-  min-height: 50% !important;
 }
 
 .min-h-\[25\%\] {
@@ -1955,6 +1943,10 @@ input:checked + .toggle-bg {
   max-width: 40px !important;
 }
 
+.max-w-\[60\%\] {
+  max-width: 60% !important;
+}
+
 .max-w-\[75\%\] {
   max-width: 75% !important;
 }
@@ -1965,14 +1957,6 @@ input:checked + .toggle-bg {
 
 .max-w-xs {
   max-width: 20rem !important;
-}
-
-.max-w-\[60\%\] {
-  max-width: 60% !important;
-}
-
-.max-w-\[85\%\] {
-  max-width: 85% !important;
 }
 
 .flex-1 {
@@ -2106,6 +2090,10 @@ input:checked + .toggle-bg {
           appearance: none !important;
 }
 
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+}
+
 .grid-cols-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
 }
@@ -2140,10 +2128,6 @@ input:checked + .toggle-bg {
 
 .place-content-center {
   place-content: center !important;
-}
-
-.place-content-evenly {
-  place-content: space-evenly !important;
 }
 
 .place-items-center {
@@ -2769,6 +2753,11 @@ input:checked + .toggle-bg {
   padding-bottom: 8rem !important;
 }
 
+.py-4 {
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
+}
+
 .py-5 {
   padding-top: 1.25rem !important;
   padding-bottom: 1.25rem !important;
@@ -2863,8 +2852,8 @@ input:checked + .toggle-bg {
   line-height: 2.5rem !important;
 }
 
-.text-6xl {
-  font-size: 3.75rem !important;
+.text-5xl {
+  font-size: 3rem !important;
   line-height: 1 !important;
 }
 
@@ -2895,11 +2884,6 @@ input:checked + .toggle-bg {
 .text-xs {
   font-size: 0.75rem !important;
   line-height: 1rem !important;
-}
-
-.text-5xl {
-  font-size: 3rem !important;
-  line-height: 1 !important;
 }
 
 .font-bold {

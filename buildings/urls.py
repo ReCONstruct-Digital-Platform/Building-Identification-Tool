@@ -35,6 +35,7 @@ urlpatterns = [
     path(
         "results/survey/<str:survey_slug>", views.survey_results, name="survey_results"
     ),
+    path("surveys", views.surveys, name="surveys"),
     # TODO: All surveys
     path(
         "surveys/<str:survey_slug>/survey",

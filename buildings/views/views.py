@@ -62,7 +62,6 @@ def index(request):
     latest_votes_page = Paginator(latest_votes, 10).get_page(page_num_latest)
     user_votes_page = Paginator(user_votes, 10).get_page(page_num_user)
 
-    # TODO: how does this work?
     active_tab = request.GET.get("active_tab", "latest")
 
     context = {
@@ -89,8 +88,7 @@ def index(request):
 def datasets(request):
 
     datasets = Dataset.objects.all()
-    surveys = Survey.objects.all()
-    context = {"datasets": datasets, "surveys": surveys}
+    context = {"datasets": datasets}
     return render(request, "buildings/datasets.html", context)
 
 
@@ -102,6 +100,13 @@ def dataset(request, dataset_slug: str):
 
     context = {"dataset": dataset, "surveys": surveys}
     return render(request, "buildings/dataset.html", context)
+
+
+@login_required(login_url="account_login")
+def surveys(request):
+    surveys = Survey.objects.all()
+    context = {"surveys": surveys}
+    return render(request, "buildings/surveys.html", context)
 
 
 @login_required(login_url="account_login")

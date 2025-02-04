@@ -217,7 +217,10 @@ function setUpTabGroups(tabGroupId, activeClasses = [], inactiveClasses = []) {
       clickedTab.setAttribute("aria-selected", "true");
 
       const clickedTabContentId = clickedTab.id.replace("-tab", "");
-      document.getElementById(clickedTabContentId).style.display = "block";
+
+      const tabContent = document.getElementById(clickedTabContentId);
+      tabContent.classList.add("block");
+      tabContent.classList.remove("hidden");
 
       // Hide all other tablinks
       for (const otherTab of allTabLinks) {
@@ -227,7 +230,9 @@ function setUpTabGroups(tabGroupId, activeClasses = [], inactiveClasses = []) {
           otherTab.classList.remove(...activeClasses);
           otherTab.classList.add(...inactiveClasses);
           otherTab.setAttribute("aria-selected", "false");
-          associatedTabContent.style.display = "none";
+          associatedTabContent.classList.remove("block");
+          associatedTabContent.classList.add("hidden");
+          // associatedTabContent.style.display = "none";
         }
       }
     });
