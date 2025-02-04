@@ -516,6 +516,7 @@ async function findPanorama(
           `Status ${status}: Could not find panorama within ${radius}m! Giving up.`
         );
         elem = document.createElement("div");
+        elem.classList.add("text-center", "text-xl", "py-4");
         elem.innerText = `Could not find panorama within ${radius}m.`;
         document.getElementById("streetview").appendChild(elem);
       } else {

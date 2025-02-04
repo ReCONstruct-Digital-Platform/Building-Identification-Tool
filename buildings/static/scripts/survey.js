@@ -158,21 +158,22 @@ function setUpButtons() {
     false
   );
 
-  // No building button
-  document.getElementById("btn-problem-flag").addEventListener("click", (e) => {
+  const flagProblemButton = document.getElementById("btn-problem-flag");
+  console.debug("Attaching click handler to flag button", flagProblemButton);
+  flagProblemButton.addEventListener("click", (e) => {
     e.preventDefault();
+    console.debug("Problem flagged");
 
     const form = document.getElementById("building-submission-form");
 
-    const problem_flag_input = document.createElement("input");
-    problem_flag_input.setAttribute("type", "hidden");
-    problem_flag_input.setAttribute("name", "problem_flag");
-    problem_flag_input.setAttribute("value", "problem_flag");
-    form.appendChild(problem_flag_input);
+    const problemFlagInput = document.createElement("input");
+    problemFlagInput.setAttribute("type", "hidden");
+    problemFlagInput.setAttribute("name", "problem_flag");
+    problemFlagInput.setAttribute("value", "problem_flag");
+    form.appendChild(problemFlagInput);
     try {
-      const latest_view_data = getLatestViewData();
-      document.getElementById("latest_view_data").value =
-        JSON.stringify(latest_view_data);
+      const latestViewData = getLatestViewData();
+      document.getElementById("latest_view_data").value = JSON.stringify(latestViewData);
     } catch (error) {
       console.error(error);
     } finally {
