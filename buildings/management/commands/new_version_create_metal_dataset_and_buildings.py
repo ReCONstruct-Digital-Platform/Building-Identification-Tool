@@ -69,7 +69,7 @@ def upsert_evalunits(dry_run=True):
 
     SYSTEM_USER = User.objects.get(pk=33)
 
-    dataset, _ = Dataset.objects.get_or_create(
+    metal_dataset, _ = Dataset.objects.get_or_create(
         name="Potential Metal Buildings",
         created_by=SYSTEM_USER,
         description="Set of potential prefab metal buildings in Quebec. Output of a metal building detector AI model.",
@@ -326,7 +326,7 @@ def upsert_evalunits(dry_run=True):
             },
         ],
     )
-    dataset.save()
+    metal_dataset.save()
 
     for offset in tqdm(
         range(0, num_units, chunk_length),
@@ -404,7 +404,7 @@ def upsert_evalunits(dry_run=True):
                     "num_floors": unit["num_floors"],
                     "floor_area": unit["floor_area"],
                     "attrs": attrs,
-                    "dataset": dataset,
+                    "dataset": metal_dataset,
                 }
 
                 buildings_to_write.append(Building(**new_model))

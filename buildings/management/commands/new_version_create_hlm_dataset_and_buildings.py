@@ -485,6 +485,7 @@ def upsert_evalunits(dry_run=True):
                     nbf.eval_unit_id = e.id
                 --- Keep only buildings with no nobuildingflag associated
                 WHERE nbf.id is null
+                    and h.lat is not null and h.lng is not null
                 ORDER BY e.id DESC
                 LIMIT {chunk_length} offset {offset}
             """
