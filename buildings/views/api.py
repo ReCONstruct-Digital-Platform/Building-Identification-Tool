@@ -115,10 +115,10 @@ def gen_excel(request):
 
     paginator = Paginator(results.order_by(order_by), per_page=50)
 
-    bldg_fields = [f["id"] for f in bldg_cols]
-    survey_fields = [f["id"] for f in survey_cols]
+    bldg_fields = ["lat", "lng"] + [f["id"] for f in bldg_cols]
+    bldg_header = ["Latitude", "Longitude"] + [f["label"] for f in bldg_cols]
 
-    bldg_header = [f["label"] for f in bldg_cols]
+    survey_fields = [f["id"] for f in survey_cols]
     survey_header = [f["label"] for f in survey_cols]
     # all columns currently configured
     header = bldg_header + survey_header
