@@ -1500,6 +1500,11 @@ input:checked + .toggle-bg {
   margin-bottom: 0.25rem !important;
 }
 
+.my-2 {
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
 .my-4 {
   margin-top: 1rem !important;
   margin-bottom: 1rem !important;
@@ -1591,6 +1596,10 @@ input:checked + .toggle-bg {
 
 .mt-6 {
   margin-top: 1.5rem !important;
+}
+
+.mt-7 {
+  margin-top: 1.75rem !important;
 }
 
 .mt-8 {

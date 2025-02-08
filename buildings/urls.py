@@ -26,7 +26,6 @@ urlpatterns = [
     path("query/<str:dataset_slug>", views.query, name="query"),
     path("datasets", views.datasets, name="datasets"),
     path("datasets/<str:dataset_slug>", views.dataset, name="dataset"),
-    path("datasets/<str:dataset_slug>/newsurvey", views.newsurvey, name="newsurvey"),
     path(
         "datasets/<str:dataset_slug>/newsurvey_questions",
         views.newsurvey_questions,
@@ -36,7 +35,7 @@ urlpatterns = [
         "results/survey/<str:survey_slug>", views.survey_results, name="survey_results"
     ),
     path("surveys", views.surveys, name="surveys"),
-    # TODO: All surveys
+    path("surveys/newsurvey", views.newsurvey, name="newsurvey"),
     path(
         "surveys/<str:survey_slug>/survey",
         views.do_survey_redirect,

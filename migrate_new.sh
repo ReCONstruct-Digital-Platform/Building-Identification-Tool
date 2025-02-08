@@ -1,0 +1,7 @@
+#!/bin/bash
+python manage.py migrate buildings 0005
+python manage.py migrate
+python manage.py new_version_create_hlm_dataset_and_buildings
+python manage.py new_version_create_metal_dataset_and_buildings
+python manage.py new_version_create_survey1_and_responses
+python manage.py new_version_create_survey2_subsurvey1

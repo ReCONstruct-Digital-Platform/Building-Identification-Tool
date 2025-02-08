@@ -3,11 +3,18 @@ const surveyQueryBuilderId = "#query-builder-surveys";
 
 function getCurrentQuery() {
   return {
+    ...getSelectedDataset(),
     ...getOrderByConfig(),
     ...getColumnConfigs("user_bldg_cols", "draggable-list"),
     ...getColumnConfigs("user_survey_cols", "draggable-list-survey"),
     ...getQueryBuilderQuery(datasetQueryBuilderId, "dataset_query"),
     ...getQueryBuilderQuery(surveyQueryBuilderId, "survey_query"),
+  };
+}
+
+function getSelectedDataset() {
+  return {
+    ds: document.getElementById("source-dataset-select").value,
   };
 }
 
@@ -61,8 +68,8 @@ function setUpDraggableList(draggableListId, defaultValues) {
   const resetButton = draggableList.parentElement.getElementsByClassName("reset-button")[0];
   const selectAllButton = draggableList.parentElement.getElementsByClassName("select-all-button")[0];
 
-  console.debug(resetButton);
-  console.debug(selectAllButton);
+  //   console.debug(resetButton);
+  //   console.debug(selectAllButton);
 
   resetButton.addEventListener("click", (e) => {
     e.preventDefault();
@@ -157,88 +164,34 @@ function setUpColumnConfig() {
   setUpDraggableList("draggable-list-survey", defaultSurveyCols);
 }
 
-function setUpSourceDatasetSelect() {
-  const select = document.getElementById("results-viewer-select");
-  select.addEventListener("change", (e) => {
-    window.location.href = e.target.value;
-  });
-}
-
-function setUpDownloadButton() {
-  const button = document.getElementById("download");
-  const excelGenURL = document.getElementById("gen_excel_url").dataset.url;
-  const exportConfig = JSON.parse(document.getElementById("export_config").textContent);
-
-  const spinner = document.getElementById("download-button-loading-icon");
-  const icon = document.getElementById("download-button-icon");
-
-  button.addEventListener("click", (e) => {
-    e.preventDefault();
-    console.debug(exportConfig);
-
-    icon.classList.add("hidden");
-    spinner.classList.remove("hidden");
-    spinner.classList.add("block");
-
-    const body = JSON.stringify({
-      export_config: exportConfig,
-      ...getCurrentQuery(),
-    });
-
-    console.debug(body);
-    // do a post request to backend to generate excel using current query params
-    // create downloadable file (if latency is OK, otherwise we will send an email)
-    fetch(excelGenURL, {
-      method: "POST",
-      mode: "same-origin",
-      cache: "no-cache",
-      credentials: "same-origin",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": getCookie("csrftoken"),
-      },
-      body: body,
-    })
-      .then((res) => {
-        if (res.status != 200) {
-          return false;
-        }
-        console.log(res.headers);
-        res.blob().then((excelBlob) => downloadBlob(excelBlob, `survey_results_${Date.now()}.xlsx`));
-      })
-      .catch((error) => {
-        console.log("Error downloading file:", error);
-        return false;
-      })
-      .finally(() => {
-        icon.classList.add("block");
-        icon.classList.remove("hidden");
-        spinner.classList.remove("block");
-        spinner.classList.add("hidden");
-      });
-  });
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  setUpColumnConfig();
-  setUpModals();
-  setUpSourceDatasetSelect();
-  setUpDownloadButton();
-
-  document.addEventListener("htmx:afterRequest", (e) => {
-    setUpColumnConfig();
-    setUpModals();
-  });
-
+function fillInQueryBuildersFromUrlParams() {
   const urlParams = new URLSearchParams(window.location.search);
   const urlDatasetQuery = JSON.parse(b64DecodeUnicode(urlParams.get("dataset_query")));
   const urlSurveyQuery = JSON.parse(b64DecodeUnicode(urlParams.get("survey_query")));
+  urlDatasetQuery && document.getElementById("add-dataset-filter").dispatchEvent(new Event("click"));
+  if (urlSurveyQuery) {
+    console.debug("got survey query from URL");
+    document.getElementById("add-surveys-filter").dispatchEvent(new Event("click"));
+  }
+}
 
+function setUpQueryBuilders() {
   const qb_dataset_filters = JSON.parse(document.getElementById("qb_dataset_filters").textContent);
   const qb_surveys_filters = JSON.parse(document.getElementById("qb_surveys_filters").textContent);
 
   console.debug(qb_dataset_filters);
   console.debug(qb_surveys_filters);
+
+  // Fully reset the QBs
+  if (document.querySelector(datasetQueryBuilderId).childElementCount > 0) {
+    document.querySelector(datasetQueryBuilderId).innerHTML = "";
+    $(datasetQueryBuilderId).queryBuilder("destroy");
+  }
+
+  if (document.querySelector(surveyQueryBuilderId).childElementCount > 0) {
+    document.querySelector(surveyQueryBuilderId).innerHTML = "";
+    $(surveyQueryBuilderId).queryBuilder("destroy");
+  }
 
   // Fix for Bootstrap Datepicker
   $(datasetQueryBuilderId).on("afterUpdateRuleValue.queryBuilder", function (e, rule) {
@@ -249,7 +202,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("add-dataset-filter").addEventListener("click", (e) => {
     e.preventDefault();
-
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlDatasetQuery = JSON.parse(b64DecodeUnicode(urlParams.get("dataset_query")));
     if (document.querySelector(datasetQueryBuilderId).childElementCount > 0) {
       $(datasetQueryBuilderId).queryBuilder("destroy");
       e.target.textContent = "Add dataset filter";
@@ -312,6 +266,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("add-surveys-filter").addEventListener("click", (e) => {
     e.preventDefault();
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlSurveyQuery = JSON.parse(b64DecodeUnicode(urlParams.get("survey_query")));
 
     if (document.querySelector(surveyQueryBuilderId).childElementCount > 0) {
       $(surveyQueryBuilderId).queryBuilder("destroy");
@@ -346,26 +302,38 @@ document.addEventListener("DOMContentLoaded", () => {
           "not_in",
         ],
         filters: qb_surveys_filters["filters"],
-        rules: urlSurveyQuery ?? {
-          condition: "AND",
-          rules: [
-            {
-              id: "response_data__exterior_cladding",
-              field: "response_data__exterior_cladding",
-              input: "text",
-              type: "checkbox",
-              operator: "in",
-              value: ["brick_masonry", "wood"],
-            },
-          ],
-        },
+        rules: urlSurveyQuery,
         allow_empty: true,
       });
     }
   });
+}
 
-  urlDatasetQuery && document.getElementById("add-dataset-filter").dispatchEvent(new Event("click"));
-  urlSurveyQuery && document.getElementById("add-surveys-filter").dispatchEvent(new Event("click"));
+document.addEventListener("DOMContentLoaded", () => {
+  setUpQueryBuilders();
+  fillInQueryBuildersFromUrlParams();
+  setUpColumnConfig();
+  setUpModals();
 });
 
+document.addEventListener("htmx:afterRequest", (e) => {
+  console.debug("HMTX after request", e);
+  setUpColumnConfig();
+  setUpModals();
 
+  if (e.target.id === "source-dataset-select") {
+    console.debug("HTMX ON SOURCE DS SELECT - need to reload QBs");
+    setUpQueryBuilders();
+  }
+});
+
+document.addEventListener("htmx:afterSwap", (e) => {
+  console.debug("HMTX after swap", e);
+});
+document.addEventListener("htmx:afterSettle", (e) => {
+  console.debug("HMTX after settle", e);
+});
+
+document.addEventListener("htmx:oobAfterSwap", (e) => {
+  console.debug("HTMX oobAfterSwap event", e);
+});

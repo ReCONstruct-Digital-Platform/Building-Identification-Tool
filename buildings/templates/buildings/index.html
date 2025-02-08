@@ -28,7 +28,7 @@
             <div class="h-fit py-1 px-2 
             {% if survey.status == 'ACTIVE' %}
             bg-emerald-100 
-            {% elif survey.status == 'CREATED' %}
+            {% elif survey.status == 'IN_PROGRESS' %}
             bg-blue-100 
             {% elif survey.status == 'COMPLETED' %}
             bg-pruple-200 
@@ -40,7 +40,7 @@
                 <circle cx="2.5" cy="3" r="2.5" 
                  {% if survey.status == 'ACTIVE' %}
                  fill="#059669"
-                 {% elif survey.status == 'CREATED' %}
+                 {% elif survey.status == 'IN_PROGRESS' %}
                  fill="#059696"
                  {% elif survey.status == 'COMPLETED' %}
                  fill="#34d6"

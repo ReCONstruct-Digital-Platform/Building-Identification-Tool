@@ -1,0 +1,298 @@
+{% load static %}
+{% load i18n %}
+{% load allauth %}
+<div id="results-container" class="mb-4 flex flex-col">
+  
+  {% #modal id="column_config" %}
+  <div class="flex-grow rounded-2xl px-10 pt-4">
+    <h1 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Building Attributes</h1>
+    <div class="flex justify-between">
+      <button class="reset-button py-2 underline">Reset defaults</button>
+      <button class="select-all-button py-2 underline">Unselect all</button>
+    </div>
+    <ul id="draggable-list" class="space-y-2">
+      {% for col in user_bldg_cols %}
+      <li class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm cursor-grab"
+        draggable="true">
+        <label class="text-gray-700">
+          <input type="checkbox" id="{{ col.id }}"
+            class="mr-4 h-5 w-5 text-teal-500 focus:ring-2 focus:ring-teal-300" checked>{{ col.label }}
+        </label>
+        <div class="mr-4 text-gray-400 cursor-grab">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-grip-vertical">
+            <circle cx="9" cy="12" r="1" />
+            <circle cx="9" cy="5" r="1" />
+            <circle cx="9" cy="19" r="1" />
+            <circle cx="15" cy="12" r="1" />
+            <circle cx="15" cy="5" r="1" />
+            <circle cx="15" cy="19" r="1" />
+          </svg>
+        </div>
+      </li>
+      {% endfor %}
+      {% with default_bldg_cols|sub_lists:user_bldg_cols as remaining_cols %}
+      {% for col in remaining_cols %}
+      <li class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm cursor-grab"
+        draggable="true">
+        <label class="text-gray-700">
+          <input type="checkbox" id="{{ col.id }}"
+            class="mr-4 h-5 w-5 text-teal-500 focus:ring-2 focus:ring-teal-300">{{ col.label }}
+        </label>
+        <div class="mr-4 text-gray-400 cursor-grab">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-grip-vertical">
+            <circle cx="9" cy="12" r="1" />
+            <circle cx="9" cy="5" r="1" />
+            <circle cx="9" cy="19" r="1" />
+            <circle cx="15" cy="12" r="1" />
+            <circle cx="15" cy="5" r="1" />
+            <circle cx="15" cy="19" r="1" />
+          </svg>
+        </div>
+      </li>
+      {% endfor %}
+      {% endwith %}
+    </ul>
+  </div>
+  <div class="flex-grow rounded-2xl px-10 pt-4">
+    <h1 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Survey Response Fields</h1>
+    <div class="flex justify-between">
+      <button class="reset-button py-2 underline">Reset defaults</button>
+      <button class="select-all-button py-2 underline">Unselect all</button>
+    </div>
+    <ul id="draggable-list-survey" class="space-y-3">
+      {% for col in user_survey_cols %}
+      <li class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm cursor-grab gap-1"
+        draggable="true">
+        <label class="text-gray-700">
+          <input type="checkbox" id="{{ col.id }}"
+            class="mr-4 h-5 w-5 text-teal-500 focus:ring-2 focus:ring-teal-300" checked>{{ col.label }}
+        </label>
+        <div class="mr-4 text-gray-400 cursor-grab">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-grip-vertical">
+            <circle cx="9" cy="12" r="1" />
+            <circle cx="9" cy="5" r="1" />
+            <circle cx="9" cy="19" r="1" />
+            <circle cx="15" cy="12" r="1" />
+            <circle cx="15" cy="5" r="1" />
+            <circle cx="15" cy="19" r="1" />
+          </svg>
+        </div>
+      </li>
+      {% endfor %}
+      {% with default_survey_cols|sub_lists:user_survey_cols as remaining_cols %}
+      {% for col in remaining_cols %}
+      <li class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm cursor-grab"
+        draggable="true">
+        <label class="text-gray-700">
+          <input type="checkbox" id="{{ col.id }}"
+            class="mr-4 h-5 w-5 text-teal-500 focus:ring-2 focus:ring-teal-300">{{ col.label }}
+        </label>
+        <div class="mr-4 text-gray-400 cursor-grab">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-grip-vertical">
+            <circle cx="9" cy="12" r="1" />
+            <circle cx="9" cy="5" r="1" />
+            <circle cx="9" cy="19" r="1" />
+            <circle cx="15" cy="12" r="1" />
+            <circle cx="15" cy="5" r="1" />
+            <circle cx="15" cy="19" r="1" />
+          </svg>
+        </div>
+      </li>
+      {% endfor %}
+      {% endwith %}
+    </ul>
+  </div>
+  {% /modal %}
+
+  {% if page.paginator.num_pages > 1 %}
+  <div class="w-full flex items-center justify-center">
+    <div class="flex items-center gap-8">
+      <button {% if page.has_previous %} hx-target="#results-container" hx-swap="outerHTML"
+        hx-get="{% url 'buildings:newsurvey' %}?page={{ page.previous_page_number }}"
+        hx-vals='js:{...getCurrentQuery()}' hx-replace-url="true" {% else %} disabled {% endif %} 
+        hx-indicator=".spinner-nav-prev"
+        class="rounded-md border border-slate-300 p-2.5 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800 focus:text-white focus:bg-slate-800 focus:border-slate-800 active:border-slate-800 active:text-white active:bg-slate-800 
+      disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" type="button">
+        <div class="spinner-nav-prev">
+          <span class="display-when-not-loading">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+              <path fill-rule="evenodd"
+              d="M11.03 3.97a.75.75 0 0 1 0 1.06l-6.22 6.22H21a.75.75 0 0 1 0 1.5H4.81l6.22 6.22a.75.75 0 1 1-1.06 1.06l-7.5-7.5a.75.75 0 0 1 0-1.06l7.5-7.5a.75.75 0 0 1 1.06 0Z"
+              clip-rule="evenodd" />
+            </svg>
+          </span>
+          <span class="display-when-loading">
+            <svg aria-hidden="true" class="w-4 h-4 animate-spin fill-white" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+            </svg>
+          </span>
+        </div>
+      </button>
+
+      <p class="text-slate-600">
+        Page <strong class="text-slate-800"> {{ page.number }} </strong> of&nbsp;<strong class="text-slate-800">
+          {{ page.paginator.num_pages }}
+        </strong>
+      </p>
+      
+      <button {% if page.has_next %} hx-target="#results-container" hx-swap="outerHTML"
+        hx-get="{% url 'buildings:newsurvey' %}?page={{ page.next_page_number }}"
+        hx-vals='js:{...getCurrentQuery()}' hx-replace-url="true" {% else %} disabled {% endif %}
+        class="rounded-md border border-slate-300 p-2.5 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800 focus:text-white focus:bg-slate-800 focus:border-slate-800 active:border-slate-800 active:text-white active:bg-slate-800 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+        hx-indicator=".spinner-nav-next" type="button">
+        <div class="spinner-nav-next spinner">
+          <span class="display-when-not-loading">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+              <path fill-rule="evenodd"
+              d="M12.97 3.97a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06l6.22-6.22H3a.75.75 0 0 1 0-1.5h16.19l-6.22-6.22a.75.75 0 0 1 0-1.06Z"
+              clip-rule="evenodd" />
+            </svg>
+          </span>
+          <span class="display-when-loading">
+            <svg aria-hidden="true" class="w-4 h-4 animate-spin fill-white" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+            </svg>
+          </span>
+        </div>
+      </button>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="px-3">
+    <p>Showing {{ page.start_index }}-{{ page.end_index }} of {{ page.paginator.count }} candidates</p>
+  </div>
+
+  <div class="flex flex-col gap-3">
+
+    {% for bldg in page %}
+    <div class="bg-white bg-opacity-65 rounded-xl p-4 text-base gap-3 shadow-md border border-gray-200">
+      <div class="flex flex-col items-top gap-2">
+        <div class="flex flex-row items-end">
+          <div class="text-xl font-semibold text-gray-900 self-end">{{ bldg.address }}</div>
+          <div class="ps-2 text-xl"> - {{ bldg.muni }}, {{ bldg.admin_area_level_1 }}</div>
+          <div class="ps-2 text-lg"> ({{ bldg.lat }}, {{bldg.lng}})</div>
+        </div>
+
+        <div class="flex flex-row w-full gap-3 items-center">
+          <div>
+            <object class="rounded-md w-[320px]" data="{{ bldg.get_thumbnail_url }}" tabindex="-1"
+              type="image/jpeg">
+              <div class="flex rounded-md h-[205px] w-[320px] bg-gray-100 justify-center items-center">
+                No image found
+              </div>
+            </object>
+          </div>
+          <div id="building-attrs-{{ forloop.counter }}"
+            class="attrs-box  w-full grid grid-cols-3 xl:grid-cols-5 rounded-lg p-2 overflow-hidden">
+            <div class="col-span-1">
+              <div class="text-xl font-semibold px-2 underline underline-offset-4 pb-2 pt-1">Building Attributes
+              </div>
+            </div>
+            {% for field in user_bldg_cols %}
+            <div class="px-2">
+              <p class="font-semibold">{{ field.label }}</p>
+              <p>{{ bldg|get_bldg_field:field.id }}</p>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div>
+          <div id="responses-{{ forloop.counter }}" class="flex flex-col gap-3 bg-white overflow-x-auto">
+            <table id="dataTable" class="table-auto min-w-full border-collapse">
+              <thead id="tableHeader" class="border border-gray-200">
+                <tr class="bg-teal-50 divide-x divide-gray-200 divide-dotted">
+                  <th scope="col"
+                    class="ps-3 pe-5 py-2 w-auto text-left whitespace-nowrap text-sm leading-6 font-semibold text-gray-900 capitalize">
+                    Respondent
+                  </th>
+                  {% for column in user_survey_cols %}
+                  <th scope="col"
+                    class="ps-3 pe-5 py-2 w-autotext-left whitespace-nowrap text-sm leading-6 font-semibold text-gray-900 capitalize">
+                    {{ column.label }}
+                  </th>
+                  {% endfor %}
+                </tr>
+              </thead>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% endfor %}
+
+    {% if page.paginator.count == 0 %}
+    <div class="flex flex-grow flex-col w-full items-center justify-center py-6">
+      <p class="text-lg">
+        No results found
+      </p>
+    </div>
+    {% elif page.paginator.num_pages > 1 %}
+    <div class="w-full flex items-center justify-center">
+
+      <div class="flex items-center gap-8">
+
+        <button {% if page.has_previous %} hx-target="#results-container" hx-swap="outerHTML show:top"
+          hx-get="{% url 'buildings:newsurvey' %}?page={{ page.previous_page_number }}"
+          hx-vals='js:{...getCurrentQuery()}' hx-replace-url="true" {% else %} disabled {% endif %} 
+          hx-indicator=".spinner-nav-prev"
+          class="rounded-md border border-slate-300 p-2.5 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800 focus:text-white focus:bg-slate-800 focus:border-slate-800 active:border-slate-800 active:text-white active:bg-slate-800 
+      disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" type="button">
+          <div class="spinner-nav-prev">
+            <span class="display-when-not-loading">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                <path fill-rule="evenodd"
+                d="M11.03 3.97a.75.75 0 0 1 0 1.06l-6.22 6.22H21a.75.75 0 0 1 0 1.5H4.81l6.22 6.22a.75.75 0 1 1-1.06 1.06l-7.5-7.5a.75.75 0 0 1 0-1.06l7.5-7.5a.75.75 0 0 1 1.06 0Z"
+                clip-rule="evenodd" />
+              </svg>
+            </span>
+            <span class="display-when-loading">
+              <svg aria-hidden="true" class="w-4 h-4 animate-spin fill-white" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+              </svg>
+            </span>
+          </div>
+        </button>
+
+        <p class="text-slate-600">
+          Page <strong class="text-slate-800"> {{ page.number }} </strong> of&nbsp;<strong class="text-slate-800">
+            {{ page.paginator.num_pages }}
+          </strong>
+        </p>
+
+        <button {% if page.has_next %} hx-target="#results-container" hx-swap="outerHTML show:top"
+          hx-get="{% url 'buildings:newsurvey'%}?page={{ page.next_page_number }}"
+          hx-vals='js:{...getCurrentQuery()}' hx-replace-url="true" {% else %} disabled {% endif %}
+          hx-indicator=".spinner"
+          class="rounded-md border border-slate-300 p-2.5 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800 focus:text-white focus:bg-slate-800 focus:border-slate-800 active:border-slate-800 active:text-white active:bg-slate-800 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+          type="button">
+          <div class="spinner-nav-next spinner">
+            <span class="display-when-not-loading">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                <path fill-rule="evenodd"
+                d="M12.97 3.97a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06l6.22-6.22H3a.75.75 0 0 1 0-1.5h16.19l-6.22-6.22a.75.75 0 0 1 0-1.06Z"
+                clip-rule="evenodd" />
+              </svg>
+            </span>
+            <span class="display-when-loading">
+              <svg aria-hidden="true" class="w-4 h-4 animate-spin fill-white" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+              </svg>
+            </span>
+          </div>
+        </button>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+</div>

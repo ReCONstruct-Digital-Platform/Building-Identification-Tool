@@ -1,14 +1,11 @@
-import json
 import logging
 
-from django import forms
 from django.db import models
-from django.forms import ModelForm, Form
+from django.forms import ModelForm
 from django.utils.translation import gettext_lazy as _
 
 from buildings.models.models import Vote
 
-from buildings.models.newmodels import Survey
 from buildings.widgets import (
     MultiCheckboxSpecify,
     RadioSelect,

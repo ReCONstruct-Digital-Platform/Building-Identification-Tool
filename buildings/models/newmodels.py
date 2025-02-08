@@ -213,12 +213,12 @@ class Survey(models.Model):
         )
 
     class Status(models.TextChoices):
-        CREATED = "CREATED", _("Created")
+        IN_PROGRESS = "IN PROGRESS", _("In Progress")
         ACTIVE = "ACTIVE", _("Active")
         COMPLETED = "COMPLETED", _("Completed")
         ARCHIVED = "ARCHIVED", _("Archived")
 
-    status = models.TextField(choices=Status.choices, default=Status.CREATED)
+    status = models.TextField(choices=Status.choices, default=Status.IN_PROGRESS)
 
     name = models.TextField()
     description = models.TextField(null=True, blank=True)
@@ -235,7 +235,7 @@ class Survey(models.Model):
     dataset_filter = models.JSONField(null=True, blank=True)
 
     # Survey schema is a mapping of field_id -> (field_label, type, question_text, widget)
-    schema = JSONField()
+    schema = JSONField(default=dict)
 
     # Holds modal HTML
     modals = JSONField(null=True, blank=True)

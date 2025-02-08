@@ -17,126 +17,319 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Building',
+            name="Building",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('ext_id', models.TextField(blank=True, null=True)),
-                ('lat', models.FloatField(null=True)),
-                ('lng', models.FloatField(null=True)),
-                ('point', django.contrib.gis.db.models.fields.PointField(null=True, srid=4326)),
-                ('address', models.TextField()),
-                ('street_name', models.TextField(null=True)),
-                ('street_num', models.TextField(null=True)),
-                ('street_num_2', models.TextField(blank=True, null=True)),
-                ('muni', models.TextField(blank=True, null=True)),
-                ('submuni', models.TextField(blank=True, null=True)),
-                ('admin_area_level_1', models.TextField(blank=True, null=True)),
-                ('postal_code', models.TextField(blank=True, null=True)),
-                ('const_year', models.SmallIntegerField(blank=True, null=True)),
-                ('num_floors', models.IntegerField(blank=True, null=True)),
-                ('floor_area', models.FloatField(blank=True, null=True)),
-                ('attrs', models.JSONField(blank=True, null=True)),
-                ('slug', autoslug.fields.AutoSlugField(editable=False, populate_from=buildings.models.newmodels.Building.slugify)),
-                ('date_added', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date added')),
-                ('date_modified', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date modified')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("ext_id", models.TextField(blank=True, null=True)),
+                ("lat", models.FloatField(null=True)),
+                ("lng", models.FloatField(null=True)),
+                (
+                    "point",
+                    django.contrib.gis.db.models.fields.PointField(
+                        null=True, srid=4326
+                    ),
+                ),
+                ("address", models.TextField()),
+                ("street_name", models.TextField(null=True)),
+                ("street_num", models.TextField(null=True)),
+                ("street_num_2", models.TextField(blank=True, null=True)),
+                ("muni", models.TextField(blank=True, null=True)),
+                ("submuni", models.TextField(blank=True, null=True)),
+                ("admin_area_level_1", models.TextField(blank=True, null=True)),
+                ("postal_code", models.TextField(blank=True, null=True)),
+                ("const_year", models.SmallIntegerField(blank=True, null=True)),
+                ("num_floors", models.IntegerField(blank=True, null=True)),
+                ("floor_area", models.FloatField(blank=True, null=True)),
+                ("attrs", models.JSONField(blank=True, null=True)),
+                (
+                    "slug",
+                    autoslug.fields.AutoSlugField(
+                        editable=False,
+                        populate_from=buildings.models.newmodels.Building.slugify,
+                    ),
+                ),
+                (
+                    "date_added",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, verbose_name="date added"
+                    ),
+                ),
+                (
+                    "date_modified",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, verbose_name="date modified"
+                    ),
+                ),
             ],
             options={
-                'db_table': 'buildings',
+                "db_table": "buildings",
             },
         ),
         migrations.CreateModel(
-            name='Dataset',
+            name="Dataset",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.TextField()),
-                ('description', models.TextField()),
-                ('slug', autoslug.fields.AutoSlugField(editable=False, populate_from='name')),
-                ('schema', models.JSONField()),
-                ('date_added', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date added')),
-                ('date_modified', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date modified')),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.TextField()),
+                ("description", models.TextField()),
+                (
+                    "slug",
+                    autoslug.fields.AutoSlugField(editable=False, populate_from="name"),
+                ),
+                ("schema", models.JSONField()),
+                (
+                    "date_added",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, verbose_name="date added"
+                    ),
+                ),
+                (
+                    "date_modified",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, verbose_name="date modified"
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'db_table': 'datasets',
+                "db_table": "datasets",
             },
         ),
         migrations.CreateModel(
-            name='UserConfigs',
+            name="UserConfigs",
             fields=[
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL)),
-                ('res_page_bldg_cols', models.JSONField(blank=True, null=True)),
-                ('res_page_survey_cols', models.JSONField(blank=True, null=True)),
-                ('sur_page_bldg_cols', models.JSONField(blank=True, null=True)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        primary_key=True,
+                        serialize=False,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                ("res_page_bldg_cols", models.JSONField(blank=True, null=True)),
+                ("res_page_survey_cols", models.JSONField(blank=True, null=True)),
+                ("sur_page_bldg_cols", models.JSONField(blank=True, null=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Survey',
+            name="Survey",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('status', models.TextField(choices=[('CREATED', 'Created'), ('ACTIVE', 'Active'), ('COMPLETED', 'Completed'), ('ARCHIVED', 'Archived')], default='CREATED')),
-                ('name', models.TextField()),
-                ('description', models.TextField(blank=True, null=True)),
-                ('slug', autoslug.fields.AutoSlugField(editable=False, populate_from='name')),
-                ('dataset_filter', models.JSONField(blank=True, null=True)),
-                ('schema', models.JSONField()),
-                ('modals', models.JSONField(blank=True, null=True)),
-                ('surveys_filter', models.JSONField(blank=True, null=True)),
-                ('date_added', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date added')),
-                ('date_modified', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date modified')),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('dataset', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='buildings.dataset')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "status",
+                    models.TextField(
+                        choices=[
+                            ("IN_PROGRESS", "In Progress"),
+                            ("ACTIVE", "Active"),
+                            ("COMPLETED", "Completed"),
+                            ("ARCHIVED", "Archived"),
+                        ],
+                        default="IN_PROGRESS",
+                    ),
+                ),
+                ("name", models.TextField()),
+                ("description", models.TextField(blank=True, null=True)),
+                (
+                    "slug",
+                    autoslug.fields.AutoSlugField(editable=False, populate_from="name"),
+                ),
+                ("dataset_filter", models.JSONField(blank=True, null=True)),
+                ("schema", models.JSONField()),
+                ("modals", models.JSONField(blank=True, null=True)),
+                ("surveys_filter", models.JSONField(blank=True, null=True)),
+                (
+                    "date_added",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, verbose_name="date added"
+                    ),
+                ),
+                (
+                    "date_modified",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, verbose_name="date modified"
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "dataset",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="buildings.dataset",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'surveys',
-                'unique_together': {('name', 'dataset', 'dataset_filter', 'surveys_filter')},
+                "db_table": "surveys",
+                "unique_together": {
+                    ("name", "dataset", "dataset_filter", "surveys_filter")
+                },
             },
         ),
         migrations.CreateModel(
-            name='ProblemFlag',
+            name="ProblemFlag",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('building', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='buildings.building')),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "building",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="buildings.building",
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='LatestViewData',
+            name="LatestViewData",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date_added', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date added')),
-                ('sv_pano', models.TextField(blank=True, null=True)),
-                ('sv_heading', models.FloatField(blank=True, null=True)),
-                ('sv_pitch', models.FloatField(blank=True, null=True)),
-                ('sv_zoom', models.FloatField(blank=True, null=True)),
-                ('marker_lat', models.FloatField(blank=True, null=True)),
-                ('marker_lng', models.FloatField(blank=True, null=True)),
-                ('building', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='buildings.building')),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "date_added",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, verbose_name="date added"
+                    ),
+                ),
+                ("sv_pano", models.TextField(blank=True, null=True)),
+                ("sv_heading", models.FloatField(blank=True, null=True)),
+                ("sv_pitch", models.FloatField(blank=True, null=True)),
+                ("sv_zoom", models.FloatField(blank=True, null=True)),
+                ("marker_lat", models.FloatField(blank=True, null=True)),
+                ("marker_lng", models.FloatField(blank=True, null=True)),
+                (
+                    "building",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="buildings.building",
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='building',
-            name='dataset',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='buildings.dataset'),
+            model_name="building",
+            name="dataset",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="buildings.dataset"
+            ),
         ),
         migrations.CreateModel(
-            name='Response',
+            name="Response",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('data', models.JSONField()),
-                ('date_added', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date added')),
-                ('date_modified', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date modified')),
-                ('building', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='buildings.building')),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('survey', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='buildings.survey')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("data", models.JSONField()),
+                (
+                    "date_added",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, verbose_name="date added"
+                    ),
+                ),
+                (
+                    "date_modified",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, verbose_name="date modified"
+                    ),
+                ),
+                (
+                    "building",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="buildings.building",
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "survey",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="buildings.survey",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'responses',
-                'unique_together': {('building', 'survey', 'created_by')},
+                "db_table": "responses",
+                "unique_together": {("building", "survey", "created_by")},
             },
         ),
         migrations.AlterUniqueTogether(
-            name='building',
-            unique_together={('ext_id', 'lat', 'lng', 'address', 'muni')},
+            name="building",
+            unique_together={("ext_id", "lat", "lng", "address", "muni")},
         ),
     ]
