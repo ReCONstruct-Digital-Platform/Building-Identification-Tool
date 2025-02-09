@@ -8,7 +8,11 @@ from django.views import generic
 from django.conf import settings
 from django.db.models import F
 from django.contrib import messages
-from django.http import Http404, HttpResponse
+from django.http import (
+    Http404,
+    HttpResponse,
+    HttpResponseBadRequest,
+)
 from django.core.paginator import Paginator
 from django.db.models import JSONField
 from render_block import render_block_to_string
@@ -492,7 +496,127 @@ def newsurvey_api(request, dataset_slug):
 
 
 @login_required(login_url="account_login")
-def newsurvey(request):
+def edit_survey(request, survey_slug):
+
+    num_results_per_page = 10
+
+    if request.method == "POST":
+        body = json.loads(request.body)
+        if "survey_name" not in body or "ds" not in body:
+            return HttpResponseBadRequest()
+
+        survey_name = body.get("survey_name")
+        dataset_slug = body.get("ds")
+        dataset_query = get_b64_encoded_json(body.get("dataset_query")) or None
+        survey_query = get_b64_encoded_json(body.get("survey_query")) or None
+
+        dataset = Dataset.objects.filter(slug=dataset_slug).first()
+        new_survey = Survey(
+            name=survey_name,
+            dataset=dataset,
+            dataset_filter=dataset_query,
+            surveys_filter=survey_query,
+        )
+        new_survey.save()
+
+    survey = get_object_or_404(Survey, slug=survey_slug)
+    dataset = survey.dataset
+
+    # Get filters to display
+
+    pagenum = request.GET.get("page") or 1
+    orderby_field = request.GET.get("field") or "address"
+    orderby_dir = request.GET.get("dir") or "asc"
+    dataset_query = get_b64_encoded_json(request.GET.get("dataset_query"))
+    survey_query = get_b64_encoded_json(request.GET.get("survey_query"))
+    p_bldg_cols = get_b64_encoded_json(request.GET.get("user_bldg_cols"))
+    p_survey_cols = get_b64_encoded_json(request.GET.get("user_survey_cols"))
+
+    candidates = survey.get_target_population()
+
+    print(candidates.count())
+
+    default_bldg_cols = dataset.get_fields_to_display()
+    default_survey_cols = []
+
+    # Column config for refreshing the view
+    # Unlike in survey results, we don't want to save the user config
+    # as this is only for convenience when viewing candidates
+    # Users can't return to the survey cretion view so we don't save config.
+    if p_bldg_cols or p_bldg_cols == []:
+        # The user set their config, we need to update the DB value and set
+        # the current user columns to the parameter value
+        user_bldg_cols = p_bldg_cols
+    else:
+        # No param set, take previous saved value or defaults
+        user_bldg_cols = default_bldg_cols
+
+    if p_survey_cols or p_survey_cols == []:
+        user_survey_cols = p_survey_cols
+    else:
+        user_survey_cols = default_survey_cols
+
+    # Includes all columns we can order by
+    bldg_orderby_cols = [
+        {"id": "num_responses", "label": "Number of Responses"}
+    ] + dataset.get_orderby_fields()
+    survey_orderby_cols = default_survey_cols
+
+    # Need to use F to hide nulls, otherwise order_by descneding would show them first
+    order_by = getattr(F(orderby_field), orderby_dir)(nulls_last=True)
+
+    page = Paginator(
+        candidates.order_by(order_by), per_page=num_results_per_page
+    ).get_page(pagenum)
+
+    qb_dataset_filters = dataset.get_schema(prefix="")
+
+    surveys_on_dataset = Survey.objects.filter(dataset=dataset)
+    survey_filters_and_optgroups = get_surveys_qb_filters_and_optgroups(
+        surveys_on_dataset
+    )
+
+    context = {
+        "survey": survey,
+        "dataset": dataset,
+        "surveys": surveys_on_dataset,
+        "page": page,
+        "survey_orderby_cols": survey_orderby_cols,
+        "bldg_orderby_cols": bldg_orderby_cols,
+        "qb_dataset_filters": qb_dataset_filters,
+        "qb_surveys_filters": survey_filters_and_optgroups,
+        "orderby_field": orderby_field,
+        "orderby_dir": orderby_dir,
+        "user_bldg_cols": user_bldg_cols,
+        "default_bldg_cols": default_bldg_cols,
+        "user_survey_cols": user_survey_cols,
+        "default_survey_cols": default_survey_cols,
+    }
+
+    template_name = "buildings/edit_survey/edit_survey.html"
+
+    # We want to render the entire template if the trigger is source-dataset-select
+    # hx-swap is set to none on that attribute but we insert multiple elements out of band
+    if request.htmx:
+        if request.headers.get("Hx-Trigger") == "source-dataset-select":
+            print(
+                "Source dataset select triggered the HTMX request. Need to OOB swap JS variables and QB filters"
+            )
+            return render(request, "buildings/newsurvey/htmx_partial.html", context)
+        else:
+            rendered_block = render_block_to_string(
+                template_name,
+                "page-and-paging-controls",
+                context=context,
+                request=request,
+            )
+        return HttpResponse(content=rendered_block)
+
+    return render(request, template_name, context)
+
+
+@login_required(login_url="account_login")
+def new_survey(request):
     """
     Create a new survey on a dataset, and optionally the output of other surveys on that dataset
     """
@@ -501,8 +625,28 @@ def newsurvey(request):
 
     print(f"META PATH_INFO: {request.META['PATH_INFO']}")
 
-    datasets = Dataset.objects.all()
+    if request.method == "POST":
+        body = json.loads(request.body)
+        if "survey_name" not in body or "ds" not in body:
+            return HttpResponseBadRequest()
 
+        survey_name = body.get("survey_name")
+        dataset_slug = body.get("ds")
+        dataset_query = get_b64_encoded_json(body.get("dataset_query")) or None
+        survey_query = get_b64_encoded_json(body.get("survey_query")) or None
+
+        dataset = Dataset.objects.filter(slug=dataset_slug).first()
+        new_survey = Survey(
+            name=survey_name,
+            dataset=dataset,
+            dataset_filter=dataset_query,
+            surveys_filter=survey_query,
+        )
+        new_survey.save()
+        print(f"Created new survey {new_survey.id} {new_survey.slug}")
+        return redirect("buildings:edit_survey", survey_slug=new_survey.slug)
+
+    datasets = Dataset.objects.all()
     # TODO: what if sluf is invalid?
     p_dataset_slug = request.GET.get("ds")
     dataset = (
@@ -510,6 +654,8 @@ def newsurvey(request):
         if p_dataset_slug
         else datasets[0]
     )
+    if not dataset:
+        raise Http404(f"No dataset found for {p_dataset_slug}")
 
     pagenum = request.GET.get("page") or 1
     orderby_field = request.GET.get("field") or "address"
@@ -529,10 +675,8 @@ def newsurvey(request):
         dataset_filter=dataset_query or None,
         surveys_filter=survey_query or None,
     )
-
     candidates = new_survey.get_target_population()
 
-    print(candidates)
     print(candidates.count())
 
     default_bldg_cols = dataset.get_fields_to_display()
@@ -591,7 +735,7 @@ def newsurvey(request):
         "default_survey_cols": default_survey_cols,
     }
 
-    template_name = "buildings/newsurvey/main.html"
+    template_name = "buildings/new_survey/new_survey.html"
 
     # We want to render the entire template if the trigger is source-dataset-select
     # hx-swap is set to none on that attribute but we insert multiple elements out of band

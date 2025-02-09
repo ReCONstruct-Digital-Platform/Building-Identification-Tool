@@ -1,0 +1,18 @@
+{% load static %}
+{% load i18n %}
+{% load allauth %}
+
+<section id="candidate-filters" class="mt-7 mb-4" hx-swap-oob="true">
+  {% include 'buildings/new_survey/candidates_filter_partial.html' %}
+</section>
+
+{% include 'buildings/new_survey/candidates_partial.html' %}
+
+<div id="js-variables" hx-swap-oob="true">
+  {{ qb_dataset_filters | json_script:"qb_dataset_filters" }}
+  {{ qb_surveys_filters | json_script:"qb_surveys_filters" }}
+  {{ user_bldg_cols | json_script:"user_bldg_cols" }}
+  {{ default_bldg_cols | json_script:"default_bldg_cols" }}
+  {{ user_survey_cols | json_script:"user_survey_cols" }}
+  {{ default_survey_cols | json_script:"default_survey_cols" }}
+</div>

@@ -35,7 +35,12 @@ urlpatterns = [
         "results/survey/<str:survey_slug>", views.survey_results, name="survey_results"
     ),
     path("surveys", views.surveys, name="surveys"),
-    path("surveys/newsurvey", views.newsurvey, name="newsurvey"),
+    path("surveys/new_survey", views.new_survey, name="new_survey"),
+    path(
+        "surveys/<str:survey_slug>/edit",
+        views.edit_survey,
+        name="edit_survey",
+    ),
     path(
         "surveys/<str:survey_slug>/survey",
         views.do_survey_redirect,

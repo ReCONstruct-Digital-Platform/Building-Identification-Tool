@@ -238,3 +238,61 @@ function setUpTabGroups(tabGroupId, activeClasses = [], inactiveClasses = []) {
     });
   });
 }
+
+/**
+ * Collapsibles need class="collapsible" and data-collapse-target=<id of target> on the clickable element,
+ * and a collapsible icon as a child of the clickable element.
+ */
+function setUpCollapsibles() {
+
+  function toggleCollapsible(collapsible, target, icon) {
+    const isCollapsed = target.classList.contains("max-h-0")
+    if (isCollapsed) {
+      openCollapsible(collapsible, target, icon)
+    } else {
+      closeCollapsible(collapsible, target, icon)
+    }
+  }
+
+  function closeCollapsible(collapsible, target, icon) {
+    console.debug("closing collapsible", collapsible);
+    target.classList.add("max-h-0");
+    target.classList.remove("max-h-[500px]");
+    collapsible.setAttribute("collapsed", "");
+    icon.classList.remove("rotate-180");
+  }
+
+  function openCollapsible(collapsible, target, icon) {
+    console.debug("opening collapsible", collapsible);
+    target.classList.remove("max-h-0");
+    target.classList.add("max-h-[500px]");
+    collapsible.setAttribute("collapsed", "");
+    icon.classList.add("rotate-180");
+  }
+
+
+  const collapsibles = document.getElementsByClassName("collapsible");
+
+  Array.from(collapsibles).forEach((collapsible) => {
+    const targetId = collapsible.dataset.collapseTarget;
+    const target = document.getElementById(targetId);
+    const icon = collapsible.querySelector(".collapse-icon");
+
+    // Set initial state based on collapsed attribute presence
+    const shouldBeCollapsed = collapsible.hasAttribute('collapsed');
+    
+    if (shouldBeCollapsed) {
+      console.log("should be collapsed", collapsible)
+      closeCollapsible(collapsible, target, icon, true)
+    }
+    else {
+      console.log("should be open", collapsible)
+      openCollapsible(collapsible, target, icon, false)
+    }
+    
+    collapsible.addEventListener("click", (e) => {
+      console.debug("toggling collapsible", collapsible);
+      toggleCollapsible(collapsible, target, icon);
+    });
+  });
+}

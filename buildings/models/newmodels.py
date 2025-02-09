@@ -415,8 +415,8 @@ class Survey(models.Model):
         if random_non_surveyed_pk:
             return Building.objects.get(pk=random_non_surveyed_pk)
 
-        # Else we'll return a building with the least amount of responses
-        return buildings_w_response_counts.order_by("response_count").first()
+        # Else we'll return a random building
+        return buildings_w_response_counts.order_by("?").first()
 
     def get_completion_status(self):
         num_candidate_buildings = self.get_target_population().count()

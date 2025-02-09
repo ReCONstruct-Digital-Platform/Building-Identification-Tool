@@ -1,0 +1,24 @@
+{% extends "buildings/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="flex justify-center pb-4 px-4 mb-4 h-full">
+  <div class="flex flex-col w-[80%] h-full">
+
+    <div class="w-full bg-white bg-opacity-50 py-3 mb-3 px-5 rounded-md text-md">
+      <div class="flex flex-col w-fit">
+        <div class="flex flex-row items-center gap-2">
+          <div class="flex flex-row items-center gap-2">
+            <div class="text-2xl">Content not found.</div>
+            <div class="text-lg">{{ exception }}</div>
+            <div class="text-lg">{{ request_path }}</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

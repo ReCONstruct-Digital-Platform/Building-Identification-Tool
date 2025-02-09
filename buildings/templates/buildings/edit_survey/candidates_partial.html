@@ -116,7 +116,7 @@
   <div class="w-full flex items-center justify-center">
     <div class="flex items-center gap-8">
       <button {% if page.has_previous %} hx-target="#results-container" hx-swap="outerHTML"
-        hx-get="{% url 'buildings:newsurvey' %}?page={{ page.previous_page_number }}"
+        hx-get="{% url 'buildings:edit_survey' survey.slug %}?page={{ page.previous_page_number }}"
         hx-vals='js:{...getCurrentQuery()}' hx-replace-url="true" {% else %} disabled {% endif %} 
         hx-indicator=".spinner-nav-prev"
         class="rounded-md border border-slate-300 p-2.5 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800 focus:text-white focus:bg-slate-800 focus:border-slate-800 active:border-slate-800 active:text-white active:bg-slate-800 
@@ -144,7 +144,7 @@
       </p>
       
       <button {% if page.has_next %} hx-target="#results-container" hx-swap="outerHTML"
-        hx-get="{% url 'buildings:newsurvey' %}?page={{ page.next_page_number }}"
+        hx-get="{% url 'buildings:edit_survey' survey.slug %}?page={{ page.next_page_number }}"
         hx-vals='js:{...getCurrentQuery()}' hx-replace-url="true" {% else %} disabled {% endif %}
         class="rounded-md border border-slate-300 p-2.5 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800 focus:text-white focus:bg-slate-800 focus:border-slate-800 active:border-slate-800 active:text-white active:bg-slate-800 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
         hx-indicator=".spinner-nav-next" type="button">
@@ -242,7 +242,7 @@
       <div class="flex items-center gap-8">
 
         <button {% if page.has_previous %} hx-target="#results-container" hx-swap="outerHTML show:top"
-          hx-get="{% url 'buildings:newsurvey' %}?page={{ page.previous_page_number }}"
+          hx-get="{% url 'buildings:edit_survey' survey.slug %}?page={{ page.previous_page_number }}"
           hx-vals='js:{...getCurrentQuery()}' hx-replace-url="true" {% else %} disabled {% endif %} 
           hx-indicator=".spinner-nav-prev"
           class="rounded-md border border-slate-300 p-2.5 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800 focus:text-white focus:bg-slate-800 focus:border-slate-800 active:border-slate-800 active:text-white active:bg-slate-800 
@@ -270,7 +270,7 @@
         </p>
 
         <button {% if page.has_next %} hx-target="#results-container" hx-swap="outerHTML show:top"
-          hx-get="{% url 'buildings:newsurvey'%}?page={{ page.next_page_number }}"
+          hx-get="{% url 'buildings:edit_survey' survey.slug%}?page={{ page.next_page_number }}"
           hx-vals='js:{...getCurrentQuery()}' hx-replace-url="true" {% else %} disabled {% endif %}
           hx-indicator=".spinner"
           class="rounded-md border border-slate-300 p-2.5 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800 focus:text-white focus:bg-slate-800 focus:border-slate-800 active:border-slate-800 active:text-white active:bg-slate-800 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"

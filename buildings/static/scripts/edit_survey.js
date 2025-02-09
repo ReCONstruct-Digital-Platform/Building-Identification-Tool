@@ -309,31 +309,87 @@ function setUpQueryBuilders() {
   });
 }
 
+function setUpNextStepButton() {
+  const button = document.getElementById("next-step-button");
+  const modalOpenButton = document.getElementById("show-confirm-creation");
+
+  button.addEventListener("click", (e) => {
+    e.preventDefault();
+    const form = document.getElementById("survey-creation-form");
+    if (!form.checkValidity()) {
+      // Create the temporary button, click and remove it
+      // This makes the validation comments appear on screen
+      const tmpSubmit = document.createElement("button");
+      form.appendChild(tmpSubmit);
+      tmpSubmit.click();
+      form.removeChild(tmpSubmit);
+      return;
+    }
+    // Else open modal by sending a click to the hidden modal open button
+    modalOpenButton.dispatchEvent(new Event("click"));
+  });
+}
+
+function setUpConfirmButton() {
+  const button = document.getElementById("confirm-survey-creation");
+
+  button.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    const surveyName = document.getElementById("survey-name").value;
+    console.debug(surveyName);
+
+    const body = JSON.stringify({
+      survey_name: surveyName,
+      ...getCurrentQuery(),
+    });
+
+    console.debug(body);
+
+    fetch("", {
+      method: "POST",
+      mode: "same-origin",
+      cache: "no-cache",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: body,
+      redirect: "follow",
+    })
+      .then((res) => {
+        if (res.status != 200) {
+          throw new Error("Error creating survey");
+        }
+        // Redirect to the next step
+        if (res.redirected) window.location.href = res.url;
+      })
+      .catch((error) => {
+        console.error("Error creating survey", error);
+        document.getElementById("survey-creation-error").classList.remove("hidden");
+        document.getElementById("survey-creation-error").classList.add("block");
+
+        setTimeout(() => {
+          document.getElementById("survey-creation-error").classList.remove("block");
+          document.getElementById("survey-creation-error").classList.add("hidden");
+        }, 5000);
+      });
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   setUpQueryBuilders();
   fillInQueryBuildersFromUrlParams();
   setUpColumnConfig();
   setUpModals();
+  setUpNextStepButton();
+  setUpConfirmButton();
+  setUpCollapsibles();
 });
 
 document.addEventListener("htmx:afterRequest", (e) => {
   console.debug("HMTX after request", e);
   setUpColumnConfig();
   setUpModals();
-
-  if (e.target.id === "source-dataset-select") {
-    console.debug("HTMX ON SOURCE DS SELECT - need to reload QBs");
-    setUpQueryBuilders();
-  }
-});
-
-document.addEventListener("htmx:afterSwap", (e) => {
-  console.debug("HMTX after swap", e);
-});
-document.addEventListener("htmx:afterSettle", (e) => {
-  console.debug("HMTX after settle", e);
-});
-
-document.addEventListener("htmx:oobAfterSwap", (e) => {
-  console.debug("HTMX oobAfterSwap event", e);
 });
