@@ -28,7 +28,7 @@ urlpatterns = [
     path("datasets/<str:dataset_slug>", views.dataset, name="dataset"),
     path(
         "datasets/<str:dataset_slug>/newsurvey_questions",
-        views.newsurvey_questions,
+        views.edit_survey_questions,
         name="newsurvey_questions",
     ),
     path(
@@ -50,6 +50,11 @@ urlpatterns = [
         "surveys/<str:survey_slug>/<str:building_slug>",
         views.do_survey,
         name="do_survey",
+    ),
+    path(
+        "edit_survey_render_field",
+        views.edit_survey_render_field,
+        name="edit_survey_render_field",
     ),
     # API only URLs
     path("excel", api.gen_excel, name="gen_excel"),

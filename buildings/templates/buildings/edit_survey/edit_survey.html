@@ -15,39 +15,60 @@
 <div class="flex justify-center pb-4 px-4 mb-4 h-full">
   <div class="flex flex-col w-[80%] h-full">
 
-    <div class="w-full bg-white bg-opacity-50 py-3 mb-3 px-5 rounded-md text-md">
-        <section id="new-survey-info" class="flex flex-col gap-2 mb-2">
-          <div class="flex flex-row items-center">
-            <div class="text-3xl font-semibold">{{ survey.name }} </div>
-            <div class="ms-4 h-fit w-fit py-2 px-3   
-              {% if survey.status == 'ACTIVE' %}
-              bg-emerald-100 
-              {% elif survey.status == 'IN_PROGRESS' %}
-              bg-blue-100 
-              {% elif survey.status == 'COMPLETED' %}
-              bg-pruple-200 
-              {% elif survey.status == 'ARCHIVED' %}
-              bg-gray-300 
-              {% endif %}
-              rounded-full flex justify-center items-center gap-1">
-                <svg width="5" height="6" viewBox="0 0 5 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="2.5" cy="3" r="2.5" 
-                   {% if survey.status == 'ACTIVE' %}
-                   fill="#059669"
-                   {% elif survey.status == 'IN_PROGRESS' %}
-                   fill="#059696"
-                   {% elif survey.status == 'COMPLETED' %}
-                   fill="#34d6"
-                   {% elif survey.status == 'ARCHIVED' %}
-                   fill="#aaaaaa"
-                   {% endif %}
-                   ></circle>
-                </svg>
-                <span class="font-medium text-lg text-emerald-700">{{ survey.status|title }}</span>
-            </div>
-          </div>
-          <hr class="w-1/2 pt-2">
+    <div class="w-full bg-white bg-opacity-50 pt-3 px-5 rounded-t-md text-md">
 
+      <section id="survey-info" class="flex flex-col gap-1 mb-4">
+        <div class="flex flex-row items-center">
+          <div class="text-3xl font-semibold">{{ survey.name }} </div>
+          <div class="ms-4 h-fit w-fit py-2 px-3   
+            {% if survey.status == 'ACTIVE' %}
+            bg-emerald-100 
+            {% elif survey.status == 'IN_PROGRESS' %}
+            bg-blue-100 
+            {% elif survey.status == 'COMPLETED' %}
+            bg-pruple-200 
+            {% elif survey.status == 'ARCHIVED' %}
+            bg-gray-300 
+            {% endif %}
+            rounded-full flex justify-center items-center gap-1">
+              <svg width="5" height="6" viewBox="0 0 5 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="2.5" cy="3" r="2.5" 
+                  {% if survey.status == 'ACTIVE' %}
+                  fill="#059669"
+                  {% elif survey.status == 'IN_PROGRESS' %}
+                  fill="#059696"
+                  {% elif survey.status == 'COMPLETED' %}
+                  fill="#34d6"
+                  {% elif survey.status == 'ARCHIVED' %}
+                  fill="#aaaaaa"
+                  {% endif %}
+                  ></circle>
+              </svg>
+              <span class="font-medium text-lg text-emerald-700">{{ survey.status|title }}</span>
+          </div>
+        </div>
+        
+        <!-- Tabs -->
+        <nav id="tabs-survey" class="flex flex-row flex-nowrap" role="tablist">
+          <button id="survey-questionnaire-tab"
+            class="px-2 py-1.5 text-gray-900 text-lg
+            hover:text-black hover:underline hover:underline-offset-[15px] hover:decoration-gray-900 hover:decoration-[3px]" type="button" role="tab" aria-controls="user-activity" aria-selected="false">
+            Questionnaire
+          </button>
+          <button id="survey-definition-tab"
+            class="pe-2 py-1.5 text-gray-900 text-lg
+            hover:text-black hover:underline hover:underline-offset-[15px] hover:decoration-gray-900 hover:decoration-[3px]" type="button" role="tab" aria-controls="latest-activity" aria-selected="false">
+            Definition
+          </button>
+        </nav>
+        <hr class="w-full">
+      </section>
+    </div>
+
+    <div id="survey-definition" class="">
+      <div class="w-full bg-white bg-opacity-50 pb-3 mb-3 px-5 rounded-b-md text-md">
+        
+        <section>
           <div class="mb-3">
             <div class="text-xl">Source dataset: <span class="text-2xl">{{ dataset.name }}</span></div>
           </div>
@@ -80,18 +101,79 @@
           </div>
         </div>
         {% /modal %}
+      </div>
+
+      {% block page-and-paging-controls %}
+      
+      {% include 'buildings/edit_survey/candidates_partial.html' %}
+
+      {% endblock %}
+
     </div>
+    <div id="survey-questionnaire" class="h-full">
+      <div class="w-full h-full bg-white bg-opacity-50 pb-3 mb-3 px-5 rounded-b-md text-md">
+        <!-- Better to do a series of left-right blocks, easier to keep aligned and separately rendering -->
+        <div class="flex flex-row">
 
 
-    {% block page-and-paging-controls %}
+          <div class="w-1/2 p-3 bg-white bg-opacity-80 rounded-lg">
+            <form> 
+              {% csrf_token %}
+              <div class="flex flex-row gap-2 items-center">
+                <div class="text-lg">Field ID</div>
+                <input name="field_id" type="text" value="field_1" maxlength="100" required
+                class="rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
+              </div>
+
+              <div class="flex flex-row gap-2 items-center">
+                <div class="text-lg">Field Label</div>
+                <input name="field_label" type="text" value="Label 1" maxlength="300" required
+                class="rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
+              </div>
+              <div class="flex flex-row gap-2 items-center">
+                <div class="text-lg">Question Text</div>
+                <input name="question_text" type="text" value="Question Text" maxlength="500" required
+                class="rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
+              </div>
+
+              <div class="flex flex-row gap-2 items-center">
+                <div class="text-lg">Type</div>
+                <select id="" 
+                  name="type" 
+                  hx-post="{% url 'buildings:edit_survey_render_field' %}"
+                  hx-trigger="change"
+                  hx-target="#field-rendering-target"
+                  hx-swap="innerHTML"
+                  class='block min-w-[350px] text-lg w-fit rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600'>
+                    <option disabled selected value> --- </option>
+                    {% for type in all_question_types %}
+                    <option id="{{ dataset.slug }}-link" value="{{ type.id }}" class="appearance-none" 
+                    {% if dataset.id == current_dataset.id %}selected{% endif %}>
+                      {{ type.label }}
+                    </option>
+                    {% endfor %}
+                </select>
+              </div>
+
+            </form>
+
+          </div>
+          <div class="w-1/2 h-full">
+            <div id="field-rendering-target">
+
+            </div>
+          </div>
+        </div>
+        <div class="flex w-full justify-center">
+          {% #button id="add-question" %}
+          Add Question
+          {% /button %}
+        </div>
+      </div>
+    </div>
     
-    {% include 'buildings/edit_survey/candidates_partial.html' %}
-
-    {% endblock %}
-
   </div>
-
-  {% endblock %}
+    {% endblock %}
 
   {% block page_scripts %}
   <div id="js-variables">

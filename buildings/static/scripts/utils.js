@@ -197,14 +197,25 @@ function setUpTabGroups(tabGroupId, activeClasses = [], inactiveClasses = []) {
   const allTabLinks = Array.from(document.getElementById(tabGroupId).children);
 
   allTabLinks.forEach((tablink, i) => {
+    
+    const tabContentId = tablink.id.replace("-tab", "");
+    const tabContent = document.getElementById(tabContentId);
+
     // Set the first tab as active
     if (i === 0) {
-      console.debug("Setting up tab", tablink);
-      const activeTabContentId = tablink.id.replace("-tab", "");
+      console.debug("Should be visible", tablink);
       tablink.classList.remove(...inactiveClasses);
       tablink.classList.add(...activeClasses);
       tablink.setAttribute("aria-selected", "true");
-      document.getElementById(activeTabContentId).style.display = "block";
+      tabContent.classList.add("block");
+      tabContent.classList.remove("hidden");
+    } else {
+      console.debug("Should be hidden", tablink);
+      tablink.classList.add(...inactiveClasses);
+      tablink.classList.remove(...activeClasses);
+      tablink.setAttribute("aria-selected", "false");
+      tabContent.classList.remove("block");
+      tabContent.classList.add("hidden");
     }
 
     // Add an event listener to each tab

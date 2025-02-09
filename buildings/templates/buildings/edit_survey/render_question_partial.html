@@ -1,0 +1,19 @@
+{% for field in form %}
+{{ field.errors }}
+<fieldset class="ps-3 pb-2">
+  <legend class="flex items-center text-lg text-slate-700 mb-2">
+    <strong>{{ field.field.question_text }}</strong>
+    {% if field.field.has_modal %}
+    {% include "buildings/utils/info_modal_button.html" with modal_id=field.auto_id %}
+    {% endif %}
+  </legend>
+  {{ field }}
+  <div>
+    {% if field.field.has_modal %}
+    {% #modal id=field.auto_id title=field.field.modal.title %}
+      {{ field.field.modal.body|safe }}
+    {% /modal %}
+    {% endif %}
+  </div>
+</fieldset>
+{% endfor %}

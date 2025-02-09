@@ -322,7 +322,7 @@ def do_survey(request, survey_slug, building_slug):
         else:
             logging.error("form invalid - shouldn't happen!")
             logging.error(form.errors)
-            # We'll return the form with errors below, although this shouldn't happend
+            # We'll return the form with errors below, although this shouldn't happen
 
     else:
         # GET request
@@ -496,7 +496,55 @@ def newsurvey_api(request, dataset_slug):
 
 
 @login_required(login_url="account_login")
+def edit_survey_render_field(request):
+
+    print(request.POST)
+
+    field_id = request.POST.get("field_id")
+    field_label = request.POST.get("field_label")
+    question_text = request.POST.get("question_text")
+
+    survey = Survey(
+        schema={
+            field_id: {
+                "pos": 0,
+                "type": "integer",
+                "label": {"en": field_label},
+                "widget": "radio_w_specify",
+                "options": [
+                    {
+                        "pos": 0,
+                        "val": "num_buildings_in_cluster",
+                        "label": {"en": "Buildings in cluster"},
+                    },
+                    {"pos": 1, "val": None, "label": {"en": "No"}},
+                ],
+                "question_text": {"en": question_text},
+                "widget_config": {
+                    "specify_input_type": "number",
+                    "specify_option_value": "num_buildings_in_cluster",
+                },
+            }
+        }
+    )
+
+    form = DynamicSurveyForm(survey, request.POST)
+
+    context = {"form": form}
+    return render(
+        request, "buildings/edit_survey/render_question_partial.html", context
+    )
+
+    pass
+
+
+@login_required(login_url="account_login")
 def edit_survey(request, survey_slug):
+
+    all_question_types = [
+        {"id": "yes_no", "label": "Yes/No"},
+        {"id": "yes_no_other", "label": "Yes/No/Other"},
+    ]
 
     num_results_per_page = 10
 
@@ -591,6 +639,7 @@ def edit_survey(request, survey_slug):
         "default_bldg_cols": default_bldg_cols,
         "user_survey_cols": user_survey_cols,
         "default_survey_cols": default_survey_cols,
+        "all_question_types": all_question_types,
     }
 
     template_name = "buildings/edit_survey/edit_survey.html"
@@ -758,10 +807,8 @@ def new_survey(request):
 
 
 @login_required(login_url="account_login")
-def newsurvey_questions(request, dataset_slug):
-    """
-    Create a new survey on a dataset, and optionally the output of other surveys on that dataset
-    """
+def edit_survey_questions(request, dataset_slug):
+    """ """
     # Get the dataset by slug
     dataset = get_object_or_404(Dataset, slug=dataset_slug)
 
