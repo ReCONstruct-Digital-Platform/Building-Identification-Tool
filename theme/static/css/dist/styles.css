@@ -1829,6 +1829,14 @@ input:checked + .toggle-bg {
   max-height: 500px !important;
 }
 
+.max-h-\[50000px\] {
+  max-height: 50000px !important;
+}
+
+.max-h-\[5000px\] {
+  max-height: 5000px !important;
+}
+
 .min-h-\[25\%\] {
   min-height: 25% !important;
 }

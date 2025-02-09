@@ -104,7 +104,7 @@
 
   <section class="flex flex-row justify-between">
     <button id="refreshFilters" 
-    hx-get="{% url 'buildings:edit_survey' survey.slug  %}"
+    hx-get="{% url 'buildings:new_survey' %}"
     hx-target="#results-container" 
     hx-swap="outerHTML" 
     hx-vals='js:{...getCurrentQuery()}' 
