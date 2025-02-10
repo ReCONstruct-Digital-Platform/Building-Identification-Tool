@@ -464,6 +464,8 @@ const classesTabActive = [
 ];
 const inactiveClasses = ["text-gray-900"];
 
+var fieldCounter = 0;
+
 document.addEventListener("DOMContentLoaded", () => {
   setUpQueryBuilders();
   fillInQueryBuildersFromUrlParams();

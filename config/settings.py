@@ -148,7 +148,12 @@ INSTALLED_APPS = [
     "mailer",
     "compressor",
     "slippers",
+    # Provides shell_plus and other cool stuff
+    # https://github.com/django-extensions/django-extensions/tree/main
+    "django_extensions",
 ]
+
+SHELL_PLUS_PRINT_SQL = True
 
 
 MIDDLEWARE = [

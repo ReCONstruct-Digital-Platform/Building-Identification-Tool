@@ -3,6 +3,8 @@ import traceback
 from typing import List
 
 from allauth.account.models import EmailAddress
+from django import forms
+from django.forms import Form, widgets
 from django.urls import reverse
 from django.views import generic
 from django.conf import settings
@@ -22,7 +24,7 @@ from django.db.models.expressions import RawSQL
 from allauth.account.views import EmailView
 
 from pprint import pformat, pprint
-
+from django.utils.translation import gettext_lazy as _
 from buildings.forms import ChangeEmailForm, ChangePasswordForm
 from buildings.models import Dataset
 from buildings.models.newmodels import (
@@ -495,47 +497,116 @@ def newsurvey_api(request, dataset_slug):
         print(candidates.count())
 
 
+class NewFieldForm(Form):
+    TW_CLASSES = """w-1/2 rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
+
+    QUESTION_TYPES = (
+        ("none", _("Yes/No")),
+        ("student", _("Yes/No/Other")),
+        ("professional", _("")),
+        ("other", _("Other")),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs["class"] = self.TW_CLASSES
+
+    question_type = forms.ChoiceField(
+        choices=QUESTION_TYPES,
+        widget=widgets.Select(),
+        label=_("Question Type"),
+    )
+
+    field_id = forms.RegexField(
+        "[a-z0-9_]+",
+        label=_("Field ID"),
+        initial="field_id",
+        max_length=25,
+        error_messages={
+            "invalid": _(
+                "ID can only contain lowercase letters, numbers and underscores"
+            )
+        },
+    )
+    field_label = forms.CharField(
+        label=_("Field Label"),
+        initial="Field Label",
+        max_length=300,
+    )
+    question_text = forms.CharField(
+        label=_("Question Text"),
+        max_length=500,
+        widget=widgets.Textarea(attrs={"rows": 3}),
+    )
+
+
+# FIELDS = {
+#     "radio_w_specify": {
+#         "pos": 0,
+#         "type": "text",
+#         "label": {"en": field_label},
+#         "widget": "radio_w_specify",
+#         "options": [
+#             {
+#                 "pos": 0,
+#                 "val": "num_buildings_in_cluster",
+#                 "label": {"en": "Buildings in cluster"},
+#             },
+#             {"pos": 1, "val": None, "label": {"en": "No"}},
+#         ],
+#         "question_text": {"en": question_text},
+#         "widget_config": {
+#             "specify_input_type": "text",
+#             "specify_option_value": "num_buildings_in_cluster",
+#         },
+#     }
+# }
+
 @login_required(login_url="account_login")
 def edit_survey_render_field(request):
 
-    print(request.POST)
+    if request.method == "POST":
+        print(request.POST)
 
-    field_id = request.POST.get("field_id")
-    field_label = request.POST.get("field_label")
-    question_text = request.POST.get("question_text")
+        field_id = request.POST.get("field_id")
+        field_label = request.POST.get("field_label")
+        question_text = request.POST.get("question_text")
+
+        new_field_form = NewFieldForm(request.POST or None)
+        new_field_form.is_valid()
+
+    print(request.GET)
+    field_type = request.GET.get("field_type")
+    print(field_type)
+
+    # Generate appropriate new_field_form
 
     survey = Survey(
         schema={
             field_id: {
-                "pos": 0,
-                "type": "integer",
+                "pos": 5,
+                "type": "boolean",
                 "label": {"en": field_label},
-                "widget": "radio_w_specify",
+                "widget": "radio",
                 "options": [
-                    {
-                        "pos": 0,
-                        "val": "num_buildings_in_cluster",
-                        "label": {"en": "Buildings in cluster"},
-                    },
-                    {"pos": 1, "val": None, "label": {"en": "No"}},
+                    {"pos": 0, "val": True, "label": {"en": "Yes"}},
+                    {"pos": 1, "val": False, "label": {"en": "No"}},
+                    {"pos": 2, "val": None, "label": {"en": "Unsure"}},
                 ],
                 "question_text": {"en": question_text},
-                "widget_config": {
-                    "specify_input_type": "number",
-                    "specify_option_value": "num_buildings_in_cluster",
-                },
+                "widget_config": {"attrs": {"class": "survey-1col"}},
             }
         }
     )
 
-    form = DynamicSurveyForm(survey, request.POST)
+    rendered_field = DynamicSurveyForm(survey, request.POST)
 
-    context = {"form": form}
+    context = {"rendered_field": rendered_field, "new_field_form": new_field_form}
+
     return render(
-        request, "buildings/edit_survey/render_question_partial.html", context
+        request, "buildings/edit_survey/render_question_partial copy.html", context
     )
-
-    pass
 
 
 @login_required(login_url="account_login")

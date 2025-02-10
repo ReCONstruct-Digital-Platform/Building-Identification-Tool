@@ -1,4 +1,6 @@
 from allauth.account.forms import AddEmailForm
+from django import forms
+from django.forms import widgets
 from django.forms import Select, ChoiceField
 from django.utils.translation import gettext_lazy as _
 from allauth.account import forms as allauth_forms
@@ -15,6 +17,33 @@ KNOWLEDGE_LEVEL_CHOICES = (
     ("professional", _("AEC professional")),
     ("other", _("Other")),
 )
+
+
+class NewFieldForm(forms.Form):
+    TW_CLASSES = """w-1/2 rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
+
+    QUESTION_TYPES = (
+        ("none", _("Yes/No")),
+        ("student", _("Yes/No/Other")),
+        ("professional", _("")),
+        ("other", _("Other")),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs["class"] = self.TW_CLASSES
+
+    field_label = forms.CharField(
+        label=_("Field Label"),
+        initial="Field Label",
+        max_length=100,
+    )
+    question_text = forms.CharField(
+        label=_("Question Text"),
+        max_length=500,
+        widget=widgets.Textarea(attrs={"rows": 3}),
+    )
 
 
 class LoginUserForm(allauth_forms.LoginForm):
