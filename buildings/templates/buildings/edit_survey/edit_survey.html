@@ -121,7 +121,7 @@
                 <span>Question Type</span>
                 <select id="question-type-select-0" 
                   name="field_type"               
-                  hx-get="{% url 'buildings:edit_survey_render_field' %}"
+                  hx-get="{% url 'buildings:render_question_preview' %}"
                   hx-vals="js:{field_num: 0}"
                   hx-trigger="change"
                   hx-target="#field-form-holder-0"
@@ -138,7 +138,7 @@
               </div>
               <form
                 id="field-form-0"
-                hx-post="{% url 'buildings:edit_survey_render_field' %}"
+                hx-post="{% url 'buildings:render_question_preview' %}"
                 hx-trigger="change"
                 hx-vals="js:{field_num: 0}"
                 hx-target="#field-form-holder-0"

@@ -16,6 +16,7 @@ Including another URLconf
 
 from django.urls import path
 from buildings.views import views, api
+from buildings.views.edit_survey import edit_survey
 
 # This sets the application namespace
 app_name = "buildings"
@@ -38,8 +39,13 @@ urlpatterns = [
     path("surveys/new_survey", views.new_survey, name="new_survey"),
     path(
         "surveys/<str:survey_slug>/edit",
-        views.edit_survey,
+        edit_survey.edit_survey_questions,
         name="edit_survey",
+    ),
+    path(
+        "render_question_preview",
+        edit_survey.render_question_preview,
+        name="render_question_preview",
     ),
     path(
         "surveys/<str:survey_slug>/survey",
@@ -50,11 +56,6 @@ urlpatterns = [
         "surveys/<str:survey_slug>/<str:building_slug>",
         views.do_survey,
         name="do_survey",
-    ),
-    path(
-        "edit_survey_render_field",
-        views.edit_survey_render_field,
-        name="edit_survey_render_field",
     ),
     # API only URLs
     path("excel", api.gen_excel, name="gen_excel"),

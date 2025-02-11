@@ -7,46 +7,6 @@ TW_RADIO_CLASS = """me-2 text-base border-0 text-teal-600 accent-teal-600 focus:
 TW_SPECIFY_CLASS = """ms-1 h-[30px] text-base rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600"""
 
 
-# Override these widgets to make them have unique IDs
-# (This avoid focus going to another elemnt with the same id when clicking out of the input)
-# We don't want to use prefix as we DO want the input names to be the same,
-# which is done by default in Boundfield init(). So here we explicitly giving
-# the ID we want to the widget. We could also generate a random value.
-class TextInputWidget(widgets.TextInput):
-    def get_context(self, name, value, attrs):
-        attrs |= {"id": f"text_area_{self.field_num}"}
-        context = super().get_context(name, value, attrs)
-        return context
-
-
-class TextAreaWidget(widgets.Textarea):
-    def get_context(self, name, value, attrs):
-        attrs |= {"id": f"text_input_{self.field_num}"}
-        context = super().get_context(name, value, attrs)
-        return context
-
-
-class TestDragListWidget(widgets.CheckboxSelectMultiple):
-    """
-    Radio select with CSS styling included
-    """
-
-    template_name = "buildings/forms/widgets/draglist.html"
-
-    def __init__(self, attrs=None, **kwargs):
-        super().__init__(attrs=attrs, **kwargs)
-
-    def get_context(self, name, value, attrs):
-        context = super().get_context(name, value, attrs)
-        return context
-
-    def format_value(self, value):
-        """
-        Don't convert to string
-        """
-        return value
-
-
 class RadioSelect(widgets.RadioSelect):
     """
     Radio select with CSS styling included
