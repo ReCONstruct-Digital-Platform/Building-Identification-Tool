@@ -512,6 +512,44 @@ function setUpDraggableOptions(fieldForm) {
   };
 }
 
+function setUpAddQuestionButton() {
+  const id = "add-question";
+  const button = document.getElementById(id);
+  const template = document.getElementById("new-field-template");
+  const holder = document.getElementById("questions-holder");
+
+  button.addEventListener("click", (e) => {
+    console.debug("clicked", e.target);
+
+    const qnum = fieldCounter + 1;
+
+    const newFieldForm = template.content.cloneNode(true);
+    console.debug(newFieldForm);
+
+    const typeSelect = newFieldForm.querySelector("select");
+    typeSelect.id = `question-type-select-${qnum}`;
+    typeSelect.setAttribute("hx-vals", `js:{field_num: ${qnum}}`);
+    typeSelect.setAttribute("hx-target", `#field-form-holder-${qnum}`);
+
+    const form = newFieldForm.querySelector("form");
+    form.id = `field-form-${qnum}`;
+    form.setAttribute("hx-target", `#field-form-holder-${qnum}`);
+    form.setAttribute("hx-vals", `js:{field_num: ${qnum}}`);
+
+    const formHolder = newFieldForm.querySelector(".field-form-holder");
+    formHolder.id = `field-form-holder-${qnum}`;
+
+    const renderTarget = newFieldForm.querySelector(".field-render-target");
+    renderTarget.id = `field-render-target-${qnum}`;
+
+    // Enable HTMX functionality on the new node https://htmx.org/api/#process
+    htmx.process(newFieldForm);
+
+    holder.appendChild(newFieldForm);
+    fieldCounter++;
+  });
+}
+
 const classesTabActive = [
   "text-black",
   "underline",
@@ -532,6 +570,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setUpConfirmButton();
   setUpCollapsibles();
   setUpTabGroups("tabs-survey", classesTabActive, inactiveClasses);
+  setUpAddQuestionButton();
   htmx.logAll();
 });
 

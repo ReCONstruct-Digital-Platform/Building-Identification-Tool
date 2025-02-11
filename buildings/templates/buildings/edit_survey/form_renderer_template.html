@@ -1,6 +1,6 @@
 
 
-<div id="field-render-target-{{field_num}}" hx-swap-oob="true">
+<div id="field-render-target-{{field_num}}" class="field-render-target" hx-swap-oob="true">
   {% for field in rendered_field %}
   {{ field.errors }}
   <fieldset class="ps-3 pb-2">
@@ -22,7 +22,7 @@
   {% endfor %}
 </div>
 
-<div id="form-field-holder-{{field_num}}" class="form-field-holder text-lg font-medium text-gray-900 leading-6">
+<div id="field-form-holder-{{field_num}}" class="field-form-holder text-lg font-medium text-gray-900 leading-6">
 
   <span class="hidden text-sm text-red-500">
     {{ new_field_form.non_field_errors }}

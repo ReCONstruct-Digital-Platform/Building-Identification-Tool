@@ -6,7 +6,7 @@ from django.forms import Select, ChoiceField
 from django.utils.translation import gettext_lazy as _
 from allauth.account import forms as allauth_forms
 
-from buildings.newwidgets import TestDragListWidget
+from buildings.newwidgets import TestDragListWidget, TextInputWidget, TextAreaWidget
 from config.settings import DEBUG
 
 TW_INPUT_CLASSES = """block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
@@ -24,20 +24,22 @@ KNOWLEDGE_LEVEL_CHOICES = (
 class BaseNewFieldForm(forms.Form):
     TW_CLASSES = """w-1/2 rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, field_num, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs["class"] = self.TW_CLASSES
+            field.widget.field_num = field_num
 
     field_label = forms.CharField(
         label=_("Field Label"),
         initial="Field Label",
         max_length=100,
+        widget=TextInputWidget(),
     )
     question_text = forms.CharField(
         label=_("Question Text"),
         max_length=500,
-        widget=widgets.Textarea(attrs={"rows": 3}),
+        widget=TextAreaWidget(attrs={"rows": 2}),
     )
 
 
@@ -55,8 +57,9 @@ class ListField(forms.Field):
 
 
 class TrueFalseFieldForm(BaseNewFieldForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+
+    def __init__(self, field_num, *args, **kwargs):
+        super().__init__(field_num, *args, **kwargs)
         self.fields["options"].widget.attrs[
             "class"
         ] = """rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""

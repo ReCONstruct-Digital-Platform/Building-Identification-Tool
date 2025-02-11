@@ -574,14 +574,17 @@ def edit_survey_render_field(request):
     )
 
     if request.POST:
-        new_field_form = field_form_class(request.POST)
+        new_field_form = field_form_class(
+            field_num,
+            request.POST,
+        )  # field_num is included in POST
         schema_options = transform_to_schema(field_type, data.getlist("options"))
     else:
         field_form_default_val["initial"] |= {
             "field_label": field_label,
             "question_text": question_text,
         }
-        new_field_form = field_form_class(**field_form_default_val)
+        new_field_form = field_form_class(field_num=field_num, **field_form_default_val)
         schema_options = schema_default_options
 
     new_field_form
