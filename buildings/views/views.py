@@ -25,7 +25,13 @@ from allauth.account.views import EmailView
 
 from pprint import pformat, pprint
 from django.utils.translation import gettext_lazy as _
-from buildings.forms import ChangeEmailForm, ChangePasswordForm
+import slugify
+from buildings.forms import (
+    BaseNewFieldForm,
+    ChangeEmailForm,
+    ChangePasswordForm,
+    TrueFalseFieldForm,
+)
 from buildings.models import Dataset
 from buildings.models.newmodels import (
     Building,
@@ -497,123 +503,116 @@ def newsurvey_api(request, dataset_slug):
         print(candidates.count())
 
 
-class NewFieldForm(Form):
-    TW_CLASSES = """w-1/2 rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
+def get_field_form_class_and_default_vals(field_type: str):
+    if field_type == "true_false":
+        return (
+            TrueFalseFieldForm,
+            {"initial": {"options": ["True", "False", "Unsure"]}},
+        )
 
-    QUESTION_TYPES = (
-        ("none", _("Yes/No")),
-        ("student", _("Yes/No/Other")),
-        ("professional", _("")),
-        ("other", _("Other")),
-    )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in self.fields.values():
-            field.widget.attrs["class"] = self.TW_CLASSES
+def transform_to_schema(field_type, options):
+    if field_type == "true_false":
+        schema_options = []
+        for i, opt in enumerate(options):
 
-    question_type = forms.ChoiceField(
-        choices=QUESTION_TYPES,
-        widget=widgets.Select(),
-        label=_("Question Type"),
-    )
+            if opt in ["True", "False"]:
+                label = opt
+                opt = bool(opt)
+            else:
+                label = opt
+                opt = None
 
-    field_id = forms.RegexField(
-        "[a-z0-9_]+",
-        label=_("Field ID"),
-        initial="field_id",
-        max_length=25,
-        error_messages={
-            "invalid": _(
-                "ID can only contain lowercase letters, numbers and underscores"
+            schema_options.append(
+                {
+                    "pos": i,
+                    "val": opt,
+                    "label": {"en": label},
+                }
             )
-        },
-    )
-    field_label = forms.CharField(
-        label=_("Field Label"),
-        initial="Field Label",
-        max_length=300,
-    )
-    question_text = forms.CharField(
-        label=_("Question Text"),
-        max_length=500,
-        widget=widgets.Textarea(attrs={"rows": 3}),
-    )
+        return schema_options
 
 
-# FIELDS = {
-#     "radio_w_specify": {
-#         "pos": 0,
-#         "type": "text",
-#         "label": {"en": field_label},
-#         "widget": "radio_w_specify",
-#         "options": [
-#             {
-#                 "pos": 0,
-#                 "val": "num_buildings_in_cluster",
-#                 "label": {"en": "Buildings in cluster"},
-#             },
-#             {"pos": 1, "val": None, "label": {"en": "No"}},
-#         ],
-#         "question_text": {"en": question_text},
-#         "widget_config": {
-#             "specify_input_type": "text",
-#             "specify_option_value": "num_buildings_in_cluster",
-#         },
-#     }
-# }
+def get_schema_template_with_defaults(field_type):
+    if field_type == "true_false":
+        return (
+            {
+                "pos": 0,
+                "type": "boolean",
+                "widget": "radio",
+                "widget_config": {"attrs": {"class": "survey-1col"}},
+            },
+            [
+                {"pos": 0, "val": True, "label": {"en": "True"}},
+                {"pos": 1, "val": False, "label": {"en": "False"}},
+                {"pos": 2, "val": None, "label": {"en": "Unsure"}},
+            ],
+        )
+
 
 @login_required(login_url="account_login")
 def edit_survey_render_field(request):
 
-    if request.method == "POST":
-        print(request.POST)
-
-        field_id = request.POST.get("field_id")
-        field_label = request.POST.get("field_label")
-        question_text = request.POST.get("question_text")
-
-        new_field_form = NewFieldForm(request.POST or None)
-        new_field_form.is_valid()
-
+    print(request.headers)
     print(request.GET)
-    field_type = request.GET.get("field_type")
-    print(field_type)
+    print(request.POST)
+
+    # We accept both POST and GET here the same way
+    data = getattr(request, request.method)
+    field_type = data.get("field_type")
+    field_num = data.get("field_num") or 0
+    field_label = data.get("field_label") or f"Field {field_num} Label"
+    question_text = data.get("question_text") or f"Question {field_num} Text"
 
     # Generate appropriate new_field_form
+    field_form_class, field_form_default_val = get_field_form_class_and_default_vals(
+        field_type
+    )
 
-    survey = Survey(
-        schema={
-            field_id: {
-                "pos": 5,
-                "type": "boolean",
-                "label": {"en": field_label},
-                "widget": "radio",
-                "options": [
-                    {"pos": 0, "val": True, "label": {"en": "Yes"}},
-                    {"pos": 1, "val": False, "label": {"en": "No"}},
-                    {"pos": 2, "val": None, "label": {"en": "Unsure"}},
-                ],
-                "question_text": {"en": question_text},
-                "widget_config": {"attrs": {"class": "survey-1col"}},
-            }
+    schema_template, schema_default_options = get_schema_template_with_defaults(
+        field_type
+    )
+
+    if request.POST:
+        new_field_form = field_form_class(request.POST)
+        schema_options = transform_to_schema(field_type, data.getlist("options"))
+    else:
+        field_form_default_val["initial"] |= {
+            "field_label": field_label,
+            "question_text": question_text,
         }
-    )
+        new_field_form = field_form_class(**field_form_default_val)
+        schema_options = schema_default_options
 
-    rendered_field = DynamicSurveyForm(survey, request.POST)
+    new_field_form
 
-    context = {"rendered_field": rendered_field, "new_field_form": new_field_form}
+    field_schema = {
+        "label": {"en": field_label},
+        "question_text": {"en": question_text},
+        "options": schema_options,
+    } | schema_template
 
-    return render(
-        request, "buildings/edit_survey/render_question_partial copy.html", context
-    )
+    # Get default schema options
+    tmp_survey_for_render = Survey(schema={"field": field_schema})
+
+    new_field_form.is_valid()
+
+    rendered_field = DynamicSurveyForm(tmp_survey_for_render, request.POST)
+
+    context = {
+        "rendered_field": rendered_field,
+        "new_field_form": new_field_form,
+        "field_num": field_num,
+    }
+
+    return render(request, "buildings/edit_survey/form_renderer_template.html", context)
 
 
 @login_required(login_url="account_login")
 def edit_survey(request, survey_slug):
 
     all_question_types = [
-        {"id": "yes_no", "label": "Yes/No"},
+        {"id": "true_false", "label": "True/False"},
         {"id": "yes_no_other", "label": "Yes/No/Other"},
     ]
 
@@ -695,7 +694,10 @@ def edit_survey(request, survey_slug):
         surveys_on_dataset
     )
 
+    # TODO: Render all questions from survey schema
+    test_form = None
     context = {
+        "test_form": test_form,
         "survey": survey,
         "dataset": dataset,
         "surveys": surveys_on_dataset,

@@ -112,18 +112,20 @@
     </div>
     <div id="survey-questionnaire" class="h-full">
       <div class="w-full h-full bg-white bg-opacity-50 pb-3 mb-3 px-5 rounded-b-md text-md">
+
         <!-- Better to do a series of left-right blocks, easier to keep aligned and separately rendering -->
         <div class="flex flex-row">
-          
           <div class="w-1/2 p-3 bg-white bg-opacity-80 rounded-lg">
-
+            <!-- Field type select -->
             <div class="flex flex-col gap-2 justify-start">
               <span>Question Type</span>
               <select id="test-select" 
                 name="field_type"               
                 hx-get="{% url 'buildings:edit_survey_render_field' %}"
-                hx-vals="js:{field_count: ++fieldCounter}"
+                hx-vals="js:{field_num: 0}"
                 hx-trigger="change"
+                hx-target="#form-field-holder-0"
+                hx-swap="innerHTML"
                 class='block min-w-[350px] text-lg w-fit rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600'>
                   <option disabled selected value> --- </option>
                   {% for type in all_question_types %}
@@ -134,6 +136,30 @@
                   {% endfor %}
               </select>
             </div>
+            <form
+              id="field-0-form"
+              hx-post="{% url 'buildings:edit_survey_render_field' %}"
+              hx-trigger="change"
+              hx-target="#form-field-holder-0"
+              hx-swap="innerHTML"
+              hx-include="previous select"
+              novalidate
+              >
+              <!-- Field Form -->
+              {% csrf_token %}
+              <div id="form-field-holder-0" class="form-field-holder text-lg font-medium text-gray-900 leading-6">
+                <!-- {% include 'buildings/edit_survey/form_renderer_template.html' with new_field_form=test_form %} -->
+              </div>
+            </form>
+          </div>
+          <!--  Render target  -->
+          <div class="w-1/2 h-full">
+            <div id="field-render-target-0">
+            </div>
+          </div>
+        </div>
+        <!-- <div class="flex flex-row">
+          
 
             <form 
               hx-post="{% url 'buildings:edit_survey_render_field' %}"
@@ -172,8 +198,9 @@
         <div class="flex w-full justify-center">
           {% #button id="add-question" %}
           Add Question
+          hx-vals="js:{field_count: ++fieldCounter}"
           {% /button %}
-        </div>
+        </div> -->
       </div>
     </div>
     

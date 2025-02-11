@@ -1,3 +1,4 @@
+import json
 from allauth.account.forms import AddEmailForm
 from django import forms
 from django.forms import widgets
@@ -5,6 +6,7 @@ from django.forms import Select, ChoiceField
 from django.utils.translation import gettext_lazy as _
 from allauth.account import forms as allauth_forms
 
+from buildings.newwidgets import TestDragListWidget
 from config.settings import DEBUG
 
 TW_INPUT_CLASSES = """block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
@@ -19,15 +21,8 @@ KNOWLEDGE_LEVEL_CHOICES = (
 )
 
 
-class NewFieldForm(forms.Form):
+class BaseNewFieldForm(forms.Form):
     TW_CLASSES = """w-1/2 rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
-
-    QUESTION_TYPES = (
-        ("none", _("Yes/No")),
-        ("student", _("Yes/No/Other")),
-        ("professional", _("")),
-        ("other", _("Other")),
-    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -44,6 +39,29 @@ class NewFieldForm(forms.Form):
         max_length=500,
         widget=widgets.Textarea(attrs={"rows": 3}),
     )
+
+
+class ListField(forms.Field):
+
+    def to_python(self, value):
+        super().to_python(value)
+        if isinstance(value, str):
+            return json.loads(value)
+        return value
+
+    def prepare_value(self, value):
+        # Don't cast to string, we want it as a list for template rendering
+        return value
+
+
+class TrueFalseFieldForm(BaseNewFieldForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["options"].widget.attrs[
+            "class"
+        ] = """rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
+
+    options = ListField(label=_("Options"), widget=TestDragListWidget())
 
 
 class LoginUserForm(allauth_forms.LoginForm):
