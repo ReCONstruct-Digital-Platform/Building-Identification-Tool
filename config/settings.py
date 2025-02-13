@@ -81,6 +81,8 @@ STATIC_URL = env("STATIC_URL")
 
 STATIC_ROOT = env("STATIC_ROOT")
 
+STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
+
 STATICFILES_FINDERS = (
     # default
     "django.contrib.staticfiles.finders.FileSystemFinder",
@@ -139,6 +141,7 @@ INSTALLED_APPS = [
     "django_htmx",
     "django.contrib.humanize",
     "django_browser_reload",
+    "django.forms",
     "tailwind",
     "theme",
     # Allauth apps
@@ -188,7 +191,7 @@ GRAPH_MODELS = {
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -205,7 +208,9 @@ TEMPLATES = [
         },
     },
 ]
-
+# needed to load cusotm widget templates from global template dir
+# https://stackoverflow.com/questions/45844032/django-templatedoesnotexist-in-case-of-a-custom-widget
+FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 
 WSGI_APPLICATION = "config.wsgi.application"
 

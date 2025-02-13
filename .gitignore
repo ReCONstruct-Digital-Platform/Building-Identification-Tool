@@ -13,3 +13,4 @@ CACHE/
 **/.env
 
 **/__notes/*
+node_modules/

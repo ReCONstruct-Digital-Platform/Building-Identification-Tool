@@ -1,0 +1,20 @@
+{
+  "name": "reconbuilding",
+  "version": "1.0.0",
+  "description": "The goal of this tool is to provide a convenient interface for users to remotely survey buildings.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack --mode development --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^5.97.1",
+    "webpack-cli": "^6.0.1"
+  }
+}

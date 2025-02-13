@@ -17,11 +17,13 @@ Including another URLconf
 from django.urls import path
 from buildings.views import views, api
 from buildings.views.edit_survey import edit_survey
+from django.views.generic import TemplateView
 
 # This sets the application namespace
 app_name = "buildings"
 
 urlpatterns = [
+    path("hello/", TemplateView.as_view(template_name="hello.html")),
     path("", views.index, name="index"),
     path("profile", views.profile, name="profile"),
     path("query/<str:dataset_slug>", views.query, name="query"),
