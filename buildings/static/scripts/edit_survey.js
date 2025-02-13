@@ -537,6 +537,22 @@ function setUpAddOptionButton(fieldForm) {
   });
 }
 
+function setUpDeleteOptionButtons(fieldForm) {
+  const fieldFormId = fieldForm.id;
+  const draggableList = fieldForm.getElementsByClassName("draggable-list")[0];
+
+  draggableList.querySelectorAll("li").forEach((listItem) => {
+    const deleteOptionButton = listItem.getElementsByClassName("delete-option-button")[0];
+    console.log("setting up delete option button", deleteOptionButton);
+
+    deleteOptionButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      listItem.remove();
+      htmx.trigger(`#${fieldFormId}`, "change");
+    });
+  });
+}
+
 function setUpAddQuestionButton() {
   const id = "add-question";
   const button = document.getElementById(id);
@@ -549,6 +565,8 @@ function setUpAddQuestionButton() {
     const qnum = fieldCounter + 1;
 
     const newFieldForm = template.content.cloneNode(true);
+    const firstDiv = newFieldForm.querySelector("div");
+    firstDiv.id = `new-field-form-${qnum}`;
     console.debug(newFieldForm);
 
     const typeSelect = newFieldForm.querySelector("select");
@@ -567,9 +585,15 @@ function setUpAddQuestionButton() {
     const renderTarget = newFieldForm.querySelector(".field-render-target");
     renderTarget.id = `field-render-target-${qnum}`;
 
+    const deleteQuestionButton = newFieldForm.querySelector(".delete-question-button");
+    deleteQuestionButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      document.getElementById(firstDiv.id).remove();
+    });
+
     // Enable HTMX functionality on the new node https://htmx.org/api/#process
     htmx.process(newFieldForm);
-
+    // will append the first div, not the template itself
     holder.appendChild(newFieldForm);
     fieldCounter++;
   });
@@ -604,6 +628,8 @@ document.addEventListener("htmx:afterRequest", (e) => {
   setUpColumnConfig();
   setUpModals();
   setUpSpecifyClickLabel();
+
   setUpDraggableOptions(e.detail.target);
   setUpAddOptionButton(e.detail.target);
+  setUpDeleteOptionButtons(e.detail.target);
 });

@@ -1,6 +1,6 @@
 <ul class="draggable-list space-y-2">
   {% for val in widget.value %}
-  <li class="flex items-center bg-white p-2 rounded-lg shadow-sm cursor-grab w-fit"
+  <li class="flex items-center bg-white p-2 rounded-lg shadow-sm cursor-grab w-fit gap-1"
     draggable="true">
     <div class="mr-3 text-gray-400 cursor-grab">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -13,6 +13,15 @@
       <input type="text" name="options" value="{{ val }}" placeholder="{{ val }}"
         class="{{widget.attrs.class}}">
     </label>
+    <button type="button"
+      class="delete-option-button p-2 border border-gray-200 bg-white text-gray-400 hover:text-gray-900 rounded-lg hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8"
+      aria-label="Close">
+      <span class="sr-only">Close</span>
+      <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path>
+      </svg>
+    </button>
   </li>
   {% endfor %}
 </ul>
