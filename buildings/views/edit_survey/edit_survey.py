@@ -14,7 +14,11 @@ from django.utils.translation import gettext_lazy as _
 from buildings.models import Dataset
 from buildings.models.newmodels import Survey
 from buildings.models.newsurveys import DynamicSurveyForm
-from .forms_fields_widgets import OptionsFieldForm, OptionsFieldFormWithSpecify
+from .forms_fields_widgets import (
+    OptionsFieldForm,
+    OptionsFieldFormWithColumns,
+    OptionsFieldFormWithSpecify,
+)
 
 import logging
 
@@ -44,7 +48,7 @@ def transform_to_schema(field_type, options):
                 }
             )
         return schema_options
-    if field_type == "multiple_choice":
+    if field_type in ["multiple_choice", "multiple_choice_specify"]:
         schema_options = []
         for i, opt in enumerate(options):
             schema_options.append(
@@ -56,8 +60,10 @@ def transform_to_schema(field_type, options):
             )
         return schema_options
 
+    raise ValueError(f"Unimplemented field type {field_type}")
 
-def get_schema_template_with_defaults(field_type):
+
+def get_schema_template_with_defaults(field_type, data):
     if field_type == "true_false":
         return (
             {
@@ -71,12 +77,15 @@ def get_schema_template_with_defaults(field_type):
                 {"pos": 2, "val": None, "label": {"en": "Other"}},
             ],
         )
+
+    num_columns = data.get("num_columns") or 1
     if field_type == "multiple_choice":
         return (
             {
                 "pos": 0,
                 "widget": "multi_checkbox_specify",
                 "type": "text",  # TODO customizable
+                "widget_config": {"attrs": {"class": f"survey-{num_columns}col"}},
             },
             [
                 {
@@ -91,6 +100,38 @@ def get_schema_template_with_defaults(field_type):
                 },
             ],
         )
+    if field_type == "multiple_choice_specify":
+        specify_option_value = data.get("specify_option") or "other"
+        return (
+            {
+                "pos": 0,
+                "widget": "multi_checkbox_specify",
+                "type": "text",  # TODO customizable
+                "widget_config": {
+                    "attrs": {"class": f"survey-{num_columns}col"},
+                    "specify_input_type": "text",
+                    "specify_option_value": specify_option_value,
+                },
+            },
+            [
+                {
+                    "pos": 0,
+                    "val": "option_1",
+                    "label": {"en": "Option 1"},
+                },
+                {
+                    "pos": 1,
+                    "val": "option_2",
+                    "label": {"en": "Option 2"},
+                },
+                {
+                    "pos": 1,
+                    "val": "other",
+                    "label": {"en": "Specify"},
+                },
+            ],
+        )
+    raise ValueError(f"Unimplemented field type {field_type}")
 
 
 def get_field_form_class_and_default_vals(field_type: str):
@@ -101,12 +142,22 @@ def get_field_form_class_and_default_vals(field_type: str):
         )
     if field_type == "multiple_choice":
         return (
-            OptionsFieldFormWithSpecify,
+            OptionsFieldFormWithColumns,
             {
+                "num_columns": 1,  # makes the option selected!!
                 "options": ["Option 1", "Option 2"],
             },
         )
-
+    if field_type == "multiple_choice_specify":
+        return (
+            OptionsFieldFormWithSpecify,
+            {
+                "num_columns": 1,
+                "options": ["Option 1", "Option 2", "Specify"],
+                "specify_option": "Specify",
+            },
+        )
+    raise ValueError(f"Unimplemented field type {field_type}")
 
 @login_required(login_url="account_login")
 def render_question_preview(request):
@@ -124,7 +175,6 @@ def render_question_preview(request):
     field_num = data.get("field_num") or 0
     field_label = data.get("field_label") or f"Field {field_num} Label"
     question_text = data.get("question_text") or f"Question {field_num} Text"
-    num_columns = data.get("num_columns") or 1
 
     # Generate appropriate new_field_form
     field_form_class, field_form_default_val = get_field_form_class_and_default_vals(
@@ -132,7 +182,7 @@ def render_question_preview(request):
     )
 
     schema_template, schema_default_options = get_schema_template_with_defaults(
-        field_type
+        field_type, data
     )
 
     if request.POST:
@@ -155,7 +205,6 @@ def render_question_preview(request):
         "label": {"en": field_label},
         "question_text": {"en": question_text},
         "options": schema_options,
-        "widget_config": {"attrs": {"class": f"survey-{num_columns}col"}},
     }
 
     # Get default schema options
@@ -181,6 +230,7 @@ def edit_survey_questions(request, survey_slug):
         {"id": "true_false", "label": "True/False/Other"},
         # {"id": "single_choice", "label": "Single-Choice"},
         {"id": "multiple_choice", "label": "Multiple-Choice"},
+        {"id": "multiple_choice_specify", "label": "Multiple-Choice w Specify"},
     ]
 
     num_results_per_page = 10

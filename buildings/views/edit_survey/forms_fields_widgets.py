@@ -1,7 +1,8 @@
 import json
 from django import forms
-from django.forms import NullBooleanField, widgets
-from buildings.newwidgets import RadioSelect, RadioSelectForFieldForm
+from django.forms import ValidationError, widgets
+from django.http import QueryDict
+from buildings.newwidgets import RadioSelectForFieldForm
 from django.utils.translation import gettext_lazy as _
 
 
@@ -59,29 +60,31 @@ class ListField(forms.Field):
 
 
 class BaseNewFieldForm(forms.Form):
-    TW_CLASSES = """rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
+    TW_DEFAULT_CLASS = """w-1/2 rounded-md border-0 py-1.5shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600"""
 
     def __init__(self, field_num, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
+            if "class" not in field.widget.attrs:
+                field.widget.attrs["class"] = self.TW_DEFAULT_CLASS
             field.widget.field_num = field_num
 
     field_label = forms.CharField(
         label=_("Field Label"),
         initial="Field Label",
         max_length=100,
-        widget=TextInputWidget(attrs={"class": TW_CLASSES}),
+        widget=TextInputWidget(),
     )
     question_text = forms.CharField(
         label=_("Question Text"),
         max_length=500,
-        widget=TextAreaWidget(attrs={"rows": 2, "class": TW_CLASSES}),
+        widget=TextAreaWidget(attrs={"rows": 2}),
     )
 
 
 class OptionsFieldForm(BaseNewFieldForm):
 
-    OPTIONS_CLASSES = """rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
+    TW_OPTIONS_CLASS = """rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600"""
 
     def __init__(self, field_num, *args, **kwargs):
         super().__init__(field_num, *args, **kwargs)
@@ -89,22 +92,66 @@ class OptionsFieldForm(BaseNewFieldForm):
     can_add_options = False
 
     options = ListField(
-        label=_("Options"), widget=DragListWidget(attrs={"class": OPTIONS_CLASSES})
+        label=_("Options"), widget=DragListWidget(attrs={"class": TW_OPTIONS_CLASS})
     )
 
+    def clean_options(self):
+        """
+        Ensures all options provided are unique
+        """
+        value = self.cleaned_data["options"]
+        opt_counts = {}
+        for opt in value:
+            if opt in opt_counts:
+                opt_counts[opt] += 1
+            else:
+                opt_counts[opt] = 1
 
-class OptionsFieldFormWithSpecify(OptionsFieldForm):
+        opt_errors = []
+        for opt, count in opt_counts.items():
+            if count > 1:
+                opt_errors.append(f"{opt} was repeated {count} times")
+        if opt_errors:
+            opt_errors = ", ".join(opt_errors)
+            raise ValidationError("Options should be unique! " + opt_errors)
+
+        return value
+
+
+class OptionsFieldFormWithColumns(OptionsFieldForm):
 
     num_columns = forms.ChoiceField(
         label=_("Num Columns"),
         widget=RadioSelectForFieldForm(
-            attrs={"class": "grid grid-cols-3 gap-2"},
+            attrs={"class": f"grid grid-cols-3 gap-2 py-1.5"},
         ),
         choices=((1, _("1")), (2, _("2")), (3, _("3"))),
-        initial=1,
     )
 
     can_add_options = True
+
+
+class OptionsFieldFormWithSpecify(OptionsFieldFormWithColumns):
+
+    def __init__(self, field_num, *args, **kwargs):
+        super().__init__(field_num, *args, **kwargs)
+        # Fucking QUERYDICT returning only the last element of LISTS silently
+        # Python is NOT the language to pull this FUCKERY
+        if isinstance(self.data, QueryDict):
+            options = self.data.getlist("options")
+        else:
+            options = self.data["options"]
+
+        # Has to have been set as bound data on Form creation to work!
+        options_choices = [(opt, opt) for opt in options]
+        self.fields["specify_option"].choices = list(options_choices)
+
+    specify_option = forms.ChoiceField(
+        label=_("Specify Option"), widget=widgets.Select()
+    )
+
+    can_add_options = True
+    has_specify = True
 
     # has_specify = forms.ChoiceField(
     #     label=_("Has Specify?"),
@@ -112,5 +159,4 @@ class OptionsFieldFormWithSpecify(OptionsFieldForm):
     #         attrs={"class": "flex flex-row gap-2"},
     #     ),
     #     choices=((False, _("No")), (True, _("Yes"))),
-    #     initial=False,
     # )
