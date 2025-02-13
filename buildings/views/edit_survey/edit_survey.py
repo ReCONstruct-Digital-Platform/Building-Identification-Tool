@@ -29,7 +29,7 @@ log = logging.getLogger(__name__)
 
 
 def transform_to_schema(field_type, options):
-    if field_type == "true_false":
+    if field_type == "boolean":
         schema_options = []
         for i, opt in enumerate(options):
 
@@ -48,7 +48,12 @@ def transform_to_schema(field_type, options):
                 }
             )
         return schema_options
-    if field_type in ["multiple_choice", "multiple_choice_specify"]:
+    if field_type in [
+        "multi_checkbox",
+        "radio",
+        "multi_checkbox_specify",
+        "radio_w_specify",
+    ]:
         schema_options = []
         for i, opt in enumerate(options):
             schema_options.append(
@@ -64,11 +69,11 @@ def transform_to_schema(field_type, options):
 
 
 def get_schema_template_with_defaults(field_type, data):
-    if field_type == "true_false":
+    if field_type == "boolean":
         return (
             {
                 "pos": 0,
-                "type": "boolean",
+                "type": field_type,
                 "widget": "radio",
             },
             [
@@ -79,11 +84,11 @@ def get_schema_template_with_defaults(field_type, data):
         )
 
     num_columns = data.get("num_columns") or 1
-    if field_type == "multiple_choice":
+    if field_type in ["multi_checkbox", "radio"]:
         return (
             {
                 "pos": 0,
-                "widget": "multi_checkbox_specify",
+                "widget": field_type,
                 "type": "text",  # TODO customizable
                 "widget_config": {"attrs": {"class": f"survey-{num_columns}col"}},
             },
@@ -100,12 +105,12 @@ def get_schema_template_with_defaults(field_type, data):
                 },
             ],
         )
-    if field_type == "multiple_choice_specify":
+    if field_type in ["multi_checkbox_specify", "radio_w_specify"]:
         specify_option_value = data.get("specify_option") or "other"
         return (
             {
                 "pos": 0,
-                "widget": "multi_checkbox_specify",
+                "widget": field_type,
                 "type": "text",  # TODO customizable
                 "widget_config": {
                     "attrs": {"class": f"survey-{num_columns}col"},
@@ -135,12 +140,12 @@ def get_schema_template_with_defaults(field_type, data):
 
 
 def get_field_form_class_and_default_vals(field_type: str):
-    if field_type == "true_false":
+    if field_type == "boolean":
         return (
             OptionsFieldForm,
             {"options": ["True", "False", "Other"]},
         )
-    if field_type == "multiple_choice":
+    if field_type in ["multi_checkbox", "radio"]:
         return (
             OptionsFieldFormWithColumns,
             {
@@ -148,7 +153,7 @@ def get_field_form_class_and_default_vals(field_type: str):
                 "options": ["Option 1", "Option 2"],
             },
         )
-    if field_type == "multiple_choice_specify":
+    if field_type in ["multi_checkbox_specify", "radio_w_specify"]:
         return (
             OptionsFieldFormWithSpecify,
             {
@@ -227,10 +232,11 @@ def render_question_preview(request):
 def edit_survey_questions(request, survey_slug):
 
     all_question_types = [
-        {"id": "true_false", "label": "True/False/Other"},
-        # {"id": "single_choice", "label": "Single-Choice"},
-        {"id": "multiple_choice", "label": "Multiple-Choice"},
-        {"id": "multiple_choice_specify", "label": "Multiple-Choice w Specify"},
+        {"id": "boolean", "label": "True/False/Other"},
+        {"id": "radio", "label": "Single-Choice"},
+        {"id": "multi_checkbox", "label": "Multiple-Choice"},
+        {"id": "radio_w_specify", "label": "Single-Choice w Specify"},
+        {"id": "multi_checkbox_specify", "label": "Multiple-Choice w Specify"},
     ]
 
     num_results_per_page = 10
