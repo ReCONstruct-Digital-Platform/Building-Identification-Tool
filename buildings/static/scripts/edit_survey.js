@@ -512,6 +512,31 @@ function setUpDraggableOptions(fieldForm) {
   };
 }
 
+function setUpAddOptionButton(fieldForm) {
+  const template = document.getElementById("new-option-template");
+  const draggableList = fieldForm.getElementsByClassName("draggable-list")[0];
+
+  const fieldFormId = fieldForm.id;
+  // Should only be 1 in each field form - loop over all if this changes
+  const addOptionButton = fieldForm.getElementsByClassName("add-option-button")[0];
+  if (!addOptionButton) return;
+
+  addOptionButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    console.debug("Adding option");
+
+    const optNum = draggableList.querySelectorAll("li").length + 1;
+    const newOption = template.content.cloneNode(true);
+
+    const optionInput = newOption.querySelector("input");
+    optionInput.value = `Option ${optNum}`;
+    optionInput.placeholder = `Option ${optNum}`;
+
+    draggableList.appendChild(newOption);
+    htmx.trigger(`#${fieldFormId}`, "change");
+  });
+}
+
 function setUpAddQuestionButton() {
   const id = "add-question";
   const button = document.getElementById(id);
@@ -519,7 +544,7 @@ function setUpAddQuestionButton() {
   const holder = document.getElementById("questions-holder");
 
   button.addEventListener("click", (e) => {
-    console.debug("clicked", e.target);
+    console.debug("adding question", e.target);
 
     const qnum = fieldCounter + 1;
 
@@ -571,7 +596,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setUpCollapsibles();
   setUpTabGroups("tabs-survey", classesTabActive, inactiveClasses);
   setUpAddQuestionButton();
-  htmx.logAll();
+  // htmx.logAll();
 });
 
 document.addEventListener("htmx:afterRequest", (e) => {
@@ -580,4 +605,5 @@ document.addEventListener("htmx:afterRequest", (e) => {
   setUpModals();
   setUpSpecifyClickLabel();
   setUpDraggableOptions(e.detail.target);
+  setUpAddOptionButton(e.detail.target);
 });

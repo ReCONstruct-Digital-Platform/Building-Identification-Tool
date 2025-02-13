@@ -1,6 +1,7 @@
 import json
 from django import forms
-from django.forms import BooleanField, RadioSelect, widgets
+from django.forms import NullBooleanField, widgets
+from buildings.newwidgets import RadioSelect, RadioSelectForFieldForm
 from django.utils.translation import gettext_lazy as _
 
 
@@ -58,45 +59,58 @@ class ListField(forms.Field):
 
 
 class BaseNewFieldForm(forms.Form):
-    TW_CLASSES = """w-1/2 rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
+    TW_CLASSES = """rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
 
     def __init__(self, field_num, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
-            field.widget.attrs["class"] = self.TW_CLASSES
             field.widget.field_num = field_num
 
     field_label = forms.CharField(
         label=_("Field Label"),
         initial="Field Label",
         max_length=100,
-        widget=TextInputWidget(),
+        widget=TextInputWidget(attrs={"class": TW_CLASSES}),
     )
     question_text = forms.CharField(
         label=_("Question Text"),
         max_length=500,
-        widget=TextAreaWidget(attrs={"rows": 2}),
+        widget=TextAreaWidget(attrs={"rows": 2, "class": TW_CLASSES}),
     )
 
 
 class OptionsFieldForm(BaseNewFieldForm):
 
-    def __init__(self, field_num, *args, **kwargs):
-        super().__init__(field_num, *args, **kwargs)
-        self.fields["options"].widget.attrs[
-            "class"
-        ] = """rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
-
-    options = ListField(label=_("Options"), widget=DragListWidget())
-
-
-class OptionsFieldFormWithSpecify(BaseNewFieldForm):
+    OPTIONS_CLASSES = """rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
 
     def __init__(self, field_num, *args, **kwargs):
         super().__init__(field_num, *args, **kwargs)
-        self.fields["options"].widget.attrs[
-            "class"
-        ] = """rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
 
-    has_specify = BooleanField(label=_("Has Specify?"), widget=RadioSelect())
-    options = ListField(label=_("Options"), widget=DragListWidget())
+    can_add_options = False
+
+    options = ListField(
+        label=_("Options"), widget=DragListWidget(attrs={"class": OPTIONS_CLASSES})
+    )
+
+
+class OptionsFieldFormWithSpecify(OptionsFieldForm):
+
+    num_columns = forms.ChoiceField(
+        label=_("Num Columns"),
+        widget=RadioSelectForFieldForm(
+            attrs={"class": "grid grid-cols-3 gap-2"},
+        ),
+        choices=((1, _("1")), (2, _("2")), (3, _("3"))),
+        initial=1,
+    )
+
+    can_add_options = True
+
+    # has_specify = forms.ChoiceField(
+    #     label=_("Has Specify?"),
+    #     widget=RadioSelectForFieldForm(
+    #         attrs={"class": "flex flex-row gap-2"},
+    #     ),
+    #     choices=((False, _("No")), (True, _("Yes"))),
+    #     initial=False,
+    # )

@@ -159,6 +159,26 @@
             </div>
           </div>
         </template>
+        <template id="new-option-template">
+          <li class="flex items-center bg-white p-2 rounded-lg shadow-sm cursor-grab w-fit" draggable="true">
+            <div class="mr-3 text-gray-400 cursor-grab">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="lucide lucide-grip-vertical">
+                <circle cx="9" cy="12" r="1"></circle>
+                <circle cx="9" cy="5" r="1"></circle>
+                <circle cx="9" cy="19" r="1"></circle>
+                <circle cx="15" cy="12" r="1"></circle>
+                <circle cx="15" cy="5" r="1"></circle>
+                <circle cx="15" cy="19" r="1"></circle>
+              </svg>
+            </div>
+            <label class="">
+              <input type="text" name="options" value="Option 2" placeholder="Option 2"
+                class="rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
+            </label>
+          </li>
+        </template>
       </div>
       <div class="flex w-full justify-center">
         <button id="add-question" 

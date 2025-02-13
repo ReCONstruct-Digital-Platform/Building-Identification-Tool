@@ -22,8 +22,7 @@
   {% endfor %}
 </div>
 
-<div id="field-form-holder-{{field_num}}" class="field-form-holder text-lg font-medium text-gray-900 leading-6">
-
+<div id="field-form-holder-{{field_num}}" class="field-form-holder w-1/2 text-lg font-medium text-gray-900 leading-6">
   <span class="hidden text-sm text-red-500">
     {{ new_field_form.non_field_errors }}
   </span>
@@ -65,6 +64,20 @@
       {{ new_field_form.question_text }}
     </label>
   </div>
+  {% if new_field_form.fields|get_dict_item:'has_specify' %}
+  <div class="flex justify-start">
+    <label class="flex flex-row gap-3">
+      <span>{{ new_field_form.has_specify.label }}</span>
+      {{ new_field_form.has_specify }}
+    </label>
+  </div>
+  {% endif %}
+  <div class="flex flex-col gap-2 justify-start">
+    <label class="flex flex-col gap-1">
+      <span>{{ new_field_form.num_columns.label }}</span>
+      {{ new_field_form.num_columns }}
+    </label>
+  </div>
   <div class="flex flex-col gap-2 justify-start">
     <label class="flex flex-col gap-1">
       <span>{{ new_field_form.options.label }}</span>
@@ -72,6 +85,17 @@
         {{ new_field_form.errors.options }}
       </span>
       {{ new_field_form.options }}
+      {% if new_field_form.can_add_options %}
+      <button 
+          class="add-option-button w-fit bg-white hover:bg-gray-50 shadow-sm hover:shadow-md relative -top-4
+              block justify-center items-center text-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus">
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
+      </button>
+      {% endif %}
     </label>
   </div>
 </div>

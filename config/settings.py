@@ -179,6 +179,12 @@ ROOT_URLCONF = "config.urls"
 
 APPEND_SLASH = True
 
+GRAPH_MODELS = {
+    "app_labels": [
+        "buildings",
+    ],
+}
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",

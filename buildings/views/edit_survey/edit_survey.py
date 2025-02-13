@@ -24,19 +24,6 @@ from buildings.views.views import get_surveys_qb_filters_and_optgroups
 log = logging.getLogger(__name__)
 
 
-def get_field_form_class_and_default_vals(field_type: str):
-    if field_type == "true_false":
-        return (
-            OptionsFieldForm,
-            {"initial": {"options": ["True", "False", "Other"]}},
-        )
-    if field_type == "multiple_choice":
-        return (
-            OptionsFieldFormWithSpecify,
-            {"initial": {"has_specify": False, "options": ["Option 1", "Option 2"]}},
-        )
-
-
 def transform_to_schema(field_type, options):
     if field_type == "true_false":
         schema_options = []
@@ -77,7 +64,6 @@ def get_schema_template_with_defaults(field_type):
                 "pos": 0,
                 "type": "boolean",
                 "widget": "radio",
-                "widget_config": {"attrs": {"class": "survey-1col"}},
             },
             [
                 {"pos": 0, "val": True, "label": {"en": "True"}},
@@ -91,9 +77,6 @@ def get_schema_template_with_defaults(field_type):
                 "pos": 0,
                 "widget": "multi_checkbox_specify",
                 "type": "text",  # TODO customizable
-                "widget_config": {
-                    "attrs": {"class": "survey-1col"}
-                },  # TODO customizable
             },
             [
                 {
@@ -107,6 +90,21 @@ def get_schema_template_with_defaults(field_type):
                     "label": {"en": "Option 2"},
                 },
             ],
+        )
+
+
+def get_field_form_class_and_default_vals(field_type: str):
+    if field_type == "true_false":
+        return (
+            OptionsFieldForm,
+            {"options": ["True", "False", "Other"]},
+        )
+    if field_type == "multiple_choice":
+        return (
+            OptionsFieldFormWithSpecify,
+            {
+                "options": ["Option 1", "Option 2"],
+            },
         )
 
 
@@ -126,6 +124,7 @@ def render_question_preview(request):
     field_num = data.get("field_num") or 0
     field_label = data.get("field_label") or f"Field {field_num} Label"
     question_text = data.get("question_text") or f"Question {field_num} Text"
+    num_columns = data.get("num_columns") or 1
 
     # Generate appropriate new_field_form
     field_form_class, field_form_default_val = get_field_form_class_and_default_vals(
@@ -143,20 +142,21 @@ def render_question_preview(request):
         )  # field_num is included in POST
         schema_options = transform_to_schema(field_type, data.getlist("options"))
     else:
-        field_form_default_val["initial"] |= {
+        field_form_default_val |= {
             "field_label": field_label,
             "question_text": question_text,
         }
-        new_field_form = field_form_class(field_num=field_num, **field_form_default_val)
+        new_field_form = field_form_class(
+            field_num=field_num, data=field_form_default_val
+        )
         schema_options = schema_default_options
 
-    new_field_form
-
-    field_schema = {
+    field_schema = schema_template | {
         "label": {"en": field_label},
         "question_text": {"en": question_text},
         "options": schema_options,
-    } | schema_template
+        "widget_config": {"attrs": {"class": f"survey-{num_columns}col"}},
+    }
 
     # Get default schema options
     tmp_survey_for_render = Survey(schema={"field": field_schema})
