@@ -81,6 +81,7 @@ class MultiCheckboxSpecify2(widgets.CheckboxSelectMultiple):
         super().__init__(attrs=attrs, **kwargs)
         self.has_specify = has_specify
         self.is_bound = False
+        self.is_required = False
         self.specify_input_type = "text"
         self.specify_option_value = "other"
         self.attrs["checkbox_class"] = TW_RADIO_CLASS
@@ -98,6 +99,7 @@ class MultiCheckboxSpecify2(widgets.CheckboxSelectMultiple):
         context = super().get_context(name, value, attrs)
         context["widget"]["input_type"] = self.input_type
         context["widget"]["has_specify"] = self.has_specify
+        context["widget"]["is_required"] = self.is_required
         context["widget"]["specify_input_type"] = self.specify_input_type
         context["widget"]["specify_option_value"] = self.specify_option_value
 
@@ -117,16 +119,3 @@ class MultiCheckboxSpecify2(widgets.CheckboxSelectMultiple):
             context["widget"]["specified_value"] = None
 
         return context
-
-
-class MultiCheckboxSpecifyRequired2(MultiCheckboxSpecify2):
-    """
-    Version with fields set as required
-    """
-
-    template_name = "buildings/forms/widgets/multi_checkbox_required_2.html"
-
-    def __init__(self, attrs=None, **kwargs):
-        super().__init__(attrs=attrs, **kwargs)
-        self.attrs["checkbox_class"] = TW_RADIO_CLASS
-        self.attrs["specify_class"] = TW_SPECIFY_CLASS

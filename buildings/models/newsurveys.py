@@ -11,7 +11,6 @@ from django.utils.translation import gettext_lazy as _
 from buildings.models.newmodels import Survey
 from buildings.newwidgets import (
     MultiCheckboxSpecify2,
-    MultiCheckboxSpecifyRequired2,
     RadioSelect,
     RadioWithSpecify2,
 )
@@ -26,12 +25,6 @@ def get_widget_for_field(widget_type):
         return MultiCheckboxSpecify2(attrs={"class": "survey-1col"}, has_specify=False)
     if widget_type == "multi_checkbox_specify":
         return MultiCheckboxSpecify2(attrs={"class": "survey-1col"}, has_specify=True)
-    if widget_type == "multi_checkbox_required":
-        return MultiCheckboxSpecifyRequired2(attrs={"class": "survey-3col"})
-    if widget_type == "multi_checkbox_required_specify":
-        return MultiCheckboxSpecifyRequired2(
-            attrs={"class": "survey-3col"}, has_specify=True
-        )
     raise Exception(f"Unknown widget type: {widget_type}")
 
 
