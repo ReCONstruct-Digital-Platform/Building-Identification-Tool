@@ -13,6 +13,7 @@
       <input type="text" name="options" value="{{ val }}" placeholder="{{ val }}"
         class="{{widget.attrs.class}}">
     </label>
+    {% if widget.can_add_options and widget.value|length > 1 %}
     <button type="button"
       class="delete-option-button p-2 border border-gray-200 bg-white text-gray-400 hover:text-gray-900 rounded-lg hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8"
       aria-label="Close">
@@ -22,6 +23,7 @@
         d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path>
       </svg>
     </button>
+    {% endif %}
   </li>
   {% endfor %}
 </ul>

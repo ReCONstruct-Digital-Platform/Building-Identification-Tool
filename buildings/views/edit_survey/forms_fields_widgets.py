@@ -34,9 +34,11 @@ class DragListWidget(widgets.CheckboxSelectMultiple):
 
     def __init__(self, attrs=None, **kwargs):
         super().__init__(attrs=attrs, **kwargs)
+        self.can_add_options = False
 
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
+        context["widget"]["can_add_options"] = self.can_add_options
         return context
 
     def format_value(self, value):
@@ -88,6 +90,9 @@ class OptionsFieldForm(BaseNewFieldForm):
 
     def __init__(self, field_num, *args, **kwargs):
         super().__init__(field_num, *args, **kwargs)
+
+        for field in self.fields.values():
+            field.widget.can_add_options = self.can_add_options
 
     can_add_options = False
 
