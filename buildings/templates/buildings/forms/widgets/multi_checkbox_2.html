@@ -23,9 +23,7 @@
         <input id="{{ id }}_specify" type="{{ widget.input_type }}" class="{{ widget.attrs.checkbox_class }}"
           name="{{ widget.name }}" 
           {% if widget.value_was_specified %} checked{% endif %}
-          {% if widget.is_required and widget_value|length == 0 %}required{%endif%}>
-          {{ option.label }}:
-        </label>
+          {% if widget.is_required and widget_value|length == 0 %}required{%endif%}>{{ option.label }}:</label>
       <input id="{{ id }}_specify_value" class="{{ widget.attrs.specify_class }}" type="{{ widget.specify_input_type }}"
         name="{{ widget.name }}" 
         {% if widget.value_was_specified %} value="{{ widget.specified_value }}" {% else %} disabled {% endif %} />
@@ -38,8 +36,7 @@
         {% if widget.is_required %} onclick='markCheckboxesNotRequired("{{ option.name }}")' 
           {% if widget_value|length == 0 %} required{% endif %}
         {% endif %}
-        >{{ option.label }}
-    </label>
+        >{{ option.label }}</label>
     {% endif %}
     {% endfor %}
   {% endfor %}

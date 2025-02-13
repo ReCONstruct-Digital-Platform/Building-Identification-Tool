@@ -16,8 +16,10 @@ from buildings.models.newmodels import Survey
 from buildings.models.newsurveys import DynamicSurveyForm
 from .forms_fields_widgets import (
     OptionsFieldForm,
-    OptionsFieldFormWithColumns,
-    OptionsFieldFormWithSpecify,
+    OptionsFieldFormForRadioInputs,
+    OptionsFieldFormForCheckboxes,
+    CheckboxFieldWithSpecify,
+    RadioFieldWithSpecify,
 )
 
 import logging
@@ -28,7 +30,7 @@ from buildings.views.views import get_surveys_qb_filters_and_optgroups
 log = logging.getLogger(__name__)
 
 
-def transform_to_schema(field_type, options):
+def transform_options_to_survey_schema(field_type, options):
     if field_type == "boolean":
         schema_options = []
         for i, opt in enumerate(options):
@@ -68,7 +70,7 @@ def transform_to_schema(field_type, options):
     raise ValueError(f"Unimplemented field type {field_type}")
 
 
-def get_schema_template_with_defaults(field_type, data):
+def get_json_schema_with_defaults(field_type, data):
     if field_type == "boolean":
         return (
             {
@@ -90,7 +92,10 @@ def get_schema_template_with_defaults(field_type, data):
                 "pos": 0,
                 "widget": field_type,
                 "type": "text",  # TODO customizable
-                "widget_config": {"attrs": {"class": f"survey-{num_columns}col"}},
+                "widget_config": {
+                    "attrs": {"class": f"survey-{num_columns}col"},
+                    "is_required": False,
+                },
             },
             [
                 {
@@ -116,6 +121,7 @@ def get_schema_template_with_defaults(field_type, data):
                     "attrs": {"class": f"survey-{num_columns}col"},
                     "specify_input_type": "text",
                     "specify_option_value": specify_option_value,
+                    "is_required": False,
                 },
             },
             [
@@ -145,21 +151,43 @@ def get_field_form_class_and_default_vals(field_type: str):
             OptionsFieldForm,
             {"options": ["True", "False", "Other"]},
         )
-    if field_type in ["multi_checkbox", "radio"]:
+    if field_type in ["radio"]:
         return (
-            OptionsFieldFormWithColumns,
+            OptionsFieldFormForRadioInputs,
             {
                 "num_columns": 1,  # makes the option selected!!
                 "options": ["Option 1", "Option 2"],
+                "is_required": False,
             },
         )
-    if field_type in ["multi_checkbox_specify", "radio_w_specify"]:
+
+    if field_type in ["multi_checkbox"]:
         return (
-            OptionsFieldFormWithSpecify,
+            OptionsFieldFormForCheckboxes,
+            {
+                "num_columns": 1,  # makes the option selected!!
+                "options": ["Option 1", "Option 2"],
+                "is_required": False,
+            },
+        )
+    if field_type in ["radio_w_specify"]:
+        return (
+            RadioFieldWithSpecify,
             {
                 "num_columns": 1,
                 "options": ["Option 1", "Option 2", "Specify"],
                 "specify_option": "Specify",
+                "is_required": False,
+            },
+        )
+    if field_type in ["multi_checkbox_specify"]:
+        return (
+            CheckboxFieldWithSpecify,
+            {
+                "num_columns": 1,
+                "options": ["Option 1", "Option 2", "Specify"],
+                "specify_option": "Specify",
+                "is_required": False,
             },
         )
     raise ValueError(f"Unimplemented field type {field_type}")
@@ -186,7 +214,7 @@ def render_question_preview(request):
         field_type
     )
 
-    schema_template, schema_default_options = get_schema_template_with_defaults(
+    schema_template, schema_default_options = get_json_schema_with_defaults(
         field_type, data
     )
 
@@ -195,7 +223,9 @@ def render_question_preview(request):
             field_num,
             request.POST,
         )  # field_num is included in POST
-        schema_options = transform_to_schema(field_type, data.getlist("options"))
+        schema_options = transform_options_to_survey_schema(
+            field_type, data.getlist("options")
+        )
     else:
         field_form_default_val |= {
             "field_label": field_label,

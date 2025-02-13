@@ -1361,6 +1361,10 @@ input:checked + .toggle-bg {
   top: -0.375rem !important;
 }
 
+.-top-4 {
+  top: -1rem !important;
+}
+
 .-top-8 {
   top: -2rem !important;
 }
@@ -1509,6 +1513,11 @@ input:checked + .toggle-bg {
   margin-bottom: 1rem !important;
 }
 
+.my-auto {
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+}
+
 .-mb-5 {
   margin-bottom: -1.25rem !important;
 }
@@ -1615,6 +1624,10 @@ input:checked + .toggle-bg {
 
 .mt-\[56px\] {
   margin-top: 56px !important;
+}
+
+.mt-auto {
+  margin-top: auto !important;
 }
 
 .line-clamp-2 {
@@ -2297,6 +2310,10 @@ input:checked + .toggle-bg {
 
 .self-end {
   align-self: flex-end !important;
+}
+
+.justify-self-center {
+  justify-self: center !important;
 }
 
 .overflow-hidden {

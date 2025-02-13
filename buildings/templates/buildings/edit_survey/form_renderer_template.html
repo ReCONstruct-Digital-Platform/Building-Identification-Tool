@@ -64,11 +64,19 @@
       {{ new_field_form.question_text }}
     </label>
   </div>
-  {% if new_field_form.fields|get_dict_item:'num_columns' %}
+  {% if new_field_form.num_columns %}
   <div class="flex flex-col gap-1 justify-start w-1/2">
     <label class="flex flex-col gap-1">
       <span>{{ new_field_form.num_columns.label }}</span>
       {{ new_field_form.num_columns }}
+    </label>
+  </div>
+  {% endif %}
+  {% if new_field_form.is_required %}
+  <div class="flex flex-col gap-1 justify-start w-1/2">
+    <label class="flex flex-col gap-1">
+      <span>{{ new_field_form.is_required.label }}</span>
+      {{ new_field_form.is_required }}
     </label>
   </div>
   {% endif %}
@@ -81,7 +89,7 @@
   </div>
   {% endif %}
   <div class="flex flex-col gap-2 justify-start">
-    <label class="flex flex-col gap-1">
+    <label class="flex flex-col gap-1 w-1/2">
       <span>{{ new_field_form.options.label }}</span>
       <span class="text-sm text-red-500">
         {{ new_field_form.errors.options }}
@@ -89,8 +97,8 @@
       {{ new_field_form.options }}
       {% if new_field_form.can_add_options %}
       <button 
-          class="add-option-button w-fit bg-white hover:bg-gray-50 shadow-sm hover:shadow-md relative -top-4
-              block justify-center items-center text-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+          class="add-option-button w-fit bg-white hover:bg-gray-50 shadow-sm hover:shadow-md relative
+              block justify-self-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus">
           <path d="M5 12h14" />

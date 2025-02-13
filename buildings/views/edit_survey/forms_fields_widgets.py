@@ -73,7 +73,7 @@ class BaseNewFieldForm(forms.Form):
         label=_("Field Label"),
         initial="Field Label",
         max_length=100,
-        widget=TextInputWidget(),
+        widget=TextInputWidget(attrs={"autocomplete": "off"}),
     )
     question_text = forms.CharField(
         label=_("Question Text"),
@@ -113,17 +113,17 @@ class OptionsFieldForm(BaseNewFieldForm):
                 opt_errors.append(f"{opt} was repeated {count} times")
         if opt_errors:
             opt_errors = ", ".join(opt_errors)
-            raise ValidationError("Options should be unique! " + opt_errors)
+            raise ValidationError("Options should be unique. " + opt_errors)
 
         return value
 
 
-class OptionsFieldFormWithColumns(OptionsFieldForm):
+class OptionsFieldFormArbitraryOptions(OptionsFieldForm):
 
     num_columns = forms.ChoiceField(
         label=_("Num Columns"),
         widget=RadioSelectForFieldForm(
-            attrs={"class": f"grid grid-cols-3 gap-2 py-1.5"},
+            attrs={"class": "grid grid-cols-3 gap-2"},
         ),
         choices=((1, _("1")), (2, _("2")), (3, _("3"))),
     )
@@ -131,7 +131,23 @@ class OptionsFieldFormWithColumns(OptionsFieldForm):
     can_add_options = True
 
 
-class OptionsFieldFormWithSpecify(OptionsFieldFormWithColumns):
+class OptionsFieldFormForRadioInputs(OptionsFieldFormArbitraryOptions):
+    # Radios are always required
+    pass
+
+
+class OptionsFieldFormForCheckboxes(OptionsFieldFormArbitraryOptions):
+
+    is_required = forms.ChoiceField(
+        label=_("Is Required?"),
+        widget=RadioSelectForFieldForm(
+            attrs={"class": "grid grid-cols-3 gap-2"},
+        ),
+        choices=((False, _("No")), (True, _("Yes"))),
+    )
+
+
+class RadioFieldWithSpecify(OptionsFieldFormForRadioInputs):
 
     def __init__(self, field_num, *args, **kwargs):
         super().__init__(field_num, *args, **kwargs)
@@ -150,13 +166,26 @@ class OptionsFieldFormWithSpecify(OptionsFieldFormWithColumns):
         label=_("Specify Option"), widget=widgets.Select()
     )
 
-    can_add_options = True
     has_specify = True
 
-    # has_specify = forms.ChoiceField(
-    #     label=_("Has Specify?"),
-    #     widget=RadioSelectForFieldForm(
-    #         attrs={"class": "flex flex-row gap-2"},
-    #     ),
-    #     choices=((False, _("No")), (True, _("Yes"))),
-    # )
+
+class CheckboxFieldWithSpecify(OptionsFieldFormForCheckboxes):
+
+    def __init__(self, field_num, *args, **kwargs):
+        super().__init__(field_num, *args, **kwargs)
+        # Fucking QUERYDICT returning only the last element of LISTS silently
+        # Python is NOT the language to pull this FUCKERY
+        if isinstance(self.data, QueryDict):
+            options = self.data.getlist("options")
+        else:
+            options = self.data["options"]
+
+        # Has to have been set as bound data on Form creation to work!
+        options_choices = [(opt, opt) for opt in options]
+        self.fields["specify_option"].choices = list(options_choices)
+
+    specify_option = forms.ChoiceField(
+        label=_("Specify Option"), widget=widgets.Select()
+    )
+
+    has_specify = True

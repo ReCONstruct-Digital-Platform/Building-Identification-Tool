@@ -114,8 +114,8 @@
       <div id="questions-holder" class="w-full h-full bg-white bg-opacity-50 pb-7 mb-3 px-5 rounded-b-md text-md">
         <template id="new-field-template">
           <!-- Better to do a series of left-right blocks, easier to keep aligned and separately rendering -->
-          <div class="flex flex-row">
-            <div class="w-1/2 p-3 bg-white bg-opacity-80 rounded-lg">
+          <div class="flex flex-row h-full">
+            <div class="w-1/2 h-full p-3 bg-white bg-opacity-80 rounded-lg">
               <!-- Field type select -->
               <div class="flex flex-col gap-2 justify-start">
                 <span>Question Type</span>
@@ -153,7 +153,7 @@
               </form>
             </div>
             <!--  Render target  -->
-            <div class="w-1/2 h-full">
+            <div class="w-1/2 h-full flex flex-col items-start justify-center">
               <div id="field-render-target-0" class="field-render-target">
               </div>
             </div>
