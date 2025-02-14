@@ -80,7 +80,7 @@ B2_BUCKET_IMAGES = env("B2_BUCKET_IMAGES")
 STATIC_URL = env("STATIC_URL")
 
 STATIC_ROOT = env("STATIC_ROOT")
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = [BASE_DIR / "static/"]
 
 STATICFILES_FINDERS = (
     # default
@@ -150,10 +150,16 @@ INSTALLED_APPS = [
     "mailer",
     "compressor",
     "slippers",
+    # Provides shell_plus and other cool stuff
+    # https://github.com/django-extensions/django-extensions/tree/main
+    "django_extensions",
 ]
 # Needed to have custom widget templates with global template dir
 # https://stackoverflow.com/questions/45844032/django-templatedoesnotexist-in-case-of-a-custom-widget
 FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
+
+SHELL_PLUS_PRINT_SQL = True
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -177,6 +183,12 @@ if DEBUG:
 ROOT_URLCONF = "config.urls"
 
 APPEND_SLASH = True
+
+GRAPH_MODELS = {
+    "app_labels": [
+        "buildings",
+    ],
+}
 
 TEMPLATES = [
     {

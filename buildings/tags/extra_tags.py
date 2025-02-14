@@ -11,6 +11,11 @@ def get_attr(obj, attr):
 
 
 @register.filter
+def has_attr(obj, attr):
+    return hasattr(obj, attr)
+
+
+@register.filter
 def get_dict_item(dictionary: dict, key):
     return dictionary.get(key)
 

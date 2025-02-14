@@ -455,6 +455,150 @@ function setUpSpecifyClickLabel() {
     });
 }
 
+
+function setUpDraggableOptions(fieldForm) {
+  const fieldFormId = fieldForm.id;
+  // Should only be 1 in each field form - loop over all if this changes
+  const draggableList = fieldForm.getElementsByClassName("draggable-list")[0];
+  if (!draggableList) return;
+  console.debug("Setting up draggable options", draggableList);
+
+  let draggedItem = null;
+  draggableList.addEventListener("dragstart", (e) => {
+    draggedItem = e.target;
+    draggedItem.classList.remove("shadow-sm");
+    draggedItem.classList.add("shadow-lg");
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", null);
+  });
+
+  draggableList.addEventListener("dragend", (e) => {
+    draggedItem.classList.remove("shadow-lg");
+    draggedItem.classList.add("shadow-sm");
+    draggedItem = null;
+    htmx.trigger(`#${fieldFormId}`, "change");
+  });
+
+  draggableList.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    const afterElement = getDragAfterElement(draggableList, e.clientY);
+    if (afterElement == null) {
+      draggableList.appendChild(draggedItem);
+    } else {
+      draggableList.insertBefore(draggedItem, afterElement);
+    }
+  });
+
+  const getDragAfterElement = (container, y) => {
+    const draggableElements = [...container.querySelectorAll("li")];
+
+    return draggableElements.reduce(
+      (closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return {
+            offset: offset,
+            element: child,
+          };
+        } else {
+          return closest;
+        }
+      },
+      {
+        offset: Number.NEGATIVE_INFINITY,
+      }
+    ).element;
+  };
+}
+
+function setUpAddOptionButton(fieldForm) {
+  const template = document.getElementById("new-option-template");
+  const draggableList = fieldForm.getElementsByClassName("draggable-list")[0];
+
+  const fieldFormId = fieldForm.id;
+  // Should only be 1 in each field form - loop over all if this changes
+  const addOptionButton = fieldForm.getElementsByClassName("add-option-button")[0];
+  if (!addOptionButton) return;
+
+  addOptionButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    console.debug("Adding option");
+
+    const optNum = draggableList.querySelectorAll("li").length + 1;
+    const newOption = template.content.cloneNode(true);
+
+    const optionInput = newOption.querySelector("input");
+    optionInput.value = `Option ${optNum}`;
+    optionInput.placeholder = `Option ${optNum}`;
+
+    draggableList.appendChild(newOption);
+    htmx.trigger(`#${fieldFormId}`, "change");
+  });
+}
+
+function setUpDeleteOptionButtons(fieldForm) {
+  const fieldFormId = fieldForm.id;
+  const draggableList = fieldForm.getElementsByClassName("draggable-list")[0];
+
+  draggableList.querySelectorAll("li").forEach((listItem) => {
+    const deleteOptionButton = listItem.getElementsByClassName("delete-option-button")[0];
+    console.log("setting up delete option button", deleteOptionButton);
+
+    deleteOptionButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      listItem.remove();
+      htmx.trigger(`#${fieldFormId}`, "change");
+    });
+  });
+}
+
+function setUpAddQuestionButton() {
+  const id = "add-question";
+  const button = document.getElementById(id);
+  const template = document.getElementById("new-field-template");
+  const holder = document.getElementById("questions-holder");
+
+  button.addEventListener("click", (e) => {
+    console.debug("adding question", e.target);
+
+    const qnum = fieldCounter + 1;
+
+    const newFieldForm = template.content.cloneNode(true);
+    const firstDiv = newFieldForm.querySelector("div");
+    firstDiv.id = `new-field-form-${qnum}`;
+    console.debug(newFieldForm);
+
+    const typeSelect = newFieldForm.querySelector("select");
+    typeSelect.id = `question-type-select-${qnum}`;
+    typeSelect.setAttribute("hx-vals", `js:{field_num: ${qnum}}`);
+    typeSelect.setAttribute("hx-target", `#field-form-holder-${qnum}`);
+
+    const form = newFieldForm.querySelector("form");
+    form.id = `field-form-${qnum}`;
+    form.setAttribute("hx-target", `#field-form-holder-${qnum}`);
+    form.setAttribute("hx-vals", `js:{field_num: ${qnum}}`);
+
+    const formHolder = newFieldForm.querySelector(".field-form-holder");
+    formHolder.id = `field-form-holder-${qnum}`;
+
+    const renderTarget = newFieldForm.querySelector(".field-render-target");
+    renderTarget.id = `field-render-target-${qnum}`;
+
+    const deleteQuestionButton = newFieldForm.querySelector(".delete-question-button");
+    deleteQuestionButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      document.getElementById(firstDiv.id).remove();
+    });
+
+    // Enable HTMX functionality on the new node https://htmx.org/api/#process
+    htmx.process(newFieldForm);
+    // will append the first div, not the template itself
+    holder.appendChild(newFieldForm);
+    fieldCounter++;
+  });
+}
+
 const classesTabActive = [
   "text-black",
   "underline",
@@ -463,6 +607,8 @@ const classesTabActive = [
   "decoration-[3px]",
 ];
 const inactiveClasses = ["text-gray-900"];
+
+var fieldCounter = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
   setUpQueryBuilders();
@@ -473,6 +619,8 @@ document.addEventListener("DOMContentLoaded", () => {
   setUpConfirmButton();
   setUpCollapsibles();
   setUpTabGroups("tabs-survey", classesTabActive, inactiveClasses);
+  setUpAddQuestionButton();
+  // htmx.logAll();
 });
 
 document.addEventListener("htmx:afterRequest", (e) => {
@@ -480,4 +628,8 @@ document.addEventListener("htmx:afterRequest", (e) => {
   setUpColumnConfig();
   setUpModals();
   setUpSpecifyClickLabel();
+
+  setUpDraggableOptions(e.detail.target);
+  setUpAddOptionButton(e.detail.target);
+  setUpDeleteOptionButtons(e.detail.target);
 });

@@ -111,64 +111,105 @@
 
     </div>
     <div id="survey-questionnaire" class="h-full">
-      <div class="w-full h-full bg-white bg-opacity-50 pb-3 mb-3 px-5 rounded-b-md text-md">
-        <!-- Better to do a series of left-right blocks, easier to keep aligned and separately rendering -->
-        <div class="flex flex-row">
+      <div id="questions-holder" class="w-full h-full bg-white bg-opacity-50 pb-7 mb-3 px-5 rounded-b-md text-md">
+        <template id="new-field-template">
+          <!-- Better to do a series of left-right blocks, easier to keep aligned and separately rendering -->
+          <div class="new-field-form-and-render-block flex flex-row h-full">
+            <div class="w-1/2 h-full p-3 bg-white bg-opacity-80 rounded-lg">
+              <div class="flex justify-between">
+                
+                <!-- Field type select -->
+                <div class="flex flex-col gap-2 justify-start">
+                  <span>Question Type</span>
+                  <select id="question-type-select-0" 
+                    name="field_type"               
+                    hx-get="{% url 'buildings:render_question_preview' %}"
+                    hx-vals="js:{field_num: 0}"
+                    hx-trigger="change"
+                    hx-target="#field-form-holder-0"
+                    hx-swap="innerHTML"
+                    class='block min-w-[350px] text-lg w-fit rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600'>
+                      <option disabled selected value> --- </option>
+                      {% for type in all_question_types %}
+                      <option id="{{ dataset.slug }}-link" value="{{ type.id }}" class="appearance-none" 
+                      {% if dataset.id == current_dataset.id %}selected{% endif %}>
+                        {{ type.label }}
+                      </option>
+                      {% endfor %}
+                  </select>
+                </div>
 
-
-          <div class="w-1/2 p-3 bg-white bg-opacity-80 rounded-lg">
-            <form> 
-              {% csrf_token %}
-              <div class="flex flex-row gap-2 items-center">
-                <div class="text-lg">Field ID</div>
-                <input name="field_id" type="text" value="field_1" maxlength="100" required
-                class="rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
+                <button id="delete-question-0" type="button"
+                  class="delete-question-button ms-auto p-2 border border-gray-200 bg-white text-gray-400 hover:text-gray-900 rounded-lg hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8"
+                  aria-label="Close">
+                  <span class="sr-only">Close</span>
+                  <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path>
+                  </svg>
+                </button>
               </div>
 
-              <div class="flex flex-row gap-2 items-center">
-                <div class="text-lg">Field Label</div>
-                <input name="field_label" type="text" value="Label 1" maxlength="300" required
-                class="rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
+              <form
+                id="field-form-0"
+                hx-post="{% url 'buildings:render_question_preview' %}"
+                hx-trigger="change"
+                hx-vals="js:{field_num: 0}"
+                hx-target="#field-form-holder-0"
+                hx-swap="innerHTML"
+                hx-include="previous select"
+                novalidate
+                >
+                <!-- Field Form -->
+                {% csrf_token %}
+                <div id="field-form-holder-0" class="field-form-holder text-lg font-medium text-gray-900 leading-6">
+                </div>
+              </form>
+            </div>
+            <!--  Render target  -->
+            <div class="w-1/2 h-full flex flex-col items-start justify-center">
+              <div id="field-render-target-0" class="field-render-target">
               </div>
-              <div class="flex flex-row gap-2 items-center">
-                <div class="text-lg">Question Text</div>
-                <input name="question_text" type="text" value="Question Text" maxlength="500" required
-                class="rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
-              </div>
-
-              <div class="flex flex-row gap-2 items-center">
-                <div class="text-lg">Type</div>
-                <select id="" 
-                  name="type" 
-                  hx-post="{% url 'buildings:edit_survey_render_field' %}"
-                  hx-trigger="change"
-                  hx-target="#field-rendering-target"
-                  hx-swap="innerHTML"
-                  class='block min-w-[350px] text-lg w-fit rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600'>
-                    <option disabled selected value> --- </option>
-                    {% for type in all_question_types %}
-                    <option id="{{ dataset.slug }}-link" value="{{ type.id }}" class="appearance-none" 
-                    {% if dataset.id == current_dataset.id %}selected{% endif %}>
-                      {{ type.label }}
-                    </option>
-                    {% endfor %}
-                </select>
-              </div>
-
-            </form>
-
-          </div>
-          <div class="w-1/2 h-full">
-            <div id="field-rendering-target">
-
             </div>
           </div>
-        </div>
-        <div class="flex w-full justify-center">
-          {% #button id="add-question" %}
-          Add Question
-          {% /button %}
-        </div>
+        </template>
+        <template id="new-option-template">
+          <li class="flex items-center bg-white p-2 rounded-lg shadow-sm cursor-grab w-fit gap-1" draggable="true">
+            <div class="mr-3 text-gray-400 cursor-grab">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="lucide lucide-grip-vertical">
+                <circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle>
+                <circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle>
+                <circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle>
+              </svg>
+            </div>
+            <label class="">
+              <input type="text" name="options" value="Option 2" placeholder="Option 2"
+                class="rounded-md text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
+            </label>
+            <!-- <button type="button"
+              class="delete-option-button ms-auto p-2 border border-gray-200 bg-white text-gray-400 hover:text-gray-900 rounded-lg hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8"
+              aria-label="Close">
+              <span class="sr-only">Close</span>
+              <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path>
+              </svg>
+            </button> -->
+          </li>
+        </template>
+      </div>
+      <div class="flex w-full justify-center">
+        <button id="add-question" 
+          class="bg-white hover:bg-gray-50 shadow-sm hover:shadow-md relative -top-8 border-gray-200 
+                block justify-center items-center text-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus">
+            <path d="M5 12h14" />
+            <path d="M12 5v14" />
+          </svg>
+        </button>
       </div>
     </div>
     

@@ -1,3 +1,4 @@
+import json
 from allauth.account.forms import AddEmailForm
 from django.forms import Select, ChoiceField
 from django.utils.translation import gettext_lazy as _

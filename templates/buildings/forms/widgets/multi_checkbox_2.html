@@ -18,19 +18,25 @@
 
     {% if widget.has_specify and option.value == widget.specify_option_value %}
     <div id="{{ id }}_specify_container" class="flex items-center">
-      <label onclick="activateSpecifyEntryField('{{ id }}_specify');">
+      <label 
+        onclick="{% if widget.is_required %}markCheckboxesNotRequired('{{ widget.name }}');{% endif %} activateSpecifyEntryField('{{ id }}_specify');">
         <input id="{{ id }}_specify" type="{{ widget.input_type }}" class="{{ widget.attrs.checkbox_class }}"
-          name="{{ widget.name }}" {% if widget.value_was_specified %} checked{% endif %}>{{ option.label }}:</label>
-      <input class="{{ widget.attrs.specify_class }}" id="{{ id }}_specify_value" type="{{ widget.specify_input_type }}"
-        name="{{ widget.name }}" {% if widget.value_was_specified %} value="{{ widget.specified_value }}" {% else %} disabled 
-        {% endif %} />
+          name="{{ widget.name }}" 
+          {% if widget.value_was_specified %} checked{% endif %}
+          {% if widget.is_required and widget_value|length == 0 %}required{%endif%}>{{ option.label }}:</label>
+      <input id="{{ id }}_specify_value" class="{{ widget.attrs.specify_class }}" type="{{ widget.specify_input_type }}"
+        name="{{ widget.name }}" 
+        {% if widget.value_was_specified %} value="{{ widget.specified_value }}" {% else %} disabled {% endif %} />
     </div>
     {% else %}
     <label class="flex items-center h-[30px]">
       <input id="{{ option.attrs.id }}" class="{{ widget.attrs.checkbox_class }}" type="{{ widget.input_type }}"
-        name="{{ option.name }}" value="{{ option.value }}" {% if option.value in widget_value %}
-        checked{% endif %}>{{ option.label }}
-    </label>
+        name="{{ option.name }}" value="{{ option.value }}" 
+        {% if option.value in widget_value %}checked {% endif %}
+        {% if widget.is_required %} onclick='markCheckboxesNotRequired("{{ option.name }}")' 
+          {% if widget_value|length == 0 %} required{% endif %}
+        {% endif %}
+        >{{ option.label }}</label>
     {% endif %}
     {% endfor %}
   {% endfor %}

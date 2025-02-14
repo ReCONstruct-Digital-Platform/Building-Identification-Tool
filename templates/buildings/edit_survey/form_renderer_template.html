@@ -1,0 +1,111 @@
+
+
+<div id="field-render-target-{{field_num}}" class="field-render-target w-full" hx-swap-oob="true">
+  {% for field in rendered_field %}
+  {{ field.errors }}
+  <fieldset class="ps-3 pb-2">
+    <legend class="flex items-center text-lg text-slate-700 mb-2">
+      <strong>{{ field.field.question_text }}</strong>
+      {% if field.field.has_modal %}
+      {% include "buildings/utils/info_modal_button.html" with modal_id=field.auto_id %}
+      {% endif %}
+    </legend>
+    {{ field }}
+    <div>
+      {% if field.field.has_modal %}
+      {% #modal id=field.auto_id title=field.field.modal.title %}
+      {{ field.field.modal.body|safe }}
+      {% /modal %}
+      {% endif %}
+    </div>
+  </fieldset>
+  {% endfor %}
+</div>
+
+<div id="field-form-holder-{{field_num}}" class="field-form-holder text-lg font-medium text-gray-900 leading-6">
+  <span class="text-sm text-red-500">
+    {{ new_field_form.non_field_errors }}
+  </span>
+
+  <div class="flex flex-col gap-2 justify-start">
+    <label class="flex flex-col gap-1">
+      <span>{{ new_field_form.question_type.label }}</span>
+      <span class="text-sm text-red-500">
+        {{ new_field_form.errors.question_type }}
+      </span>
+      {{ new_field_form.question_type }}
+    </label>
+  </div>
+
+  <div class="flex flex-col gap-2 justify-start">
+    <label class="flex flex-col gap-1">
+      <span>{{ new_field_form.field_id.label }}</span>
+      <span class="text-sm text-red-500">
+        {{ new_field_form.errors.field_id }}
+      </span>
+      {{ new_field_form.field_id }}
+    </label>
+  </div>
+  <div class="flex flex-col gap-2 justify-start">
+    <label class="flex flex-col gap-1">
+      <span>{{ new_field_form.field_label.label }}</span>
+      <span class="text-sm text-red-500">
+        {{ new_field_form.errors.field_label }}
+      </span>
+      {{ new_field_form.field_label }}
+    </label>
+  </div>
+  <div class="flex flex-col gap-2 justify-start">
+    <label class="flex flex-col gap-1">
+      <span>{{ new_field_form.question_text.label }}</span>
+      <span class="text-sm text-red-500">
+        {{ new_field_form.errors.question_text }}
+      </span>
+      {{ new_field_form.question_text }}
+    </label>
+  </div>
+  {% if new_field_form.num_columns %}
+  <div class="flex flex-col gap-1 justify-start w-1/2">
+    <label class="flex flex-col gap-1">
+      <span>{{ new_field_form.num_columns.label }}</span>
+      {{ new_field_form.num_columns }}
+    </label>
+  </div>
+  {% endif %}
+  {% if new_field_form.is_required %}
+  <div class="flex flex-col gap-1 justify-start w-1/2">
+    <label class="flex flex-col gap-1">
+      <span>{{ new_field_form.is_required.label }}</span>
+      {{ new_field_form.is_required }}
+    </label>
+  </div>
+  {% endif %}
+  {% if new_field_form.has_specify %}
+  <div class="flex flex-col gap-2 justify-start">
+    <label class="flex flex-col gap-1">
+      <span>{{ new_field_form.specify_option.label }}</span>
+      {{ new_field_form.specify_option }}
+    </label>
+  </div>
+  {% endif %}
+  <div class="flex flex-col gap-2 justify-start">
+    <label class="flex flex-col gap-1 w-1/2">
+      <span>{{ new_field_form.options.label }}</span>
+      <span class="text-sm text-red-500">
+        {{ new_field_form.errors.options }}
+      </span>
+      {{ new_field_form.options }}
+      {% if new_field_form.can_add_options %}
+      <button 
+          class="add-option-button w-fit bg-white hover:bg-gray-50 shadow-sm hover:shadow-md border-gray-200
+              block justify-self-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus">
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
+      </button>
+      {% endif %}
+    </label>
+  </div>
+</div>
