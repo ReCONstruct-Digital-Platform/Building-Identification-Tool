@@ -3,6 +3,7 @@ notes/
 log/
 .vscode/
 output/
+data/
 data/*
 !data/public
 .idea/
@@ -13,3 +14,4 @@ CACHE/
 **/.env
 
 **/__notes/*
+node_modules/

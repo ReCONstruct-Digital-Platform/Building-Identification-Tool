@@ -80,6 +80,7 @@ B2_BUCKET_IMAGES = env("B2_BUCKET_IMAGES")
 STATIC_URL = env("STATIC_URL")
 
 STATIC_ROOT = env("STATIC_ROOT")
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
 STATICFILES_FINDERS = (
     # default
@@ -129,6 +130,7 @@ LOGGING = {
 
 INSTALLED_APPS = [
     "buildings.apps.BuildingsConfig",
+    "django.forms",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -149,7 +151,9 @@ INSTALLED_APPS = [
     "compressor",
     "slippers",
 ]
-
+# Needed to have custom widget templates with global template dir
+# https://stackoverflow.com/questions/45844032/django-templatedoesnotexist-in-case-of-a-custom-widget
+FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
