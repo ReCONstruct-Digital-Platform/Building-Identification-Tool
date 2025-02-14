@@ -1,15 +1,12 @@
-import json
 import logging
 from pprint import pprint
 from django import forms
 from django.forms import Form
-from django.utils import formats
-from django.http import QueryDict
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from buildings.models.newmodels import Survey
-from buildings.newwidgets import (
+from buildings.widgets import (
     MultiCheckboxSpecify2,
     MultiCheckboxSpecifyRequired2,
     RadioSelect,
