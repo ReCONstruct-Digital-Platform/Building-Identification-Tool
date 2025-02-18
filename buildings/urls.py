@@ -22,6 +22,8 @@ from buildings.views.edit_survey import edit_survey
 app_name = "buildings"
 
 urlpatterns = [
+    path("test_react_1", views.test_react_1, name="test_react_1"),
+    path("test_react_2", views.test_react_2, name="test_react_2"),
     path("", views.index, name="index"),
     path("profile", views.profile, name="profile"),
     path("query/<str:dataset_slug>", views.query, name="query"),

@@ -97,8 +97,10 @@ jobs:
         run: ssh staging 'cd /home/lhovon/staging_bit && git stash push -m "local_changes_$(date +%s)" && git fetch && git reset --hard origin/staging'
       - name: (STAGING) pip install 
         run: ssh staging 'cd /home/lhovon/staging_bit && /home/lhovon/.virtualenvs/stagingbitvenv/bin/pip install -r requirements.txt'
-      - name: (STAGING) npm install
+      - name: (STAGING) npm install theme
         run: ssh staging 'cd /home/lhovon/staging_bit/theme/static_src && npm install'
+      - name: (STAGING) npm install root - build any JS assets
+        run: ssh staging 'cd /home/lhovon/staging_bit/ && npm install && NODE_ENV=production webpack --progress --bail --mode=production'
       - name: (STAGING) Run migrations
         run: ssh staging 'cd /home/lhovon/staging_bit && /home/lhovon/.virtualenvs/stagingbitvenv/bin/python manage.py migrate'
       - name: (STAGING) Collectstatic
@@ -134,6 +136,8 @@ jobs:
         run: ssh prod 'cd /home/lhovon/prod_bit && /home/lhovon/.virtualenvs/bitvenv/bin/pip install -r requirements.txt'
       - name: (PROD) npm install
         run: ssh prod 'cd /home/lhovon/prod_bit/theme/static_src && npm install'
+      - name: (PROD) npm install root - build any JS assets
+        run: ssh prod 'cd /home/lhovon/prod_bit/ && npm install && NODE_ENV=production webpack --progress --bail --mode=production'
       - name: (PROD) Run migrations
         run: ssh prod 'cd /home/lhovon/prod_bit && /home/lhovon/.virtualenvs/bitvenv/bin/python manage.py migrate'
       - name: (PROD) Collectstatic

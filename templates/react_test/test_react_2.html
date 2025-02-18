@@ -1,0 +1,10 @@
+{% load render_bundle from webpack_loader %}
+<!doctype html>
+<html>
+  <head>
+  </head>
+  <body>
+    <div id="root"></div>
+    {% render_bundle 'entry2' 'js' %}
+  </body>
+</html>

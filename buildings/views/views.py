@@ -740,3 +740,16 @@ def profile(request):
         "current_email": current_email,
     }
     return render(request, "buildings/profile.html", context=context)
+
+
+"""
+POC test to integrate react components into pages
+"""
+def test_react_1(request):
+    template = "react_test/test_react_1.html"
+    return render(request, template, context={})
+
+
+def test_react_2(request):
+    template = "react_test/test_react_2.html"
+    return render(request, template, context={})

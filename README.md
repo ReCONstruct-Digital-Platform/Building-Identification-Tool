@@ -2,7 +2,7 @@
 
 The goal of this tool is to provide a convenient interface for users to remotely survey buildings and evaluate their deep energy retrofit potential. Our data is currently only for buildings in Quebec, with a foucs on HLMs and prefabrivated metal buildings.
 
-![image](assets/screenshot1.JPG)
+![image](static/images/screenshot1.JPG)
 
 # Installation
 

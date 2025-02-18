@@ -1,10 +1,16 @@
 const path = require("path");
+const BundleTracker = require("webpack-bundle-tracker");
 
 module.exports = {
-  entry: "./frontend/index.ts", // path to our input file
+  context: __dirname,
+  entry: {
+    main: "./assets/main.ts", // path to our input file
+    entry2: "./assets/entry2.ts", // path to our input file
+  },
   output: {
-    filename: "index-bundle.js", // output bundle file name
-    path: path.resolve(__dirname, "./static"), // path to our Django static directory
+    filename: "[name]-[contenthash].js",
+    publicPath: "auto", // necessary for CDNs/S3/blob storages
+    path: path.resolve(__dirname, "./assets/output/bundles"), // path to our Django static directory
   },
   module: {
     rules: [
@@ -24,4 +30,5 @@ module.exports = {
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
   },
+  plugins: [new BundleTracker({ path: __dirname, filename: "webpack-stats.json" })],
 };
