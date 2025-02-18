@@ -1825,6 +1825,22 @@ input:checked + .toggle-bg {
   max-height: 100% !important;
 }
 
+.max-h-5 {
+  max-height: 1.25rem !important;
+}
+
+.max-h-6 {
+  max-height: 1.5rem !important;
+}
+
+.max-h-10 {
+  max-height: 2.5rem !important;
+}
+
+.max-h-28 {
+  max-height: 7rem !important;
+}
+
 .min-h-\[25\%\] {
   min-height: 25% !important;
 }
@@ -1957,10 +1973,6 @@ input:checked + .toggle-bg {
 
 .min-w-full {
   min-width: 100% !important;
-}
-
-.min-w-\[75\%\] {
-  min-width: 75% !important;
 }
 
 .max-w-6xl {
