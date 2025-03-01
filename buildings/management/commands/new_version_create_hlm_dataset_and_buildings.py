@@ -427,6 +427,14 @@ def upsert_evalunits(dry_run=True):
                 "input": "number",
                 "validation": {"min": 0, "step": 0.01},
             },
+            {
+                "id": "attrs__eval_unit_id",
+                "field": "attrs__eval_unit_id",
+                "label": {"en": "Eval Unit ID"},
+                "optgroup": "attributes",
+                "type": "string",
+                "input": "text",
+            },
         ],
     )
     dataset.save()
