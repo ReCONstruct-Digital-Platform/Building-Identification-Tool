@@ -29,6 +29,10 @@ class RadioSelectForFieldForm(widgets.RadioSelect):
     template_name = "buildings/forms/widgets/radio_4_field_form.html"
 
 
+class DropdownSelectForFieldForm(widgets.Select):
+    template_name = "buildings/forms/widgets/select_4_field_form.html"
+
+
 class RadioWithSpecify2(widgets.RadioSelect):
     """
     Radio select with CSS styling included

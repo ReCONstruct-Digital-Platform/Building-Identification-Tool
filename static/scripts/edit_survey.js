@@ -555,11 +555,11 @@ function setUpDeleteOptionButtons(fieldForm) {
 
 function setUpAddQuestionButton() {
   const id = "add-question";
-  const button = document.getElementById(id);
+  const addQuestionButton = document.getElementById(id);
   const template = document.getElementById("new-field-template");
   const holder = document.getElementById("questions-holder");
 
-  button.addEventListener("click", (e) => {
+  addQuestionButton.addEventListener("click", (e) => {
     console.debug("adding question", e.target);
 
     const qnum = fieldCounter + 1;

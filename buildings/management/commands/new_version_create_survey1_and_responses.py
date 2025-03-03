@@ -78,23 +78,27 @@ def migrate_responses(dry_run=True):
                 "label": {"en": "Appendages"},
                 "widget": "multi_checkbox_specify",
                 "options": [
-                    {"pos": 0, "val": "balconies", "label": {"en": "Balconies"}},
+                    {"pos": 0, "val": "Balconies", "label": {"en": "Balconies"}},
                     {
                         "pos": 1,
-                        "val": "vestibules",
+                        "val": "Exterior Vestibules",
                         "label": {"en": "Exterior Vestibules"},
                     },
                     {
                         "pos": 2,
-                        "val": "canopies_eaves",
+                        "val": "Roof overhangs/eaves",
                         "label": {"en": "Roof overhangs/eaves"},
                     },
                     {
                         "pos": 3,
-                        "val": "porches_stoops",
+                        "val": "Porches/stoops",
                         "label": {"en": "Porches/stoops"},
                     },
-                    {"pos": 4, "val": "other", "label": {"en": "Other (specify)"}},
+                    {
+                        "pos": 4,
+                        "val": "Other (specify)",
+                        "label": {"en": "Other (specify)"},
+                    },
                 ],
                 "question_text": {
                     "en": "Select any and all significant appendages to the building faces."
@@ -113,7 +117,7 @@ def migrate_responses(dry_run=True):
                 "options": [
                     {
                         "pos": 0,
-                        "val": "num_storeys",
+                        "val": "Number of storeys",
                         "label": {"en": "Number of storeys"},
                     },
                     {"pos": 1, "val": None, "label": {"en": "Unsure"}},
@@ -146,12 +150,12 @@ def migrate_responses(dry_run=True):
                 "label": {"en": "Roof Geometry"},
                 "widget": "multi_checkbox",
                 "options": [
-                    {"pos": 0, "val": "flat", "label": {"en": "Flat"}},
-                    {"pos": 1, "val": "curved", "label": {"en": "Curved"}},
-                    {"pos": 2, "val": "unsure", "label": {"en": "Unsure"}},
-                    {"pos": 3, "val": "complex", "label": {"en": "Complex"}},
-                    {"pos": 4, "val": "pitch_low", "label": {"en": "Low Pitched"}},
-                    {"pos": 5, "val": "pitch_high", "label": {"en": "High Pitched"}},
+                    {"pos": 0, "val": "Flat", "label": {"en": "Flat"}},
+                    {"pos": 1, "val": "Curved", "label": {"en": "Curved"}},
+                    {"pos": 2, "val": "Unsure", "label": {"en": "Unsure"}},
+                    {"pos": 3, "val": "Complex", "label": {"en": "Complex"}},
+                    {"pos": 4, "val": "Low Pitched", "label": {"en": "Low Pitched"}},
+                    {"pos": 5, "val": "High Pitched", "label": {"en": "High Pitched"}},
                 ],
                 "question_text": {"en": "Select all that describes the roof geometry."},
                 "widget_config": {
@@ -180,10 +184,10 @@ def migrate_responses(dry_run=True):
                 "label": {"en": "New or Renovated"},
                 "widget": "multi_checkbox",
                 "options": [
-                    {"pos": 0, "val": "newly_built", "label": {"en": "Newly built"}},
+                    {"pos": 0, "val": "Newly built", "label": {"en": "Newly built"}},
                     {
                         "pos": 1,
-                        "val": "recently_renovated",
+                        "val": "Recently renovated",
                         "label": {"en": "Recently renovated"},
                     },
                 ],
@@ -197,24 +201,24 @@ def migrate_responses(dry_run=True):
                 "label": {"en": "Exterior Cladding"},
                 "widget": "multi_checkbox_specify",
                 "options": [
-                    {"pos": 0, "val": "wood", "label": {"en": "Wood"}},
-                    {"pos": 1, "val": "metal", "label": {"en": "Metal"}},
-                    {"pos": 2, "val": "vinyl", "label": {"en": "Vinyl"}},
-                    {"pos": 3, "val": "plaster", "label": {"en": "Plaster"}},
-                    {"pos": 4, "val": "concrete", "label": {"en": "Concrete"}},
-                    {"pos": 5, "val": "curtain_wall", "label": {"en": "Curtain Wall"}},
+                    {"pos": 0, "val": "Wood", "label": {"en": "Wood"}},
+                    {"pos": 1, "val": "Metal", "label": {"en": "Metal"}},
+                    {"pos": 2, "val": "Vinyl", "label": {"en": "Vinyl"}},
+                    {"pos": 3, "val": "Plaster", "label": {"en": "Plaster"}},
+                    {"pos": 4, "val": "Concrete", "label": {"en": "Concrete"}},
+                    {"pos": 5, "val": "Curtain Wall", "label": {"en": "Curtain Wall"}},
                     {
                         "pos": 6,
-                        "val": "brick_masonry",
+                        "val": "Brick Masonry",
                         "label": {"en": "Brick Masonry"},
                     },
                     {
                         "pos": 7,
-                        "val": "stone_masonry",
+                        "val": "Stone Masonry",
                         "label": {"en": "Stone Masonry"},
                     },
-                    {"pos": 8, "val": "unsure", "label": {"en": "Unsure"}},
-                    {"pos": 9, "val": "other", "label": {"en": "Other (Specify)"}},
+                    {"pos": 8, "val": "Unsure", "label": {"en": "Unsure"}},
+                    {"pos": 9, "val": "Other", "label": {"en": "Other (Specify)"}},
                 ],
                 "question_text": {
                     "en": "Select all types of exterior cladding does the building appear to have."
@@ -247,13 +251,13 @@ def migrate_responses(dry_run=True):
                 "options": [
                     {
                         "pos": 0,
-                        "val": "trees_or_landscaping",
+                        "val": "Important trees or landscaping",
                         "label": {"en": "Important trees or landscaping"},
                     },
-                    {"pos": 1, "val": "buildings", "label": {"en": "Buildings"}},
+                    {"pos": 1, "val": "Buildings", "label": {"en": "Buildings"}},
                     {
                         "pos": 2,
-                        "val": "overhead_wires",
+                        "val": "Overhead wires, incl. those blocking general access to site",
                         "label": {
                             "en": "Overhead wires, incl. those blocking general access to site"
                         },

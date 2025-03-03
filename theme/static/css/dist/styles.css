@@ -1617,6 +1617,10 @@ input:checked + .toggle-bg {
   margin-top: 56px !important;
 }
 
+.mr-2 {
+  margin-right: 0.5rem !important;
+}
+
 .line-clamp-2 {
   overflow: hidden !important;
   display: -webkit-box !important;
@@ -1801,6 +1805,10 @@ input:checked + .toggle-bg {
   height: 100% !important;
 }
 
+.h-7 {
+  height: 1.75rem !important;
+}
+
 .max-h-0 {
   max-height: 0px !important;
 }
@@ -1823,22 +1831,6 @@ input:checked + .toggle-bg {
 
 .max-h-full {
   max-height: 100% !important;
-}
-
-.max-h-5 {
-  max-height: 1.25rem !important;
-}
-
-.max-h-6 {
-  max-height: 1.5rem !important;
-}
-
-.max-h-10 {
-  max-height: 2.5rem !important;
-}
-
-.max-h-28 {
-  max-height: 7rem !important;
 }
 
 .min-h-\[25\%\] {
@@ -1953,6 +1945,18 @@ input:checked + .toggle-bg {
 .w-max {
   width: -moz-max-content !important;
   width: max-content !important;
+}
+
+.w-1\/4 {
+  width: 25% !important;
+}
+
+.w-3\/4 {
+  width: 75% !important;
+}
+
+.w-7 {
+  width: 1.75rem !important;
 }
 
 .min-w-\[200px\] {
@@ -2154,6 +2158,10 @@ input:checked + .toggle-bg {
   grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
 }
 
+.grid-rows-3 {
+  grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+}
+
 .flex-row {
   flex-direction: row !important;
 }
@@ -2238,6 +2246,10 @@ input:checked + .toggle-bg {
   gap: 2rem !important;
 }
 
+.gap-6 {
+  gap: 1.5rem !important;
+}
+
 .space-x-1 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-x-reverse: 0 !important;
   margin-right: calc(0.25rem * var(--tw-space-x-reverse)) !important;
@@ -2280,6 +2292,12 @@ input:checked + .toggle-bg {
   margin-bottom: calc(1.5rem * var(--tw-space-y-reverse)) !important;
 }
 
+.space-y-1 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0 !important;
+  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse))) !important;
+  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse)) !important;
+}
+
 .divide-x > :not([hidden]) ~ :not([hidden]) {
   --tw-divide-x-reverse: 0 !important;
   border-right-width: calc(1px * var(--tw-divide-x-reverse)) !important;
@@ -2290,6 +2308,18 @@ input:checked + .toggle-bg {
   --tw-divide-y-reverse: 0 !important;
   border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse))) !important;
   border-bottom-width: calc(1px * var(--tw-divide-y-reverse)) !important;
+}
+
+.divide-y-2 > :not([hidden]) ~ :not([hidden]) {
+  --tw-divide-y-reverse: 0 !important;
+  border-top-width: calc(2px * calc(1 - var(--tw-divide-y-reverse))) !important;
+  border-bottom-width: calc(2px * var(--tw-divide-y-reverse)) !important;
+}
+
+.divide-x-2 > :not([hidden]) ~ :not([hidden]) {
+  --tw-divide-x-reverse: 0 !important;
+  border-right-width: calc(2px * var(--tw-divide-x-reverse)) !important;
+  border-left-width: calc(2px * calc(1 - var(--tw-divide-x-reverse))) !important;
 }
 
 .divide-dotted > :not([hidden]) ~ :not([hidden]) {
@@ -2884,6 +2914,18 @@ input:checked + .toggle-bg {
 
 .pt-4 {
   padding-top: 1rem !important;
+}
+
+.pt-8 {
+  padding-top: 2rem !important;
+}
+
+.pt-\[30px\] {
+  padding-top: 30px !important;
+}
+
+.pt-\[50px\] {
+  padding-top: 50px !important;
 }
 
 .text-left {

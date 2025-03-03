@@ -1,4 +1,5 @@
 import json
+import re
 
 from django.db.models import F
 from django.http import (
@@ -21,6 +22,7 @@ from .forms_fields_widgets import (
     CheckboxFieldWithSpecify,
     RadioFieldWithSpecify,
 )
+from django.template.loader import render_to_string
 
 import logging
 
@@ -28,6 +30,20 @@ from buildings.utils.utility import get_b64_encoded_json
 from buildings.views.views import get_surveys_qb_filters_and_optgroups
 
 log = logging.getLogger(__name__)
+
+
+def transform_survey_options_to_field_form(field_schema):
+    field_type, survey_options = field_schema.get("widget"), field_schema.get("options")
+    if field_type in [
+        "boolean",
+        "multi_checkbox",
+        "radio",
+        "multi_checkbox_specify",
+        "radio_w_specify",
+    ]:
+        return [opt["label"]["en"] for opt in survey_options]
+
+    raise ValueError(f"Unimplemented field type {field_type}")
 
 
 def transform_options_to_survey_schema(field_type, options):
@@ -145,6 +161,75 @@ def get_json_schema_with_defaults(field_type, data):
     raise ValueError(f"Unimplemented field type {field_type}")
 
 
+def get_bound_field_form_from_schema(field_num: int, field_schema: dict) -> dict:
+    field_type = field_schema.get("widget")
+    ffopts = {
+        "field_label": field_schema.get("label").get("en"),
+        "question_text": field_schema.get("question_text").get("en"),
+        "options": transform_survey_options_to_field_form(field_schema),
+    }
+    if field_type == "boolean":
+        return OptionsFieldForm(field_num, data=ffopts)
+
+    # Common attributes for all below fields
+    widget_config = field_schema.get("widget_config", {})
+
+    num_columns = 1
+    if "attrs" in widget_config and "class" in widget_config["attrs"]:
+        css_class = widget_config["attrs"]["class"]
+
+        if m := re.match(r"survey-(\d)col", css_class):
+            num_columns = m.group(1)
+
+    is_required = widget_config.get("is_required", False) if widget_config else False
+
+    if field_type in ["radio"]:
+        data = {
+            **ffopts,
+            **{
+                "num_columns": num_columns,
+                "is_required": is_required,
+            },
+        }
+        return OptionsFieldFormForRadioInputs(field_num, data=data)
+
+    if field_type in ["multi_checkbox"]:
+        data = {
+            **ffopts,
+            **{
+                "num_columns": num_columns,
+                "is_required": is_required,
+            },
+        }
+        return OptionsFieldFormForCheckboxes(field_num, data=data)
+
+    # Common value to specify fields
+    specify_option = widget_config.get("specify_option_value", "Specify")
+
+    if field_type in ["radio_w_specify"]:
+        data = {
+            **ffopts,
+            **{
+                "num_columns": num_columns,
+                "specify_option": specify_option,
+                "is_required": is_required,
+            },
+        }
+        return RadioFieldWithSpecify(field_num, data=data)
+    if field_type in ["multi_checkbox_specify"]:
+        data = {
+            **ffopts,
+            **{
+                "num_columns": num_columns,
+                "specify_option": specify_option,
+                "is_required": is_required,
+            },
+        }
+        return CheckboxFieldWithSpecify(field_num, data=data)
+
+    raise ValueError(f"Unimplemented field type {field_type}")
+
+
 def get_field_form_class_and_default_vals(field_type: str):
     if field_type == "boolean":
         return (
@@ -242,11 +327,9 @@ def render_question_preview(request):
         "options": schema_options,
     }
 
-    # Get default schema options
-    tmp_survey_for_render = Survey(schema={"field": field_schema})
-
     new_field_form.is_valid()
 
+    tmp_survey_for_render = Survey(schema={"field": field_schema})
     rendered_field = DynamicSurveyForm(tmp_survey_for_render, request.POST)
 
     context = {
@@ -348,9 +431,24 @@ def edit_survey_questions(request, survey_slug):
     )
 
     # TODO: Render all questions from survey schema
-    test_form = None
+    existing_fields_to_render = []
+
+    #     sorted_fields = sorted(survey.schema.values(), key=lambda x: x["pos"])
+    # for field_num, field_schema in enumerate(sorted_fields):
+
+    for field_num, (field_schema) in enumerate(survey.schema.values()):
+        print(field_schema)
+        field_type = field_schema.get("widget")
+
+        field_form = get_bound_field_form_from_schema(field_num, field_schema)
+        # need to render the field itself, and the field form
+        # if survey is active, deactivate all inputs - survey is read only
+
+        tmp_survey_for_render = Survey(schema={"field": field_schema})
+        field_preview = DynamicSurveyForm(tmp_survey_for_render, request.POST)
+        existing_fields_to_render.append((field_type, field_form, field_preview))
+
     context = {
-        "test_form": test_form,
         "survey": survey,
         "dataset": dataset,
         "surveys": surveys_on_dataset,
@@ -366,6 +464,7 @@ def edit_survey_questions(request, survey_slug):
         "user_survey_cols": user_survey_cols,
         "default_survey_cols": default_survey_cols,
         "all_question_types": all_question_types,
+        "existing_fields_to_render": existing_fields_to_render,
     }
 
     template_name = "buildings/edit_survey/edit_survey.html"

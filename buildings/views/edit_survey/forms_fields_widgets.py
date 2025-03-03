@@ -5,6 +5,8 @@ from django.http import QueryDict
 from buildings.widgets import RadioSelectForFieldForm
 from django.utils.translation import gettext_lazy as _
 
+from buildings.widgets.newwidgets import DropdownSelectForFieldForm
+
 
 # Override these widgets to make them have unique IDs
 # (This avoid focus going to another elemnt with the same id when clicking out of the input)
@@ -62,7 +64,7 @@ class ListField(forms.Field):
 
 
 class BaseNewFieldForm(forms.Form):
-    TW_DEFAULT_CLASS = """w-1/2 rounded-md border-0 py-1.5shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600"""
+    TW_DEFAULT_CLASS = """rounded-md border-0 py-1.5shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600"""
 
     def __init__(self, field_num, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -80,7 +82,7 @@ class BaseNewFieldForm(forms.Form):
     question_text = forms.CharField(
         label=_("Question Text"),
         max_length=500,
-        widget=TextAreaWidget(attrs={"rows": 2}),
+        widget=TextAreaWidget(attrs={"rows": 1}),
     )
 
 
@@ -128,7 +130,7 @@ class OptionsFieldFormArbitraryOptions(OptionsFieldForm):
     num_columns = forms.ChoiceField(
         label=_("Num Columns"),
         widget=RadioSelectForFieldForm(
-            attrs={"class": "grid grid-cols-3 gap-2"},
+            attrs={"class": "flex flex-row gap-8"},
         ),
         choices=((1, _("1")), (2, _("2")), (3, _("3"))),
     )
@@ -146,7 +148,7 @@ class OptionsFieldFormForCheckboxes(OptionsFieldFormArbitraryOptions):
     is_required = forms.ChoiceField(
         label=_("Is Required?"),
         widget=RadioSelectForFieldForm(
-            attrs={"class": "grid grid-cols-3 gap-2"},
+            attrs={"class": "flex flex-row gap-8"},
         ),
         choices=((False, _("No")), (True, _("Yes"))),
     )
@@ -168,7 +170,7 @@ class RadioFieldWithSpecify(OptionsFieldFormForRadioInputs):
         self.fields["specify_option"].choices = list(options_choices)
 
     specify_option = forms.ChoiceField(
-        label=_("Specify Option"), widget=widgets.Select()
+        label=_("Specify Option"), widget=DropdownSelectForFieldForm()
     )
 
     has_specify = True
@@ -190,7 +192,7 @@ class CheckboxFieldWithSpecify(OptionsFieldFormForCheckboxes):
         self.fields["specify_option"].choices = list(options_choices)
 
     specify_option = forms.ChoiceField(
-        label=_("Specify Option"), widget=widgets.Select()
+        label=_("Specify Option"), widget=DropdownSelectForFieldForm()
     )
 
     has_specify = True
