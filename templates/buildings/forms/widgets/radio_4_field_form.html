@@ -1,12 +1,17 @@
 {% with id=widget.attrs.id widget_val=widget.value.0 %}
 <div id="{{ id }}" class="{{ widget.attrs.class }}">
-  {% for _, options, _ in widget.optgroups %}
-    {% for option in options %}
+  {% if widget.attrs.disabled %} 
+  {{ widget_val }}
+  {% else %}
+    {% for _, options, _ in widget.optgroups %}
+      {% for option in options %}
       <label class="flex items-center h-[30px] gap-1">
         <input id="{{ option.attrs.id }}" class="{{ widget.attrs.radio_class }}" type="{{ option.type }}" 
-          name="{{ option.name }}" value="{{ option.value }}" 
-          {% if option.selected %} checked {% endif %} required>{{ option.label }}</label>
+        name="{{ option.name }}" value="{{ option.value }}" 
+        {% if option.selected %} checked {% endif %} required
+        >{{ option.label }}</label>
+        {% endfor %}
     {% endfor %}
-  {% endfor %}
+  {% endif %}
 </div>
 {% endwith %}

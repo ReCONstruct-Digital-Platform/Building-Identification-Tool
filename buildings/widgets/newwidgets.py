@@ -27,10 +27,26 @@ class RadioSelect(widgets.RadioSelect):
 
 class RadioSelectForFieldForm(widgets.RadioSelect):
     template_name = "buildings/forms/widgets/radio_4_field_form.html"
+    def __init__(self, attrs=None, **kwargs):
+        super().__init__(attrs=attrs, **kwargs)
+        self.is_bound = False
+        self.attrs["radio_class"] = TW_RADIO_CLASS
+
+    def get_context(self, name, value, attrs):
+        if self.disabled:
+            attrs |= {"disabled": True}
+        context = super().get_context(name, value, attrs)
+        context["widget"]["is_bound"] = self.is_bound
+        return context
 
 
 class DropdownSelectForFieldForm(widgets.Select):
     template_name = "buildings/forms/widgets/select_4_field_form.html"
+    def get_context(self, name, value, attrs):
+        if self.disabled:
+            attrs |= {"disabled": True}
+        context = super().get_context(name, value, attrs)
+        return context
 
 
 class RadioWithSpecify2(widgets.RadioSelect):

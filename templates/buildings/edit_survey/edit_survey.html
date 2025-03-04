@@ -200,13 +200,21 @@
           </li>
         </template>
 
+        <div>
+          {% if survey.status == 'ACTIVE' %}
+          Since your survey has been published, you can no longer edit the questions.
+          {% endif %}
+        </div>
+
         <!-- Render existing fields of the survey -->
         {% for field_type, field_form, rendered_field in existing_fields_to_render %}
+
+
         <div class="new-field-form-and-render-block flex flex-row">
           <div class="w-1/2 h-full p-3 bg-white bg-opacity-80 rounded-lg">
             <div class="flex justify-between mb-1">  
               <!-- Field type select -->
-              <div class="flex flex-col gap-1 justify-start text-lg">
+              <div class="flex flex-col gap-1 justify-start">
                 <span>Question Type</span>
                 <select id="question-type-select-{{ forloop.counter0 }}" 
                   name="field_type"               
@@ -215,17 +223,20 @@
                   hx-trigger="change"
                   hx-target="#field-form-holder-{{ forloop.counter0 }}"
                   hx-swap="innerHTML"
-                  class='block min-w-[350px] text-md w-fit rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600'>
+                  class='block min-w-[350px] text-md w-fit rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600
+                  disabled:border-gray-200 disabled:bg-gray-50 disabled:text-gray-700 disabled:shadow-none'
+                  {% if field_form.is_disabled %} disabled {%endif%}
+                  >
                     <option disabled selected value> --- </option>
                     {% for type in all_question_types %}
-                    <option id="{{  type.id  }}-link" value="{{ type.id }}" class="appearance-none" 
+                    <option id="{{  type.id  }}-link" value="{{ type.id }}" class="disabled:text-gray-700" 
                     {% if type.id == field_type %}selected{% endif %}>
                       {{ type.label }}
                     </option>
                     {% endfor %}
                 </select>
               </div>
-
+              {% if not field_form.is_disabled %} 
               <button id="delete-question-{{ forloop.counter0 }}" type="button"
                 class="delete-question-button ms-auto p-2 border border-gray-200 bg-white text-gray-400 hover:text-gray-900 rounded-lg hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8"
                 aria-label="Close">
@@ -235,6 +246,7 @@
                   d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path>
                 </svg>
               </button>
+              {%endif%}
             </div>
 
             <form
@@ -249,26 +261,30 @@
               >
               <!-- Field Form -->
               {% csrf_token %}
-              <div id="field-form-holder-{{ forloop.counter0 }}" class="field-form-holder text-lg font-medium text-gray-900 leading-6 flex flex-col gap-2">
+              <div id="field-form-holder-{{ forloop.counter0 }}" class="field-form-holder font-medium text-gray-900 leading-6 flex flex-col gap-2">
                 <span class="text-sm text-red-500">
                   {{ field_form.non_field_errors }}
                 </span>
                 <div class="flex flex-row gap-1 w-full">
                   <div class="flex flex-col gap-2 justify-start w-1/4">
                     <label class="flex flex-col gap-1">
-                      <span>{{ field_form.field_label.label }}</span>
-                      <span class="text-sm text-red-500">
-                        {{ field_form.errors.field_label }}
-                      </span>
+                      <div class="flex flex-row items-baseline gap-2">
+                        <span>{{ field_form.field_label.label }}</span>
+                        <span class="text-sm text-red-500">
+                          {{ field_form.errors.field_label }}
+                        </span>
+                      </div>
                       {{ field_form.field_label }}
                     </label>
                   </div>
                   <div class="flex flex-col gap-1 justify-start w-3/4">
                     <label class="flex flex-col gap-1">
-                      <span>{{ field_form.question_text.label }}</span>
-                      <span class="text-sm text-red-500">
-                        {{ field_form.errors.question_text }}
-                      </span>
+                      <div class="flex flex-row items-baseline gap-2">
+                        <span>{{ field_form.question_text.label }}</span>
+                        <span class="text-sm text-red-500">
+                          {{ field_form.errors.question_text }}
+                        </span>
+                      </div>
                       {{ field_form.question_text }}
                     </label>
                   </div>
@@ -303,12 +319,14 @@
                 {% endif %}
                 <div class="flex flex-col gap-1 justify-start">
                   <label class="flex flex-col gap-1 w-1/2">
-                    <span>{{ field_form.options.label }}</span>
-                    <span class="text-sm text-red-500">
-                      {{ field_form.errors.options }}
-                    </span>
+                    <div class="flex flex-row items-baseline gap-2">
+                      <span>{{ field_form.options.label }}</span>
+                      <span class="text-sm text-red-500">
+                        {{ field_form.errors.options }}
+                      </span>
+                    </div>
                     {{ field_form.options }}
-                    {% if field_form.can_add_options %}
+                    {% if field_form.can_add_options and not field_form.is_disabled %}
                     <button 
                         class="add-option-button w-fit bg-white hover:bg-gray-50 shadow-sm hover:shadow-md border-gray-200
                             block justify-self-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">

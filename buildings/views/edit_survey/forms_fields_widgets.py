@@ -16,6 +16,8 @@ from buildings.widgets.newwidgets import DropdownSelectForFieldForm
 class TextInputWidget(widgets.TextInput):
     def get_context(self, name, value, attrs):
         attrs |= {"id": f"text_area_{self.field_num}"}
+        if self.disabled:
+            attrs |= {"disabled": True}
         context = super().get_context(name, value, attrs)
         return context
 
@@ -23,6 +25,8 @@ class TextInputWidget(widgets.TextInput):
 class TextAreaWidget(widgets.Textarea):
     def get_context(self, name, value, attrs):
         attrs |= {"id": f"text_input_{self.field_num}"}
+        if self.disabled:
+            attrs |= {"disabled": True}
         context = super().get_context(name, value, attrs)
         return context
 
@@ -39,6 +43,8 @@ class DragListWidget(widgets.CheckboxSelectMultiple):
         self.can_add_options = False
 
     def get_context(self, name, value, attrs):
+        if self.disabled:
+            attrs |= {"disabled": True}
         context = super().get_context(name, value, attrs)
         context["widget"]["can_add_options"] = self.can_add_options
         return context
@@ -64,14 +70,17 @@ class ListField(forms.Field):
 
 
 class BaseNewFieldForm(forms.Form):
-    TW_DEFAULT_CLASS = """rounded-md border-0 py-1.5shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600"""
+    TW_DEFAULT_CLASS = """rounded-md border-0 py-1.5shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 disabled:border-gray-200 disabled:bg-gray-50 disabled:text-gray-500 disabled:shadow-none"""
 
     def __init__(self, field_num, *args, **kwargs):
+        self.is_disabled = kwargs.pop("disabled", True)
+
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             if "class" not in field.widget.attrs:
                 field.widget.attrs["class"] = self.TW_DEFAULT_CLASS
             field.widget.field_num = field_num
+            field.widget.disabled = self.is_disabled
 
     field_label = forms.CharField(
         label=_("Field Label"),
@@ -88,7 +97,7 @@ class BaseNewFieldForm(forms.Form):
 
 class OptionsFieldForm(BaseNewFieldForm):
 
-    TW_OPTIONS_CLASS = """rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600"""
+    TW_OPTIONS_CLASS = """rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 disabled:border-gray-200 disabled:bg-gray-50 disabled:text-gray-500 disabled:shadow-none"""
 
     def __init__(self, field_num, *args, **kwargs):
         super().__init__(field_num, *args, **kwargs)
@@ -154,7 +163,7 @@ class OptionsFieldFormForCheckboxes(OptionsFieldFormArbitraryOptions):
     )
 
 
-class RadioFieldWithSpecify(OptionsFieldFormForRadioInputs):
+class RadioFieldWithSpecifyForm(OptionsFieldFormForRadioInputs):
 
     def __init__(self, field_num, *args, **kwargs):
         super().__init__(field_num, *args, **kwargs)
@@ -176,7 +185,7 @@ class RadioFieldWithSpecify(OptionsFieldFormForRadioInputs):
     has_specify = True
 
 
-class CheckboxFieldWithSpecify(OptionsFieldFormForCheckboxes):
+class CheckboxFieldWithSpecifyForm(OptionsFieldFormForCheckboxes):
 
     def __init__(self, field_num, *args, **kwargs):
         super().__init__(field_num, *args, **kwargs)

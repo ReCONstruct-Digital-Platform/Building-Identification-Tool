@@ -19,8 +19,8 @@ from .forms_fields_widgets import (
     OptionsFieldForm,
     OptionsFieldFormForRadioInputs,
     OptionsFieldFormForCheckboxes,
-    CheckboxFieldWithSpecify,
-    RadioFieldWithSpecify,
+    CheckboxFieldWithSpecifyForm,
+    RadioFieldWithSpecifyForm,
 )
 from django.template.loader import render_to_string
 
@@ -215,7 +215,7 @@ def get_bound_field_form_from_schema(field_num: int, field_schema: dict) -> dict
                 "is_required": is_required,
             },
         }
-        return RadioFieldWithSpecify(field_num, data=data)
+        return RadioFieldWithSpecifyForm(field_num, data=data)
     if field_type in ["multi_checkbox_specify"]:
         data = {
             **ffopts,
@@ -225,7 +225,7 @@ def get_bound_field_form_from_schema(field_num: int, field_schema: dict) -> dict
                 "is_required": is_required,
             },
         }
-        return CheckboxFieldWithSpecify(field_num, data=data)
+        return CheckboxFieldWithSpecifyForm(field_num, data=data)
 
     raise ValueError(f"Unimplemented field type {field_type}")
 
@@ -257,7 +257,7 @@ def get_field_form_class_and_default_vals(field_type: str):
         )
     if field_type in ["radio_w_specify"]:
         return (
-            RadioFieldWithSpecify,
+            RadioFieldWithSpecifyForm,
             {
                 "num_columns": 1,
                 "options": ["Option 1", "Option 2", "Specify"],
@@ -267,7 +267,7 @@ def get_field_form_class_and_default_vals(field_type: str):
         )
     if field_type in ["multi_checkbox_specify"]:
         return (
-            CheckboxFieldWithSpecify,
+            CheckboxFieldWithSpecifyForm,
             {
                 "num_columns": 1,
                 "options": ["Option 1", "Option 2", "Specify"],
@@ -433,11 +433,9 @@ def edit_survey_questions(request, survey_slug):
     # TODO: Render all questions from survey schema
     existing_fields_to_render = []
 
-    #     sorted_fields = sorted(survey.schema.values(), key=lambda x: x["pos"])
-    # for field_num, field_schema in enumerate(sorted_fields):
+    sorted_fields = sorted(survey.schema.values(), key=lambda x: x["pos"])
+    for field_num, field_schema in enumerate(sorted_fields):
 
-    for field_num, (field_schema) in enumerate(survey.schema.values()):
-        print(field_schema)
         field_type = field_schema.get("widget")
 
         field_form = get_bound_field_form_from_schema(field_num, field_schema)

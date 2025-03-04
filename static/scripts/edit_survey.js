@@ -620,6 +620,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setUpCollapsibles();
   setUpTabGroups("tabs-survey", classesTabActive, inactiveClasses);
   setUpAddQuestionButton();
+  setUpSpecifyClickLabel();
   // htmx.logAll();
 });
 

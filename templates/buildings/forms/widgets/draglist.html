@@ -2,6 +2,7 @@
   {% for val in widget.value %}
   <li class="flex items-center bg-white p-1 rounded-lg shadow-sm cursor-grab w-fit gap-1"
     draggable="true">
+    {% if not widget.attrs.disabled %}
     <div class="mr-2 text-gray-400 cursor-grab">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -9,9 +10,10 @@
         <circle cx="9" cy="12" r="1" /><circle cx="9" cy="5" r="1" /><circle cx="9" cy="19" r="1" /><circle cx="15" cy="12" r="1" /><circle cx="15" cy="5" r="1" /><circle cx="15" cy="19" r="1" />
       </svg>
     </div>
+    {% endif %}
     <input type="text" name="options" value="{{ val }}" placeholder="{{ val }}"
-      class="{{widget.attrs.class}}">
-    {% if widget.can_add_options and widget.value|length > 1 %}
+      class="{{widget.attrs.class}}" {% if widget.attrs.disabled %} disabled {% endif %}>
+    {% if widget.can_add_options and widget.value|length > 1 and not widget.attrs.disabled %}
     <button type="button"
       class="delete-option-button p-1 border border-gray-200 bg-white text-gray-400 hover:text-gray-900 rounded-lg hover:bg-gray-100 inline-flex items-center justify-center h-7 w-7"
       aria-label="Close">
