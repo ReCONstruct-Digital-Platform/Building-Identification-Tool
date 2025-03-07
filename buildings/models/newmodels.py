@@ -29,6 +29,7 @@ class Dataset(models.Model):
     def get_schema(self, prefix=None):
         if prefix:
             # Prepend prefix to the id of each field
+            # This overwrites id and field from the schema
             return list(
                 map(
                     lambda f: {
@@ -222,7 +223,7 @@ class Survey(models.Model):
 
     name = models.TextField()
     description = models.TextField(null=True, blank=True)
-    slug = AutoSlugField(populate_from="name")
+    slug = AutoSlugField(populate_from="name", unique=True)
 
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
@@ -247,6 +248,20 @@ class Survey(models.Model):
 
     date_added = models.DateTimeField("date added", default=timezone.now)
     date_modified = models.DateTimeField("date modified", default=timezone.now)
+
+    def get_readonly_rules(self, type: str):
+        if type not in ["dataset", "surveys"]:
+            raise Exception(f"Unknown readonly type: {type}")
+        filter = getattr(self, f"{type}_filter")
+        if filter is None:
+            return None
+        readonly_rules = []
+        for rule in filter["rules"]:
+            rule["readonly"] = True
+            readonly_rules.append(rule)
+        filter["rules"] = readonly_rules
+        filter["readonly"] = True
+        return filter
 
     def get_columns_to_display(self):
         """

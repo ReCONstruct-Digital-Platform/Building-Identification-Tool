@@ -43,7 +43,7 @@
                 <br><span class="text-lg font-semibold">Note:</span> You will not be able to change this value later.
               </p>
               <!-- HTMX regenerate the candidates list when source dataset changes. QB filters will change thanks to their hx-swap-oob attribute -->
-              <select id="source-dataset-select" name="ds" 
+              <select id="source-dataset-select" name="source_dataset" 
                 hx-get="{% url 'buildings:new_survey' %}" 
                 hx-trigger="change" 
                 hx-target="#results-container"
@@ -60,10 +60,10 @@
               </select>
             </div>
           </div>
-          <div id="survey-description" class="mb-3">
+          <div class="mb-3">
             <div class="text-xl">Survey Description</div>
             <p>A short description of your survey</p>
-            <textarea name="survey_decription" class="w-1/2" rows="3"></textarea>
+            <textarea id="survey-description" name="survey_decription" class="w-1/2" rows="3"></textarea>
           </div>
         </section>
 
@@ -77,7 +77,7 @@
           <div id="survey-creation-error" class="hidden bg-red-500 rounded-md p-5 text-white text-lg text-center">
             There was an error creating your survey. Please check the inputs and try again.
           </div>
-          <p class="text-lg"><span class="font-semibold me-1">Warning:</span> You will not be able to change the survey name and source dataset after this step.<br>You will still be able to change the filters however.</p>
+          <p class="text-lg"><span class="font-semibold me-1">Warning:</span> You will not be able to change the survey settings and candidate filters after this step.
           <div class="flex justify-center mt-3">
             <button 
               id="confirm-survey-creation"

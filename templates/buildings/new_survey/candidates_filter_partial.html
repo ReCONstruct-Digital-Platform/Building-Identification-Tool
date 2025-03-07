@@ -7,8 +7,6 @@
   <div class="my-1">
     <p>
       These filters define which buildings of the source dataset will be surveyed.
-      <br>
-      You can change these values later.
     </p>
   </div>
 
@@ -29,8 +27,9 @@
   <section id="surveys-filter" class="my-4 gap-2">
 
     <div class="text-2xl">Surveys filter</div>
-    <p class="mb-2">Filter the input data to your survey on previous survey results. Your survey's target population will be
-      updated as the upstream surveys get new responses.
+    <p class="mb-2">Filter the input data to your survey on previous survey results. <br>
+      <!-- For now this is true but we might want to freeze the target population at survey creation time -->
+       Your survey's target population will be updated as the upstream surveys get new responses.
     </p>
 
     {% #button id="add-surveys-filter" %}
@@ -127,12 +126,12 @@
     <button id="next-step-button"
     class="bg-teal-600 hover:bg-teal-500 focus-visible:outline-teal-600 
       block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-      {% trans "Proceed to Next Step" %}
+      {% trans "Add Questions" %}
     </button>
     <button id="show-confirm-creation" data-target-modal="confirm_creation_modal"
     class="hidden modal-open-button bg-teal-600 hover:bg-teal-500 focus-visible:outline-teal-600 
       justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-      {% trans "Proceed to Next Step" %}
+      {% trans "Confirm" %}
     </button>
   </section>
 </div>

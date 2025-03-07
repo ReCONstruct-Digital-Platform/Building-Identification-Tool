@@ -375,14 +375,12 @@ def edit_survey_questions(request, survey_slug):
 
     survey = get_object_or_404(Survey, slug=survey_slug)
     dataset = survey.dataset
-
-    # Get filters to display
+    dataset_query = survey.dataset_filter
+    survey_query = survey.surveys_filter
 
     pagenum = request.GET.get("page") or 1
     orderby_field = request.GET.get("field") or "address"
     orderby_dir = request.GET.get("dir") or "asc"
-    dataset_query = get_b64_encoded_json(request.GET.get("dataset_query"))
-    survey_query = get_b64_encoded_json(request.GET.get("survey_query"))
     p_bldg_cols = get_b64_encoded_json(request.GET.get("user_bldg_cols"))
     p_survey_cols = get_b64_encoded_json(request.GET.get("user_survey_cols"))
 
@@ -424,13 +422,16 @@ def edit_survey_questions(request, survey_slug):
     ).get_page(pagenum)
 
     qb_dataset_filters = dataset.get_schema(prefix="")
+    dataset_filter_rules = survey.get_readonly_rules("dataset")
+    survey_filter_rules = survey.get_readonly_rules("surveys")
+
+    print(dataset_filter_rules)
 
     surveys_on_dataset = Survey.objects.filter(dataset=dataset)
     survey_filters_and_optgroups = get_surveys_qb_filters_and_optgroups(
         surveys_on_dataset
     )
 
-    # TODO: Render all questions from survey schema
     existing_fields_to_render = []
 
     sorted_fields = sorted(survey.schema.values(), key=lambda x: x["pos"])
@@ -449,10 +450,12 @@ def edit_survey_questions(request, survey_slug):
     context = {
         "survey": survey,
         "dataset": dataset,
-        "surveys": surveys_on_dataset,
+        # "surveys": surveys_on_dataset,
         "page": page,
         "survey_orderby_cols": survey_orderby_cols,
         "bldg_orderby_cols": bldg_orderby_cols,
+        "dataset_filter_rules": dataset_filter_rules,
+        "survey_filter_rules": survey_filter_rules,
         "qb_dataset_filters": qb_dataset_filters,
         "qb_surveys_filters": survey_filters_and_optgroups,
         "orderby_field": orderby_field,

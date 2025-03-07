@@ -2,129 +2,111 @@
 {% load i18n %}
 {% load allauth %}
 <div>
-  <div>
-    <div id="candidate-filters-collapsible" class="collapsible flex items-center justify-between w-1/2 cursor-pointer" data-collapse-target="candidates-filters-collapsible-target" collapsed>
-      <div class="text-3xl font-semibold">Survey Candidates Filters</div>
-      <svg class="collapse-icon transition-all ease-in-out duration-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down">
-        <path d="m6 9 6 6 6-6"/>
-      </svg>
-    </div>
-    <hr class="w-1/2 pt-2">
-  </div>
-  
-  <div id="candidates-filters-collapsible-target" 
-    class="transition-all duration-300 ease-in-out max-h-0 overflow-hidden mb-2"
-    >
-    <div class="my-1">
-      <p>
-        These filters define which buildings of the source dataset will be surveyed.
-        <br>
-        You can change these values later.
-      </p>
-    </div>
 
-    <section id="data-filter" class="my-4 gap-2">
-
-      <div class="text-2xl">Dataset filter</div>
-      <p class="mb-2">Filter the input dataset buildings to survey.</p>
-
-      {% #button id="add-dataset-filter" %}
-      Add dataset filter
-      {% /button %}
-
-      <div class="block w-2/3 py-2">
-        <div id="query-builder-dataset" class="col-start-2 col-span-6"></div>
+  <section id="candidate-filters">
+    <div>
+      <div class="flex items-center justify-between w-1/2 cursor-pointer">
+        <div class="text-3xl font-semibold">Survey Candidates Filters</div>
       </div>
-    </section>
-
-    <section id="surveys-filter" class="my-4 gap-2">
-
-      <div class="text-2xl">Surveys filter</div>
-      <p class="mb-2">Filter the input data to your survey on previous survey results. Your survey's target population will be
-        updated as the upstream surveys get new responses.
-      </p>
-
-      {% #button id="add-surveys-filter" %}
-      Add survey filter
-      {% /button %}
-
-      <div class="block w-2/3 py-2">
-        <div id="query-builder-surveys" class="col-start-2 col-span-6"></div>
-      </div>
-    </section>
-
-  </div>
-
-  <div>
-    <div id="view-options-collapsible" class="collapsible flex items-center justify-between w-1/2 cursor-pointer" data-collapse-target="view-options-collapsible-target" collapsed>
-      <div class="text-3xl font-semibold">Candidate Viewing Options</div>
-      <svg class="collapse-icon transition-all ease-in-out duration-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down">
-        <path d="m6 9 6 6 6-6"/>
-      </svg>
+      <hr class="w-1/2 pt-2">
     </div>
-    <hr class="w-1/2 pt-2">
+    
+    <div class="mb-2">
 
-  </div>
-  <div id="view-options-collapsible-target"
-    class="transition-all duration-300 ease-in-out overflow-hidden mb-2"
-  >
-    <div class="my-1">
-      <p>These options do not filter the candidate list, only how they are displayed below.</p>
-    </div>
-    <section>
-      <div class="text-2xl mb-2">Fields to display</div>
-      <button id="show-col-config" data-target-modal="column_config_modal"
-        class="modal-open-button bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-600 
-      block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-        Choose columns
-      </button>
-    </section>
+      {% if dataset_filter_rules %}
+      <section id="data-filter" class="my-4 gap-2">
 
-    <section id="order-by-config" class="my-4">
-      <div class="text-xl">
-        Order by
-      </div>
-      <div class="flex gap-3 items-center">
-        <select id="order-by-field"
-          class='block font-light text-sm ps-2 mt-1 rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600'>
-          <optgroup label="Building Attributes">
-            {% for col in bldg_orderby_cols %}
-            <option id="{{ col.id }}" value="{{ col.id }}" class="appearance-none" {% if col.id == orderby_field %}
-              selected {% endif %}>{{ col.label }}</option>
-            {% endfor %}
-          </optgroup>
-          <optgroup label="Survey Responses">
-            {% for col in survey_orderby_cols %}
-            <option id="{{ col.id }}" value="{{ col.id }}" class="appearance-none" {% if col.id == orderby_field %}
-              selected {% endif %}>{{ col.label }}</option>
-            {% endfor %}
-          </optgroup>
-        </select>
+        <div class="text-2xl">Dataset filter</div>
 
-        <div>
-          <div>
-            <label>
-              <input type="radio" id="order-by-asc" name="order-by-dir" value="asc"
-                class="me-2 text-base border-0 text-teal-600 accent-teal-600 focus:accent-teal-700 shadow-sm ring-1 focus:ring-2 focus:ring-teal-600"
-                {% if orderby_dir == 'asc' %} checked {% endif %}/>
-              Ascending
-            </label>
-          </div>
-          <div>
-
-            <label>
-              <input type="radio" id="order-by-desc" name="order-by-dir" value="desc"
-                class="me-2 text-base border-0 text-teal-600 accent-teal-600 focus:accent-teal-700 shadow-sm ring-1 focus:ring-2 focus:ring-teal-600" 
-                {% if orderby_dir == 'desc' %} checked {% endif %}
-                />
-              Descending
-            </label>
-          </div>
-
+        <div class="block w-2/3 py-2">
+          <div id="query-builder-dataset" class="col-start-2 col-span-6"></div>
         </div>
+      </section>
+      {% endif %}
+      
+      {% if survey_filter_rules %}
+      <section id="surveys-filter" class="my-4 gap-2">
+
+        <div class="text-2xl">Surveys filter</div>
+
+        <div class="block w-2/3 py-2">
+          <div id="query-builder-surveys" class="col-start-2 col-span-6"></div>
+        </div>
+      </section>
+      {% endif %}
+    </div>
+
+  </section>
+
+  <section id="candidate-viewing-options">
+
+    <div>
+      <div class="flex items-center justify-between w-1/2 cursor-pointer">
+        <div class="text-3xl font-semibold">Candidate Viewing Options</div>
       </div>
-    </section>
-  </div>
+      <hr class="w-1/2 pt-2">
+
+    </div>
+
+    <div class="mb-2">
+      <div class="my-1">
+        <p>These options do not filter the candidate list, only how they are displayed below.</p>
+      </div>
+      <section>
+        <div class="text-2xl mb-2">Fields to display</div>
+        <button id="show-col-config" data-target-modal="column_config_modal"
+          class="modal-open-button bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-600 
+        block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+          Choose columns
+        </button>
+      </section>
+
+      <section id="order-by-config" class="my-4">
+        <div class="text-xl">
+          Order by
+        </div>
+        <div class="flex gap-3 items-center">
+          <select id="order-by-field"
+            class='block font-light text-sm ps-2 mt-1 rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600'>
+            <optgroup label="Building Attributes">
+              {% for col in bldg_orderby_cols %}
+              <option id="{{ col.id }}" value="{{ col.id }}" class="appearance-none" {% if col.id == orderby_field %}
+                selected {% endif %}>{{ col.label }}</option>
+              {% endfor %}
+            </optgroup>
+            <optgroup label="Survey Responses">
+              {% for col in survey_orderby_cols %}
+              <option id="{{ col.id }}" value="{{ col.id }}" class="appearance-none" {% if col.id == orderby_field %}
+                selected {% endif %}>{{ col.label }}</option>
+              {% endfor %}
+            </optgroup>
+          </select>
+
+          <div>
+            <div>
+              <label>
+                <input type="radio" id="order-by-asc" name="order-by-dir" value="asc"
+                  class="me-2 text-base border-0 text-teal-600 accent-teal-600 focus:accent-teal-700 shadow-sm ring-1 focus:ring-2 focus:ring-teal-600"
+                  {% if orderby_dir == 'asc' %} checked {% endif %}/>
+                Ascending
+              </label>
+            </div>
+            <div>
+
+              <label>
+                <input type="radio" id="order-by-desc" name="order-by-dir" value="desc"
+                  class="me-2 text-base border-0 text-teal-600 accent-teal-600 focus:accent-teal-700 shadow-sm ring-1 focus:ring-2 focus:ring-teal-600" 
+                  {% if orderby_dir == 'desc' %} checked {% endif %}
+                  />
+                Descending
+              </label>
+            </div>
+
+          </div>
+        </div>
+      </section>
+    </div>
+  </section>
 
   <section class="flex flex-row justify-between">
     <button id="refreshFilters" 

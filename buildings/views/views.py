@@ -513,28 +513,31 @@ def new_survey(request):
 
     if request.method == "POST":
         body = json.loads(request.body)
-        if "survey_name" not in body or "ds" not in body:
+        if "survey_name" not in body or "source_dataset" not in body:
             return HttpResponseBadRequest()
 
         survey_name = body.get("survey_name")
-        dataset_slug = body.get("ds")
+        dataset_slug = body.get("source_dataset")
+        description = body.get("survey_decription")
         dataset_query = get_b64_encoded_json(body.get("dataset_query")) or None
         survey_query = get_b64_encoded_json(body.get("survey_query")) or None
 
         dataset = Dataset.objects.filter(slug=dataset_slug).first()
         new_survey = Survey(
             name=survey_name,
+            description=description,
             dataset=dataset,
             dataset_filter=dataset_query,
             surveys_filter=survey_query,
+            created_by=request.user,
         )
         new_survey.save()
         print(f"Created new survey {new_survey.id} {new_survey.slug}")
         return redirect("buildings:edit_survey", survey_slug=new_survey.slug)
 
     datasets = Dataset.objects.all()
-    # TODO: what if sluf is invalid?
-    p_dataset_slug = request.GET.get("ds")
+    # TODO: what if slug is invalid?
+    p_dataset_slug = request.GET.get("source_dataset")
     dataset = (
         Dataset.objects.filter(slug=p_dataset_slug).first()
         if p_dataset_slug

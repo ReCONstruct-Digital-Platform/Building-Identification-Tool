@@ -3,7 +3,7 @@ const surveyQueryBuilderId = "#query-builder-surveys";
 
 function getCurrentQuery() {
   return {
-    ...getSelectedDataset(),
+    ...getSurveyCreationFields(),
     ...getOrderByConfig(),
     ...getColumnConfigs("user_bldg_cols", "draggable-list"),
     ...getColumnConfigs("user_survey_cols", "draggable-list-survey"),
@@ -12,9 +12,10 @@ function getCurrentQuery() {
   };
 }
 
-function getSelectedDataset() {
+function getSurveyCreationFields() {
   return {
-    ds: document.getElementById("source-dataset-select").value,
+    source_dataset: document.getElementById("source-dataset-select").value,
+    survey_decription: document.getElementById("survey-description").value,
   };
 }
 
@@ -373,7 +374,7 @@ function setUpConfirmButton() {
         setTimeout(() => {
           document.getElementById("survey-creation-error").classList.remove("block");
           document.getElementById("survey-creation-error").classList.add("hidden");
-        }, 5000);
+        }, 15000);
       });
   });
 }

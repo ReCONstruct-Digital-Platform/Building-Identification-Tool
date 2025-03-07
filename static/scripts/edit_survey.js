@@ -164,34 +164,16 @@ function setUpColumnConfig() {
   setUpDraggableList("draggable-list-survey", defaultSurveyCols);
 }
 
-function fillInQueryBuildersFromUrlParams() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const urlDatasetQuery = JSON.parse(b64DecodeUnicode(urlParams.get("dataset_query")));
-  const urlSurveyQuery = JSON.parse(b64DecodeUnicode(urlParams.get("survey_query")));
-  urlDatasetQuery && document.getElementById("add-dataset-filter").dispatchEvent(new Event("click"));
-  if (urlSurveyQuery) {
-    console.debug("got survey query from URL");
-    document.getElementById("add-surveys-filter").dispatchEvent(new Event("click"));
-  }
-}
-
 function setUpQueryBuilders() {
-  const qb_dataset_filters = JSON.parse(document.getElementById("qb_dataset_filters").textContent);
-  const qb_surveys_filters = JSON.parse(document.getElementById("qb_surveys_filters").textContent);
+  const dataset_rules = JSON.parse(document.getElementById("dataset_filter_rules").textContent);
+  const survey_rules = JSON.parse(document.getElementById("survey_filter_rules").textContent);
+  const dataset_filters = JSON.parse(document.getElementById("qb_dataset_filters").textContent);
+  const surveys_filter = JSON.parse(document.getElementById("qb_surveys_filters").textContent);
 
-  console.debug(qb_dataset_filters);
-  console.debug(qb_surveys_filters);
-
-  // Fully reset the QBs
-  if (document.querySelector(datasetQueryBuilderId).childElementCount > 0) {
-    document.querySelector(datasetQueryBuilderId).innerHTML = "";
-    $(datasetQueryBuilderId).queryBuilder("destroy");
-  }
-
-  if (document.querySelector(surveyQueryBuilderId).childElementCount > 0) {
-    document.querySelector(surveyQueryBuilderId).innerHTML = "";
-    $(surveyQueryBuilderId).queryBuilder("destroy");
-  }
+  console.debug("dataset_rules", dataset_rules);
+  console.debug("dataset_filters", dataset_filters);
+  console.debug("survey_rules", survey_rules);
+  console.debug("surveys_filter", surveys_filter);
 
   // Fix for Bootstrap Datepicker
   $(datasetQueryBuilderId).on("afterUpdateRuleValue.queryBuilder", function (e, rule) {
@@ -200,113 +182,70 @@ function setUpQueryBuilders() {
     }
   });
 
-  document.getElementById("add-dataset-filter").addEventListener("click", (e) => {
-    e.preventDefault();
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlDatasetQuery = JSON.parse(b64DecodeUnicode(urlParams.get("dataset_query")));
-    if (document.querySelector(datasetQueryBuilderId).childElementCount > 0) {
-      $(datasetQueryBuilderId).queryBuilder("destroy");
-      e.target.textContent = "Add dataset filter";
-      e.target.classList.remove("bg-red-600", "hover:bg-red-500", "focus-visible:outline-red-600");
-      e.target.classList.add("bg-blue-600", "hover:bg-blue-500", "focus-visible:outline-blue-700");
-      return;
-    } else {
-      e.target.textContent = "Remove dataset filter";
-      e.target.classList.remove("bg-blue-600", "hover:bg-blue-500", "focus-visible:outline-blue-700");
-      e.target.classList.add("bg-red-600", "hover:bg-red-500", "focus-visible:outline-red-600");
-
-      $(datasetQueryBuilderId).queryBuilder({
-        optgroups: {
-          core: {
-            en: "Core",
-          },
-          attributes: {
-            en: "Attributes",
-          },
+  if (dataset_rules) {
+    $(datasetQueryBuilderId).queryBuilder({
+      optgroups: {
+        core: {
+          en: "Core",
         },
-        operators: [
-          "equal",
-          "not_equal",
-          "less",
-          "less_or_equal",
-          "greater",
-          "greater_or_equal",
-          "between",
-          "not_between",
-          "begins_with",
-          "not_begins_with",
-          "contains",
-          "not_contains",
-          "ends_with",
-          "not_ends_with",
-          "is_null",
-          "is_not_null",
-          "in",
-          "not_in",
-        ],
-        filters: qb_dataset_filters,
-        rules: urlDatasetQuery ?? {
-          condition: "AND",
-          rules: [
-            {
-              id: "muni",
-              field: "muni",
-              type: "text",
-              input: "text",
-              operator: "contains",
-              value: "Mont",
-            },
-          ],
+        attributes: {
+          en: "Attributes",
         },
-        valid: true,
-        allow_empty: true,
-      });
-    }
-  });
-
-  document.getElementById("add-surveys-filter").addEventListener("click", (e) => {
-    e.preventDefault();
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlSurveyQuery = JSON.parse(b64DecodeUnicode(urlParams.get("survey_query")));
-
-    if (document.querySelector(surveyQueryBuilderId).childElementCount > 0) {
-      $(surveyQueryBuilderId).queryBuilder("destroy");
-      e.target.textContent = "Add survey filter";
-      e.target.classList.remove("bg-red-600", "hover:bg-red-500", "focus-visible:outline-red-600");
-      e.target.classList.add("bg-blue-600", "hover:bg-blue-500", "focus-visible:outline-blue-700");
-      return;
-    } else {
-      e.target.textContent = "Remove survey filter";
-      e.target.classList.remove("bg-blue-600", "hover:bg-blue-500", "focus-visible:outline-blue-700");
-      e.target.classList.add("bg-red-600", "hover:bg-red-500", "focus-visible:outline-red-600");
-      $(surveyQueryBuilderId).queryBuilder({
-        optgroups: qb_surveys_filters["optgroups"],
-        operators: [
-          "equal",
-          "not_equal",
-          "less",
-          "less_or_equal",
-          "greater",
-          "greater_or_equal",
-          "between",
-          "not_between",
-          "begins_with",
-          "not_begins_with",
-          "contains",
-          "not_contains",
-          "ends_with",
-          "not_ends_with",
-          "is_null",
-          "is_not_null",
-          "in",
-          "not_in",
-        ],
-        filters: qb_surveys_filters["filters"],
-        rules: urlSurveyQuery,
-        allow_empty: true,
-      });
-    }
-  });
+      },
+      operators: [
+        "equal",
+        "not_equal",
+        "less",
+        "less_or_equal",
+        "greater",
+        "greater_or_equal",
+        "between",
+        "not_between",
+        "begins_with",
+        "not_begins_with",
+        "contains",
+        "not_contains",
+        "ends_with",
+        "not_ends_with",
+        "is_null",
+        "is_not_null",
+        "in",
+        "not_in",
+      ],
+      rules: dataset_rules,
+      filters: dataset_filters,
+      valid: true,
+      allow_empty: true,
+    });
+  }
+  if (survey_rules) {
+    $(surveyQueryBuilderId).queryBuilder({
+      optgroups: surveys_filter["optgroups"],
+      operators: [
+        "equal",
+        "not_equal",
+        "less",
+        "less_or_equal",
+        "greater",
+        "greater_or_equal",
+        "between",
+        "not_between",
+        "begins_with",
+        "not_begins_with",
+        "contains",
+        "not_contains",
+        "ends_with",
+        "not_ends_with",
+        "is_null",
+        "is_not_null",
+        "in",
+        "not_in",
+      ],
+      filters: surveys_filter["filters"],
+      rules: survey_rules,
+      allow_empty: true,
+    });
+  }
 }
 
 function setUpNextStepButton() {
@@ -612,7 +551,6 @@ var fieldCounter = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
   setUpQueryBuilders();
-  fillInQueryBuildersFromUrlParams();
   setUpColumnConfig();
   setUpModals();
   setUpNextStepButton();

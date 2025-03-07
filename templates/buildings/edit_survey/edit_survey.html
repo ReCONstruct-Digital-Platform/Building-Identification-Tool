@@ -69,14 +69,15 @@
       <div class="w-full bg-white bg-opacity-50 pb-3 mb-3 px-5 rounded-b-md text-md">
         
         <section>
-          <div class="mb-3">
-            <div class="text-xl">Source dataset: <span class="text-2xl">{{ dataset.name }}</span></div>
+          <div class="mb-3 text-xl">
+            <div>Source dataset</div>
+            <!-- Make link to dataset -->
+            <p>{{ dataset.name }}</p>
           </div>
             
           <div id="survey-description" class="mb-3">
             <div class="text-xl">Survey Description</div>
-            <p>A short description of your survey</p>
-            <textarea name="survey_decription" class="w-1/2" rows="3">{{survey.description}}</textarea>
+            <p>{{survey.description}}</p>
           </div>
         </section>
 
@@ -388,6 +389,8 @@
 
   {% block page_scripts %}
   <div id="js-variables">
+    {{ dataset_filter_rules | json_script:"dataset_filter_rules" }}
+    {{ survey_filter_rules | json_script:"survey_filter_rules" }}
     {{ qb_dataset_filters | json_script:"qb_dataset_filters" }}
     {{ qb_surveys_filters | json_script:"qb_surveys_filters" }}
     {{ user_bldg_cols | json_script:"user_bldg_cols" }}
