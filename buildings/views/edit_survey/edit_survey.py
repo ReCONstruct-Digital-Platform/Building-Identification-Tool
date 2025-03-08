@@ -16,11 +16,14 @@ from buildings.models import Dataset
 from buildings.models.newmodels import Survey
 from buildings.models.newsurveys import DynamicSurveyForm
 from .forms_fields_widgets import (
+    NumberFieldForm,
     OptionsFieldForm,
     OptionsFieldFormForRadioInputs,
     OptionsFieldFormForCheckboxes,
     CheckboxFieldWithSpecifyForm,
     RadioFieldWithSpecifyForm,
+    RadioSpecifyFixedOptions,
+    TextFieldForm,
 )
 from django.template.loader import render_to_string
 
@@ -83,22 +86,67 @@ def transform_options_to_survey_schema(field_type, options):
             )
         return schema_options
 
-    raise ValueError(f"Unimplemented field type {field_type}")
+    else:
+        return None
 
 
-def get_json_schema_with_defaults(field_type, data):
-    if field_type == "boolean":
+def get_json_schema_with_default_options(field_type, data):
+
+    is_required = data.get("is_required", False)
+
+    if field_type == "number":
+        number_type = data.get("number_type", "integer")
+        step = 1 if number_type == "integer" else 0.01
+        min_value = data.get("min_value", None)
+        max_value = data.get("max_value", None)
         return (
             {
                 "pos": 0,
-                "type": field_type,
+                "type": number_type,
+                "widget": "number",
+                "widget_config": {
+                    "is_required": is_required,
+                    "min": min_value,
+                    "max": max_value,
+                    "step": step,
+                },
+            },
+            [],
+        )
+
+    if field_type == "text":
+        num_lines = data.get("num_lines", 3)
+        return (
+            {
+                "pos": 0,
+                "type": "text",
+                "widget": "text",
+                "widget_config": {
+                    "is_required": is_required,
+                    "rows": num_lines,
+                },
+            },
+            [],
+        )
+
+    if field_type in ["boolean", "boolean_or_null"]:
+
+        defaults = [
+            {"pos": 0, "val": True, "label": {"en": "True"}},
+            {"pos": 1, "val": False, "label": {"en": "False"}},
+        ]
+        defaults = (
+            defaults.append({"pos": 2, "val": None, "label": {"en": "Other"}})
+            if field_type == "boolean_or_null"
+            else defaults
+        )
+        return (
+            {
+                "pos": 0,
+                "type": "boolean",
                 "widget": "radio",
             },
-            [
-                {"pos": 0, "val": True, "label": {"en": "True"}},
-                {"pos": 1, "val": False, "label": {"en": "False"}},
-                {"pos": 2, "val": None, "label": {"en": "Other"}},
-            ],
+            defaults,
         )
 
     num_columns = data.get("num_columns") or 1
@@ -110,7 +158,7 @@ def get_json_schema_with_defaults(field_type, data):
                 "type": "text",  # TODO customizable
                 "widget_config": {
                     "attrs": {"class": f"survey-{num_columns}col"},
-                    "is_required": False,
+                    "is_required": is_required,
                 },
             },
             [
@@ -128,16 +176,17 @@ def get_json_schema_with_defaults(field_type, data):
         )
     if field_type in ["multi_checkbox_specify", "radio_w_specify"]:
         specify_option_value = data.get("specify_option") or "other"
+        value_type = "text"
         return (
             {
                 "pos": 0,
                 "widget": field_type,
-                "type": "text",  # TODO customizable
+                "type": value_type,
                 "widget_config": {
                     "attrs": {"class": f"survey-{num_columns}col"},
-                    "specify_input_type": "text",
+                    "specify_input_type": value_type,
                     "specify_option_value": specify_option_value,
-                    "is_required": False,
+                    "is_required": is_required,
                 },
             },
             [
@@ -152,7 +201,7 @@ def get_json_schema_with_defaults(field_type, data):
                     "label": {"en": "Option 2"},
                 },
                 {
-                    "pos": 1,
+                    "pos": 2,
                     "val": "other",
                     "label": {"en": "Specify"},
                 },
@@ -162,6 +211,10 @@ def get_json_schema_with_defaults(field_type, data):
 
 
 def get_bound_field_form_from_schema(field_num: int, field_schema: dict) -> dict:
+    """
+    Takes a field schema and returns a bound field form.
+    Used to display existing fields in the survey edit view.
+    """
     field_type = field_schema.get("widget")
     ffopts = {
         "field_label": field_schema.get("label").get("en"),
@@ -231,11 +284,25 @@ def get_bound_field_form_from_schema(field_num: int, field_schema: dict) -> dict
 
 
 def get_field_form_class_and_default_vals(field_type: str):
-    if field_type == "boolean":
+    if field_type == "number":
+        return (
+            NumberFieldForm,
+            {"number_type": "integer", "is_required": False},
+        )
+    if field_type == "text":
+        return (
+            TextFieldForm,
+            {"is_required": False, "num_lines": 3, "max_length": 5_000},
+        )
+    if field_type in ["boolean", "boolean_or_null"]:
+        opts = ["True", "False"]
+        if field_type == "boolean_or_null":
+            opts.append("Other")
         return (
             OptionsFieldForm,
-            {"options": ["True", "False", "Other"]},
+            {"options": opts},
         )
+
     if field_type in ["radio"]:
         return (
             OptionsFieldFormForRadioInputs,
@@ -280,7 +347,8 @@ def get_field_form_class_and_default_vals(field_type: str):
 @login_required(login_url="account_login")
 def render_question_preview(request):
     """
-    Renders a question for preview. Called by HTMX dynamically as question is edited.
+    Returns a rendered new question form and its preview.
+    Called by HTMX dynamically as questions are added or edited.
     """
 
     print(request.headers)
@@ -299,15 +367,17 @@ def render_question_preview(request):
         field_type
     )
 
-    schema_template, schema_default_options = get_json_schema_with_defaults(
+    print("field_form_default_val", field_form_default_val)
+
+    schema_template, schema_default_options = get_json_schema_with_default_options(
         field_type, data
     )
 
     if request.POST:
         new_field_form = field_form_class(
-            field_num,
-            request.POST,
+            field_num, request.POST, disabled=False
         )  # field_num is included in POST
+
         schema_options = transform_options_to_survey_schema(
             field_type, data.getlist("options")
         )
@@ -317,15 +387,23 @@ def render_question_preview(request):
             "question_text": question_text,
         }
         new_field_form = field_form_class(
-            field_num=field_num, data=field_form_default_val
+            field_num=field_num, data=field_form_default_val, disabled=False
         )
         schema_options = schema_default_options
 
-    field_schema = schema_template | {
-        "label": {"en": field_label},
-        "question_text": {"en": question_text},
-        "options": schema_options,
+    # Add stuff to schema
+    field_schema = {
+        **schema_template,
+        **{
+            "label": {"en": field_label},
+            "question_text": {"en": question_text},
+        },
     }
+    field_schema = (
+        field_schema | {"options": schema_options}
+        if field_form_class.has_options
+        else field_schema
+    )
 
     new_field_form.is_valid()
 
@@ -334,7 +412,7 @@ def render_question_preview(request):
 
     context = {
         "rendered_field": rendered_field,
-        "new_field_form": new_field_form,
+        "field_form": new_field_form,
         "field_num": field_num,
     }
 
@@ -345,11 +423,14 @@ def render_question_preview(request):
 def edit_survey_questions(request, survey_slug):
 
     all_question_types = [
-        {"id": "boolean", "label": "True/False/Other"},
+        {"id": "number", "label": "Number"},
+        {"id": "text", "label": "Text"},
+        {"id": "boolean", "label": "True/False"},
+        {"id": "boolean_or_null", "label": "True/False/Other"},
         {"id": "radio", "label": "Single-Choice"},
         {"id": "multi_checkbox", "label": "Multiple-Choice"},
-        {"id": "radio_w_specify", "label": "Single-Choice w Specify"},
-        {"id": "multi_checkbox_specify", "label": "Multiple-Choice w Specify"},
+        {"id": "radio_w_specify", "label": "Single-Choice with Specify"},
+        {"id": "multi_checkbox_specify", "label": "Multiple-Choice with Specify"},
     ]
 
     num_results_per_page = 10
@@ -361,8 +442,6 @@ def edit_survey_questions(request, survey_slug):
 
         survey_name = body.get("survey_name")
         dataset_slug = body.get("ds")
-        dataset_query = get_b64_encoded_json(body.get("dataset_query")) or None
-        survey_query = get_b64_encoded_json(body.get("survey_query")) or None
 
         dataset = Dataset.objects.filter(slug=dataset_slug).first()
         new_survey = Survey(

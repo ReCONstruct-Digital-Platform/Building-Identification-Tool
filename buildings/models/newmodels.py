@@ -310,6 +310,7 @@ class Survey(models.Model):
                                         (jsonb_each(r.data)).value 
                                     from responses r
                                     where r.building_id = buildings.id
+                                    --- THIS IS DIFFERENT FROM THE TARGET POPULATION QUERY
                                     and r.survey_id = %s
                                 ) as sub
                             ) as sub2
@@ -327,6 +328,10 @@ class Survey(models.Model):
     # IT will have to refresh everytime a new response is added
     # https://www.fusionbox.com/blog/detail/using-materialized-views-to-implement-efficient-reports-in-django/643/
     # https://pypi.org/project/django-db-views/
+    #
+    # Other option to optimize: having a separate table with the target population
+    # means we don't need to fun this query to get target pop, it would just be saved in the DB
+    #
     def get_target_population(
         self, dataset_schema=None, dataset_filter=None, surveys_filter=None
     ):
@@ -544,6 +549,21 @@ class Survey(models.Model):
             qb_field = self.map_to_qb_field(field_object, field_id, self.name)
             qb_fields.extend(qb_field)
         return qb_fields
+
+
+class SurveyPopulation(models.Model):
+    """
+    Target population for a survey. Locked-in at survey creation time.
+    Previsouly, we ran the expensive query on all responses at runtime.
+    """
+
+    class Meta:
+        db_table = "survey_population"
+        unique_together = ("survey", "building")
+
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
+    building = models.ForeignKey(Building, on_delete=models.CASCADE)
+    date_added = models.DateTimeField("date added", default=timezone.now)
 
 
 class Response(models.Model):

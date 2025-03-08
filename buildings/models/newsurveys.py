@@ -11,9 +11,14 @@ from buildings.widgets import (
     RadioSelect,
     RadioWithSpecify2,
 )
+from buildings.widgets.newwidgets import NumberInput, TextArea
 
 
 def get_widget_for_field(widget_type):
+    if widget_type == "number":
+        return NumberInput()
+    if widget_type == "text":
+        return TextArea()
     if widget_type == "radio":
         return RadioSelect(attrs={"class": "survey-1col"})
     if widget_type == "radio_w_specify":
@@ -81,6 +86,8 @@ def get_field_type(field_type, required: bool):
 
     if field_type == "integer":
         return forms.IntegerField(required=required)
+    if field_type == "float":
+        return forms.FloatField(required=required)
     if field_type == "boolean":
         return forms.NullBooleanField(required=required)
     if field_type in ["text", "string"]:

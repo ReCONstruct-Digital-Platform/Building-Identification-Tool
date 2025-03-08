@@ -1,0 +1,12 @@
+{% with id=widget.attrs.id widget_val=widget.value.0 %}
+    widget value: {{ widget_val }} <br>
+    widget value 2: {{ widget.value }} <br>
+    widget is bound?: {{ widget.is_bound }} <br>  
+    <textarea id="{{ id }}" 
+    class="{{ widget.attrs.class }}" 
+    rows="{{ widget.rows }}" 
+    maxlength="{{ widget.maxlength }}"
+    name="{{ widget.name }}"
+    {% if widget.is_bound %} value="{{ widget_val|stringformat:'s' }}"{% endif %}
+    ></textarea>
+{% endwith %}

@@ -6,6 +6,50 @@ TW_RADIO_CLASS = """me-2 text-base border-0 text-teal-600 accent-teal-600 focus:
 
 TW_SPECIFY_CLASS = """ms-1 h-[30px] text-base rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600"""
 
+TW_TEXT_AREA_CLASS = """w-full ms-1 text-base rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600"""
+
+
+class NumberInput(widgets.NumberInput):
+    """ """
+
+    template_name = "buildings/forms/widgets/number.html"
+
+    def __init__(self, attrs=None, **kwargs):
+        super().__init__(attrs=attrs, **kwargs)
+        self.attrs["class"] = TW_SPECIFY_CLASS
+        self.is_bound = False
+        self.min = None
+        self.max = None
+        self.step = 1
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        context["widget"]["is_bound"] = self.is_bound
+        context["widget"]["min"] = self.min
+        context["widget"]["max"] = self.max
+        context["widget"]["step"] = self.step
+        return context
+
+
+class TextArea(widgets.Textarea):
+    """ """
+
+    template_name = "buildings/forms/widgets/textarea.html"
+
+    def __init__(self, attrs=None, **kwargs):
+        super().__init__(attrs=attrs, **kwargs)
+        self.attrs["class"] = TW_TEXT_AREA_CLASS
+        self.is_bound = False
+        self.maxlength = 5_000
+        self.rows = 3
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        context["widget"]["is_bound"] = self.is_bound
+        context["widget"]["maxlength"] = self.maxlength
+        context["widget"]["rows"] = self.rows
+        return context
+
 
 class RadioSelect(widgets.RadioSelect):
     """
@@ -24,7 +68,7 @@ class RadioSelect(widgets.RadioSelect):
         context["widget"]["is_bound"] = self.is_bound
         return context
 
-
+# TODO differentiate Field form widgets from Rendered survey widgets
 class RadioSelectForFieldForm(widgets.RadioSelect):
     template_name = "buildings/forms/widgets/radio_4_field_form.html"
     def __init__(self, attrs=None, **kwargs):

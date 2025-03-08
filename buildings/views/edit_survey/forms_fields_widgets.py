@@ -74,13 +74,15 @@ class BaseNewFieldForm(forms.Form):
 
     def __init__(self, field_num, *args, **kwargs):
         self.is_disabled = kwargs.pop("disabled", True)
-
         super().__init__(*args, **kwargs)
+
         for field in self.fields.values():
             if "class" not in field.widget.attrs:
                 field.widget.attrs["class"] = self.TW_DEFAULT_CLASS
             field.widget.field_num = field_num
             field.widget.disabled = self.is_disabled
+
+    has_options = False
 
     field_label = forms.CharField(
         label=_("Field Label"),
@@ -95,6 +97,48 @@ class BaseNewFieldForm(forms.Form):
     )
 
 
+class NumberFieldForm(BaseNewFieldForm):
+
+    def clean(self):
+        min_value = self.cleaned_data.get("min_value")
+        max_value = self.cleaned_data.get("max_value")
+
+        if min_value is not None and max_value is not None:
+            if min_value > max_value:
+                raise ValidationError("Min value cannot be greater than max value")
+
+    min_value = forms.FloatField(label=_("Min Value"), required=False)
+    max_value = forms.FloatField(label=_("Max Value"), required=False)
+
+    is_required = forms.ChoiceField(
+        label=_("Is Required?"),
+        widget=RadioSelectForFieldForm(
+            attrs={"class": "flex flex-row gap-8"},
+        ),
+        choices=((False, _("No")), (True, _("Yes"))),
+    )
+
+    number_type = forms.ChoiceField(
+        label=_("Type"),
+        widget=RadioSelectForFieldForm(
+            attrs={"class": "flex flex-row gap-8"},
+        ),
+        choices=(("integer", _("Whole number")), ("float", _("Decimal"))),
+    )
+
+
+class TextFieldForm(BaseNewFieldForm):
+
+    is_required = forms.ChoiceField(
+        label=_("Is Required?"),
+        widget=RadioSelectForFieldForm(
+            attrs={"class": "flex flex-row gap-8"},
+        ),
+        choices=((False, _("No")), (True, _("Yes"))),
+    )
+    num_lines = forms.IntegerField(label=_("Num Lines"), min_value=0)
+
+
 class OptionsFieldForm(BaseNewFieldForm):
 
     TW_OPTIONS_CLASS = """rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 disabled:border-gray-200 disabled:bg-gray-50 disabled:text-gray-500 disabled:shadow-none"""
@@ -105,6 +149,7 @@ class OptionsFieldForm(BaseNewFieldForm):
         for field in self.fields.values():
             field.widget.can_add_options = self.can_add_options
 
+    has_options = True
     can_add_options = False
 
     options = ListField(
@@ -183,6 +228,27 @@ class RadioFieldWithSpecifyForm(OptionsFieldFormForRadioInputs):
     )
 
     has_specify = True
+
+
+class RadioSpecifyFixedOptions(OptionsFieldFormForRadioInputs):
+
+    def __init__(self, field_num, *args, **kwargs):
+        super().__init__(field_num, *args, **kwargs)
+        if isinstance(self.data, QueryDict):
+            options = self.data.getlist("options")
+        else:
+            options = self.data["options"]
+
+        # Options need to have been set as bound data on Form creation to work!
+        options_choices = [(opt, opt) for opt in options]
+        self.fields["specify_option"].choices = list(options_choices)
+
+    specify_option = forms.ChoiceField(
+        label=_("Specify Option"), widget=DropdownSelectForFieldForm()
+    )
+
+    has_specify = True
+    can_add_options = False
 
 
 class CheckboxFieldWithSpecifyForm(OptionsFieldFormForCheckboxes):

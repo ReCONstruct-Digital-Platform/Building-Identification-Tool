@@ -133,7 +133,7 @@ def migrate_responses(dry_run=True):
             },
             "has_basement": {
                 "pos": 5,
-                "type": "boolean",
+                "type": "boolean_or_null",
                 "label": {"en": "Has Basement"},
                 "widget": "radio",
                 "options": [
@@ -165,7 +165,7 @@ def migrate_responses(dry_run=True):
             },
             "facade_condition": {
                 "pos": 9,
-                "type": "boolean",
+                "type": "boolean_or_null",
                 "label": {"en": "Facade Condition"},
                 "widget": "radio",
                 "options": [
@@ -270,7 +270,7 @@ def migrate_responses(dry_run=True):
             },
             "window_wall_ratio": {
                 "pos": 10,
-                "type": "boolean",
+                "type": "boolean_or_null",
                 "label": {"en": "Window-to-Wall Ratio"},
                 "widget": "radio",
                 "options": [

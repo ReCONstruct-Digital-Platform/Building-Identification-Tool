@@ -22,88 +22,116 @@
   {% endfor %}
 </div>
 
-<div id="field-form-holder-{{field_num}}" class="field-form-holder text-lg font-medium text-gray-900 leading-6">
+<div id="field-form-holder-{{ field_num }}" class="field-form-holder font-medium text-gray-900 leading-6 flex flex-col gap-2">
   <span class="text-sm text-red-500">
-    {{ new_field_form.non_field_errors }}
+    {{ field_form.non_field_errors }}
   </span>
-
-  <div class="flex flex-col gap-2 justify-start">
-    <label class="flex flex-col gap-1">
-      <span>{{ new_field_form.question_type.label }}</span>
-      <span class="text-sm text-red-500">
-        {{ new_field_form.errors.question_type }}
-      </span>
-      {{ new_field_form.question_type }}
-    </label>
+  <div class="flex flex-row gap-1 w-full">
+    <div class="flex flex-col gap-2 justify-start w-1/4">
+      <label class="flex flex-col gap-1">
+        <div class="flex flex-row items-baseline gap-2">
+          <span>{{ field_form.field_label.label }}</span>
+          <span class="text-sm text-red-500">
+            {{ field_form.errors.field_label }}
+          </span>
+        </div>
+        {{ field_form.field_label }}
+      </label>
+    </div>
+    <div class="flex flex-col gap-1 justify-start w-3/4">
+      <label class="flex flex-col gap-1">
+        <div class="flex flex-row items-baseline gap-2">
+          <span>{{ field_form.question_text.label }}</span>
+          <span class="text-sm text-red-500">
+            {{ field_form.errors.question_text }}
+          </span>
+        </div>
+        {{ field_form.question_text }}
+      </label>
+    </div>
+  </div>
+  
+  <div class="flex flex-row gap-2 w-full divide-x-1 divide-gray-100">
+    {% if field_form.num_columns %}
+    <div class="flex flex-col gap-1 justify-start w-1/2">
+      <label class="flex flex-col gap-1">
+        <span>{{ field_form.num_columns.label }}</span>
+        {{ field_form.num_columns }}
+      </label>
+    </div>
+    {% endif %}
+    {% if field_form.is_required %}
+    <div class="flex flex-col gap-1 justify-start w-1/2">
+      <label class="flex flex-col gap-1">
+        <span>{{ field_form.is_required.label }}</span>
+        {{ field_form.is_required }}
+      </label>
+    </div>
+    {% endif %}
   </div>
 
-  <div class="flex flex-col gap-2 justify-start">
-    <label class="flex flex-col gap-1">
-      <span>{{ new_field_form.field_id.label }}</span>
-      <span class="text-sm text-red-500">
-        {{ new_field_form.errors.field_id }}
-      </span>
-      {{ new_field_form.field_id }}
-    </label>
-  </div>
-  <div class="flex flex-col gap-2 justify-start">
-    <label class="flex flex-col gap-1">
-      <span>{{ new_field_form.field_label.label }}</span>
-      <span class="text-sm text-red-500">
-        {{ new_field_form.errors.field_label }}
-      </span>
-      {{ new_field_form.field_label }}
-    </label>
-  </div>
-  <div class="flex flex-col gap-2 justify-start">
-    <label class="flex flex-col gap-1">
-      <span>{{ new_field_form.question_text.label }}</span>
-      <span class="text-sm text-red-500">
-        {{ new_field_form.errors.question_text }}
-      </span>
-      {{ new_field_form.question_text }}
-    </label>
-  </div>
-  {% if new_field_form.num_columns %}
+  {% if field_form.number_type %}
   <div class="flex flex-col gap-1 justify-start w-1/2">
     <label class="flex flex-col gap-1">
-      <span>{{ new_field_form.num_columns.label }}</span>
-      {{ new_field_form.num_columns }}
+      <span>{{ field_form.number_type.label }}</span>
+      {{ field_form.number_type }}
     </label>
   </div>
   {% endif %}
-  {% if new_field_form.is_required %}
+
+{% if field_form.min_value or field_form.max_value %}
+<div class="flex flex-row gap-2 w-1/2 divide-x-1 divide-gray-100">
+    {% if field_form.min_value %}
+    <div class="flex flex-col gap-1 justify-start w-1/2">
+      <label class="flex flex-col gap-1">
+        <span>{{ field_form.min_value.label }}</span>
+        {{ field_form.min_value }}
+      </label>
+    </div>
+    {% endif %}
+    {% if field_form.max_value %}
+    <div class="flex flex-col gap-1 justify-start w-1/2">
+      <label class="flex flex-col gap-1">
+        <span>{{ field_form.max_value.label }}</span>
+        {{ field_form.max_value }}
+      </label>
+    </div>
+  {% endif %}
+</div>
+{% endif %}
+
+  {% if field_form.num_lines %}
   <div class="flex flex-col gap-1 justify-start w-1/2">
     <label class="flex flex-col gap-1">
-      <span>{{ new_field_form.is_required.label }}</span>
-      {{ new_field_form.is_required }}
+      <span>{{ field_form.num_lines.label }}</span>
+      {{ field_form.num_lines }}
     </label>
   </div>
   {% endif %}
-  {% if new_field_form.has_specify %}
-  <div class="flex flex-col gap-2 justify-start">
+
+
+  {% if field_form.has_specify %}
+  <div class="flex flex-col gap-1 justify-start w-1/2">
     <label class="flex flex-col gap-1">
-      <span>{{ new_field_form.specify_option.label }}</span>
-      {{ new_field_form.specify_option }}
+      <span>{{ field_form.specify_option.label }}</span>
+      {{ field_form.specify_option }}
     </label>
   </div>
   {% endif %}
-  <div class="flex flex-col gap-2 justify-start">
+  <div class="flex flex-col gap-1 justify-start">
     <label class="flex flex-col gap-1 w-1/2">
-      <span>{{ new_field_form.options.label }}</span>
-      <span class="text-sm text-red-500">
-        {{ new_field_form.errors.options }}
-      </span>
-      {{ new_field_form.options }}
-      {% if new_field_form.can_add_options %}
+      <div class="flex flex-row items-baseline gap-2">
+        <span>{{ field_form.options.label }}</span>
+        <span class="text-sm text-red-500">
+          {{ field_form.errors.options }}
+        </span>
+      </div>
+      {{ field_form.options }}
+      {% if field_form.can_add_options and not field_form.is_disabled %}
       <button 
-          class="add-option-button w-fit bg-white hover:bg-gray-50 shadow-sm hover:shadow-md border-gray-200
+          class="add-option-button w-fit bg-white hover:bg-gray-50 shadow-xs hover:shadow-sm border-gray-400 border-[1px]
               block justify-self-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus">
-          <path d="M5 12h14" />
-          <path d="M12 5v14" />
-        </svg>
+        <span>Add Option</span>
       </button>
       {% endif %}
     </label>

@@ -2446,6 +2446,14 @@ input:checked + .toggle-bg {
   border-width: 0px !important;
 }
 
+.border-2 {
+  border-width: 2px !important;
+}
+
+.border-\[1px\] {
+  border-width: 1px !important;
+}
+
 .border-t {
   border-top-width: 1px !important;
 }
@@ -2487,6 +2495,11 @@ input:checked + .toggle-bg {
 
 .border-transparent {
   border-color: transparent !important;
+}
+
+.border-gray-400 {
+  --tw-border-opacity: 1 !important;
+  border-color: rgb(127 148 142 / var(--tw-border-opacity)) !important;
 }
 
 .border-t-transparent {
@@ -3669,6 +3682,12 @@ input:checked + .toggle-bg {
 .hover\:shadow-md:hover {
   --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
   --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color) !important;
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) !important;
+}
+
+.hover\:shadow-sm:hover {
+  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important;
+  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color) !important;
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) !important;
 }
 

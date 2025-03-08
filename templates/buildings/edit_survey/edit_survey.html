@@ -111,8 +111,26 @@
       {% endblock %}
 
     </div>
-    <div id="survey-questionnaire" class="">
-      <div id="questions-holder" class="flex flex-col gap-2 w-full bg-white bg-opacity-50 pb-7 mb-3 px-5 rounded-b-md text-md">
+    <div id="survey-questionnaire" class="flex flex-col w-full bg-white bg-opacity-50 pb-7 mb-3 px-5 rounded-b-md text-md">
+      
+      <div class="flex justify-between">
+        <p>Add/Modify your survey's questionnaire.</p>
+        <div class="space-x-2">
+          <button id="save-survey" 
+          class="bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-600 w-fit
+          justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+            {% trans "Save Progress" %}
+          </button>
+          <button id="save-survey" 
+          class="bg-teal-600 hover:bg-teal-500 focus-visible:outline-teal-600 w-fit
+          justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+            {% trans "Activate Survey" %}
+          </button>
+        </div>
+
+      </div>
+      
+      <div id="questions-holder" class="flex flex-col gap-2 ">
         <template id="new-field-template">
           <!-- Better to do a series of left-right blocks, easier to keep aligned and separately rendering -->
           <div class="new-field-form-and-render-block flex flex-row h-full">
@@ -209,8 +227,6 @@
 
         <!-- Render existing fields of the survey -->
         {% for field_type, field_form, rendered_field in existing_fields_to_render %}
-
-
         <div class="new-field-form-and-render-block flex flex-row">
           <div class="w-1/2 h-full p-3 bg-white bg-opacity-80 rounded-lg">
             <div class="flex justify-between mb-1">  
@@ -329,13 +345,9 @@
                     {{ field_form.options }}
                     {% if field_form.can_add_options and not field_form.is_disabled %}
                     <button 
-                        class="add-option-button w-fit bg-white hover:bg-gray-50 shadow-sm hover:shadow-md border-gray-200
-                            block justify-self-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus">
-                        <path d="M5 12h14" />
-                        <path d="M12 5v14" />
-                      </svg>
+                        class="add-option-button w-fit bg-white hover:bg-gray-50 shadow-xs hover:shadow-sm border-gray-400
+                            flex gap-2 justify-self-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                      <span class="ms-2">Add Option</span>
                     </button>
                     {% endif %}
                   </label>
@@ -369,16 +381,14 @@
           </div>
         </div>
         {% endfor %}
+
       </div>
-      <div class="flex w-full justify-center">
+
+      <div class="mt-3">
         <button id="add-question" 
-          class="bg-white hover:bg-gray-50 shadow-sm hover:shadow-md relative -top-8 border-gray-200 
-                block justify-center items-center text-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus">
-            <path d="M5 12h14" />
-            <path d="M12 5v14" />
-          </svg>
+        class="bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-600 w-fit
+        justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+          {% trans "Add Question" %}
         </button>
       </div>
     </div>
