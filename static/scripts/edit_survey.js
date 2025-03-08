@@ -248,8 +248,9 @@ function setUpQueryBuilders() {
   }
 }
 
-function setUpNextStepButton() {
-  const button = document.getElementById("next-step-button");
+function setUpActivateSurveyButton() {
+  // TODO
+  const button = document.getElementById("activate-survey-button");
   const modalOpenButton = document.getElementById("show-confirm-creation");
 
   button.addEventListener("click", (e) => {
@@ -266,6 +267,80 @@ function setUpNextStepButton() {
     }
     // Else open modal by sending a click to the hidden modal open button
     modalOpenButton.dispatchEvent(new Event("click"));
+  });
+}
+
+function formDataToObject(formData) {
+  var object = {};
+  formData.forEach((value, key) => {
+    // Reflect.has in favor of: object.hasOwnProperty(key)
+    if (!Reflect.has(object, key)) {
+      object[key] = value;
+      return;
+    }
+    if (!Array.isArray(object[key])) {
+      object[key] = [object[key]];
+    }
+    object[key].push(value);
+  });
+  return object;
+}
+
+function setUpSaveSurveyButton() {
+  const button = document.getElementById("save-survey-button");
+
+  button.addEventListener("click", (e) => {
+    e.preventDefault();
+    const allFormData = {};
+    // Gather field data from all the forms
+    document.querySelectorAll("form").forEach((form, i) => {
+      if (!form.checkValidity()) {
+        // Create the temporary button, click and remove it
+        // This makes the validation comments appear on screen
+        const tmpSubmit = document.createElement("button");
+        form.appendChild(tmpSubmit);
+        tmpSubmit.click();
+        form.removeChild(tmpSubmit);
+        return;
+      }
+      // Get the field type from the associated select
+      const fieldType = form.parentNode.querySelector("select").value;
+      const fieldNum = i + 1;
+      const fieldFormData = new FormData(form);
+      const fieldFormJSON = formDataToObject(fieldFormData);
+      fieldFormJSON["field_type"] = fieldType;
+      fieldFormJSON["field_num"] = fieldNum;
+      delete fieldFormJSON["csrfmiddlewaretoken"];
+      allFormData[form.id] = fieldFormJSON;
+    });
+
+    console.debug("submitted form data", allFormData);
+
+    fetch("", {
+      method: "POST",
+      mode: "same-origin",
+      cache: "no-cache",
+      credentials: "same-origin",
+      headers: {
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: JSON.stringify(allFormData),
+    })
+      .then((res) => {
+        if (res.status != 200) {
+          throw new Error("Error creating survey");
+        }
+      })
+      .catch((error) => {
+        console.error("Error creating survey", error);
+        // document.getElementById("survey-creation-error").classList.remove("hidden");
+        // document.getElementById("survey-creation-error").classList.add("block");
+
+        // setTimeout(() => {
+        //   document.getElementById("survey-creation-error").classList.remove("block");
+        //   document.getElementById("survey-creation-error").classList.add("hidden");
+        // }, 5000);
+      });
   });
 }
 
@@ -393,7 +468,6 @@ function setUpSpecifyClickLabel() {
       }
     });
 }
-
 
 function setUpDraggableOptions(fieldForm) {
   const fieldFormId = fieldForm.id;
@@ -553,7 +627,8 @@ document.addEventListener("DOMContentLoaded", () => {
   setUpQueryBuilders();
   setUpColumnConfig();
   setUpModals();
-  setUpNextStepButton();
+  setUpSaveSurveyButton();
+  setUpActivateSurveyButton();
   setUpConfirmButton();
   setUpCollapsibles();
   setUpTabGroups("tabs-survey", classesTabActive, inactiveClasses);

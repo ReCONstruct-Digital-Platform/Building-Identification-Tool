@@ -214,7 +214,7 @@ class Survey(models.Model):
         )
 
     class Status(models.TextChoices):
-        IN_PROGRESS = "IN PROGRESS", _("In Progress")
+        IN_PROGRESS = "IN_PROGRESS", _("In Progress")
         ACTIVE = "ACTIVE", _("Active")
         COMPLETED = "COMPLETED", _("Completed")
         ARCHIVED = "ARCHIVED", _("Archived")

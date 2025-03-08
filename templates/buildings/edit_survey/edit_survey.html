@@ -18,33 +18,43 @@
     <div class="w-full bg-white bg-opacity-50 pt-3 px-5 rounded-t-md text-md">
 
       <section id="survey-info" class="flex flex-col gap-1 mb-4">
-        <div class="flex flex-row items-center">
-          <div class="text-3xl font-semibold">{{ survey.name }} </div>
-          <div class="ms-4 h-fit w-fit py-2 px-3   
-            {% if survey.status == 'ACTIVE' %}
-            bg-emerald-100 
-            {% elif survey.status == 'IN_PROGRESS' %}
-            bg-blue-100 
-            {% elif survey.status == 'COMPLETED' %}
-            bg-pruple-200 
-            {% elif survey.status == 'ARCHIVED' %}
-            bg-gray-300 
-            {% endif %}
-            rounded-full flex justify-center items-center gap-1">
-              <svg width="5" height="6" viewBox="0 0 5 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="2.5" cy="3" r="2.5" 
-                  {% if survey.status == 'ACTIVE' %}
-                  fill="#059669"
-                  {% elif survey.status == 'IN_PROGRESS' %}
-                  fill="#059696"
-                  {% elif survey.status == 'COMPLETED' %}
-                  fill="#34d6"
-                  {% elif survey.status == 'ARCHIVED' %}
-                  fill="#aaaaaa"
-                  {% endif %}
-                  ></circle>
-              </svg>
-              <span class="font-medium text-lg text-emerald-700">{{ survey.status|title }}</span>
+        <div class="flex flex-row items-baseline justify-between">
+          <div class="flex flex-row items-center gap-2">
+            <div class="text-3xl font-semibold">{{ survey.name }} </div>
+            <div class="ms-4 h-fit w-fit py-2 px-3   
+              {% if survey.status == 'ACTIVE' %}
+              bg-emerald-100 
+              {% elif survey.status == 'IN PROGRESS' %}
+              bg-blue-200 
+              {% elif survey.status == 'COMPLETED' %}
+              bg-pruple-200 
+              {% elif survey.status == 'ARCHIVED' %}
+              bg-gray-300 
+              {% endif %}
+              rounded-full flex justify-center items-center gap-1">
+                <svg width="5" height="6" viewBox="0 0 5 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="2.5" cy="3" r="2.5" 
+                    {% if survey.status == 'ACTIVE' %}
+                    fill="#059669"
+                    {% elif survey.status == 'IN PROGRESS' %}
+                    fill="#059696"
+                    {% elif survey.status == 'COMPLETED' %}
+                    fill="#34d6"
+                    {% elif survey.status == 'ARCHIVED' %}
+                    fill="#aaaaaa"
+                    {% endif %}
+                    ></circle>
+                </svg>
+                <span class="font-medium text-lg text-emerald-700">{{ survey.status|title }}</span>
+            </div>
+          </div>
+
+          <div>
+            <button id="activate-survey-button" data-target-modal="confirm_creation_modal"
+            class="modal-open-button bg-teal-600 hover:bg-teal-500 focus-visible:outline-teal-600 
+              justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+              {% trans "Activate Survey" %}
+            </button>
           </div>
         </div>
         
@@ -116,15 +126,10 @@
       <div class="flex justify-between">
         <p>Add/Modify your survey's questionnaire.</p>
         <div class="space-x-2">
-          <button id="save-survey" 
+          <button id="save-survey-button" 
           class="bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-600 w-fit
           justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
             {% trans "Save Progress" %}
-          </button>
-          <button id="save-survey" 
-          class="bg-teal-600 hover:bg-teal-500 focus-visible:outline-teal-600 w-fit
-          justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-            {% trans "Activate Survey" %}
           </button>
         </div>
 
@@ -325,6 +330,37 @@
                   </div>
                   {% endif %}
                 </div>
+
+                {% if field_form.number_type %}
+                <div class="flex flex-col gap-1 justify-start w-1/2">
+                  <label class="flex flex-col gap-1">
+                    <span>{{ field_form.number_type.label }}</span>
+                    {{ field_form.number_type }}
+                  </label>
+                </div>
+                {% endif %}
+              
+                {% if field_form.min_value or field_form.max_value %}
+                <div class="flex flex-row gap-2 w-1/2 divide-x-1 divide-gray-100">
+                    {% if field_form.min_value %}
+                    <div class="flex flex-col gap-1 justify-start w-1/2">
+                      <label class="flex flex-col gap-1">
+                        <span>{{ field_form.min_value.label }}</span>
+                        {{ field_form.min_value }}
+                      </label>
+                    </div>
+                    {% endif %}
+                    {% if field_form.max_value %}
+                    <div class="flex flex-col gap-1 justify-start w-1/2">
+                      <label class="flex flex-col gap-1">
+                        <span>{{ field_form.max_value.label }}</span>
+                        {{ field_form.max_value }}
+                      </label>
+                    </div>
+                  {% endif %}
+                </div>
+                {% endif %}
+              
 
                 {% if field_form.has_specify %}
                 <div class="flex flex-col gap-1 justify-start w-1/2">
