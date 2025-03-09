@@ -5,11 +5,13 @@ from django.db.models import F
 from django.http import (
     HttpResponse,
     HttpResponseBadRequest,
+    QueryDict,
 )
+from django.utils import timezone
 from django.core.paginator import Paginator
 from render_block import render_block_to_string
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from django.utils.translation import gettext_lazy as _
 from buildings.models import Dataset
@@ -206,6 +208,15 @@ def get_json_schema_with_default_options(field_type, data):
             ],
         )
     raise ValueError(f"Unimplemented field type {field_type}")
+
+
+def _field_has_options(field_type: str) -> bool:
+    return field_type in [
+        "multi_checkbox",
+        "radio",
+        "multi_checkbox_specify",
+        "radio_w_specify",
+    ]
 
 
 def get_bound_field_form_from_schema(
@@ -456,23 +467,16 @@ def get_field_form_and_schema(data):
     assert field_label, "Field label is required"
     assert question_text, "Question text is required"
 
-    # Generate appropriate new_field_form
-    field_form_class, field_form_default_val = get_field_form_class_and_default_vals(
-        field_type
-    )
+    # # Generate appropriate new_field_form
+    # field_form_class, field_form_default_val = get_field_form_class_and_default_vals(
+    #     field_type
+    # )
+    # new_field_form = field_form_class(
+    #     field_num, data, disabled=False
+    # )  # field_num is included in POST
+    # new_field_form.is_valid()
 
-    schema_template, schema_default_options = get_json_schema_with_default_options(
-        field_type, data
-    )
-
-    field_form_default_val |= {
-        "field_label": field_label,
-        "question_text": question_text,
-    }
-    new_field_form = field_form_class(
-        field_num=field_num, data=field_form_default_val, disabled=False
-    )
-    schema_options = schema_default_options
+    schema_template, _ = get_json_schema_with_default_options(field_type, data)
 
     # Add stuff to schema
     field_schema = {
@@ -482,15 +486,21 @@ def get_field_form_and_schema(data):
             "question_text": {"en": question_text},
         },
     }
-    field_schema = (
-        field_schema | {"options": schema_options}
-        if field_form_class.has_options
-        else field_schema
-    )
+    if _field_has_options(field_type):
+        if isinstance(data, QueryDict):
+            options = data.getlist("options")
+        else:
+            options = data.get("options")
+        # If a single option is passed, it's a string, not a list
+        # which will casue the next function to consider every character as an option
+        if not isinstance(options, list):
+            options = [options]
 
-    new_field_form.is_valid()
+        field_schema = field_schema | {
+            "options": transform_options_to_survey_schema(field_type, options)
+        }
 
-    return new_field_form, field_schema
+    return None, field_schema
 
 
 @login_required(login_url="account_login")
@@ -511,7 +521,13 @@ def edit_survey_questions(request, survey_slug):
 
     if request.method == "POST":
         body = json.loads(request.body)
-        log.debug("POST request to edit_survey_questions", body)
+        log.debug(f"POST request to edit_survey_questions {body}")
+
+        if "activate_survey" in body:
+            survey = Survey.objects.filter(slug=survey_slug).first()
+            survey.status = Survey.Status.ACTIVE
+            survey.save()
+            return redirect("buildings:edit_survey", survey_slug=survey_slug)
 
         new_survey_schema = {}
 
@@ -523,7 +539,13 @@ def edit_survey_questions(request, survey_slug):
         # Survey exists for sure, we want to update it with the new schema
         survey = Survey.objects.filter(slug=survey_slug).first()
         survey.schema = new_survey_schema
+        survey.date_modified = timezone.now()
         survey.save()
+        return render(
+            request,
+            "buildings/edit_survey/last_saved_time.html",
+            {"date_modified": survey.date_modified},
+        )
 
     survey = get_object_or_404(Survey, slug=survey_slug)
     dataset = survey.dataset
@@ -573,6 +595,7 @@ def edit_survey_questions(request, survey_slug):
     dataset_filter_rules = survey.get_readonly_rules("dataset")
     survey_filter_rules = survey.get_readonly_rules("surveys")
 
+    # TODO: Store this directly, shouldn't have to calculate every time
     surveys_on_dataset = Survey.objects.filter(dataset=dataset)
     survey_filters_and_optgroups = get_surveys_qb_filters_and_optgroups(
         surveys_on_dataset
@@ -580,6 +603,7 @@ def edit_survey_questions(request, survey_slug):
 
     existing_fields_to_render = []
 
+    num_fields = len(survey.schema)
     sorted_fields = sorted(survey.schema.values(), key=lambda x: x["pos"])
     for field_num, field_schema in enumerate(sorted_fields):
 
@@ -588,7 +612,7 @@ def edit_survey_questions(request, survey_slug):
         disable_forms = survey.status == "ACTIVE"
 
         field_form = get_bound_field_form_from_schema(
-            field_num, field_schema, disabled=disable_forms
+            field_num + 1, field_schema, disabled=disable_forms
         )
         # need to render the field itself, and the field form
         # if survey is active, deactivate all inputs - survey is read only
@@ -600,7 +624,7 @@ def edit_survey_questions(request, survey_slug):
     context = {
         "survey": survey,
         "dataset": dataset,
-        # "surveys": surveys_on_dataset,
+        "num_fields": num_fields,
         "page": page,
         "survey_orderby_cols": survey_orderby_cols,
         "bldg_orderby_cols": bldg_orderby_cols,

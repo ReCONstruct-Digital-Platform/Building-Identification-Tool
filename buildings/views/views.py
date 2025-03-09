@@ -646,30 +646,6 @@ def new_survey(request):
     return render(request, template_name, context)
 
 
-@login_required(login_url="account_login")
-def edit_survey_questions(request, dataset_slug):
-    """ """
-    # Get the dataset by slug
-    dataset = get_object_or_404(Dataset, slug=dataset_slug)
-
-    surveys_on_dataset = Survey.objects.filter(dataset=dataset)
-    log.info(f"{surveys_on_dataset.count()} surveys found on dataset {dataset.name}")
-
-    if request.method == "POST":
-        print("post")
-
-    survey_filters_and_optgroups = get_surveys_qb_filters_and_optgroups(
-        surveys_on_dataset
-    )
-
-    context = {
-        "dataset": dataset,
-        "dataset_filters": dataset.schema,
-        "survey_filters": survey_filters_and_optgroups,
-    }
-    return render(request, "buildings/newsurvey_questions.html", context)
-
-
 class EvalUnitDetailView(generic.DetailView):
     """
     TODO: Create a detail view for out eval units, showing votes and info summary

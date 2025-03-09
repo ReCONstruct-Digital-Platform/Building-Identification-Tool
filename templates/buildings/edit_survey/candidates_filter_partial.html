@@ -3,40 +3,27 @@
 {% load allauth %}
 <div>
 
-  <section id="candidate-filters">
-    <div>
-      <div class="flex items-center justify-between w-1/2 cursor-pointer">
-        <div class="text-3xl font-semibold">Survey Candidates Filters</div>
-      </div>
-      <hr class="w-1/2 pt-2">
+  {% if dataset_filter_rules %}
+  <section id="data-filter" class="my-4 gap-2">
+
+    <div class="text-2xl">Dataset filter</div>
+
+    <div class="block w-2/3 py-2">
+      <div id="query-builder-dataset" class="col-start-2 col-span-6"></div>
     </div>
-    
-    <div class="mb-2">
-
-      {% if dataset_filter_rules %}
-      <section id="data-filter" class="my-4 gap-2">
-
-        <div class="text-2xl">Dataset filter</div>
-
-        <div class="block w-2/3 py-2">
-          <div id="query-builder-dataset" class="col-start-2 col-span-6"></div>
-        </div>
-      </section>
-      {% endif %}
-      
-      {% if survey_filter_rules %}
-      <section id="surveys-filter" class="my-4 gap-2">
-
-        <div class="text-2xl">Surveys filter</div>
-
-        <div class="block w-2/3 py-2">
-          <div id="query-builder-surveys" class="col-start-2 col-span-6"></div>
-        </div>
-      </section>
-      {% endif %}
-    </div>
-
   </section>
+  {% endif %}
+  
+  {% if survey_filter_rules %}
+  <section id="surveys-filter" class="my-4 gap-2">
+
+    <div class="text-2xl">Surveys filter</div>
+
+    <div class="block w-2/3 py-2">
+      <div id="query-builder-surveys" class="col-start-2 col-span-6"></div>
+    </div>
+  </section>
+  {% endif %}
 
   <section id="candidate-viewing-options">
 
@@ -129,11 +116,6 @@
           </svg>
         </div>
       </div>
-    </button>
-    <button id="next-step-button"
-    class="bg-teal-600 hover:bg-teal-500 focus-visible:outline-teal-600 
-      block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-      {% trans "Proceed to Next Step" %}
     </button>
 
   </section>

@@ -1,7 +1,9 @@
 {{ form.media }}
 {% for field in form %}
-{{ field.errors }}
 <fieldset class="ps-3 pb-2">
+  <span class="text-sm text-red-500">
+    {{ field.errors }}
+  </span>
   <legend class="flex items-center text-lg text-slate-700 mb-2">
     <strong>{{ field.field.question_text }}</strong>
     {% if field.field.has_modal %}

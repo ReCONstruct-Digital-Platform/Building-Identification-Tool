@@ -1,7 +1,9 @@
 {% with id=widget.attrs.id widget_val=widget.value.0 %}
-    widget value: {{ widget_val }} <br>
-    widget value 2: {{ widget.value }} <br>
-    widget is bound?: {{ widget.is_bound }} <br>  
+{% comment %}
+widget value: {{ widget_val }} <br>
+widget value 2: {{ widget.value }} <br>
+widget is bound?: {{ widget.is_bound }} <br>  
+{% endcomment %}
     <input id="{{ id }}" class="{{ widget.attrs.class }}" 
       {% if widget.min %} min="{{ widget.min }}" {% endif %}
       {% if widget.max %} max="{{ widget.max }}" {% endif %}

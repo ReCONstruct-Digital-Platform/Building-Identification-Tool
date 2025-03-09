@@ -82,7 +82,7 @@ class MyJSONField(forms.JSONField):
         return value
 
 
-def get_field_type(field_type, required: bool):
+def get_field_type(field_type, widget_type, required: bool):
 
     if field_type == "integer":
         return forms.IntegerField(required=required)
@@ -91,6 +91,10 @@ def get_field_type(field_type, required: bool):
     if field_type == "boolean":
         return forms.NullBooleanField(required=required)
     if field_type in ["text", "string"]:
+        # Single choice text type fields map to a CharField
+        if widget_type in ["radio", "radio_w_specify"]:
+            return forms.CharField(required=required)
+        # Use a JSONField for multiple choice questions
         return MyJSONField(required=required)
 
 
@@ -119,7 +123,9 @@ class DynamicSurveyForm(Form):
 
         for field, config in schema.items():
             self.fields[field] = get_field_type(
-                config["type"], config["required"] if "required" in config else False
+                config["type"],
+                config["widget"],
+                config["required"] if "required" in config else False,
             )
             self.fields[field].label = config["label"]["en"]
             self.fields[field].question_text = config["question_text"]["en"]

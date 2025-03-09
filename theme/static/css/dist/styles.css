@@ -2325,6 +2325,10 @@ input:checked + .toggle-bg {
   align-self: flex-end !important;
 }
 
+.self-center {
+  align-self: center !important;
+}
+
 .justify-self-center {
   justify-self: center !important;
 }
@@ -3114,6 +3118,11 @@ input:checked + .toggle-bg {
 .text-gray-900 {
   --tw-text-opacity: 1 !important;
   color: rgb(56 59 67 / var(--tw-text-opacity)) !important;
+}
+
+.text-green-600 {
+  --tw-text-opacity: 1 !important;
+  color: rgb(5 122 85 / var(--tw-text-opacity)) !important;
 }
 
 .text-inherit {

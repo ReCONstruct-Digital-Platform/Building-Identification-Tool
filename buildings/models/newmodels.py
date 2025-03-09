@@ -263,6 +263,22 @@ class Survey(models.Model):
         filter["readonly"] = True
         return filter
 
+    def get_filters_from_rules(self, rules):
+        filters = []
+        for rule in rules["rules"]:
+            if "rules" in rule:
+                filters.append(self.get_filters_from_rules(rule))
+            else:
+                filters.append(
+                    {
+                        "id": rule["id"],
+                        "field": rule["field"],
+                        "type": rule["type"],
+                        "input": rule["input"],
+                    }
+                )
+        return filters
+
     def get_columns_to_display(self):
         """
         Returns the schema columns in a nice format to be displayed
@@ -494,13 +510,13 @@ class Survey(models.Model):
             )
             return qb_schemas
 
-        elif field_type in ["integer"]:
+        elif field_type in ["integer", "float"]:
             return [
                 {
                     "id": field_id,
                     "field": field_id,
                     "label": schema_field["label"]["en"],
-                    "type": "integer",
+                    "type": field_type if field_type == "integer" else "double",
                     "input": "number",
                     "operators": [
                         "equal",

@@ -248,28 +248,6 @@ function setUpQueryBuilders() {
   }
 }
 
-function setUpActivateSurveyButton() {
-  // TODO
-  const button = document.getElementById("activate-survey-button");
-  const modalOpenButton = document.getElementById("show-confirm-creation");
-
-  button.addEventListener("click", (e) => {
-    e.preventDefault();
-    const form = document.getElementById("survey-creation-form");
-    if (!form.checkValidity()) {
-      // Create the temporary button, click and remove it
-      // This makes the validation comments appear on screen
-      const tmpSubmit = document.createElement("button");
-      form.appendChild(tmpSubmit);
-      tmpSubmit.click();
-      form.removeChild(tmpSubmit);
-      return;
-    }
-    // Else open modal by sending a click to the hidden modal open button
-    modalOpenButton.dispatchEvent(new Event("click"));
-  });
-}
-
 function formDataToObject(formData) {
   var object = {};
   formData.forEach((value, key) => {
@@ -288,6 +266,7 @@ function formDataToObject(formData) {
 
 function setUpSaveSurveyButton() {
   const button = document.getElementById("save-survey-button");
+  if (!button) return;
 
   button.addEventListener("click", (e) => {
     e.preventDefault();
@@ -330,35 +309,38 @@ function setUpSaveSurveyButton() {
         if (res.status != 200) {
           throw new Error("Error creating survey");
         }
+        document.getElementById("save-survey-success").classList.remove("hidden");
+        document.getElementById("save-survey-success").classList.add("block");
+
+        setTimeout(() => {
+          document.getElementById("save-survey-success").classList.remove("block");
+          document.getElementById("save-survey-success").classList.add("hidden");
+        }, 5000);
+
+        return res.text();
+      })
+      // The response is the last saved time
+      .then((text) => {
+        document.getElementById("last-saved-time").innerHTML = text;
       })
       .catch((error) => {
         console.error("Error creating survey", error);
-        // document.getElementById("survey-creation-error").classList.remove("hidden");
-        // document.getElementById("survey-creation-error").classList.add("block");
+        document.getElementById("save-survey-error").classList.remove("hidden");
+        document.getElementById("save-survey-error").classList.add("block");
 
-        // setTimeout(() => {
-        //   document.getElementById("survey-creation-error").classList.remove("block");
-        //   document.getElementById("survey-creation-error").classList.add("hidden");
-        // }, 5000);
+        setTimeout(() => {
+          document.getElementById("save-survey-error").classList.remove("block");
+          document.getElementById("save-survey-error").classList.add("hidden");
+        }, 5000);
       });
   });
 }
 
-function setUpConfirmButton() {
-  const button = document.getElementById("confirm-survey-creation");
+function setUpConfirmSurveyActivationButton() {
+  const button = document.getElementById("confirm-survey-activation");
 
   button.addEventListener("click", (e) => {
     e.preventDefault();
-
-    const surveyName = document.getElementById("survey-name").value;
-    console.debug(surveyName);
-
-    const body = JSON.stringify({
-      survey_name: surveyName,
-      ...getCurrentQuery(),
-    });
-
-    console.debug(body);
 
     fetch("", {
       method: "POST",
@@ -369,7 +351,7 @@ function setUpConfirmButton() {
         "Content-Type": "application/json",
         "X-CSRFToken": getCookie("csrftoken"),
       },
-      body: body,
+      body: JSON.stringify({ activate_survey: true }),
       redirect: "follow",
     })
       .then((res) => {
@@ -553,10 +535,12 @@ function setUpAddOptionButton(fieldForm) {
 function setUpDeleteOptionButtons(fieldForm) {
   const fieldFormId = fieldForm.id;
   const draggableList = fieldForm.getElementsByClassName("draggable-list")[0];
+  if (!draggableList) return;
 
   draggableList.querySelectorAll("li").forEach((listItem) => {
-    const deleteOptionButton = listItem.getElementsByClassName("delete-option-button")[0];
-    console.log("setting up delete option button", deleteOptionButton);
+    const deleteOptionButton = listItem.querySelector(".delete-option-button");
+    if (!deleteOptionButton) return;
+    console.debug("setting up delete option button", deleteOptionButton);
 
     deleteOptionButton.addEventListener("click", (e) => {
       e.preventDefault();
@@ -567,6 +551,7 @@ function setUpDeleteOptionButtons(fieldForm) {
 }
 
 function setUpAddQuestionButton() {
+  if (surveyStatus === "ACTIVE") return;
   const id = "add-question";
   const addQuestionButton = document.getElementById(id);
   const template = document.getElementById("new-field-template");
@@ -612,6 +597,35 @@ function setUpAddQuestionButton() {
   });
 }
 
+/**
+ * Iterate through the rendered saved questions and setup interactivity (if not disabled)
+ */
+function setUpSavedQuestionInteractivity() {
+  if (surveyStatus === "ACTIVE") return;
+  const fieldFormBlocks = document.querySelectorAll(".new-field-form-and-render-block");
+  fieldFormBlocks.forEach((block) => {
+    const deleteQuestionButton = block.querySelector(".delete-question-button");
+    deleteQuestionButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      block.remove();
+    });
+
+    const fieldForm = block.querySelector(".field-form-holder");
+    setUpDraggableOptions(fieldForm);
+    setUpAddOptionButton(fieldForm);
+    setUpDeleteOptionButtons(fieldForm);
+  });
+}
+
+function setUpConfirmActivationButton() {
+  if (surveyStatus === "ACTIVE") return;
+  document.getElementById("confirm-activation-button").addEventListener("click", (e) => {
+    e.preventDefault();
+    const button = document.getElementById("confirm-survey-creation");
+    button.click();
+  });
+}
+
 const classesTabActive = [
   "text-black",
   "underline",
@@ -622,19 +636,26 @@ const classesTabActive = [
 const inactiveClasses = ["text-gray-900"];
 
 var fieldCounter = 0;
+var surveyStatus;
 
 document.addEventListener("DOMContentLoaded", () => {
+  // htmx.logAll();
+
+  // Initialize the counter
+  fieldCounter = JSON.parse(document.getElementById("num_fields").textContent);
+  surveyStatus = JSON.parse(document.getElementById("survey_status").textContent);
+
   setUpQueryBuilders();
   setUpColumnConfig();
   setUpModals();
   setUpSaveSurveyButton();
-  setUpActivateSurveyButton();
-  setUpConfirmButton();
+  setUpConfirmSurveyActivationButton();
   setUpCollapsibles();
   setUpTabGroups("tabs-survey", classesTabActive, inactiveClasses);
   setUpAddQuestionButton();
   setUpSpecifyClickLabel();
-  // htmx.logAll();
+  setUpSavedQuestionInteractivity();
+  setUpConfirmActivationButton();
 });
 
 document.addEventListener("htmx:afterRequest", (e) => {

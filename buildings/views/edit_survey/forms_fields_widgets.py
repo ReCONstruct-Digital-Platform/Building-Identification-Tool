@@ -31,6 +31,15 @@ class TextAreaWidget(widgets.Textarea):
         return context
 
 
+class IntegerInputWidget(widgets.NumberInput):
+    def get_context(self, name, value, attrs):
+        attrs |= {"id": f"number_{self.field_num}"}
+        if self.disabled:
+            attrs |= {"disabled": True}
+        context = super().get_context(name, value, attrs)
+        return context
+
+
 class DragListWidget(widgets.CheckboxSelectMultiple):
     """
     List with draggable elements. Needs JS code to enable drag.
@@ -107,8 +116,12 @@ class NumberFieldForm(BaseNewFieldForm):
             if min_value > max_value:
                 raise ValidationError("Min value cannot be greater than max value")
 
-    min_value = forms.FloatField(label=_("Min Value"), required=False)
-    max_value = forms.FloatField(label=_("Max Value"), required=False)
+    min_value = forms.IntegerField(
+        label=_("Min Value"), required=False, widget=IntegerInputWidget()
+    )
+    max_value = forms.IntegerField(
+        label=_("Max Value"), required=False, widget=IntegerInputWidget()
+    )
 
     is_required = forms.ChoiceField(
         label=_("Is Required?"),
