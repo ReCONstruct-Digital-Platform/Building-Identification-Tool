@@ -88,11 +88,11 @@ def get_field_type(field_type, widget_type, required: bool):
         return forms.IntegerField(required=required)
     if field_type == "float":
         return forms.FloatField(required=required)
-    if field_type == "boolean":
+    if field_type in ["boolean", "boolean_or_null"]:
         return forms.NullBooleanField(required=required)
     if field_type in ["text", "string"]:
         # Single choice text type fields map to a CharField
-        if widget_type in ["radio", "radio_w_specify"]:
+        if widget_type in ["text", "radio", "radio_w_specify"]:
             return forms.CharField(required=required)
         # Use a JSONField for multiple choice questions
         return MyJSONField(required=required)

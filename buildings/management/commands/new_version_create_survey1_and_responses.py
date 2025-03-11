@@ -227,7 +227,7 @@ def migrate_responses(dry_run=True):
                     "attrs": {"class": "survey-3col"},
                     "is_required": True,
                     "specify_input_type": "text",
-                    "specify_option_value": "other",
+                    "specify_option_value": "Other",
                 },
             },
             "has_simple_volume": {

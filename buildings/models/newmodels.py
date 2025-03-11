@@ -214,12 +214,12 @@ class Survey(models.Model):
         )
 
     class Status(models.TextChoices):
-        IN_PROGRESS = "IN_PROGRESS", _("In Progress")
+        DRAFT = "DRAFT", _("Draft")
         ACTIVE = "ACTIVE", _("Active")
         COMPLETED = "COMPLETED", _("Completed")
         ARCHIVED = "ARCHIVED", _("Archived")
 
-    status = models.TextField(choices=Status.choices, default=Status.IN_PROGRESS)
+    status = models.TextField(choices=Status.choices, default=Status.DRAFT)
 
     name = models.TextField()
     description = models.TextField(null=True, blank=True)
@@ -454,13 +454,33 @@ class Survey(models.Model):
         # Else we'll return a random building
         return buildings_w_response_counts.order_by("?").first()
 
-    def get_completion_status(self):
-        num_candidate_buildings = self.get_target_population().count()
-        # We have to get unique buildings surveyed, as respondents can survey the same building
-        num_buildings_surveyed = (
+    def target_population_size(self) -> int:
+        return self.get_target_population().count()
+
+    def num_surveyed(self) -> int:
+        """
+        Unique buildings surveyd
+        """
+        return (
             Response.objects.filter(survey=self).values("building").distinct().count()
         )
-        return num_buildings_surveyed / num_candidate_buildings
+
+    def num_responses(self) -> int:
+        """
+        Total number of responses. Buildings can have multiple responses.
+        """
+        return Response.objects.filter(survey=self).values("building").count()
+
+    def get_progress_percent(self) -> float:
+        num_candidates = self.get_target_population().count()
+        # We have to get unique buildings surveyed, as respondents can survey the same building
+        num_surveyed = (
+            Response.objects.filter(survey=self).values("building").distinct().count()
+        )
+        return round(num_surveyed / num_candidates * 100, 2)
+
+    def last_3_responses(self):
+        return Response.objects.filter(survey=self).order_by("-date_added")[:3]
 
     def map_to_qb_field(
         self, schema_field: dict, field_id: str, survey_name: str
@@ -533,7 +553,7 @@ class Survey(models.Model):
                     "optgroup": survey_name,
                 }
             ]
-        elif field_type in ["boolean"]:
+        elif field_type in ["boolean", "boolean_or_null"]:
             return [
                 {
                     "id": field_id,

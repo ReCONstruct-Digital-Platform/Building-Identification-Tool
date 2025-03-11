@@ -2,9 +2,8 @@ import json
 import traceback
 from typing import List
 
+from django.db.models import Q, Value
 from allauth.account.models import EmailAddress
-from django import forms
-from django.forms import Form, widgets
 from django.urls import reverse
 from django.views import generic
 from django.conf import settings
@@ -114,8 +113,19 @@ def dataset(request, dataset_slug: str):
 
 @login_required(login_url="account_login")
 def surveys(request):
-    surveys = Survey.objects.all()
+    template_name = "buildings/surveys.html"
+    status = request.GET.get("status", "").upper()
+    status = Q(status=status) if status else Q()
+
+    surveys = Survey.objects.filter(status).order_by("-id").all()
     context = {"surveys": surveys}
+
+    if request.htmx:
+        rendered_block = render_block_to_string(
+            template_name, "surveys-list", context=context, request=request
+        )
+        return HttpResponse(content=rendered_block)
+
     return render(request, "buildings/surveys.html", context)
 
 

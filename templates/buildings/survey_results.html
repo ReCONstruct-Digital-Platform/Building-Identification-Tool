@@ -394,7 +394,7 @@
                       </td>
                       {% for column in user_survey_cols %}
                       <td class="ps-3 pe-5 py-3 whitespace-nowrap">
-                        <p class="font-normal text-sm text-gray-900">{{ response.data|get_dict_item:column.id|join:", " }}
+                        <p class="font-normal text-sm text-gray-900">{{ response.data|get_dict_item:column.id|join_if_list }}
                         </p>
                       </td>
                       {% endfor %}

@@ -1,6 +1,7 @@
 {% extends "buildings/base.html" %}
 {% block content %}
 
+{% load i18n %}
 {% load humanize %}
 
 <div class="flex flex-row w-full h-full px-5 py-5 justify-between 2xl:px-16">
@@ -9,55 +10,85 @@
     <div class="absolute -z-[1] w-[90vh] h-[90vh] bg-white bg-opacity-25 rounded-full aspect-square"></div>
 
     <section class="mt-2">
-      <div class="text-5xl font-semibold">Reconstruct Dashboard</div>
+      <div class="text-5xl font-semibold">Dashboard</div>
     </section>
 
     <section id="sections-surveys" class="flex flex-col justify-start w-fit mt-6 min-h-[25%]">
-      <div class="mb-2 text-4xl font-bold tracking-tight text-gray-900">
-        Surveys
+      <div class="flex flex-row gap-2 items-center justify-between">
+        <div class="mb-2 text-4xl font-bold tracking-tight text-gray-900">
+          <span> Surveys </span>
+          <a class="font-normal text-xl hover:underline" href="{% url 'buildings:surveys' %}">
+            <span>{% trans 'View all' %}</span>
+          </a>
+        </div>
+        <div>
+          <a href="{% url 'buildings:new_survey' %}">
+            <button id="create-survey-button"
+              class="block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 
+              bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-700 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+              {% trans 'New Survey' %}
+            </button>
+          </a>
+        </div>
       </div>
-      <hr class="w-1/2">
+
+      <!-- <hr class="w-1/2"> -->
 
       <div class="grid grid-cols-3 gap-2 py-2">
         {% for survey in surveys %}
         {% url 'buildings:do_survey_redirect' survey.slug as survey_url %}
 
-        <div class="max-w-sm flex flex-col p-6 bg-white bg-opacity-70 border border-gray-300 rounded-lg shadow-md">
-          <div class="flex items-center gap-2 mb-2 h-[100px]">
-            <div class="text-2xl font-bold tracking-tight text-gray-900 line-clamp-2">{{ survey.name }}</div>
-            <div class="h-fit py-1 px-2 
+        <div class="max-w-sm flex flex-col px-6 pb-4 bg-white bg-opacity-70 border border-gray-300 rounded-lg shadow-md">
+          <div class="self-end pt-3">
+            <div class="w-fit h-[20px] py-1 px-2 rounded-full flex justify-center items-center gap-1
             {% if survey.status == 'ACTIVE' %}
             bg-emerald-100 
-            {% elif survey.status == 'IN_PROGRESS' %}
+            {% elif survey.status == 'DRAFT' %}
             bg-blue-100 
             {% elif survey.status == 'COMPLETED' %}
             bg-pruple-200 
             {% elif survey.status == 'ARCHIVED' %}
             bg-gray-300 
             {% endif %}
-            rounded-full flex justify-center items-center gap-1">
+            ">
               <svg width="5" height="6" viewBox="0 0 5 6" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="2.5" cy="3" r="2.5" 
-                 {% if survey.status == 'ACTIVE' %}
-                 fill="#059669"
-                 {% elif survey.status == 'IN_PROGRESS' %}
-                 fill="#059696"
-                 {% elif survey.status == 'COMPLETED' %}
-                 fill="#34d6"
-                 {% elif survey.status == 'ARCHIVED' %}
-                 fill="#aaaaaa"
-                 {% endif %}
-                 ></circle>
+                {% if survey.status == 'ACTIVE' %}
+                fill="#059669"
+                {% elif survey.status == 'DRAFT' %}
+                fill="#059696"
+                {% elif survey.status == 'COMPLETED' %}
+                fill="#34d6"
+                {% elif survey.status == 'ARCHIVED' %}
+                fill="#aaaaaa"
+                {% endif %}
+                ></circle>
               </svg>
               <span class="font-medium text-xs text-emerald-600">{{ survey.status|title }}</span>
             </div>
           </div>
+
+          <div class="flex items-center gap-2 mb-2 h-[70px]">
+            <div class="text-xl font-bold tracking-tight text-gray-900 line-clamp-2">{{ survey.name }}</div>
+          </div>
+
           <hr>
           <div class="h-full flex flex-col justify-between">
-            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 py-5">{{ survey.description }}</p>
+            <div class="mb-3 py-5">
+              <p class="text-gray-700 line-clamp-3">{{ survey.description }}</p>
+            </div>
+            
+            <div>
+              <div class="flex items-center text-sm justify-between">
+                <div class="text-sm text-gray-700">{{ survey.num_surveyed|intcomma }} / {{ survey.target_population_size|intcomma }} surveyed</div>
+              </div>
+              <div class="w-full bg-gray-100 rounded-full h-2 mt-2">
+                <div class="bg-teal-500 h-2 rounded-full" style="width: {{ survey.get_progress_percent }}%;"></div>
+              </div>
+            </div>
     
             <div class="flex flex-row gap-4">
-    
+              {% if survey.status == 'ACTIVE' %}
               <a id="next" href="{% url 'buildings:survey_results' survey.slug %}">
                 <button id="survey-results-button"
                   class="block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 
@@ -65,7 +96,7 @@
                     View Results
                 </button>
               </a>
-    
+              
               <a class="" href="{% url 'buildings:do_survey_redirect' survey.slug %}">
                 {% #button type="primary"%}
                 Take Survey
@@ -76,6 +107,16 @@
                 </svg>
                 {% /button %}
               </a>
+              {% else %}
+              <a id="next" href="{% url 'buildings:edit_survey' survey.slug %}">
+                <button id="survey-results-button"
+                  class="block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 
+                  bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-700 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                    Edit Questions
+                </button>
+              </a>
+              {% endif %}
+
             </div>
           </div>
         </div>
@@ -94,8 +135,6 @@
 
       <div class="mb-2 text-4xl font-bold tracking-tight text-gray-900">Datasets</div>
 
-      <hr class="w-1/2">
-
       <div class="grid grid-cols-3 gap-2 py-2">
         {% for dataset in datasets %}
         {% url 'buildings:dataset' dataset.slug as dataset_url %}
@@ -113,7 +152,7 @@
         {% empty %}
         <div class="max-w-sm block ps-1 mt-3">
           <div class="text-xl">
-            You don't have any datasets
+            {% trans "You don't have any datasets" %}
           </div>
         </div>
         {% endfor %}
@@ -141,10 +180,7 @@
       </div>
 
       {% block activity-tab-content %}
-
       <div id="activity-tab-content" class="activity-tab-content overflow-y-auto">
-        
-
         <div id="latest-activity"
           class="{% if not active_tab == 'latest' %} hidden {% endif %} bg-white bg-opacity-70 rounded-md px-3 py-5 overflow-y-auto h-full" role="tabpanel" aria-labelledby="latest-activity-tab" tabindex="0">
           <div class="flex items-baseline mb-1 flex-col md:flex-row">
@@ -157,26 +193,25 @@
             <li class="bg-white bg-opacity-80 px-3 py-2 border border-gray-100 rounded-md shadow-sm hover:shadow-md">
               <a class="flex flex-row gap-3 " href="{% url 'buildings:do_survey' survey_slug=vote.survey.slug building_slug=vote.building.slug %}">
                 <object class="rounded-md h-[90px] w-[125px]" data="{{ vote.building.get_thumbnail_url }}" tabindex="-1"
-                type="image/jpeg">
-                <div class="flex rounded-md h-[90px] w-[125px] bg-gray-100 justify-center items-center">
-                  No image found
-                </div>
-              </object>
-              <div class="flex flex-col flex-grow justify-between">
-                <div class="flex items-center justify-between mt-2">
-                  <div class="flex items-center">
-                    <img class="profile-pic-icon border me-2" src="{{ vote.created_by.get_avatar_url }}" />
-                    <strong>
-                      {{ vote.created_by.username }}
-                    </strong>
+                  type="image/jpeg">
+                  <div class="flex rounded-md h-[90px] w-[125px] bg-gray-100 justify-center items-center">
+                    No image found
                   </div>
-                  <div class="vote-date">
-                    {{ vote.date_modified | naturaltime }}
+                </object>
+                <div class="flex flex-col flex-grow justify-between">
+                  <div class="flex items-center justify-between mt-2">
+                    <div class="flex items-center">
+                      <img class="profile-pic-icon border me-2" src="{{ vote.created_by.get_avatar_url }}" />
+                      <strong>
+                        {{ vote.created_by.username }}
+                      </strong>
+                    </div>
+                    <div class="vote-date">
+                      {{ vote.date_modified | naturaltime }}
+                    </div>
                   </div>
-                </div>
                 
-                <div class="activity-building-info mb-2 text-gray-900 hover:text-black transition-all duration-100">
-                  Surveyed
+                  <div class="mb-2 text-gray-900">
                     {{ vote.building.address }}, {{ vote.building.muni }}
                   </div>
                 </div>
@@ -253,8 +288,7 @@
                   </div>
                 </div>
                 
-                <div class="activity-building-info mb-2 text-gray-900 hover:text-black transition-all duration-100">
-                  Surveyed
+                <div class="mb-2 text-gray-900 hover:text-black transition-all duration-100">
                     {{ vote.building.address }}, {{ vote.building.muni }}
                   </div>
                 </div>

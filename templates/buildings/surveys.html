@@ -2,51 +2,199 @@
 {% load static %}
 {% load i18n %}
 {% load allauth %}
-
+{% load humanize %}
 
 {% block content %}
 
-<div class="relative isolate px-6 lg:px-8 flex-col h-[100vh] items-center justify-center">
-
-  <div class="home-content mx-auto max-w-6xl py-32 sm:py-48 lg:py-32">
+<div class="flex justify-center pb-4 px-4 mb-4 h-full">
+  <div class="flex flex-col w-[80%] h-full">
 
     <section class="flex flex-col justify-start">
-
-      <h1 class="w-full mb-2 text-2xl font-bold tracking-tight text-gray-900">My Surveys</h1>
-
-      <hr>
-
-      <div class="w-full grid grid-cols-1 gap-2 py-2">
-        {% for survey in surveys %}
-        {% url 'buildings:survey' survey.slug as survey_url %}
-
-        {% #card title=survey.name body=survey.description href=survey_url %}
-        <div class="flex flex-row gap-4">
-        <!-- <div class="grid grid-cols-3 gap-2"> -->
-          
-          <a href="#">
-            {% #button %}
-            View Results
-            {% /button %}
-          </a>
-
-          <a class="" href="{% url 'buildings:do_survey_redirect' survey.slug %}" >
-            {% #button type="primary"%}
-            Survey
-            <svg class="inline-block rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-              fill="none" viewBox="0 0 14 10">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M1 5h12m0 0L9 1m4 4L9 9" />
-            </svg>
-            {% /button %}
+      <div class="flex flex-row justify-between items-center">
+        <div>
+          <h1 class="w-full mb-2 text-2xl font-bold tracking-tight text-gray-900">Surveys</h1>
+        </div>
+        <div>
+          <a href="{% url 'buildings:new_survey' %}">
+            <button id="create-survey-button"
+              class="flex h-fit justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 
+              bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-700 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+              {% trans 'New Survey' %}
+            </button>
           </a>
         </div>
+      </div>
+      <div>
+        <select id="survey-filter" class="w-1/4 rounded-md border border-gray-300 p-2" name="status"    
+          hx-get="{% url 'buildings:surveys' %}" hx-trigger="change" hx-target="#surveys-list" hx-swap="outerHTML" hx-replace-url="true">
+          <option value="">All</option>
+          <option value="active">Active</option>
+          <option value="draft">Draft</option>
+          <option value="completed">Completed</option>
+          <option value="archived">Archived</option>
+        </select>
+      </div>
+    </section>
+    
+    {% block surveys-list %}
+    <section id="surveys-list" class="flex flex-col justify-start">
+      <div class="flex flex-col gap-2 py-2">
+        {% for survey in surveys %}
+        {% url 'buildings:do_survey_redirect' survey.slug as survey_url %}
 
-        {% /card %}
+        <div class="flex flex-col p-6 bg-white bg-opacity-70 border border-gray-300 rounded-lg shadow-md">
+
+          <div class="flex items-center gap-2 h-fit">
+            <div class="text-xl font-bold tracking-tight text-gray-900 line-clamp-2">{{ survey.name }}</div>
+            <div class="w-fit h-[20px] py-1 px-2 rounded-full flex justify-center items-center gap-1
+            {% if survey.status == 'ACTIVE' %}
+            bg-emerald-100 
+            {% elif survey.status == 'DRAFT' %}
+            bg-blue-100 
+            {% elif survey.status == 'COMPLETED' %}
+            bg-pruple-200 
+            {% elif survey.status == 'ARCHIVED' %}
+            bg-gray-300 
+            {% endif %}
+            ">
+              <svg width="5" height="6" viewBox="0 0 5 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="2.5" cy="3" r="2.5" 
+                {% if survey.status == 'ACTIVE' %}
+                fill="#059669"
+                {% elif survey.status == 'DRAFT' %}
+                fill="#059696"
+                {% elif survey.status == 'COMPLETED' %}
+                fill="#34d6"
+                {% elif survey.status == 'ARCHIVED' %}
+                fill="#aaaaaa"
+                {% endif %}
+                ></circle>
+              </svg>
+              <span class="font-medium text-sm text-emerald-600">{{ survey.status|title }}</span>
+            </div>
+          </div>
+
+          <div class="w-1/2 flex flex-row gap-4 mt-2">
+            <div class="text-sm text-gray-700">Created {{ survey.date_added|date:"F j, Y" }}</div>
+            <div class="text-sm text-gray-700">Last updated {{ survey.date_modified|date:"F j, Y" }}</div>
+          </div>
+
+          <hr>
+
+          <div class="w-full flex flex-row gap-3">
+            <div class="w-1/2 flex flex-col justify-between">
+
+              <div class="flex flex-col justify-between">
+                <div id="survey-progress-{{ forloop.counter0 }}" class="mt-1">
+                  <div class="flex items-center text-sm justify-between">
+                    <div class="text-sm text-gray-700">{{ survey.num_responses|intcomma }} responses</div>
+                    <div class="text-sm text-gray-700">
+                      {{ survey.num_surveyed|intcomma  }} / {{ survey.target_population_size|intcomma }} buildings surveyed
+                    </div>
+                  </div>
+                  <div class=" bg-gray-100 rounded-full h-2 mt-2">
+                    <div class="bg-teal-500 h-2 rounded-full" style="width: {{ survey.get_progress_percent }}%;"></div>
+                  </div>
+                </div>
+
+                <div class="py-2">
+                  <p class="text-gray-700 line-clamp-3">Source dataset: {{ survey.dataset.name }}</p>
+                </div>
+
+                <div class="mb-3 py-5">
+                  <p class="text-gray-700 line-clamp-3">{{ survey.description }}</p>
+                </div>
+                
+              </div>
+      
+              <div class="flex flex-row justify-between">
+                {% if survey.status == 'ACTIVE' %}
+                <div class="flex flex-row gap-4">
+                  <a id="next" href="{% url 'buildings:edit_survey' survey.slug %}">
+                    <button id="survey-results-button"
+                      class="block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 
+                      bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-700 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                        Survey Details
+                    </button>
+                  </a>
+
+                  <a id="next" href="{% url 'buildings:survey_results' survey.slug %}">
+                    <button id="survey-results-button"
+                      class="block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 
+                      bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-700 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                        View Results
+                    </button>
+                  </a>
+                </div>
+                
+                <a class="" href="{% url 'buildings:do_survey_redirect' survey.slug %}">
+                  {% #button type="primary"%}
+                  Take Survey
+                  <svg class="inline-block rtl:rotate-180 w-3.5 h-3.5 ms-1" aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M1 5h12m0 0L9 1m4 4L9 9" />
+                  </svg>
+                  {% /button %}
+                </a>
+                {% else %}
+                <a id="next" href="{% url 'buildings:edit_survey' survey.slug %}">
+                  <button id="survey-results-button"
+                    class="block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 
+                    bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-700 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                      Edit Questions
+                  </button>
+                </a>
+                {% endif %}
+
+              </div>
+            </div>
+
+            <div class="w-1/2 flex flex-col rounded-md gap-2 px-3 py-2">
+              <div>
+                Latest Responses
+              </div>
+              {% for response in survey.last_3_responses %}
+              <div class="px-3 py-2 border border-gray-100 rounded-md shadow-sm hover:shadow-md">
+                <a class="flex flex-row gap-3" 
+                  href="{% url 'buildings:do_survey' survey_slug=response.survey.slug building_slug=response.building.slug %}">
+                  <object class="rounded-md h-[90px] w-[125px]" data="{{ response.building.get_thumbnail_url }}" tabindex="-1"
+                    type="image/jpeg">
+                    <div class="flex rounded-md h-[90px] w-[125px] bg-gray-100 justify-center items-center">
+                      No image found
+                    </div>
+                  </object>
+                  <div class="flex flex-col gap-2">
+                    <div class="">
+                      <strong>{{ response.created_by.username }} </strong> on {{ response.date_modified | date:"F j, Y" }}
+                    </div>
+                    <div class="mb-2 text-gray-900 hover:text-black transition-all duration-100">
+                        {{ response.building.address }}, {{ response.building.muni }}, {{ response.building.admin_area_level_1 }}
+                    </div>
+                  </div>
+                </a>
+              </div>
+              {% empty %}
+              <div class="bg-white bg-opacity-80 px-3 py-2 border border-gray-100 rounded-md shadow-sm">
+                No recent activity
+              </div>
+              {% endfor %}
+            </div>
+
+          </div>
+
+
+        </div>
+        {% empty %}
+        <div class="max-w-sm block ps-1 mt-3">
+          <div class="text-xl">
+            You don't have any surveys
+          </div>
+        </div>
         {% endfor %}
       </div>
-
     </section>
+    {% endblock %}
   </div>
 
 

@@ -36,3 +36,10 @@ def sub_lists(l1: list, l2: list):
 @register.filter
 def get_responses_for_survey(building: Building, survey: Survey):
     return building.get_responses_for_survey(survey)
+
+
+@register.filter
+def join_if_list(input):
+    if isinstance(input, list):
+        return ", ".join(input)
+    return input
