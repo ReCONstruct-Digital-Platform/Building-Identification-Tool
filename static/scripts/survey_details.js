@@ -3,18 +3,11 @@ const surveyQueryBuilderId = "#query-builder-surveys";
 
 function getCurrentQuery() {
   return {
-    ...getSelectedDataset(),
     ...getOrderByConfig(),
     ...getColumnConfigs("user_bldg_cols", "draggable-list"),
     ...getColumnConfigs("user_survey_cols", "draggable-list-survey"),
     ...getQueryBuilderQuery(datasetQueryBuilderId, "dataset_query"),
     ...getQueryBuilderQuery(surveyQueryBuilderId, "survey_query"),
-  };
-}
-
-function getSelectedDataset() {
-  return {
-    ds: document.getElementById("source-dataset-select").value,
   };
 }
 
@@ -31,7 +24,7 @@ function getOrderByConfig() {
 
 function getQueryBuilderQuery(queryBuilderId, returnKey) {
   // If querybuilder has no children, it doesn't exist
-  if (!document.querySelector(queryBuilderId).childElementCount) return null;
+  if (!document.querySelector(queryBuilderId) || !document.querySelector(queryBuilderId).childElementCount) return null;
 
   const rules = $(queryBuilderId).queryBuilder("getRules", {
     get_flags: true,

@@ -80,7 +80,9 @@ def migrate_responses(dry_run=True):
             "condition": "AND",
             "rules": [
                 {
+                    "id": "attrs__service_center",
                     "field": "attrs__service_center",
+                    "type": "string",
                     "operator": "equal",
                     "value": "CS Montréal",
                 },
@@ -94,7 +96,7 @@ def migrate_responses(dry_run=True):
                     "field": f"s_{survey1.id}_exterior_cladding",
                     "operator": "in",
                     "type": "string",
-                    "value": ["brick_masonry"],
+                    "value": ["Brick Masonry"],
                 },
             ],
         },

@@ -543,7 +543,7 @@ def new_survey(request):
         )
         new_survey.save()
         print(f"Created new survey {new_survey.id} {new_survey.slug}")
-        return redirect("buildings:edit_survey", survey_slug=new_survey.slug)
+        return redirect("buildings:survey_details", survey_slug=new_survey.slug)
 
     datasets = Dataset.objects.all()
     # TODO: what if slug is invalid?

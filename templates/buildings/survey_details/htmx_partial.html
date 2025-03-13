@@ -3,10 +3,10 @@
 {% load allauth %}
 
 <section id="candidate-filters" class="mt-7 mb-4" hx-swap-oob="true">
-  {% include 'buildings/edit_survey/candidates_filter_partial.html' %}
+  {% include 'buildings/survey_details/candidates_filter_partial.html' %}
 </section>
 
-{% include 'buildings/edit_survey/candidates_partial.html' %}
+{% include 'buildings/survey_details/candidates_partial.html' %}
 
 <div id="js-variables" hx-swap-oob="true">
   {{ qb_dataset_filters | json_script:"qb_dataset_filters" }}

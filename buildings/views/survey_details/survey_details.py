@@ -4,7 +4,6 @@ import re
 from django.db.models import F
 from django.http import (
     HttpResponse,
-    HttpResponseBadRequest,
     QueryDict,
 )
 from django.utils import timezone
@@ -14,7 +13,6 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from django.utils.translation import gettext_lazy as _
-from buildings.models import Dataset
 from buildings.models.newmodels import Survey
 from buildings.models.newsurveys import DynamicSurveyForm
 from .forms_fields_widgets import (
@@ -24,7 +22,6 @@ from .forms_fields_widgets import (
     OptionsFieldFormForCheckboxes,
     CheckboxFieldWithSpecifyForm,
     RadioFieldWithSpecifyForm,
-    RadioSpecifyFixedOptions,
     TextFieldForm,
 )
 from django.template.loader import render_to_string
@@ -452,7 +449,7 @@ def render_question_preview(request):
         "field_num": field_num,
     }
 
-    return render(request, "buildings/edit_survey/form_renderer_template.html", context)
+    return render(request, "buildings/survey_details/form_renderer_template.html", context)
 
 
 def get_field_form_and_schema(data):
@@ -466,15 +463,6 @@ def get_field_form_and_schema(data):
     assert field_num, "Field number is required"
     assert field_label, "Field label is required"
     assert question_text, "Question text is required"
-
-    # # Generate appropriate new_field_form
-    # field_form_class, field_form_default_val = get_field_form_class_and_default_vals(
-    #     field_type
-    # )
-    # new_field_form = field_form_class(
-    #     field_num, data, disabled=False
-    # )  # field_num is included in POST
-    # new_field_form.is_valid()
 
     schema_template, _ = get_json_schema_with_default_options(field_type, data)
 
@@ -504,7 +492,7 @@ def get_field_form_and_schema(data):
 
 
 @login_required(login_url="account_login")
-def edit_survey_questions(request, survey_slug):
+def survey_details(request, survey_slug):
 
     all_question_types = [
         {"id": "number", "label": "Number"},
@@ -521,13 +509,13 @@ def edit_survey_questions(request, survey_slug):
 
     if request.method == "POST":
         body = json.loads(request.body)
-        log.debug(f"POST request to edit_survey_questions {body}")
+        log.debug(f"POST request to survey_details_questions {body}")
 
         if "activate_survey" in body:
             survey = Survey.objects.filter(slug=survey_slug).first()
             survey.status = Survey.Status.ACTIVE
             survey.save()
-            return redirect("buildings:edit_survey", survey_slug=survey_slug)
+            return redirect("buildings:survey_details", survey_slug=survey_slug)
 
         new_survey_schema = {}
 
@@ -543,7 +531,7 @@ def edit_survey_questions(request, survey_slug):
         survey.save()
         return render(
             request,
-            "buildings/edit_survey/last_saved_time.html",
+            "buildings/survey_details/last_saved_time.html",
             {"date_modified": survey.date_modified},
         )
 
@@ -642,7 +630,7 @@ def edit_survey_questions(request, survey_slug):
         "existing_fields_to_render": existing_fields_to_render,
     }
 
-    template_name = "buildings/edit_survey/edit_survey.html"
+    template_name = "buildings/survey_details/survey_details.html"
 
     # We want to render the entire template if the trigger is source-dataset-select
     # hx-swap is set to none on that attribute but we insert multiple elements out of band

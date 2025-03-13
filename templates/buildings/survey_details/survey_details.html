@@ -113,7 +113,7 @@
         </section>
 
         <section id="candidate-filters" class="mt-4 mb-4">
-          {% include 'buildings/edit_survey/candidates_filter_partial.html' %}
+          {% include 'buildings/survey_details/candidates_filter_partial.html' %}
         </section>
 
 
@@ -122,7 +122,7 @@
 
       {% block page-and-paging-controls %}
       
-      {% include 'buildings/edit_survey/candidates_partial.html' %}
+      {% include 'buildings/survey_details/candidates_partial.html' %}
 
       {% endblock %}
 
@@ -472,5 +472,5 @@
   <script
     src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
   <script src="{% static 'scripts/query-builder.standalone.js' %}"></script>
-  <script defer src="{% static 'scripts/edit_survey.js' %}"></script>
+  <script defer src="{% static 'scripts/survey_details.js' %}"></script>
   {% endblock %}

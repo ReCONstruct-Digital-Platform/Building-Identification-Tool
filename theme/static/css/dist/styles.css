@@ -1393,10 +1393,6 @@ input:checked + .toggle-bg {
   right: 0.75rem !important;
 }
 
-.right-\[10px\] {
-  right: 10px !important;
-}
-
 .top-0 {
   top: 0px !important;
 }
@@ -1409,10 +1405,6 @@ input:checked + .toggle-bg {
   top: 50% !important;
 }
 
-.top-\[10px\] {
-  top: 10px !important;
-}
-
 .top-\[12px\] {
   top: 12px !important;
 }
@@ -1423,22 +1415,6 @@ input:checked + .toggle-bg {
 
 .top-\[calc\(75\%\)\] {
   top: calc(75%) !important;
-}
-
-.-right-2 {
-  right: -0.5rem !important;
-}
-
-.-right-4 {
-  right: -1rem !important;
-}
-
-.-left-4 {
-  left: -1rem !important;
-}
-
-.-left-\[10px\] {
-  left: -10px !important;
 }
 
 .isolate {
@@ -1968,10 +1944,6 @@ input:checked + .toggle-bg {
   width: 50% !important;
 }
 
-.w-\[75px\] {
-  width: 75px !important;
-}
-
 .w-\[80\%\] {
   width: 80% !important;
 }
@@ -2032,10 +2004,6 @@ input:checked + .toggle-bg {
 
 .max-w-\[60\%\] {
   max-width: 60% !important;
-}
-
-.max-w-\[75\%\] {
-  max-width: 75% !important;
 }
 
 .max-w-sm {
@@ -2853,11 +2821,6 @@ input:checked + .toggle-bg {
   padding-bottom: 0.375rem !important;
 }
 
-.py-16 {
-  padding-top: 4rem !important;
-  padding-bottom: 4rem !important;
-}
-
 .py-2 {
   padding-top: 0.5rem !important;
   padding-bottom: 0.5rem !important;
@@ -2962,14 +2925,6 @@ input:checked + .toggle-bg {
   padding-top: 50px !important;
 }
 
-.pb-6 {
-  padding-bottom: 1.5rem !important;
-}
-
-.pt-6 {
-  padding-top: 1.5rem !important;
-}
-
 .text-left {
   text-align: left !important;
 }
@@ -2999,11 +2954,6 @@ input:checked + .toggle-bg {
 .text-4xl {
   font-size: 2.25rem !important;
   line-height: 2.5rem !important;
-}
-
-.text-5xl {
-  font-size: 3rem !important;
-  line-height: 1 !important;
 }
 
 .text-\[11px\] {
