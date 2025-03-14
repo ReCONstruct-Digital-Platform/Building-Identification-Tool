@@ -44,25 +44,20 @@
             {% elif survey.status == 'DRAFT' %}
             bg-blue-100 
             {% elif survey.status == 'COMPLETED' %}
-            bg-pruple-200 
+            bg-purple-200 
             {% elif survey.status == 'ARCHIVED' %}
             bg-gray-300 
             {% endif %}
             ">
-              <svg width="5" height="6" viewBox="0 0 5 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="2.5" cy="3" r="2.5" 
-                {% if survey.status == 'ACTIVE' %}
-                fill="#059669"
-                {% elif survey.status == 'DRAFT' %}
-                fill="#059696"
-                {% elif survey.status == 'COMPLETED' %}
-                fill="#34d6"
-                {% elif survey.status == 'ARCHIVED' %}
-                fill="#aaaaaa"
-                {% endif %}
-                ></circle>
-              </svg>
-              <span class="font-medium text-xs text-emerald-600">{{ survey.status|title }}</span>
+              <span class="font-medium text-xs {% if survey.status == 'ACTIVE' %}
+              text-emerald-600
+              {% elif survey.status == 'DRAFT' %}
+              text-emerald-600
+              {% elif survey.status == 'COMPLETED' %}
+              text-purple-600
+              {% elif survey.status == 'ARCHIVED' %}
+              text-purple-600
+              {% endif %}">{{ survey.status|title }}</span>
             </div>
           </div>
 
@@ -88,7 +83,16 @@
             </div>
     
             <div class="flex flex-row gap-4">
-              {% if survey.status == 'ACTIVE' %}
+              {% if survey.status == 'DRAFT' %}
+              <a id="next" href="{% url 'buildings:survey_details' survey.slug %}">
+                <button id="survey-results-button"
+                class="block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 
+                bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-700 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                Edit Questions
+              </button>
+            </a>
+            
+            {% elif survey.status == 'ACTIVE' %}
               <a id="next" href="{% url 'buildings:survey_results' survey.slug %}">
                 <button id="survey-results-button"
                   class="block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 
@@ -108,15 +112,14 @@
                 {% /button %}
               </a>
               {% else %}
-              <a id="next" href="{% url 'buildings:survey_details' survey.slug %}">
+              <a id="next" href="{% url 'buildings:survey_results' survey.slug %}">
                 <button id="survey-results-button"
                   class="block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 
-                  bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-700 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-                    Edit Questions
+                  bg-purple-700 hover:bg-purple-600 focus-visible:outline-blue-700 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                    View Results
                 </button>
               </a>
               {% endif %}
-
             </div>
           </div>
         </div>
@@ -201,16 +204,19 @@
                 <div class="flex flex-col flex-grow justify-between">
                   <div class="flex items-center justify-between mt-2">
                     <div class="flex items-center">
-                      <img class="profile-pic-icon border me-2" src="{{ vote.created_by.get_avatar_url }}" />
-                      <strong>
-                        {{ vote.created_by.username }}
-                      </strong>
+                      <div class="flex flex-col">
+                        <strong>
+                          {{ vote.survey.name }}
+                        </strong>
+                        <p>
+                          {{ vote.created_by.username }}
+                        </p>
+                      </div>
                     </div>
                     <div class="vote-date">
                       {{ vote.date_modified | naturaltime }}
                     </div>
                   </div>
-                
                   <div class="mb-2 text-gray-900">
                     {{ vote.building.address }}, {{ vote.building.muni }}
                   </div>
@@ -278,17 +284,20 @@
               <div class="flex flex-col flex-grow justify-between">
                 <div class="flex items-center justify-between mt-2">
                   <div class="flex items-center">
-                    <img class="profile-pic-icon border me-2" src="{{ vote.created_by.get_avatar_url }}" />
-                    <strong>
-                      {{ vote.created_by.username }}
-                    </strong>
+                    <div class="flex flex-col">
+                      <strong>
+                        {{ vote.survey.name }}
+                      </strong>
+                      <p>
+                        {{ vote.created_by.username }}
+                      </p>
+                    </div>
                   </div>
                   <div class="vote-date">
                     {{ vote.date_modified | naturaltime }}
                   </div>
                 </div>
-                
-                <div class="mb-2 text-gray-900 hover:text-black transition-all duration-100">
+                <div class="mb-2 text-gray-900">
                     {{ vote.building.address }}, {{ vote.building.muni }}
                   </div>
                 </div>

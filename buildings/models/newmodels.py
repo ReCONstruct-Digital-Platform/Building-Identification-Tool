@@ -473,6 +473,8 @@ class Survey(models.Model):
 
     def get_progress_percent(self) -> float:
         num_candidates = self.get_target_population().count()
+        if not num_candidates:
+            return 0
         # We have to get unique buildings surveyed, as respondents can survey the same building
         num_surveyed = (
             Response.objects.filter(survey=self).values("building").distinct().count()

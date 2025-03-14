@@ -10,8 +10,19 @@ from dotenv import dotenv_values
 from django.contrib.gis.geos import Point
 from psycopg2.extras import execute_values
 from django.core.management.base import BaseCommand
+from buildings.management.commands.new_version_create_survey1_and_responses import (
+    transform_all_values,
+)
 from buildings.models.models import User
 from buildings.models.newmodels import Building, Dataset, Response, Survey
+from buildings.models.surveys import (
+    APPENDAGES,
+    FACADE_MATERIALS,
+    NEW_OR_RENOVATED,
+    ROOF_GEOMETRIES,
+    SITE_OBSTRUCTIONS,
+    WINDOWS,
+)
 
 # Read in the database configuration from a .env file
 ENV = dotenv_values(".env")
@@ -48,7 +59,7 @@ def migrate_responses(dry_run=True):
         f"""select count(*) 
             from buildings b 
                 join responses r on r.building_id = b.id
-            where (r.data->'exterior_cladding') @> '["brick_masonry"]' and b.attrs->>'service_center' like '%Montr%'
+            where (r.data->'exterior_cladding') @> '["Brick Masonry"]' and b.attrs->>'service_center' like '%Montr%'
         """
     )
     num_units = from_cur.fetchone()["count"]
@@ -125,6 +136,11 @@ def migrate_responses(dry_run=True):
                     },
                     {
                         "pos": 4,
+                        "val": "No obstructions",
+                        "label": {"en": "No obstructions"},
+                    },
+                    {
+                        "pos": 5,
                         "val": "Other (specify)",
                         "label": {"en": "Other (specify)"},
                     },
@@ -256,7 +272,7 @@ def migrate_responses(dry_run=True):
                     "attrs": {"class": "survey-3col"},
                     "is_required": True,
                     "specify_input_type": "text",
-                    "specify_option_value": "other",
+                    "specify_option_value": "Other",
                 },
             },
             "has_simple_volume": {
@@ -286,12 +302,19 @@ def migrate_responses(dry_run=True):
                     {"pos": 1, "val": "Buildings", "label": {"en": "Buildings"}},
                     {
                         "pos": 2,
-                        "val": "Overhead wires, incl. those blocking general access to site",
-                        "label": {
-                            "en": "Overhead wires, incl. those blocking general access to site"
-                        },
+                        "val": "Overhead wires",
+                        "label": {"en": "Overhead wires"},
                     },
-                    {"pos": 3, "val": "other", "label": {"en": "Other (Specify)"}},
+                    {
+                        "pos": 3,
+                        "val": "No obstructions",
+                        "label": {"en": "No obstructions"},
+                    },
+                    {
+                        "pos": 4,
+                        "val": "Other (Specify)",
+                        "label": {"en": "Other (Specify)"},
+                    },
                 ],
                 "question_text": {
                     "en": "Select any and all obstructions to machine access around the building."
@@ -331,7 +354,7 @@ def migrate_responses(dry_run=True):
                 "options": [
                     {
                         "pos": 0,
-                        "val": "num_buildings_in_cluster",
+                        "val": "Buildings in cluster",
                         "label": {"en": "Buildings in cluster"},
                     },
                     {"pos": 1, "val": None, "label": {"en": "No"}},
@@ -341,7 +364,7 @@ def migrate_responses(dry_run=True):
                 },
                 "widget_config": {
                     "specify_input_type": "number",
-                    "specify_option_value": "num_buildings_in_cluster",
+                    "specify_option_value": "Buildings in cluster",
                 },
             },
             "large_irregular_windows": {
@@ -352,12 +375,12 @@ def migrate_responses(dry_run=True):
                 "options": [
                     {
                         "pos": 1,
-                        "val": "irregular_windows",
+                        "val": "Irregularly shaped",
                         "label": {"en": "Irregularly shaped"},
                     },
                     {
                         "pos": 0,
-                        "val": "very_large_windows",
+                        "val": "Very large",
                         "label": {"en": "Very large"},
                     },
                 ],
@@ -747,27 +770,37 @@ def migrate_responses(dry_run=True):
         status=Survey.Status.ACTIVE,
         schema={
             "appendages": {
+                "pos": 7,
                 "type": "text",
                 "label": {"en": "Appendages"},
                 "widget": "multi_checkbox_specify",
                 "options": [
-                    {"val": "balconies", "label": {"en": "Balconies"}, "pos": 0},
+                    {"pos": 0, "val": "Balconies", "label": {"en": "Balconies"}},
                     {
-                        "val": "vestibules",
-                        "label": {"en": "Exterior Vestibules"},
                         "pos": 1,
+                        "val": "Exterior Vestibules",
+                        "label": {"en": "Exterior Vestibules"},
                     },
                     {
-                        "val": "canopies_eaves",
-                        "label": {"en": "Roof overhangs/eaves"},
                         "pos": 2,
+                        "val": "Roof overhangs/eaves",
+                        "label": {"en": "Roof overhangs/eaves"},
                     },
                     {
-                        "val": "porches_stoops",
-                        "label": {"en": "Porches/stoops"},
                         "pos": 3,
+                        "val": "Porches/stoops",
+                        "label": {"en": "Porches/stoops"},
                     },
-                    {"val": "other", "label": {"en": "Other (specify)"}, "pos": 4},
+                    {
+                        "pos": 4,
+                        "val": "No obstructions",
+                        "label": {"en": "No obstructions"},
+                    },
+                    {
+                        "pos": 5,
+                        "val": "Other (specify)",
+                        "label": {"en": "Other (specify)"},
+                    },
                 ],
                 "question_text": {
                     "en": "Select any and all significant appendages to the building faces."
@@ -777,19 +810,19 @@ def migrate_responses(dry_run=True):
                     "specify_input_type": "text",
                     "specify_option_value": "other",
                 },
-                "pos": 7,
             },
             "num_storeys": {
+                "pos": 4,
                 "type": "integer",
                 "label": {"en": "Number of Storeys"},
                 "widget": "radio_w_specify",
                 "options": [
                     {
-                        "val": "num_storeys",
-                        "label": {"en": "Number of storeys"},
                         "pos": 0,
+                        "val": "Number of storeys",
+                        "label": {"en": "Number of storeys"},
                     },
-                    {"val": None, "label": {"en": "Unsure"}, "pos": 1},
+                    {"pos": 1, "val": None, "label": {"en": "Unsure"}},
                 ],
                 "question_text": {
                     "en": "How many storeys above-ground does the building have?"
@@ -799,209 +832,219 @@ def migrate_responses(dry_run=True):
                     "specify_input_type": "number",
                     "specify_option_value": "num_storeys",
                 },
-                "pos": 4,
             },
             "has_basement": {
-                "type": "boolean",
+                "pos": 5,
+                "type": "boolean_or_null",
                 "label": {"en": "Has Basement"},
                 "widget": "radio",
                 "options": [
-                    {"val": True, "label": {"en": "Yes"}, "pos": 0},
-                    {"val": False, "label": {"en": "No"}, "pos": 1},
-                    {"val": None, "label": {"en": "Unsure"}, "pos": 2},
+                    {"pos": 0, "val": True, "label": {"en": "Yes"}},
+                    {"pos": 1, "val": False, "label": {"en": "No"}},
+                    {"pos": 2, "val": None, "label": {"en": "Unsure"}},
                 ],
                 "question_text": {"en": "Does the building appear to have a basement?"},
                 "widget_config": {"attrs": {"class": "survey-1col"}},
-                "pos": 5,
             },
             "roof_geometry": {
+                "pos": 12,
                 "type": "text",
                 "label": {"en": "Roof Geometry"},
-                "widget": "multi_checkbox_required",
+                "widget": "multi_checkbox",
                 "options": [
-                    {"val": "flat", "label": {"en": "Flat"}, "pos": 0},
-                    {"val": "curved", "label": {"en": "Curved"}, "pos": 1},
-                    {"val": "unsure", "label": {"en": "Unsure"}, "pos": 2},
-                    {"val": "complex", "label": {"en": "Complex"}, "pos": 3},
-                    {"val": "pitch_low", "label": {"en": "Low Pitched"}, "pos": 4},
-                    {"val": "pitch_high", "label": {"en": "High Pitched"}, "pos": 5},
+                    {"pos": 0, "val": "Flat", "label": {"en": "Flat"}},
+                    {"pos": 1, "val": "Curved", "label": {"en": "Curved"}},
+                    {"pos": 2, "val": "Unsure", "label": {"en": "Unsure"}},
+                    {"pos": 3, "val": "Complex", "label": {"en": "Complex"}},
+                    {"pos": 4, "val": "Low Pitched", "label": {"en": "Low Pitched"}},
+                    {"pos": 5, "val": "High Pitched", "label": {"en": "High Pitched"}},
                 ],
                 "question_text": {"en": "Select all that describes the roof geometry."},
-                "widget_config": {"attrs": {"class": "survey-3col"}},
-                "pos": 12,
+                "widget_config": {
+                    "is_required": True,
+                    "attrs": {"class": "survey-3col"},
+                },
             },
             "facade_condition": {
-                "type": "boolean",
+                "pos": 9,
+                "type": "boolean_or_null",
                 "label": {"en": "Facade Condition"},
                 "widget": "radio",
                 "options": [
-                    {"val": True, "label": {"en": "Yes"}, "pos": 0},
-                    {"val": False, "label": {"en": "No"}, "pos": 1},
-                    {"val": None, "label": {"en": "Unsure"}, "pos": 2},
+                    {"pos": 0, "val": True, "label": {"en": "Yes"}},
+                    {"pos": 1, "val": False, "label": {"en": "No"}},
+                    {"pos": 2, "val": None, "label": {"en": "Unsure"}},
                 ],
                 "question_text": {
                     "en": "Are the façades in poor condition and in need of replacement?"
                 },
                 "widget_config": {"attrs": {"class": "survey-1col"}},
-                "pos": 9,
             },
             "new_or_renovated": {
+                "pos": 13,
                 "type": "text",
                 "label": {"en": "New or Renovated"},
                 "widget": "multi_checkbox",
                 "options": [
-                    {"val": "newly_built", "label": {"en": "Newly built"}, "pos": 0},
+                    {"pos": 0, "val": "Newly built", "label": {"en": "Newly built"}},
                     {
-                        "val": "recently_renovated",
-                        "label": {"en": "Recently renovated"},
                         "pos": 1,
+                        "val": "Recently renovated",
+                        "label": {"en": "Recently renovated"},
                     },
                 ],
                 "question_text": {
                     "en": "Does the building look newly built or recently renovated?"
                 },
-                "pos": 13,
             },
             "exterior_cladding": {
+                "pos": 8,
                 "type": "text",
                 "label": {"en": "Exterior Cladding"},
-                "widget": "multi_checkbox_required_specify",
+                "widget": "multi_checkbox_specify",
                 "options": [
-                    {"val": "wood", "label": {"en": "Wood"}, "pos": 0},
-                    {"val": "metal", "label": {"en": "Metal"}, "pos": 1},
-                    {"val": "vinyl", "label": {"en": "Vinyl"}, "pos": 2},
-                    {"val": "plaster", "label": {"en": "Plaster"}, "pos": 3},
-                    {"val": "concrete", "label": {"en": "Concrete"}, "pos": 4},
-                    {"val": "curtain_wall", "label": {"en": "Curtain Wall"}, "pos": 5},
+                    {"pos": 0, "val": "Wood", "label": {"en": "Wood"}},
+                    {"pos": 1, "val": "Metal", "label": {"en": "Metal"}},
+                    {"pos": 2, "val": "Vinyl", "label": {"en": "Vinyl"}},
+                    {"pos": 3, "val": "Plaster", "label": {"en": "Plaster"}},
+                    {"pos": 4, "val": "Concrete", "label": {"en": "Concrete"}},
+                    {"pos": 5, "val": "Curtain Wall", "label": {"en": "Curtain Wall"}},
                     {
-                        "val": "brick_masonry",
-                        "label": {"en": "Brick Masonry"},
                         "pos": 6,
+                        "val": "Brick Masonry",
+                        "label": {"en": "Brick Masonry"},
                     },
                     {
-                        "val": "stone_masonry",
-                        "label": {"en": "Stone Masonry"},
                         "pos": 7,
+                        "val": "Stone Masonry",
+                        "label": {"en": "Stone Masonry"},
                     },
-                    {"val": "unsure", "label": {"en": "Unsure"}, "pos": 8},
-                    {"val": "other", "label": {"en": "Other (Specify)"}, "pos": 9},
+                    {"pos": 8, "val": "Unsure", "label": {"en": "Unsure"}},
+                    {"pos": 9, "val": "Other", "label": {"en": "Other (Specify)"}},
                 ],
                 "question_text": {
                     "en": "Select all types of exterior cladding does the building appear to have."
                 },
                 "widget_config": {
                     "attrs": {"class": "survey-3col"},
+                    "is_required": True,
                     "specify_input_type": "text",
-                    "specify_option_value": "other",
+                    "specify_option_value": "Other",
                 },
-                "pos": 8,
             },
             "has_simple_volume": {
+                "pos": 3,
                 "type": "boolean",
                 "label": {"en": "Simple Volume"},
                 "widget": "radio",
                 "options": [
-                    {"val": True, "label": {"en": "Yes"}, "pos": 0},
-                    {"val": False, "label": {"en": "No"}, "pos": 1},
+                    {"pos": 0, "val": True, "label": {"en": "Yes"}},
+                    {"pos": 1, "val": False, "label": {"en": "No"}},
                 ],
                 "question_text": {
                     "en": "Does the building have a simple volumetric form?"
                 },
-                "pos": 3,
             },
             "site_obstructions": {
+                "pos": 6,
                 "type": "text",
                 "label": {"en": "Site Obstructions"},
                 "widget": "multi_checkbox_specify",
                 "options": [
                     {
-                        "val": "trees_or_landscaping",
-                        "label": {"en": "Important trees or landscaping"},
                         "pos": 0,
+                        "val": "Important trees or landscaping",
+                        "label": {"en": "Important trees or landscaping"},
                     },
-                    {"val": "buildings", "label": {"en": "Buildings"}, "pos": 1},
+                    {"pos": 1, "val": "Buildings", "label": {"en": "Buildings"}},
                     {
-                        "val": "overhead_wires",
-                        "label": {
-                            "en": "Overhead wires, incl. those blocking general access to site"
-                        },
                         "pos": 2,
+                        "val": "Overhead wires",
+                        "label": {"en": "Overhead wires"},
                     },
-                    {"val": "other", "label": {"en": "Other (Specify)"}, "pos": 3},
+                    {
+                        "pos": 3,
+                        "val": "No obstructions",
+                        "label": {"en": "No obstructions"},
+                    },
+                    {
+                        "pos": 4,
+                        "val": "Other (Specify)",
+                        "label": {"en": "Other (Specify)"},
+                    },
                 ],
                 "question_text": {
                     "en": "Select any and all obstructions to machine access around the building."
                 },
-                "pos": 6,
             },
             "window_wall_ratio": {
-                "type": "boolean",
+                "pos": 10,
+                "type": "boolean_or_null",
                 "label": {"en": "Window-to-Wall Ratio"},
                 "widget": "radio",
                 "options": [
-                    {"val": True, "label": {"en": "Yes"}, "pos": 0},
-                    {"val": False, "label": {"en": "No"}, "pos": 1},
-                    {"val": None, "label": {"en": "Unsure"}, "pos": 2},
+                    {"pos": 0, "val": True, "label": {"en": "Yes"}},
+                    {"pos": 1, "val": False, "label": {"en": "No"}},
+                    {"pos": 2, "val": None, "label": {"en": "Unsure"}},
                 ],
                 "question_text": {
                     "en": "Does glazing make up more than 40% of the total visible façade area?"
                 },
                 "widget_config": {"attrs": {"class": "survey-1col"}},
-                "pos": 10,
             },
             "has_simple_footprint": {
+                "pos": 2,
                 "type": "boolean",
                 "label": {"en": "Simple Footprint"},
                 "widget": "radio",
                 "options": [
-                    {"val": True, "label": {"en": "Yes"}, "pos": 0},
-                    {"val": False, "label": {"en": "No"}, "pos": 1},
+                    {"pos": 0, "val": True, "label": {"en": "Yes"}},
+                    {"pos": 1, "val": False, "label": {"en": "No"}},
                 ],
                 "question_text": {"en": "Does the building have a simple footprint?"},
-                "pos": 2,
             },
             "self_similar_cluster": {
+                "pos": 1,
                 "type": "integer",
                 "label": {"en": "Self Similar Cluster"},
                 "widget": "radio_w_specify",
                 "options": [
                     {
-                        "val": "num_buildings_in_cluster",
-                        "label": {"en": "Buildings in cluster"},
                         "pos": 0,
+                        "val": "Buildings in cluster",
+                        "label": {"en": "Buildings in cluster"},
                     },
-                    {"val": None, "label": {"en": "No"}, "pos": 1},
+                    {"pos": 1, "val": None, "label": {"en": "No"}},
                 ],
                 "question_text": {
                     "en": "Is the building part of a self-similar cluster? If so, how many buildings are in the cluster?"
                 },
                 "widget_config": {
                     "specify_input_type": "number",
-                    "specify_option_value": "num_buildings_in_cluster",
+                    "specify_option_value": "Buildings in cluster",
                 },
-                "pos": 1,
             },
             "large_irregular_windows": {
+                "pos": 11,
                 "type": "text",
                 "label": {"en": "Large/Irregular Windows"},
                 "widget": "multi_checkbox",
                 "options": [
                     {
-                        "val": "irregular_windows",
-                        "label": {"en": "Irregularly shaped"},
                         "pos": 1,
+                        "val": "Irregularly shaped",
+                        "label": {"en": "Irregularly shaped"},
                     },
                     {
-                        "val": "very_large_windows",
-                        "label": {"en": "Very large"},
                         "pos": 0,
+                        "val": "Very large",
+                        "label": {"en": "Very large"},
                     },
                 ],
                 "question_text": {
                     "en": "Are there very large and/or irregularly shaped windows?"
                 },
                 "widget_config": {"attrs": {"class": "survey-1col"}},
-                "pos": 11,
             },
         },
     )
@@ -1035,19 +1078,29 @@ def migrate_responses(dry_run=True):
             for resp in responses_batch:
 
                 data = {
-                    "self_similar_cluster": resp["data"]["self_similar_cluster"],
-                    "has_simple_footprint": resp["data"]["has_simple_footprint"],
-                    "has_simple_volume": resp["data"]["has_simple_volume"],
-                    "num_storeys": resp["data"]["num_storeys"],
-                    "has_basement": resp["data"]["has_basement"],
-                    "site_obstructions": resp["data"]["site_obstructions"],
-                    "appendages": resp["data"]["appendages"],
-                    "exterior_cladding": resp["data"]["exterior_cladding"],
-                    "facade_condition": resp["data"]["facade_condition"],
-                    "window_wall_ratio": resp["data"]["window_wall_ratio"],
-                    "large_irregular_windows": resp["data"]["large_irregular_windows"],
-                    "roof_geometry": resp["data"]["roof_geometry"],
-                    "new_or_renovated": resp["data"]["new_or_renovated"],
+                    "self_similar_cluster": resp["self_similar_cluster"],
+                    "has_simple_footprint": resp["has_simple_footprint"],
+                    "has_simple_volume": resp["has_simple_volume"],
+                    "num_storeys": resp["num_storeys"],
+                    "has_basement": resp["has_basement"],
+                    "site_obstructions": transform_all_values(
+                        resp["site_obstructions"], SITE_OBSTRUCTIONS
+                    ),
+                    "appendages": transform_all_values(resp["appendages"], APPENDAGES),
+                    "exterior_cladding": transform_all_values(
+                        resp["exterior_cladding"], FACADE_MATERIALS
+                    ),
+                    "facade_condition": resp["facade_condition"],
+                    "window_wall_ratio": resp["window_wall_ratio"],
+                    "large_irregular_windows": transform_all_values(
+                        resp["large_irregular_windows"], WINDOWS
+                    ),
+                    "roof_geometry": transform_all_values(
+                        resp["roof_geometry"], ROOF_GEOMETRIES
+                    ),
+                    "new_or_renovated": transform_all_values(
+                        resp["new_or_renovated"], NEW_OR_RENOVATED
+                    ),
                 }
 
                 responses_to_write.append(

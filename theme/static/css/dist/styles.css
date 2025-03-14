@@ -2612,6 +2612,11 @@ input:checked + .toggle-bg {
   background-color: rgb(14 159 110 / var(--tw-bg-opacity)) !important;
 }
 
+.bg-purple-200 {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(220 215 254 / var(--tw-bg-opacity)) !important;
+}
+
 .bg-red-400 {
   --tw-bg-opacity: 1 !important;
   background-color: rgb(249 128 128 / var(--tw-bg-opacity)) !important;
@@ -2666,6 +2671,16 @@ input:checked + .toggle-bg {
 
 .bg-white\/\[0\.75\] {
   background-color: rgb(255 255 255 / 0.75) !important;
+}
+
+.bg-purple-600 {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(126 58 242 / var(--tw-bg-opacity)) !important;
+}
+
+.bg-purple-700 {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(108 43 217 / var(--tw-bg-opacity)) !important;
 }
 
 .bg-opacity-25 {
@@ -3129,6 +3144,11 @@ input:checked + .toggle-bg {
 
 .text-inherit {
   color: inherit !important;
+}
+
+.text-purple-600 {
+  --tw-text-opacity: 1 !important;
+  color: rgb(126 58 242 / var(--tw-text-opacity)) !important;
 }
 
 .text-red-500 {
@@ -3616,6 +3636,16 @@ input:checked + .toggle-bg {
 .hover\:bg-white:hover {
   --tw-bg-opacity: 1 !important;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity)) !important;
+}
+
+.hover\:bg-purple-500:hover {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(144 97 249 / var(--tw-bg-opacity)) !important;
+}
+
+.hover\:bg-purple-600:hover {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(126 58 242 / var(--tw-bg-opacity)) !important;
 }
 
 .hover\:bg-opacity-50:hover {

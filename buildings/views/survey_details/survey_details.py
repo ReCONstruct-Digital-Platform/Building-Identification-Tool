@@ -517,6 +517,12 @@ def survey_details(request, survey_slug):
             survey.save()
             return redirect("buildings:survey_details", survey_slug=survey_slug)
 
+        if "complete_survey" in body:
+            survey = Survey.objects.filter(slug=survey_slug).first()
+            survey.status = Survey.Status.COMPLETED
+            survey.save()
+            return redirect("buildings:survey_details", survey_slug=survey_slug)
+
         new_survey_schema = {}
 
         for field_id, field_data in body.items():

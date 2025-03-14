@@ -330,6 +330,7 @@ function setUpSaveSurveyButton() {
 }
 
 function setUpConfirmSurveyActivationButton() {
+  if (surveyStatus !== "DRAFT") return;
   const button = document.getElementById("confirm-survey-activation");
 
   button.addEventListener("click", (e) => {
@@ -349,19 +350,58 @@ function setUpConfirmSurveyActivationButton() {
     })
       .then((res) => {
         if (res.status != 200) {
-          throw new Error("Error creating survey");
+          throw new Error("Error activating survey");
         }
         // Redirect to the next step
         if (res.redirected) window.location.href = res.url;
       })
       .catch((error) => {
-        console.error("Error creating survey", error);
-        document.getElementById("survey-creation-error").classList.remove("hidden");
-        document.getElementById("survey-creation-error").classList.add("block");
+        console.error("Error activating survey", error);
+        document.getElementById("survey-activation-error").classList.remove("hidden");
+        document.getElementById("survey-activation-error").classList.add("block");
 
         setTimeout(() => {
-          document.getElementById("survey-creation-error").classList.remove("block");
-          document.getElementById("survey-creation-error").classList.add("hidden");
+          document.getElementById("survey-activation-error").classList.remove("block");
+          document.getElementById("survey-activation-error").classList.add("hidden");
+        }, 5000);
+      });
+  });
+}
+
+function setUpConfirmSurveyCompletionButton() {
+  if (surveyStatus !== "ACTIVE") return;
+  const button = document.getElementById("confirm-survey-completion");
+
+  button.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    fetch("", {
+      method: "POST",
+      mode: "same-origin",
+      cache: "no-cache",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: JSON.stringify({ complete_survey: true }),
+      redirect: "follow",
+    })
+      .then((res) => {
+        if (res.status != 200) {
+          throw new Error("Error completing survey");
+        }
+        // Redirect to the next step
+        if (res.redirected) window.location.href = res.url;
+      })
+      .catch((error) => {
+        console.error("Error completing survey", error);
+        document.getElementById("survey-completion-error").classList.remove("hidden");
+        document.getElementById("survey-completion-error").classList.add("block");
+
+        setTimeout(() => {
+          document.getElementById("survey-completion-error").classList.remove("block");
+          document.getElementById("survey-completion-error").classList.add("hidden");
         }, 5000);
       });
   });
@@ -610,15 +650,6 @@ function setUpSavedQuestionInteractivity() {
   });
 }
 
-function setUpConfirmActivationButton() {
-  if (surveyStatus === "ACTIVE") return;
-  document.getElementById("confirm-activation-button").addEventListener("click", (e) => {
-    e.preventDefault();
-    const button = document.getElementById("confirm-survey-creation");
-    button.click();
-  });
-}
-
 const classesTabActive = [
   "text-black",
   "underline",
@@ -642,13 +673,13 @@ document.addEventListener("DOMContentLoaded", () => {
   setUpColumnConfig();
   setUpModals();
   setUpSaveSurveyButton();
-  setUpConfirmSurveyActivationButton();
   setUpCollapsibles();
   setUpTabGroups("tabs-survey", classesTabActive, inactiveClasses);
   setUpAddQuestionButton();
   setUpSpecifyClickLabel();
   setUpSavedQuestionInteractivity();
-  setUpConfirmActivationButton();
+  setUpConfirmSurveyActivationButton();
+  setUpConfirmSurveyCompletionButton();
 });
 
 document.addEventListener("htmx:afterRequest", (e) => {

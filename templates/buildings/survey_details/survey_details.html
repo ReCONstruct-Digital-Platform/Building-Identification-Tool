@@ -16,11 +16,12 @@
   <div class="flex flex-col w-[80%] h-full">
 
     <div class="w-full bg-white bg-opacity-50 pt-3 px-5 rounded-t-md text-md">
+      {% if survey.status == 'DRAFT' %}
 
       {% #modal id="activate_survey" %}
       <div class="block flex-grow rounded-2xl px-10 pt-4 text-lg">
         <h1 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Confirm Survey Activation</h1>
-        <div id="survey-creation-error" class="hidden bg-red-500 rounded-md p-5 text-white text-lg text-center">
+        <div id="survey-activation-error" class="hidden bg-red-500 rounded-md p-5 text-white text-lg text-center">
           There was an error activating your survey. Please check the inputs and try again.
         </div>
         <div>Activate your survey to start collecting responses.</div>
@@ -30,11 +31,35 @@
             id="confirm-survey-activation"
             class=" bg-teal-600 hover:bg-teal-500 focus-visible:outline-teal-600 
             block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-            {% trans "Confirm" %}
+            {% trans "Confirm Activation" %}
           </button>
         </div>
       </div>
       {% /modal %}
+      
+      {% elif survey.status == 'ACTIVE' %}
+
+      {% #modal id="complete_survey" %}
+      <div class="block flex-grow rounded-2xl px-10 pt-4 text-lg">
+        <h1 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Confirm Survey Completion</h1>
+        <div id="survey-completion-error" class="hidden bg-red-500 rounded-md p-5 text-white text-lg text-center">
+          There was an error completing your survey. Please check the inputs and try again.
+        </div>
+        <div>Complete your survey to finish collecting responses.</div>
+        <p class="mt-2"><span class="font-semibold me-1">Warning:</span>Once your survey is complete, you will not be able to collect any more responses.</p>
+        <div class="flex justify-center mt-3">
+          <button 
+            id="confirm-survey-completion"
+            class=" bg-teal-600 hover:bg-teal-500 focus-visible:outline-teal-600 
+            block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+            {% trans "Confirm Completion" %}
+          </button>
+        </div>
+      </div>
+      {% /modal %}
+
+      {% endif %}
+
 
       <section id="survey-info" class="flex flex-col gap-1 mb-4">
         <div class="flex flex-row items-baseline justify-between">
@@ -69,11 +94,17 @@
           </div>
 
           <div>
-            {% if not survey.status == 'ACTIVE' %}
+            {% if survey.status == 'DRAFT' %}
             <button id="activate-survey-button" data-target-modal="activate_survey_modal"
               class="modal-open-button bg-teal-600 hover:bg-teal-500 focus-visible:outline-teal-600 
               justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
               {% trans "Activate Survey" %}
+            </button>
+            {% elif survey.status == 'ACTIVE' %}
+            <button id="complete-survey-button" data-target-modal="complete_survey_modal"
+              class="modal-open-button bg-teal-600 hover:bg-teal-500 focus-visible:outline-teal-600 
+              justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+              {% trans "Mark Complete" %}
             </button>
             {% endif %}
           </div>
@@ -313,6 +344,18 @@
                     <label class="flex flex-col gap-1">
                       <div class="flex flex-row items-baseline gap-2">
                         <span>{{ field_form.field_label.label }}</span>
+                        <div data-tooltip-target="tooltip-hover-{{ forloop.counter }}" data-tooltip-trigger="hover" >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle"
+                            viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                            <path
+                            d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+                          </svg>
+                        </div>
+                        <div id="tooltip-hover-{{ forloop.counter }}" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-xs opacity-0 tooltip dark:bg-gray-700">
+                            The name of the field created by the question in exports and results view.
+                            <div class="tooltip-arrow" data-popper-arrow></div>
+                        </div>
                         <span class="text-sm text-red-500">
                           {{ field_form.errors.field_label }}
                         </span>

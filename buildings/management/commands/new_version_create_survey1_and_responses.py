@@ -12,6 +12,7 @@ from psycopg2.extras import execute_values
 from django.core.management.base import BaseCommand
 from buildings.models.models import User
 from buildings.models.newmodels import Building, Dataset, Response, Survey
+from buildings.models.surveys import SITE_OBSTRUCTIONS
 
 # Read in the database configuration from a .env file
 ENV = dotenv_values(".env")
@@ -30,6 +31,79 @@ SQL_UPSERT_RESPONSE = f"""INSERT INTO {RESPONSES_TABLE}
         ext_id = EXCLUDED.ext_id, lat = EXCLUDED.lat, lng = EXCLUDED.lng, point = EXCLUDED.point, dataset = EXCLUDED.dataset, address = EXCLUDED.address, street_name = EXCLUDED.street_name, street_num = EXCLUDED.street_num, street_num2 = EXCLUDED.street_num2, apt_num = EXCLUDED.apt_num, apt_num_2 = EXCLUDED.apt_num_2, muni = EXCLUDED.muni, submuni = EXCLUDED.submuni, postal_code = EXCLUDED.postal_code, const_year = EXCLUDED.const_year, num_floors = EXCLUDED.num_floors, floor_area = EXCLUDED.floor_area, attrs = EXCLUDED.attrs"""
 
 SQL_UPSERT_BUILDING_TEMPLATE = f"""(%(ext_id)s, %(lat)s, %(lng)s, %(point)s, %(dataset)s, %(address)s, %(street_name)s, %(street_num)s, %(street_num2)s, %(apt_num)s, %(apt_num_2)s, %(muni)s, %(submuni)s, %(postal_code)s, %(const_year)s, %(num_floors)s, %(floor_area)s, %(attrs)s)"""
+
+
+SITE_OBSTRUCTIONS = {
+    "trees_or_landscaping": "Important trees or landscaping",
+    "buildings": "Buildings",
+    "overhead_wires": "Overhead wires",
+    "no_obstructions": "No obstructions",
+    "on": "Other (Specify)",
+}
+
+
+APPENDAGES = {
+    "canopies_eaves": "Roof overhangs/eaves",
+    "balconies": "Balconies",
+    "porches_stoops": "Porches/stoops",
+    "vestibules": "Exterior Vestibules",
+    "on": "Other (Specify)",
+}
+
+
+FACADE_MATERIALS = {
+    "brick_masonry": "Brick Masonry",
+    "concrete": "Concrete",
+    "curtain_wall": "Curtain Wall",
+    "plaster": "Plaster",
+    "metal": "Metal",
+    "vinyl": "Vinyl",
+    "stone_masonry": "Stone Masonry",
+    "wood": "Wood",
+    "unsure": "Unsure",
+    "on": "Other (Specify)",
+}
+
+
+ROOF_GEOMETRIES = {
+    "flat": "Flat",
+    "pitch_low": "Low Pitched",
+    "pitch_high": "High Pitched",
+    "curved": "Curved",
+    "complex": "Complex",
+    "unsure": "Unsure",
+}
+
+
+WINDOWS = {
+    "very_large_windows": "Very large",
+    "irregular_windows": "Irregularly shaped",
+}
+
+
+NEW_OR_RENOVATED = {
+    "newly_built": "Newly built",
+    "recently_renovated": "Recently renovated",
+}
+
+
+def transform_old_value_to_new(observed_val, VALUES_MAP):
+    """
+    Changed the values to be equal to the labels which makes old responses invalid
+    """
+    if observed_val in VALUES_MAP:
+        return VALUES_MAP[observed_val]
+    else:
+        return observed_val
+
+
+def transform_all_values(values, VALUES_MAP):
+    if isinstance(values, list):
+        new_vals = []
+        for observed_val in values:
+            if new_val := transform_old_value_to_new(observed_val, VALUES_MAP):
+                new_vals.append(new_val)
+        return new_vals
 
 
 def migrate_responses(dry_run=True):
@@ -96,6 +170,11 @@ def migrate_responses(dry_run=True):
                     },
                     {
                         "pos": 4,
+                        "val": "No obstructions",
+                        "label": {"en": "No obstructions"},
+                    },
+                    {
+                        "pos": 5,
                         "val": "Other (specify)",
                         "label": {"en": "Other (specify)"},
                     },
@@ -257,12 +336,19 @@ def migrate_responses(dry_run=True):
                     {"pos": 1, "val": "Buildings", "label": {"en": "Buildings"}},
                     {
                         "pos": 2,
-                        "val": "Overhead wires, incl. those blocking general access to site",
-                        "label": {
-                            "en": "Overhead wires, incl. those blocking general access to site"
-                        },
+                        "val": "Overhead wires",
+                        "label": {"en": "Overhead wires"},
                     },
-                    {"pos": 3, "val": "other", "label": {"en": "Other (Specify)"}},
+                    {
+                        "pos": 3,
+                        "val": "No obstructions",
+                        "label": {"en": "No obstructions"},
+                    },
+                    {
+                        "pos": 4,
+                        "val": "Other (Specify)",
+                        "label": {"en": "Other (Specify)"},
+                    },
                 ],
                 "question_text": {
                     "en": "Select any and all obstructions to machine access around the building."
@@ -302,7 +388,7 @@ def migrate_responses(dry_run=True):
                 "options": [
                     {
                         "pos": 0,
-                        "val": "num_buildings_in_cluster",
+                        "val": "Buildings in cluster",
                         "label": {"en": "Buildings in cluster"},
                     },
                     {"pos": 1, "val": None, "label": {"en": "No"}},
@@ -312,7 +398,7 @@ def migrate_responses(dry_run=True):
                 },
                 "widget_config": {
                     "specify_input_type": "number",
-                    "specify_option_value": "num_buildings_in_cluster",
+                    "specify_option_value": "Buildings in cluster",
                 },
             },
             "large_irregular_windows": {
@@ -323,12 +409,12 @@ def migrate_responses(dry_run=True):
                 "options": [
                     {
                         "pos": 1,
-                        "val": "irregular_windows",
+                        "val": "Irregularly shaped",
                         "label": {"en": "Irregularly shaped"},
                     },
                     {
                         "pos": 0,
-                        "val": "very_large_windows",
+                        "val": "Very large",
                         "label": {"en": "Very large"},
                     },
                 ],
@@ -737,14 +823,24 @@ def migrate_responses(dry_run=True):
                     "has_simple_volume": resp["has_simple_volume"],
                     "num_storeys": resp["num_storeys"],
                     "has_basement": resp["has_basement"],
-                    "site_obstructions": resp["site_obstructions"],
-                    "appendages": resp["appendages"],
-                    "exterior_cladding": resp["exterior_cladding"],
+                    "site_obstructions": transform_all_values(
+                        resp["site_obstructions"], SITE_OBSTRUCTIONS
+                    ),
+                    "appendages": transform_all_values(resp["appendages"], APPENDAGES),
+                    "exterior_cladding": transform_all_values(
+                        resp["exterior_cladding"], FACADE_MATERIALS
+                    ),
                     "facade_condition": resp["facade_condition"],
                     "window_wall_ratio": resp["window_wall_ratio"],
-                    "large_irregular_windows": resp["large_irregular_windows"],
-                    "roof_geometry": resp["roof_geometry"],
-                    "new_or_renovated": resp["new_or_renovated"],
+                    "large_irregular_windows": transform_all_values(
+                        resp["large_irregular_windows"], WINDOWS
+                    ),
+                    "roof_geometry": transform_all_values(
+                        resp["roof_geometry"], ROOF_GEOMETRIES
+                    ),
+                    "new_or_renovated": transform_all_values(
+                        resp["new_or_renovated"], NEW_OR_RENOVATED
+                    ),
                 }
 
                 responses_to_write.append(
