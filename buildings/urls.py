@@ -28,6 +28,7 @@ urlpatterns = [
     path("profile", views.profile, name="profile"),
     path("datasets", views.datasets, name="datasets"),
     path("datasets/<str:dataset_slug>", views.dataset, name="dataset"),
+    path("results/", views.survey_results_no_slug, name="results"),
     path(
         "results/survey/<str:survey_slug>", views.survey_results, name="survey_results"
     ),

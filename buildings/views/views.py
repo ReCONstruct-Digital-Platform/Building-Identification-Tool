@@ -140,6 +140,15 @@ def surveys(request):
 
 
 @login_required(login_url="account_login")
+def survey_results_no_slug(_):
+    survey = Survey.objects.filter(~Q(status=Survey.Status.ARCHIVED)).first()
+    return redirect(
+        "buildings:survey_results",
+        survey_slug=survey.slug,
+    )
+
+
+@login_required(login_url="account_login")
 def survey_results(request, survey_slug):
 
     num_results_per_page = 10

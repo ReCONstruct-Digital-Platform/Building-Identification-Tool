@@ -1617,6 +1617,18 @@ input:checked + .toggle-bg {
   margin-top: 56px !important;
 }
 
+.ms-12 {
+  margin-inline-start: 3rem !important;
+}
+
+.ms-24 {
+  margin-inline-start: 6rem !important;
+}
+
+.ms-16 {
+  margin-inline-start: 4rem !important;
+}
+
 .line-clamp-2 {
   overflow: hidden !important;
   display: -webkit-box !important;
@@ -2330,6 +2342,10 @@ input:checked + .toggle-bg {
 
 .self-center {
   align-self: center !important;
+}
+
+.justify-self-start {
+  justify-self: start !important;
 }
 
 .justify-self-center {
@@ -4228,6 +4244,11 @@ input:checked + .toggle-bg {
   .md\:gap-x-24 {
     -moz-column-gap: 6rem !important;
          column-gap: 6rem !important;
+  }
+
+  .md\:gap-x-16 {
+    -moz-column-gap: 4rem !important;
+         column-gap: 4rem !important;
   }
 
   .md\:space-x-0 > :not([hidden]) ~ :not([hidden]) {
