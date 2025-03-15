@@ -386,7 +386,6 @@ document.addEventListener("DOMContentLoaded", () => {
   setUpModals();
   setUpNextStepButton();
   setUpConfirmButton();
-  setUpCollapsibles();
 });
 
 document.addEventListener("htmx:afterRequest", (e) => {
@@ -398,6 +397,5 @@ document.addEventListener("htmx:afterRequest", (e) => {
     setUpQueryBuilders();
     setUpNextStepButton();
     setUpConfirmButton();
-    setUpCollapsibles();
   }
 });

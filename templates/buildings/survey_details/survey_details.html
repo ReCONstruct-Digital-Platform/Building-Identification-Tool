@@ -66,30 +66,26 @@
           <div class="flex flex-row items-center gap-2">
             <div class="text-3xl font-semibold">{{ survey.name }} </div>
             <div class="ms-4 h-fit w-fit py-2 px-3   
-              {% if survey.status == 'ACTIVE' %}
-              bg-emerald-100 
-              {% elif survey.status == 'DRAFT' %}
-              bg-blue-200 
-              {% elif survey.status == 'COMPLETED' %}
-              bg-pruple-200 
-              {% elif survey.status == 'ARCHIVED' %}
-              bg-gray-300 
-              {% endif %}
+            {% if survey.status == 'ACTIVE' %}
+            bg-emerald-100 
+            {% elif survey.status == 'DRAFT' %}
+            bg-blue-100 
+            {% elif survey.status == 'COMPLETED' %}
+            bg-purple-200 
+            {% elif survey.status == 'ARCHIVED' %}
+            bg-gray-300 
+            {% endif %}
               rounded-full flex justify-center items-center gap-1">
-                <svg width="5" height="6" viewBox="0 0 5 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="2.5" cy="3" r="2.5" 
-                    {% if survey.status == 'ACTIVE' %}
-                    fill="#059669"
-                    {% elif survey.status == 'DRAFT' %}
-                    fill="#059696"
-                    {% elif survey.status == 'COMPLETED' %}
-                    fill="#34d6"
-                    {% elif survey.status == 'ARCHIVED' %}
-                    fill="#aaaaaa"
-                    {% endif %}
-                    ></circle>
-                </svg>
-                <span class="font-medium text-lg text-emerald-700">{{ survey.status|title }}</span>
+              <span class="font-medium 
+              {% if survey.status == 'ACTIVE' %}
+              text-emerald-600
+              {% elif survey.status == 'DRAFT' %}
+              text-blue-900
+              {% elif survey.status == 'COMPLETED' %}
+              text-purple-600
+              {% elif survey.status == 'ARCHIVED' %}
+              text-purple-600
+              {% endif %}">{{ survey.status|title }}</span>
             </div>
           </div>
 
@@ -353,7 +349,7 @@
                           </svg>
                         </div>
                         <div id="tooltip-hover-{{ forloop.counter }}" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-xs opacity-0 tooltip dark:bg-gray-700">
-                            The name of the field created by the question in exports and results view.
+                            The name of the field holding your question's responses in the results view and in exports.
                             <div class="tooltip-arrow" data-popper-arrow></div>
                         </div>
                         <span class="text-sm text-red-500">

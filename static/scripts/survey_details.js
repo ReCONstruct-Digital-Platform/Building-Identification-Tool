@@ -691,4 +691,6 @@ document.addEventListener("htmx:afterRequest", (e) => {
   setUpDraggableOptions(e.detail.target);
   setUpAddOptionButton(e.detail.target);
   setUpDeleteOptionButtons(e.detail.target);
+  // activate tooltips
+  initFlowbite();
 });

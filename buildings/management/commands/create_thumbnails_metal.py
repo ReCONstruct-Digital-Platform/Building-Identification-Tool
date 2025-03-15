@@ -68,7 +68,7 @@ class Command(BaseCommand):
                 log_file.write(f"No /s/ subfolder found under metal/{pics_dir}\n")
                 log.warning(f"No /s/ subfolder found under metal/{pics_dir}")
                 continue
-            
+
             # Arbitrarily take the first small pic as the thumbnail
             thumbnail_key = [
                 p["Key"] for p in all_pics if f"/s/{pics_dir}_0" in p["Key"]
@@ -112,7 +112,11 @@ class Command(BaseCommand):
             for i, pic in enumerate(all_pics):
 
                 pic_key = pic["Key"]
-                size = re.match(pattern, pic_key).group(1)
+                try:
+                    size = re.match(pattern, pic_key).group(1)
+                except:
+                    print(f"ERROR: Could not match {pattern} on {pic_key}")
+                    continue
 
                 i_sizes[size] += 1
 
