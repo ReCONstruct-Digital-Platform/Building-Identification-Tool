@@ -24,6 +24,11 @@ app_name = "buildings"
 urlpatterns = [
     path("test_react_1", views.test_react_1, name="test_react_1"),
     path("test_react_2", views.test_react_2, name="test_react_2"),
+    path(
+        "test_infobox/<str:survey_slug>/<str:building_slug>",
+        views.test_infobox,
+        name="test_infobox",
+    ),
     path("", views.index, name="index"),
     path("profile", views.profile, name="profile"),
     path("datasets", views.datasets, name="datasets"),

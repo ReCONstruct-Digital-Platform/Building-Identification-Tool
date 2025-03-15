@@ -378,13 +378,21 @@ function renderSelectedFields(currentListValues) {
   const infoBox = document.getElementById("bldg-cols-display");
   infoBox.innerHTML = "";
 
+  if (currentListValues.length <= 10) {
+    infoBox.classList.remove("grid-cols-2");
+    infoBox.classList.add("grid-cols-1");
+  } else {
+    infoBox.classList.add("grid-cols-2");
+    infoBox.classList.remove("grid-cols-1");
+  }
+
   // iterate through current selected fields and recreate the infobox using template and values
   currentListValues.forEach((field) => {
     const node = document.createElement("div");
     node.id = `${field.id}-field`;
     node.classList.add("flex", "gap-2");
     node.innerHTML = `<div class="font-semibold">${field.label}:</div>${allValues[field.id]}`;
-    console.debug(node);
+    // console.debug(node);
     infoBox.appendChild(node);
   });
 }
@@ -410,7 +418,6 @@ function setUpDraggableList(draggableListId, defaultValues) {
     renderSelectedFields(currentListValues);
 
     const surveySlug = JSON.parse(document.getElementById("survey_slug").textContent);
-    console.debug("SURVEY", surveySlug);
 
     fetch(updateSettingsUrl, {
       method: "POST",
@@ -428,7 +435,7 @@ function setUpDraggableList(draggableListId, defaultValues) {
     }).then((resp) => {
       console.debug(resp);
       if (resp.status === 200) {
-        console.debug("SUCCC");
+        console.debug("SUCCESS");
       }
     });
   });
@@ -534,6 +541,39 @@ function setUpChangeSurveySelect() {
   });
 }
 
+function setUpCollapsibleInfoBox() {
+  const infoBox = document.getElementById("bldg-cols-display");
+  const collapseButton = document.getElementById("infobox-collapse-button");
+  const iconCollapse = document.getElementById("infobox-collapse-icon");
+  const iconExpand = document.getElementById("infobox-expand-icon");
+  const horizontalRule = document.getElementById("infobox-hr");
+
+  collapseButton.addEventListener("click", (e) => {
+    const isCollapsed = infoBox.classList.contains("max-h-0");
+    if (isCollapsed) {
+      console.debug("opening collapsible", infoBox);
+      infoBox.classList.remove("max-h-0");
+      infoBox.classList.add("max-h-[100vh]");
+      infoBox.classList.add("grid");
+
+      infoBox.removeAttribute("collapsed");
+      iconCollapse.classList.remove("hidden");
+      iconExpand.classList.add("hidden");
+      horizontalRule.classList.remove("hidden");
+    } else {
+      console.debug("closing collapsible", infoBox);
+      infoBox.classList.add("max-h-0");
+      infoBox.classList.remove("max-h-[100vh]");
+      infoBox.setAttribute("collapsed", "");
+      infoBox.classList.remove("grid");
+
+      iconExpand.classList.remove("hidden");
+      iconCollapse.classList.add("hidden");
+      horizontalRule.classList.add("hidden");
+    }
+  });
+}
+
 const tabsActiveClasses = ["bg-opacity-85"];
 const tabsInactiveClasses = ["bg-opacity-25"];
 
@@ -549,6 +589,7 @@ document.addEventListener("DOMContentLoaded", function () {
   setUpModals();
   setUpChangeSurveySelect();
   setUpColumnConfig();
+  setUpCollapsibleInfoBox();
 });
 
 window.addEventListener("resize", (e) => {

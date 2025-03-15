@@ -1504,6 +1504,11 @@ input:checked + .toggle-bg {
   margin-bottom: 0.25rem !important;
 }
 
+.my-2 {
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
 .my-4 {
   margin-top: 1rem !important;
   margin-bottom: 1rem !important;
@@ -1569,6 +1574,10 @@ input:checked + .toggle-bg {
   margin-inline-start: 0.25rem !important;
 }
 
+.ms-16 {
+  margin-inline-start: 4rem !important;
+}
+
 .ms-2 {
   margin-inline-start: 0.5rem !important;
 }
@@ -1615,18 +1624,6 @@ input:checked + .toggle-bg {
 
 .mt-\[56px\] {
   margin-top: 56px !important;
-}
-
-.ms-12 {
-  margin-inline-start: 3rem !important;
-}
-
-.ms-24 {
-  margin-inline-start: 6rem !important;
-}
-
-.ms-16 {
-  margin-inline-start: 4rem !important;
 }
 
 .line-clamp-2 {
@@ -1834,6 +1831,10 @@ input:checked + .toggle-bg {
 
 .max-h-0 {
   max-height: 0px !important;
+}
+
+.max-h-\[100vh\] {
+  max-height: 100vh !important;
 }
 
 .max-h-\[40px\] {
@@ -2642,11 +2643,6 @@ input:checked + .toggle-bg {
 .bg-red-600 {
   --tw-bg-opacity: 1 !important;
   background-color: rgb(224 36 36 / var(--tw-bg-opacity)) !important;
-}
-
-.bg-slate-300 {
-  --tw-bg-opacity: 1 !important;
-  background-color: rgb(162 179 190 / var(--tw-bg-opacity)) !important;
 }
 
 .bg-slate-500 {
@@ -3620,11 +3616,6 @@ input:checked + .toggle-bg {
   background-color: rgb(224 36 36 / var(--tw-bg-opacity)) !important;
 }
 
-.hover\:bg-slate-200:hover {
-  --tw-bg-opacity: 1 !important;
-  background-color: rgb(201 210 217 / var(--tw-bg-opacity)) !important;
-}
-
 .hover\:bg-slate-400:hover {
   --tw-bg-opacity: 1 !important;
   background-color: rgb(115 139 156 / var(--tw-bg-opacity)) !important;
@@ -3883,10 +3874,6 @@ input:checked + .toggle-bg {
 
 .focus-visible\:outline-red-600:focus-visible {
   outline-color: #E02424 !important;
-}
-
-.focus-visible\:outline-slate-200:focus-visible {
-  outline-color: #c9d2d9 !important;
 }
 
 .focus-visible\:outline-slate-500:focus-visible {
@@ -4241,11 +4228,6 @@ input:checked + .toggle-bg {
     flex-direction: row !important;
   }
 
-  .md\:gap-x-24 {
-    -moz-column-gap: 6rem !important;
-         column-gap: 6rem !important;
-  }
-
   .md\:gap-x-16 {
     -moz-column-gap: 4rem !important;
          column-gap: 4rem !important;
@@ -4285,11 +4267,6 @@ input:checked + .toggle-bg {
 @media (min-width: 1280px) {
   .xl\:grid-cols-5 {
     grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-  }
-
-  .xl\:gap-x-32 {
-    -moz-column-gap: 8rem !important;
-         column-gap: 8rem !important;
   }
 }
 
