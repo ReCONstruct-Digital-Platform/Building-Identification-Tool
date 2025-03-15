@@ -548,28 +548,47 @@ function setUpCollapsibleInfoBox() {
   const iconExpand = document.getElementById("infobox-expand-icon");
   const horizontalRule = document.getElementById("infobox-hr");
 
+  const infoBoxSavedExpanded = localStorage.getItem("infobox-collapsed") !== "true";
+
+  if (infoBoxSavedExpanded) {
+    console.debug("infox saved as opened", infoBox);
+    infoBox.removeAttribute("collapsed");
+    infoBox.classList.remove("max-h-0");
+    infoBox.classList.add("max-h-[100vh]");
+    infoBox.classList.add("grid");
+
+    iconCollapse.classList.remove("hidden");
+    horizontalRule.classList.remove("hidden");
+    iconExpand.classList.add("hidden");
+  }
+
   collapseButton.addEventListener("click", (e) => {
     const isCollapsed = infoBox.classList.contains("max-h-0");
     if (isCollapsed) {
-      console.debug("opening collapsible", infoBox);
+      // OPENING
+      console.debug("OPENING INFOBOX", infoBox);
+      infoBox.removeAttribute("collapsed");
       infoBox.classList.remove("max-h-0");
       infoBox.classList.add("max-h-[100vh]");
       infoBox.classList.add("grid");
 
-      infoBox.removeAttribute("collapsed");
       iconCollapse.classList.remove("hidden");
-      iconExpand.classList.add("hidden");
       horizontalRule.classList.remove("hidden");
+      iconExpand.classList.add("hidden");
+
+      localStorage.setItem("infobox-collapsed", false);
     } else {
-      console.debug("closing collapsible", infoBox);
-      infoBox.classList.add("max-h-0");
-      infoBox.classList.remove("max-h-[100vh]");
+      console.debug("CLOSING INFOBOX", infoBox);
       infoBox.setAttribute("collapsed", "");
+      infoBox.classList.remove("max-h-[100vh]");
       infoBox.classList.remove("grid");
+      infoBox.classList.add("max-h-0");
 
       iconExpand.classList.remove("hidden");
       iconCollapse.classList.add("hidden");
       horizontalRule.classList.add("hidden");
+
+      localStorage.setItem("infobox-collapsed", true);
     }
   });
 }
@@ -578,6 +597,7 @@ const tabsActiveClasses = ["bg-opacity-85"];
 const tabsInactiveClasses = ["bg-opacity-25"];
 
 document.addEventListener("DOMContentLoaded", function () {
+  setUpCollapsibleInfoBox();
   setStreetviewAndMapContainerHeight();
   setUpTabGroups("tabs-right", tabsActiveClasses, tabsInactiveClasses);
   setUpToasts();
@@ -589,7 +609,6 @@ document.addEventListener("DOMContentLoaded", function () {
   setUpModals();
   setUpChangeSurveySelect();
   setUpColumnConfig();
-  setUpCollapsibleInfoBox();
 });
 
 window.addEventListener("resize", (e) => {

@@ -72,17 +72,17 @@
                       </svg>
                     </button>
                     <button id="infobox-collapse-button" data-collapse-target="bldg-cols-display" class="hover:bg-gray-950 focus-visible:outline-gray-950 rounded-full block justify-center p-1.5 ">
-                      <svg id="infobox-collapse-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-minimize-2"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" x2="21" y1="10" y2="3"/><line x1="3" x2="10" y1="21" y2="14"/></svg>
+                      <svg id="infobox-collapse-icon" class="hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-minimize-2"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" x2="21" y1="10" y2="3"/><line x1="3" x2="10" y1="21" y2="14"/></svg>
 
-                      <svg id="infobox-expand-icon" class="hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize-2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg>
+                      <svg id="infobox-expand-icon" class="" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize-2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg>
                     </button>
                   </div>
                 </div>
                 
-                <hr id="infobox-hr" class="my-2 text-white w-full">
+                <hr id="infobox-hr" class="hidden my-2 text-white w-full">
                 
                 <div class="flex flex-col w-full space-x-3 text-sm">
-                  <div id="bldg-cols-display" class="collapsible grid {% if user_bldg_cols|length > 10 %} grid-cols-2 {% else %} grid-cols-1 {% endif %} gap-1 overflow-hidden">
+                  <div id="bldg-cols-display" class="collapsible max-h-0 {% if user_bldg_cols|length > 10 %} grid-cols-2 {% else %} grid-cols-1 {% endif %} gap-1 overflow-hidden" collapsed>
                     {% for col in user_bldg_cols %}
                     <div id="{{ col.id }}-field" class="flex gap-2">
                       <div class="font-semibold">
