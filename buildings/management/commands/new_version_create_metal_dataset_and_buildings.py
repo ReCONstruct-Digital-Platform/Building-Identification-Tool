@@ -324,14 +324,6 @@ def upsert_evalunits(dry_run=True):
                 "input": "number",
                 "validation": {"min": 0, "step": 0.01},
             },
-            {
-                "id": "attrs__eval_unit_id",
-                "field": "attrs__eval_unit_id",
-                "label": {"en": "Eval Unit ID"},
-                "optgroup": "attributes",
-                "type": "string",
-                "input": "text",
-            },
         ],
     )
     metal_dataset.save()
@@ -384,7 +376,6 @@ def upsert_evalunits(dry_run=True):
                 attrs = {
                     "p_metal": float(unit["p_metal"]),
                     "p_bldg": float(unit["p_bldg"]),
-                    "eval_unit_id": unit["id"],
                     "phys_link": unit["phys_link"],
                     "const_type": unit["const_type"],
                     "owner_date": unit["owner_date"].strftime("%Y-%m-%d"),

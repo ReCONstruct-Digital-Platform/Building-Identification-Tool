@@ -28,20 +28,23 @@
             <hr class="w-1/2 pt-2">
           </div>
 
+          <div>
+            <p>Fill in information about your survey</p>
+            <p>
+              <span class="text-lg font-semibold">Note:</span> You will not be able to change these values once the survey is created.
+            </p>
+          </div>
+
           <div class="mb-3">
             <div class="text-xl">Survey name</div>
-            <p>
-              <span class="text-lg font-semibold">Note:</span> You will not be able to change this value later.
-            </p>
+
             <input id="survey-name" name="survey_name" type="text" placeholder="Survey name" maxlength="500" required
             class="rounded-md w-[350px] text-lg border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
           </div>
           <div id="dataset-selection" class="mb-3">
             <div class="flex flex-col gap-1">
               <div class="text-xl">Source Dataset</div>
-              <p>Your survey will collect data on buildings in the source dataset.
-                <br><span class="text-lg font-semibold">Note:</span> You will not be able to change this value later.
-              </p>
+              <p>Your survey will collect data on buildings in the source dataset.</p>
               <!-- HTMX regenerate the candidates list when source dataset changes. QB filters will change thanks to their hx-swap-oob attribute -->
               <select id="source-dataset-select" name="source_dataset" 
                 hx-get="{% url 'buildings:new_survey' %}" 

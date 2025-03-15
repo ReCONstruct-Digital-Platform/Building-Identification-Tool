@@ -643,7 +643,7 @@ def new_survey(request):
             print(
                 "Source dataset select triggered the HTMX request. Need to OOB swap JS variables and QB filters"
             )
-            return render(request, "buildings/newsurvey/htmx_partial.html", context)
+            return render(request, "buildings/new_survey/htmx_partial.html", context)
         else:
             rendered_block = render_block_to_string(
                 template_name,

@@ -205,26 +205,6 @@
             {% endfor %}
           </div>
         </div>
-        <div>
-          <div id="responses-{{ forloop.counter }}" class="flex flex-col gap-3 bg-white overflow-x-auto">
-            <table id="dataTable" class="table-auto min-w-full border-collapse">
-              <thead id="tableHeader" class="border border-gray-200">
-                <tr class="bg-teal-50 divide-x divide-gray-200 divide-dotted">
-                  <th scope="col"
-                    class="ps-3 pe-5 py-2 w-auto text-left whitespace-nowrap text-sm leading-6 font-semibold text-gray-900 capitalize">
-                    Respondent
-                  </th>
-                  {% for column in user_survey_cols %}
-                  <th scope="col"
-                    class="ps-3 pe-5 py-2 w-autotext-left whitespace-nowrap text-sm leading-6 font-semibold text-gray-900 capitalize">
-                    {{ column.label }}
-                  </th>
-                  {% endfor %}
-                </tr>
-              </thead>
-            </table>
-          </div>
-        </div>
       </div>
     </div>
 
