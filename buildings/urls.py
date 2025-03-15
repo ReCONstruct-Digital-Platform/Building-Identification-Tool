@@ -26,7 +26,6 @@ urlpatterns = [
     path("test_react_2", views.test_react_2, name="test_react_2"),
     path("", views.index, name="index"),
     path("profile", views.profile, name="profile"),
-    path("query/<str:dataset_slug>", views.query, name="query"),
     path("datasets", views.datasets, name="datasets"),
     path("datasets/<str:dataset_slug>", views.dataset, name="dataset"),
     path(
@@ -40,11 +39,6 @@ urlpatterns = [
         name="survey_details",
     ),
     path(
-        "render_question_preview",
-        survey_details.render_question_preview,
-        name="render_question_preview",
-    ),
-    path(
         "surveys/<str:survey_slug>/survey",
         views.do_survey_redirect,
         name="do_survey_redirect",
@@ -53,6 +47,12 @@ urlpatterns = [
         "surveys/<str:survey_slug>/<str:building_slug>",
         views.do_survey,
         name="do_survey",
+    ),
+    # HTMX APIs
+    path(
+        "render_question_preview",
+        survey_details.render_question_preview,
+        name="render_question_preview",
     ),
     # API only URLs
     path("excel", api.gen_excel, name="gen_excel"),

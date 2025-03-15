@@ -54,7 +54,9 @@ def index(request):
     template = "buildings/index.html"
 
     datasets = Dataset.objects.all().order_by("id")
-    surveys = Survey.objects.all().order_by("-date_modified")[0:6]
+    surveys = Survey.objects.filter(~Q(status=Survey.Status.ARCHIVED)).order_by(
+        "-date_modified"
+    )[0:6]
     num_surveys = Survey.objects.all().count()
 
     total_votes = Response.objects.count() or 1
@@ -117,9 +119,15 @@ def dataset(request, dataset_slug: str):
 def surveys(request):
     template_name = "buildings/surveys.html"
     status = request.GET.get("status", "").upper()
-    status = Q(status=status) if status else Q()
 
-    surveys = Survey.objects.filter(status).order_by("-id").all()
+    logging.info(f"Listing {status} surveys")
+
+    status_filter = Q(status=status) if status else Q()
+    # Don't show archived surveys unless explicitly asked for
+    if status != Survey.Status.ARCHIVED:
+        status_filter &= ~Q(status=Survey.Status.ARCHIVED)
+
+    surveys = Survey.objects.filter(status_filter).order_by("-id").all()
     context = {"surveys": surveys}
 
     if request.htmx:
@@ -147,14 +155,18 @@ def survey_results(request, survey_slug):
     p_bldg_cols = get_b64_encoded_json(request.GET.get("user_bldg_cols"))
     p_survey_cols = get_b64_encoded_json(request.GET.get("user_survey_cols"))
 
-    surveys = Survey.objects.all()
-    survey = Survey.objects.get(slug=survey_slug)
-    dataset = survey.dataset
+    current_survey = Survey.objects.get(slug=survey_slug)
+    # Can't navigate to archived surveys, but we can see their results if specifically requested
+    surveys = list(Survey.objects.filter(~Q(status=Survey.Status.ARCHIVED)))
+    # We have to add the current survey back to the list if it is archived
+    if current_survey.status == Survey.Status.ARCHIVED:
+        surveys.append(current_survey)
+    dataset = current_survey.dataset
 
-    results = survey.get_results().filter(response_data__isnull=False)
+    results = current_survey.get_results().filter(response_data__isnull=False)
 
     default_bldg_cols = dataset.get_fields_to_display()
-    default_survey_cols = survey.get_columns_to_display()
+    default_survey_cols = current_survey.get_columns_to_display()
 
     user_config, _ = UserConfigs.objects.get_or_create(pk=request.user.id)
 
@@ -173,7 +185,7 @@ def survey_results(request, survey_slug):
         )
 
     # Same thing for survey config columns
-    survey_id = str(survey.id)
+    survey_id = str(current_survey.id)
     if p_survey_cols or p_survey_cols == []:
         user_survey_cols = user_config.res_page_survey_cols[survey_id] = p_survey_cols
         user_config.save()
@@ -215,14 +227,16 @@ def survey_results(request, survey_slug):
 
     qb_dataset_filters = dataset.get_schema(prefix="")
     qb_surveys_filters = {
-        "optgroups": {survey.name: {"en": survey.name}},
-        "filters": survey.get_query_builder_schema(field_prefix="response_data__"),
+        "optgroups": {current_survey.name: {"en": current_survey.name}},
+        "filters": current_survey.get_query_builder_schema(
+            field_prefix="response_data__"
+        ),
     }
 
     gen_excel_url = reverse("buildings:gen_excel")
 
     context = {
-        "current_survey": survey,
+        "current_survey": current_survey,
         "surveys": surveys,
         "page": page,
         "survey_orderby_cols": survey_orderby_cols,
@@ -236,7 +250,7 @@ def survey_results(request, survey_slug):
         "user_survey_cols": user_survey_cols,
         "default_survey_cols": default_survey_cols,
         "gen_excel_url": gen_excel_url,
-        "export_config": {"id": survey.id, "type": "survey"},
+        "export_config": {"id": current_survey.id, "type": "survey"},
     }
 
     if request.htmx:
@@ -251,6 +265,8 @@ def survey_results(request, survey_slug):
 @login_required(login_url="account_login")
 def do_survey_redirect(_, survey_slug):
     survey = get_object_or_404(Survey, slug=survey_slug)
+    if survey.status != Survey.Status.ACTIVE:
+        raise Http404(f"Survey {survey.name} is not currently accepting responses")
     random_building = survey.get_next_building_to_survey()
 
     return redirect(
@@ -265,6 +281,8 @@ def do_survey(request, survey_slug, building_slug):
 
     building = get_object_or_404(Building, slug=building_slug)
     survey = get_object_or_404(Survey, slug=survey_slug)
+    if survey.status != Survey.Status.ACTIVE:
+        raise Http404(f"Survey {survey.name} is not currently accepting responses")
     surveys = Survey.objects.filter(status=Survey.Status.ACTIVE)
 
     # Verify the building is in the survey's target population or 404
@@ -287,7 +305,6 @@ def do_survey(request, survey_slug, building_slug):
         logging.debug(f"POST: {request.POST}")
 
         if "problem_flag" in request.POST:
-            # TODO: Add a note to the no_building flag
             flag = ProblemFlag(building=building, created_by=request.user)
             flag.save()
 
@@ -396,122 +413,21 @@ def do_survey(request, survey_slug, building_slug):
     return render(request, "buildings/survey_rendering_full.html", context)
 
 
-@login_required(login_url="account_login")
-def query(request, dataset_slug):
-
-    # Get the dataset by slug
-    dataset = get_object_or_404(Dataset, slug=dataset_slug)
-
-    if request.method == "POST":
-        query = json.loads(request.body)
-        log.debug(query)
-        parser = DatasetQParser(schema=dataset.schema)
-        q = parser.parse_query(query)
-        log.debug(q)
-        buildings = Building.objects.filter(dataset_id=dataset.id).filter(q)
-
-        print(buildings.query)
-        print(buildings.count())
-
-    context = {
-        "dataset_name": dataset.name,
-        "querybuilder_filters": dataset.schema,
-    }
-    return render(request, "buildings/query.html", context)
-
-
-def get_surveys_qb_filters_and_optgroups_for_results(survey: Survey):
-
-    filters = []
-    survey_name = survey.name
-
-    optgroups = {survey_name: {"en": survey_name}}
-
-    filters = survey.get_query_builder_schema(field_prefix="data_")
-
-    return {"filters": filters, "optgroups": optgroups}
-
-
 def get_surveys_qb_filters_and_optgroups(surveys: List[Survey]):
+    """
+    Returns QueryBuilder Survey filters and optgroups for a list of Surveys.
+    Use to filter on results of all upstream surveys
+    """
 
     combined = []
     optgroups = {}
-
-    for survey in surveys:
-        survey_name = survey.name
-        optgroups[survey_name] = {"en": survey_name}
-        combined.extend(survey.get_query_builder_schema())
+    if surveys:
+        for survey in surveys:
+            survey_name = survey.name
+            optgroups[survey_name] = {"en": survey_name}
+            combined.extend(survey.get_query_builder_schema())
 
     return {"filters": combined, "optgroups": optgroups}
-
-
-def get_survey_target_population(dataset_q, surveys_q):
-    candidates = (
-        Building.objects.filter(dataset_q)
-        .annotate(
-            response_data=RawSQL(
-                """select jsonb_object_agg(key, value)
-                    from (
-                        select 
-                            id, key, jsonb_agg(distinct value) as value
-                            from (
-                                select 
-                                    id, key, jsonb_array_elements(value) as value
-                                from (
-                                    select 
-                                        id, key,
-                                        case jsonb_typeof(value)
-                                            when 'array' then value
-                                            else jsonb_build_array(value)
-                                        end as value
-                                    from (
-                                        select 
-                                            r.building_id as id,
-                                            concat('s_', r.survey_id, '_', (jsonb_each(r.data)).key) as key, 
-                                            (jsonb_each(r.data)).value 
-                                        from responses r
-                                        where r.building_id = buildings.id
-                                    ) as sub
-                                ) as sub2
-                            ) as sub3    
-                        group by id, key
-                    ) as sub4
-                    group by id""",
-                (),
-                output_field=JSONField(),
-            )
-        )
-        .filter(surveys_q)
-    )
-    return candidates
-
-
-@login_required(login_url="account_login")
-def newsurvey_api(request, dataset_slug):
-    # Get the dataset by slug
-    dataset = get_object_or_404(Dataset, slug=dataset_slug)
-
-    surveys_on_dataset = Survey.objects.filter(dataset=dataset)
-    log.info(f"{surveys_on_dataset.count()} surveys found on dataset {dataset.name}")
-
-    if request.method == "POST":
-        query = json.loads(request.body)
-        log.debug(pformat(query))
-
-        dataset_query = query["dataset_query"]
-        dataset_q_parser = DatasetQParser(schema=dataset.schema)
-        dataset_q = dataset_q_parser.parse_query(dataset_query)
-
-        surveys_query = query["surveys_query"]
-
-        survey_q_parser = SurveyQParser()
-        surveys_q = survey_q_parser.parse_query(surveys_query)
-        print(surveys_query)
-
-        candidates = get_survey_target_population(dataset_q, surveys_q)
-
-        print(candidates)
-        print(candidates.count())
 
 
 @login_required(login_url="account_login")
@@ -549,7 +465,6 @@ def new_survey(request):
         return redirect("buildings:survey_details", survey_slug=new_survey.slug)
 
     datasets = Dataset.objects.all()
-    # TODO: what if slug is invalid?
     p_dataset_slug = request.GET.get("source_dataset")
     dataset = (
         Dataset.objects.filter(slug=p_dataset_slug).first()
@@ -566,9 +481,6 @@ def new_survey(request):
     survey_query = get_b64_encoded_json(request.GET.get("survey_query"))
     p_bldg_cols = get_b64_encoded_json(request.GET.get("user_bldg_cols"))
     p_survey_cols = get_b64_encoded_json(request.GET.get("user_survey_cols"))
-
-    # Survey can be None if this is the first survey created on a dataset
-    surveys_on_dataset = Survey.objects.filter(dataset=dataset)
 
     # We create a temporary new survey object so we can use its methods to get the target pop
     # We will only save this object if the user submitted the form (i.e. it's a POST request)
@@ -616,6 +528,10 @@ def new_survey(request):
 
     qb_dataset_filters = dataset.get_schema(prefix="")
 
+    # Survey can be None if this is the first survey created on a dataset
+    surveys_on_dataset = Survey.objects.filter(dataset=dataset).filter(
+        ~Q(status=Survey.Status.ARCHIVED)
+    )
     survey_filters_and_optgroups = get_surveys_qb_filters_and_optgroups(
         surveys_on_dataset
     )

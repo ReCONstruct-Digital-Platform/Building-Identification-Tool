@@ -511,25 +511,54 @@ def survey_details(request, survey_slug):
         body = json.loads(request.body)
         log.debug(f"POST request to survey_details_questions {body}")
 
-        if "activate_survey" in body:
-            survey = Survey.objects.filter(slug=survey_slug).first()
-            survey.status = Survey.Status.ACTIVE
-            survey.save()
-            return redirect("buildings:survey_details", survey_slug=survey_slug)
-
-        if "complete_survey" in body:
-            survey = Survey.objects.filter(slug=survey_slug).first()
-            survey.status = Survey.Status.COMPLETED
-            survey.save()
-            return redirect("buildings:survey_details", survey_slug=survey_slug)
+        survey = Survey.objects.filter(slug=survey_slug).first()
 
         if "delete_draft" in body:
-            survey = Survey.objects.filter(slug=survey_slug).first()
             logging.info(
                 f"user {request.user.id} {request.user.username} DELETING SURVEY {survey.id}: {survey.name}"
             )
             survey.delete()
             return redirect("buildings:surveys")
+
+        if "activate_survey" in body:
+            logging.info(
+                f"user {request.user.id} {request.user.username} ACTIVATING SURVEY {survey.id}: {survey.name}"
+            )
+            survey.status = Survey.Status.ACTIVE
+            survey.save()
+            return redirect("buildings:survey_details", survey_slug=survey_slug)
+
+        if "reactivate_survey" in body:
+            logging.info(
+                f"user {request.user.id} {request.user.username} REACTIVATING SURVEY {survey.id}: {survey.name}"
+            )
+            survey.status = Survey.Status.ACTIVE
+            survey.save()
+            return redirect("buildings:survey_details", survey_slug=survey_slug)
+
+        if "complete_survey" in body:
+            logging.info(
+                f"user {request.user.id} {request.user.username} COMPLETING SURVEY {survey.id}: {survey.name}"
+            )
+            survey.status = Survey.Status.COMPLETED
+            survey.save()
+            return redirect("buildings:survey_details", survey_slug=survey_slug)
+
+        if "unarchive_survey" in body:
+            logging.info(
+                f"user {request.user.id} {request.user.username} UNARCHVING SURVEY {survey.id}: {survey.name}"
+            )
+            survey.status = Survey.Status.COMPLETED
+            survey.save()
+            return redirect("buildings:survey_details", survey_slug=survey_slug)
+
+        if "archive_survey" in body:
+            logging.info(
+                f"user {request.user.id} {request.user.username} ARCHVING SURVEY {survey.id}: {survey.name}"
+            )
+            survey.status = Survey.Status.ARCHIVED
+            survey.save()
+            return redirect("buildings:survey_details", survey_slug=survey_slug)
 
         new_survey_schema = {}
 

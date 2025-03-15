@@ -1,0 +1,23 @@
+{% var classes=classes|default:"py-1 px-2" %}
+<div class="{{ classes }} w-fit rounded-full flex justify-center items-center gap-1
+{% if survey.status == 'ACTIVE' %}
+bg-emerald-100 
+{% elif survey.status == 'DRAFT' %}
+bg-blue-100 
+{% elif survey.status == 'COMPLETED' %}
+bg-purple-200 
+{% elif survey.status == 'ARCHIVED' %}
+bg-slate-500 
+{% endif %}
+">
+  <span class="font-medium {{ text_size }}
+  {% if survey.status == 'ACTIVE' %}
+  text-emerald-700
+  {% elif survey.status == 'DRAFT' %}
+  text-emerald-600
+  {% elif survey.status == 'COMPLETED' %}
+  text-purple-600
+  {% elif survey.status == 'ARCHIVED' %}
+  text-white
+  {% endif %}">{{ survey.status|title }}</span>
+</div>

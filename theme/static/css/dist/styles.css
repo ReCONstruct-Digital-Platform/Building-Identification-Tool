@@ -1609,10 +1609,6 @@ input:checked + .toggle-bg {
   margin-top: 1.5rem !important;
 }
 
-.mt-7 {
-  margin-top: 1.75rem !important;
-}
-
 .mt-8 {
   margin-top: 2rem !important;
 }
@@ -1771,8 +1767,8 @@ input:checked + .toggle-bg {
   height: 205px !important;
 }
 
-.h-\[20px\] {
-  height: 20px !important;
+.h-\[25px\] {
+  height: 25px !important;
 }
 
 .h-\[30px\] {
@@ -2538,11 +2534,6 @@ input:checked + .toggle-bg {
   background-color: rgb(226 239 252 / var(--tw-bg-opacity)) !important;
 }
 
-.bg-blue-200 {
-  --tw-bg-opacity: 1 !important;
-  background-color: rgb(190 222 249 / var(--tw-bg-opacity)) !important;
-}
-
 .bg-blue-500 {
   --tw-bg-opacity: 1 !important;
   background-color: rgb(27 138 220 / var(--tw-bg-opacity)) !important;
@@ -2576,11 +2567,6 @@ input:checked + .toggle-bg {
 .bg-gray-200 {
   --tw-bg-opacity: 1 !important;
   background-color: rgb(207 216 210 / var(--tw-bg-opacity)) !important;
-}
-
-.bg-gray-300 {
-  --tw-bg-opacity: 1 !important;
-  background-color: rgb(171 186 180 / var(--tw-bg-opacity)) !important;
 }
 
 .bg-gray-50 {
@@ -2617,6 +2603,11 @@ input:checked + .toggle-bg {
   background-color: rgb(220 215 254 / var(--tw-bg-opacity)) !important;
 }
 
+.bg-purple-700 {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(108 43 217 / var(--tw-bg-opacity)) !important;
+}
+
 .bg-red-400 {
   --tw-bg-opacity: 1 !important;
   background-color: rgb(249 128 128 / var(--tw-bg-opacity)) !important;
@@ -2635,6 +2626,16 @@ input:checked + .toggle-bg {
 .bg-red-600 {
   --tw-bg-opacity: 1 !important;
   background-color: rgb(224 36 36 / var(--tw-bg-opacity)) !important;
+}
+
+.bg-slate-300 {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(162 179 190 / var(--tw-bg-opacity)) !important;
+}
+
+.bg-slate-500 {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(96 121 138 / var(--tw-bg-opacity)) !important;
 }
 
 .bg-teal-50 {
@@ -2671,16 +2672,6 @@ input:checked + .toggle-bg {
 
 .bg-white\/\[0\.75\] {
   background-color: rgb(255 255 255 / 0.75) !important;
-}
-
-.bg-purple-600 {
-  --tw-bg-opacity: 1 !important;
-  background-color: rgb(126 58 242 / var(--tw-bg-opacity)) !important;
-}
-
-.bg-purple-700 {
-  --tw-bg-opacity: 1 !important;
-  background-color: rgb(108 43 217 / var(--tw-bg-opacity)) !important;
 }
 
 .bg-opacity-25 {
@@ -3196,11 +3187,6 @@ input:checked + .toggle-bg {
   color: rgb(255 255 255 / var(--tw-text-opacity)) !important;
 }
 
-.text-blue-900 {
-  --tw-text-opacity: 1 !important;
-  color: rgb(18 62 104 / var(--tw-text-opacity)) !important;
-}
-
 .underline {
   text-decoration-line: underline !important;
 }
@@ -3603,6 +3589,11 @@ input:checked + .toggle-bg {
   background-color: rgb(88 80 236 / var(--tw-bg-opacity)) !important;
 }
 
+.hover\:bg-purple-600:hover {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(126 58 242 / var(--tw-bg-opacity)) !important;
+}
+
 .hover\:bg-red-500:hover {
   --tw-bg-opacity: 1 !important;
   background-color: rgb(240 82 82 / var(--tw-bg-opacity)) !important;
@@ -3611,6 +3602,16 @@ input:checked + .toggle-bg {
 .hover\:bg-red-600:hover {
   --tw-bg-opacity: 1 !important;
   background-color: rgb(224 36 36 / var(--tw-bg-opacity)) !important;
+}
+
+.hover\:bg-slate-200:hover {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(201 210 217 / var(--tw-bg-opacity)) !important;
+}
+
+.hover\:bg-slate-400:hover {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(115 139 156 / var(--tw-bg-opacity)) !important;
 }
 
 .hover\:bg-slate-800:hover {
@@ -3641,16 +3642,6 @@ input:checked + .toggle-bg {
 .hover\:bg-white:hover {
   --tw-bg-opacity: 1 !important;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity)) !important;
-}
-
-.hover\:bg-purple-500:hover {
-  --tw-bg-opacity: 1 !important;
-  background-color: rgb(144 97 249 / var(--tw-bg-opacity)) !important;
-}
-
-.hover\:bg-purple-600:hover {
-  --tw-bg-opacity: 1 !important;
-  background-color: rgb(126 58 242 / var(--tw-bg-opacity)) !important;
 }
 
 .hover\:bg-opacity-50:hover {
@@ -3866,8 +3857,24 @@ input:checked + .toggle-bg {
   outline-color: #22242a !important;
 }
 
+.focus-visible\:outline-purple-600:focus-visible {
+  outline-color: #7E3AF2 !important;
+}
+
+.focus-visible\:outline-purple-700:focus-visible {
+  outline-color: #6C2BD9 !important;
+}
+
 .focus-visible\:outline-red-600:focus-visible {
   outline-color: #E02424 !important;
+}
+
+.focus-visible\:outline-slate-200:focus-visible {
+  outline-color: #c9d2d9 !important;
+}
+
+.focus-visible\:outline-slate-500:focus-visible {
+  outline-color: #60798a !important;
 }
 
 .focus-visible\:outline-teal-600:focus-visible {

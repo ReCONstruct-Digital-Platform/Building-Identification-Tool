@@ -16,11 +16,11 @@
   <div class="flex flex-col w-[80%] h-full">
 
     <div class="w-full bg-white bg-opacity-50 py-3 mb-3 px-5 rounded-md text-md">
-      <div class="flex flex-col w-fit">
+      <div class="flex justify-between">
         <div class="flex flex-row items-center gap-2">
           <div class="flex flex-row items-center gap-2">
             <div class="text-2xl">Results for</div>
-            <select id="results-viewer-select" class='block text-2xl font-semibold rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600'>
+            <select id="results-viewer-select" class='block text-xl font-semibold rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600'>
               <optgroup label="Surveys" class="text-lg font-normal">
                 {% for survey in surveys %}
                 <option id="survey-{{ survey.id }}-link" value="{% url 'buildings:survey_results' survey.slug %}" class="appearance-none" 
@@ -32,6 +32,13 @@
             </select>
           </div>
         </div>
+        <a href="{% url 'buildings:survey_details' current_survey.slug %}">
+          <button id="survey-results-button"
+            class="block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 
+            bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-700 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+              Survey Details
+          </button>
+        </a>
       </div>
 
       <form>

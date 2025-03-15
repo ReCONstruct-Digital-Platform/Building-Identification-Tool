@@ -446,6 +446,123 @@ function setUpConfirmDraftDeletionButton() {
   });
 }
 
+function setUpConfirmSurveyReactivationButton() {
+  if (surveyStatus !== "COMPLETED") return;
+  const button = document.getElementById("confirm-survey-reactivation");
+
+  button.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    fetch("", {
+      method: "POST",
+      mode: "same-origin",
+      cache: "no-cache",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: JSON.stringify({ reactivate_survey: true }),
+      redirect: "follow",
+    })
+      .then((res) => {
+        if (res.status != 200) {
+          throw new Error("Error re-activating survey");
+        }
+        // Redirect to the next step
+        if (res.redirected) window.location.href = res.url;
+      })
+      .catch((error) => {
+        console.error("Error re-activating survey", error);
+        document.getElementById("survey-reactivation-error").classList.remove("hidden");
+        document.getElementById("survey-reactivation-error").classList.add("block");
+
+        setTimeout(() => {
+          document.getElementById("survey-reactivation-error").classList.remove("block");
+          document.getElementById("survey-reactivation-error").classList.add("hidden");
+        }, 5000);
+      });
+  });
+}
+
+function setUpConfirmSurveyArchivalButton() {
+  if (surveyStatus !== "COMPLETED") return;
+  const button = document.getElementById("confirm-survey-archival");
+
+  button.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    fetch("", {
+      method: "POST",
+      mode: "same-origin",
+      cache: "no-cache",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: JSON.stringify({ archive_survey: true }),
+      redirect: "follow",
+    })
+      .then((res) => {
+        if (res.status != 200) {
+          throw new Error("Error archiving survey");
+        }
+        // Redirect to the next step
+        if (res.redirected) window.location.href = res.url;
+      })
+      .catch((error) => {
+        console.error("Error archiving survey", error);
+        document.getElementById("survey-archival-error").classList.remove("hidden");
+        document.getElementById("survey-archival-error").classList.add("block");
+
+        setTimeout(() => {
+          document.getElementById("survey-archival-error").classList.remove("block");
+          document.getElementById("survey-archival-error").classList.add("hidden");
+        }, 5000);
+      });
+  });
+}
+
+function setUpConfirmSurveyUnarchivalButton() {
+  if (surveyStatus !== "ARCHIVED") return;
+  const button = document.getElementById("confirm-survey-unarchival");
+
+  button.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    fetch("", {
+      method: "POST",
+      mode: "same-origin",
+      cache: "no-cache",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: JSON.stringify({ unarchive_survey: true }),
+      redirect: "follow",
+    })
+      .then((res) => {
+        if (res.status != 200) {
+          throw new Error("Error unarchiving survey");
+        }
+        // Redirect to the next step
+        if (res.redirected) window.location.href = res.url;
+      })
+      .catch((error) => {
+        console.error("Error unarchiving survey", error);
+        document.getElementById("survey-unarchival-error").classList.remove("hidden");
+        document.getElementById("survey-unarchival-error").classList.add("block");
+
+        setTimeout(() => {
+          document.getElementById("survey-unarchival-error").classList.remove("block");
+          document.getElementById("survey-unarchival-error").classList.add("hidden");
+        }, 5000);
+      });
+  });
+}
+
 function turnOffSpecify(id) {
   console.debug("turning off specify");
   document.getElementById(id).disabled = true;
@@ -524,6 +641,7 @@ function setUpSpecifyClickLabel() {
 }
 
 function setUpDraggableOptions(fieldForm) {
+  if (surveyStatus !== "DRAFT") return;
   const fieldFormId = fieldForm.id;
   // Should only be 1 in each field form - loop over all if this changes
   const draggableList = fieldForm.getElementsByClassName("draggable-list")[0];
@@ -580,6 +698,7 @@ function setUpDraggableOptions(fieldForm) {
 }
 
 function setUpAddOptionButton(fieldForm) {
+  if (surveyStatus !== "DRAFT") return;
   const template = document.getElementById("new-option-template");
   const draggableList = fieldForm.getElementsByClassName("draggable-list")[0];
 
@@ -623,7 +742,7 @@ function setUpDeleteOptionButtons(fieldForm) {
 }
 
 function setUpAddQuestionButton() {
-  if (surveyStatus === "ACTIVE") return;
+  if (surveyStatus !== "DRAFT") return;
   const id = "add-question";
   const addQuestionButton = document.getElementById(id);
   const template = document.getElementById("new-field-template");
@@ -673,7 +792,7 @@ function setUpAddQuestionButton() {
  * Iterate through the rendered saved questions and setup interactivity (if not disabled)
  */
 function setUpSavedQuestionInteractivity() {
-  if (surveyStatus === "ACTIVE") return;
+  if (surveyStatus !== "DRAFT") return;
   const fieldFormBlocks = document.querySelectorAll(".new-field-form-and-render-block");
   fieldFormBlocks.forEach((block) => {
     const deleteQuestionButton = block.querySelector(".delete-question-button");
@@ -717,9 +836,13 @@ document.addEventListener("DOMContentLoaded", () => {
   setUpAddQuestionButton();
   setUpSpecifyClickLabel();
   setUpSavedQuestionInteractivity();
+  // Survey status changes
+  setUpConfirmDraftDeletionButton();
   setUpConfirmSurveyActivationButton();
   setUpConfirmSurveyCompletionButton();
-  setUpConfirmDraftDeletionButton();
+  setUpConfirmSurveyReactivationButton();
+  setUpConfirmSurveyArchivalButton();
+  setUpConfirmSurveyUnarchivalButton();
 });
 
 document.addEventListener("htmx:afterRequest", (e) => {
