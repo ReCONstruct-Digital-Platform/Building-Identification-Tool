@@ -160,7 +160,10 @@ INSTALLED_APPS = [
 # https://stackoverflow.com/questions/45844032/django-templatedoesnotexist-in-case-of-a-custom-widget
 FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 
+# https://django-extensions.readthedocs.io/en/latest/shell_plus.html#configuration
 SHELL_PLUS_PRINT_SQL = True
+SHELL_PLUS_PRINT_SQL_TRUNCATE = None
+
 
 # https://github.com/django-webpack/django-webpack-loader/
 WEBPACK_LOADER = {
