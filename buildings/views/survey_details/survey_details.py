@@ -523,6 +523,14 @@ def survey_details(request, survey_slug):
             survey.save()
             return redirect("buildings:survey_details", survey_slug=survey_slug)
 
+        if "delete_draft" in body:
+            survey = Survey.objects.filter(slug=survey_slug).first()
+            logging.info(
+                f"user {request.user.id} {request.user.username} DELETING SURVEY {survey.id}: {survey.name}"
+            )
+            survey.delete()
+            return redirect("buildings:surveys")
+
         new_survey_schema = {}
 
         for field_id, field_data in body.items():
@@ -580,10 +588,8 @@ def survey_details(request, survey_slug):
 
     # Need to use F to hide nulls, otherwise order_by descneding would show them first
     order_by = getattr(F(orderby_field), orderby_dir)(nulls_last=True)
-
-    page = Paginator(
-        candidates.order_by(order_by), per_page=num_results_per_page
-    ).get_page(pagenum)
+    candidates = candidates.order_by(order_by, "id")
+    page = Paginator(candidates, per_page=num_results_per_page).get_page(pagenum)
 
     qb_dataset_filters = dataset.get_schema(prefix="")
     dataset_filter_rules = survey.get_readonly_rules("dataset")

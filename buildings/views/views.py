@@ -54,7 +54,8 @@ def index(request):
     template = "buildings/index.html"
 
     datasets = Dataset.objects.all().order_by("id")
-    surveys = Survey.objects.all().order_by("id")
+    surveys = Survey.objects.all().order_by("-date_modified")[0:6]
+    num_surveys = Survey.objects.all().count()
 
     total_votes = Response.objects.count() or 1
     latest_votes = Response.objects.order_by("-date_modified").all()
@@ -62,7 +63,7 @@ def index(request):
     num_user_votes = Response.objects.filter(created_by=request.user).count()
     user_votes = (
         Response.objects.filter(created_by=request.user)
-        .order_by("-date_modified")
+        .order_by("-date_modified", "id")
         .all()
     )
 
@@ -76,6 +77,7 @@ def index(request):
     context = {
         "datasets": datasets,
         "surveys": surveys,
+        "num_surveys": num_surveys,
         "total_votes": total_votes,
         "num_user_votes": num_user_votes,
         "latest_votes_page": latest_votes_page,
@@ -203,11 +205,12 @@ def survey_results(request, survey_slug):
         results = results.filter(surveys_q)
         print(results.count())
 
-    # Need to use F to hide nulls, otherwise order_by descneding would show them first
+    # Need to use F to hide nulls, otherwise order_by descending would show them first
     order_by = getattr(F(orderby_field), orderby_dir)(nulls_last=True)
 
+    # Specify id as a second order_by field to avoid same results on different pages
     page = Paginator(
-        results.order_by(order_by), per_page=num_results_per_page
+        results.order_by(order_by, "id"), per_page=num_results_per_page
     ).get_page(pagenum)
 
     qb_dataset_filters = dataset.get_schema(prefix="")
@@ -608,7 +611,7 @@ def new_survey(request):
     order_by = getattr(F(orderby_field), orderby_dir)(nulls_last=True)
 
     page = Paginator(
-        candidates.order_by(order_by), per_page=num_results_per_page
+        candidates.order_by(order_by, "id"), per_page=num_results_per_page
     ).get_page(pagenum)
 
     qb_dataset_filters = dataset.get_schema(prefix="")

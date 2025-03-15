@@ -396,6 +396,5 @@ document.addEventListener("htmx:afterRequest", (e) => {
   if (e.target.id === "source-dataset-select") {
     setUpQueryBuilders();
     setUpNextStepButton();
-    setUpConfirmButton();
   }
 });

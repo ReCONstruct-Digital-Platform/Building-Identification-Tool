@@ -113,7 +113,7 @@ def gen_excel(request):
     # Need to use F to hide nulls, otherwise order_by descending would show them first
     order_by = getattr(F(orderby_field), orderby_dir)(nulls_last=True)
 
-    paginator = Paginator(results.order_by(order_by), per_page=50)
+    paginator = Paginator(results.order_by(order_by, "id"), per_page=50)
 
     bldg_fields = ["lat", "lng"] + [f["id"] for f in bldg_cols]
     bldg_header = ["Latitude", "Longitude"] + [f["label"] for f in bldg_cols]

@@ -407,6 +407,45 @@ function setUpConfirmSurveyCompletionButton() {
   });
 }
 
+function setUpConfirmDraftDeletionButton() {
+  if (surveyStatus !== "DRAFT") return;
+  const button = document.getElementById("confirm-draft-deletion");
+
+  button.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    fetch("", {
+      method: "POST",
+      mode: "same-origin",
+      cache: "no-cache",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: JSON.stringify({ delete_draft: true }),
+      redirect: "follow",
+    })
+      .then((res) => {
+        if (res.status != 200) {
+          throw new Error("Error deleting draft");
+        }
+        // Redirect to the next step
+        if (res.redirected) window.location.href = res.url;
+      })
+      .catch((error) => {
+        console.error("Error deleting draft", error);
+        document.getElementById("draft-deletion-error").classList.remove("hidden");
+        document.getElementById("draft-deletion-error").classList.add("block");
+
+        setTimeout(() => {
+          document.getElementById("draft-deletion-error").classList.remove("block");
+          document.getElementById("draft-deletion-error").classList.add("hidden");
+        }, 5000);
+      });
+  });
+}
+
 function turnOffSpecify(id) {
   console.debug("turning off specify");
   document.getElementById(id).disabled = true;
@@ -680,6 +719,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setUpSavedQuestionInteractivity();
   setUpConfirmSurveyActivationButton();
   setUpConfirmSurveyCompletionButton();
+  setUpConfirmDraftDeletionButton();
 });
 
 document.addEventListener("htmx:afterRequest", (e) => {
