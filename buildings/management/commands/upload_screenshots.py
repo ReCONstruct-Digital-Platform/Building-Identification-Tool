@@ -13,7 +13,7 @@ from functools import reduce
 from datetime import datetime
 from w3lib.url import parse_data_uri
 from uuid_extensions import uuid7str
-from buildings.utils import b2_upload
+from buildings.utils import b2
 from django.core.management.base import BaseCommand
 from buildings.models.models import UploadImageJob
 from buildings.models.newmodels import Building
@@ -33,7 +33,7 @@ def get_pending_jobs():
 
 def process_job(job: UploadImageJob):
 
-    b2_client = b2_upload.get_client()
+    b2_client = b2.get_client()
 
     building: Building = job.building
     user = job.user

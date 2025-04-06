@@ -4,7 +4,7 @@ import botocore
 import traceback
 from pathlib import Path
 from itertools import chain
-from buildings.utils.b2_upload import get_client
+from buildings.utils.b2 import get_client
 
 from buildings.models.models import EvalUnitSatelliteImage, EvalUnitStreetViewImage
 
@@ -101,7 +101,3 @@ class Command(BaseCommand):
 
         with open(output_dir/ 'sat.json', 'w', encoding='utf-8') as sat_out:
             json.dump(sat_dataset, sat_out, ensure_ascii=False, indent=2)
-
-            
-
-        

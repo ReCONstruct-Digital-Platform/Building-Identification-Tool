@@ -1,7 +1,7 @@
 import re
 import logging
 from buildings.models.newmodels import Building, Dataset
-from buildings.utils import b2_upload
+from buildings.utils import b2
 from django.core.management.base import BaseCommand
 from pathlib import Path
 
@@ -13,7 +13,7 @@ from config.settings import B2_ENDPOINT
 PROD_KEY_ID = ""
 PROD_APP_KEY = ""
 
-prod_client = b2_upload.get_b2_client(B2_ENDPOINT, PROD_KEY_ID, PROD_APP_KEY)
+prod_client = b2.get_b2_client(B2_ENDPOINT, PROD_KEY_ID, PROD_APP_KEY)
 
 
 class Command(BaseCommand):
