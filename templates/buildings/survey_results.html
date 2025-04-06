@@ -341,10 +341,23 @@
         {% for bldg in page %}
         <div class="bg-white bg-opacity-65 rounded-xl p-4 text-base gap-3 shadow-md border border-gray-200">
           <div class="flex flex-col items-top gap-2">
-            <div class="flex flex-row items-end">
-              <div class="text-xl font-semibold text-gray-900 self-end">{{ bldg.address }}</div>
-              <div class="ps-2 text-xl"> - {{ bldg.muni }}, {{ bldg.admin_area_level_1 }}</div>
-              <div class="ps-2 text-lg"> ({{ bldg.lat }}, {{bldg.lng}})</div>
+            <div class="w-full flex flex-row items-end justify-between gap-2">
+              <div class="flex flex-row items-end">
+                <div class="text-xl font-semibold text-gray-900 self-end">{{ bldg.address }}</div>
+                <div class="ps-2 text-xl"> - {{ bldg.muni }}, {{ bldg.admin_area_level_1 }}</div>
+                <div class="ps-2 text-lg"> ({{ bldg.lat }}, {{bldg.lng}})</div>
+              </div>
+              <div>
+                <div class=" justify-between gap-2">
+                  <a href="{% url 'buildings:do_survey' survey_slug=current_survey.slug building_slug=bldg.slug %}"
+                    class="text-sm text-gray-600 hover:text-teal-600">
+                    Open in Survey View
+                  </a>
+                  <!-- <span class="text-gray-400">|</span>
+                  <a href=""
+                    class="text-sm text-gray-500 hover:text-teal-600">Edit building</a> -->
+                </div>
+              </div>
             </div>
 
             <div class="flex flex-row w-full gap-3 items-center">

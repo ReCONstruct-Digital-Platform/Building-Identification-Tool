@@ -390,14 +390,6 @@ tr:hover .delete-row-icon {
   width: 100%;
 }
 
-#dragbar {
-  height: 80%;
-  width: 6px;
-  cursor: col-resize;
-  align-self: center;
-  background: linear-gradient(#525354, #8c8f91) no-repeat center/1px 100%;
-}
-
 #streetview {
   height: 100%;
 }

@@ -40,6 +40,7 @@ env = environ.Env(
     EMAIL_PORT=(str, ""),
     EMAIL_HOST_USER=(str, ""),
     EMAIL_HOST_PASSWORD=(str, ""),
+    LOCAL_IMAGE_DIR=(str, "./notes/images"),
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -68,6 +69,8 @@ SESSION_COOKIE_SECURE = env("SESSION_COOKIE_SECURE")
 
 GDAL_LIBRARY_PATH = env("GDAL_LIBRARY_PATH")
 GEOS_LIBRARY_PATH = env("GEOS_LIBRARY_PATH")
+
+LOCAL_IMAGE_DIR = env("LOCAL_IMAGE_DIR")
 
 # Backblaze B2 variables
 B2_KEYID_RW = env("B2_KEYID_RW")

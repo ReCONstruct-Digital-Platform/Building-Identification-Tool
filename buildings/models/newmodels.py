@@ -169,6 +169,8 @@ class Building(models.Model):
     # User-friendly URL slug
     slug = AutoSlugField(populate_from=slugify)
 
+    has_thumbnail = models.BooleanField(default=False)
+
     date_added = models.DateTimeField("date added", default=timezone.now)
     date_modified = models.DateTimeField("date modified", default=timezone.now)
 

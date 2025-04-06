@@ -1,3 +1,6 @@
+var svUploaded = false;
+var satUploaded = false;
+
 function getLatestViewData() {
   // Get the latest view data from streetview
   const sv_pov = sv.getPov();
@@ -28,58 +31,79 @@ async function screenshot(element_id) {
         el.id === "gmimap1" ||
         el.tagName === "BUTTON" ||
         el.classList.contains("gm-iv-address") ||
-        el.getAttribute("title") ===
-          "Open this area in Google Maps (opens a new window)" ||
+        el.getAttribute("title") === "Open this area in Google Maps (opens a new window)" ||
         el.id === "sv-top-right-controls-container" ||
         el.id === "unit-info" ||
         // Lot polygon corner markers
-        (el.nodeName === "CANVAS" &&
-          el.getAttribute("width") === "32" &&
-          el.getAttribute("height") === "36");
+        (el.nodeName === "CANVAS" && el.getAttribute("width") === "32" && el.getAttribute("height") === "36");
 
       // Additionally remove the red pin for the streetview (but keep it for satellite)
       if (element_id === "streetview") {
         return (condition ||=
-          el.getAttribute("src") ===
-            "https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3_hdpi.png" ||
-          el.getAttribute("src") ===
-            "https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3.png");
+          el.getAttribute("src") === "https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3_hdpi.png" ||
+          el.getAttribute("src") === "https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3.png");
       } else {
-        return (condition ||=
-          el.getAttribute("style") ===
-          "position: absolute; left: 0px; top: 0px; z-index: 1;");
+        return (condition ||= el.getAttribute("style") === "position: absolute; left: 0px; top: 0px; z-index: 1;");
       }
     },
   }).then((canvas) => {
     // // Uncomment for testing - appends the images to the page
     // // Hacky way to check if DEBUG is on
-    // if (console.debug.toString() !== 'function() {}') {
-    //     document.body.style.overflowY = 'scroll';
-    //     document.body.style.height = '100%';
-    //     document.getElementById('test-screenshots-container').appendChild(canvas);
+    // if (console.debug.toString() !== "function() {}") {
+    //   document.body.style.overflowY = "scroll";
+    //   document.body.style.height = "100%";
+    //   document.getElementById("test-screenshots-container").appendChild(canvas);
     // }
 
     // Convert the image to a dataURL for uploading to the backend
-    return canvas.toDataURL("image/png");
+    return canvas.toDataURL("image/jpeg");
   });
 }
 
+async function screenshotStreetview() {
+  const sv_pov = sv.getPov();
+  const panoData = sv.getLocation();
+
+  // Screenshot the streetview and gather metadata
+  const imgData = {
+    sv: await screenshot("streetview"),
+    lat: panoData.latLng.lat(),
+    lng: panoData.latLng.lng(),
+    pano_date: window.lastPanoDate,
+    sv_pano: panoData.pano,
+    sv_heading: sv_pov.heading,
+    sv_pitch: sv_pov.pitch,
+    sv_zoom: sv_pov.zoom,
+    survey_slug: JSON.parse(document.getElementById("survey_slug").textContent),
+  };
+  return imgData;
+}
+
+async function screenshotSatellite() {
+  const satData = {
+    sat: await screenshot("satellite"),
+    center_lat: map.center.lat(),
+    center_lng: map.center.lng(),
+    map_url: map.mapUrl,
+    zoom: map.zoom,
+    tilt: map.tilt,
+    map_type: map.mapTypeId,
+    survey_slug: JSON.parse(document.getElementById("survey_slug").textContent),
+  };
+  return satData;
+}
 
 /**
- * Screenshot the streetview. Called when the screenshot button is clicked.
+ * Screenshot and upload the streetview. Called when the screenshot button is clicked.
  */
-async function screenshotStreetview(event) {
-  event.preventDefault();
-
+async function screenshotStreetviewAndUpload(displayToast = true) {
   // Screenshot the streetview
-  const imgData = {
-    streetview: await screenshot("streetview"),
-  };
+  const imgData = await screenshotStreetview();
 
   // Get the upload url from the page and POST the data
   const url = document.getElementById("upload_url").getAttribute("data-url");
 
-  console.debug(`screenshotting and sending to ${url}`);
+  console.debug(`Screnshotting streetview and uploading to ${url}`);
 
   fetch(url, {
     method: "POST",
@@ -94,10 +118,65 @@ async function screenshotStreetview(event) {
   }).then((resp) => {
     console.debug(resp);
     if (resp.status === 200) {
-      document.getElementById("sv_uploaded").setAttribute("data-uploaded", "true");
+      svUploaded = true;
+      if (displayToast) toasts["screenshot-toast"].show();
+    }
+  });
+}
 
-      // Show the toast and set an interval for it to disappear
-      toasts["screenshot-toast"].show();
+async function screenshotSatelliteAndUpload(displayToast = true) {
+  const satData = await screenshotSatellite();
+
+  const uploadURL = document.getElementById("upload_url").getAttribute("data-url");
+
+  // Upload new satellite image
+  fetch(uploadURL, {
+    method: "POST",
+    mode: "same-origin",
+    cache: "no-cache",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCookie("csrftoken"),
+    },
+    body: JSON.stringify(satData),
+  }).then((resp) => {
+    if (resp.status === 200) {
+      console.debug("Satellite img uploaded successfully");
+      satUploaded = true;
+      if (displayToast) toasts["screenshot-toast-sat"].show();
+    } else {
+      console.debug(`Problem uploading screenshot ${resp}`);
+    }
+  });
+}
+
+/**
+ * Grab the last seen satellite image from the page and upload it to the backend.
+ * This is called if no satellite images were uploaded when the user submits the form
+ */
+async function uploadStoredSatelliteImage() {
+  // Already JSON strigified
+  const satData = localStorage.getItem("sat_data");
+  const uploadURL = document.getElementById("upload_url").getAttribute("data-url");
+
+  // Upload new satellite image
+  fetch(uploadURL, {
+    method: "POST",
+    mode: "same-origin",
+    cache: "no-cache",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCookie("csrftoken"),
+    },
+    body: satData,
+  }).then((resp) => {
+    if (resp.status === 200) {
+      console.debug("Satellite img uploaded successfully");
+      satUploaded = true;
+    } else {
+      console.debug(`Problem uploading screenshot ${resp}`);
     }
   });
 }
@@ -118,9 +197,7 @@ function setUpDragBar() {
 
   // Calculate the new width, set the left panel's width and save in local storage
   const resizeOnDrag = (e) => {
-    document.selection
-      ? document.selection.empty()
-      : window.getSelection().removeAllRanges();
+    document.selection ? document.selection.empty() : window.getSelection().removeAllRanges();
     const newWidth = e.pageX - dragbar.offsetWidth / 2 + "px";
     left.style.width = newWidth;
     localStorage.setItem("savedWidth", newWidth);
@@ -141,9 +218,9 @@ function setUpDragBar() {
 
 function setUpButtons() {
   // Screenshot functionality
-  const screenshotButton = document.getElementById("btn-screenshot");
-  screenshotButton.addEventListener("click", (e) => {
-    screenshotStreetview(e);
+  const buttonScreenshotStreetview = document.getElementById("btn-screenshot-sv");
+  buttonScreenshotStreetview.addEventListener("click", (e) => {
+    screenshotStreetviewAndUpload();
   });
   window.addEventListener(
     "keyup",
@@ -151,12 +228,17 @@ function setUpButtons() {
       if (e.code === "Space") {
         console.debug(`spacebar pressed. Target: ${e.target}`);
         if (e.target.nodeName !== "INPUT") {
-          await screenshotStreetview(e);
+          await screenshotStreetviewAndUpload();
         }
       }
     },
     false
   );
+
+  const buttonScreenshotSatellite = document.getElementById("btn-screenshot-sat");
+  buttonScreenshotSatellite.addEventListener("click", (e) => {
+    screenshotSatelliteAndUpload();
+  });
 
   const flagProblemButton = document.getElementById("btn-problem-flag");
   console.debug("Attaching click handler to flag button", flagProblemButton);
@@ -183,166 +265,67 @@ function setUpButtons() {
 
   // When user submits form, upload both current streetview and sat views
   // then continue with default behaviour
-  document
-    .getElementById("btn-submit-vote")
-    .addEventListener("click", async (e) => {
-      e.preventDefault();
+  document.getElementById("btn-submit-vote").addEventListener("click", async (e) => {
+    e.preventDefault();
 
-      const form = document.getElementById("building-submission-form");
+    const form = document.getElementById("building-submission-form");
 
-      // Check form inputs are valid
-      if (!form.checkValidity()) {
-        // Create the temporary button, click and remove it
-        // This makes the validation comments appear on screen
-        const tmpSubmit = document.createElement("button");
-        form.appendChild(tmpSubmit);
-        tmpSubmit.click();
-        form.removeChild(tmpSubmit);
-      } else {
-        // Check if the user previously screenshotted a streetview
-        // If not, we'll save the current streetview now
-        const sv_uploaded = document.getElementById("sv_uploaded");
-        if (sv_uploaded.getAttribute("data-uploaded") !== "true") {
-          console.log("No SV screenshots taken by user, will take one now.");
-          await screenshotStreetview(e);
-        }
-        // Set the latest view data in the form
-        document.getElementById("latest_view_data").value = JSON.stringify(
-          getLatestViewData()
-        );
-        form.submit();
-      }
-    });
-}
-
-/**
- * Handle the stored satellite image upload to the backend.
- * If the new image has not changed from the previous one,
- * or all form fileds are empty, do not upload.
- */
-function uploadSatelliteImage(target, uploadURL, oldValue) {
-  const currentValue = target.getAttribute("data-url");
-
-  if (allInputsEmpty())
-    return console.debug("No input filled yet, do not screenshot satellite.");
-
-  if (oldValue === currentValue)
-    return console.debug("Satellite image hasn't changed, do not upload.");
-
-  // Upload new satellite image
-  fetch(uploadURL, {
-    method: "POST",
-    mode: "same-origin",
-    cache: "no-cache",
-    credentials: "same-origin",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRFToken": getCookie("csrftoken"), // So django accepts the request
-    },
-    body: JSON.stringify({ satellite: currentValue }),
-  }).then((resp) => {
-    if (resp.status === 200) {
-      console.debug("Satellite img uploaded successfully");
+    // Check form inputs are valid
+    if (!form.checkValidity()) {
+      // Create the temporary button, click and remove it
+      // This makes the validation comments appear on screen
+      const tmpSubmit = document.createElement("button");
+      form.appendChild(tmpSubmit);
+      tmpSubmit.click();
+      form.removeChild(tmpSubmit);
     } else {
-      console.debug(`Problem uploading screenshot ${resp}`);
+      // Check if the user previously screenshotted a streetview
+      // If not, we'll save the current streetview now
+      if (!svUploaded) {
+        console.log("No SV screenshots taken by user, will take one now.");
+        await screenshotStreetviewAndUpload(false);
+      }
+      // Same thing for satellite
+      if (!satUploaded) {
+        console.log("No Satellite screenshots taken by user, will take one now.");
+        await uploadStoredSatelliteImage();
+      }
+      // Set the latest view data in the form
+      document.getElementById("latest_view_data").value = JSON.stringify(getLatestViewData());
+      // form.submit();
     }
   });
 }
 
-/**
- * Called when the user switches from satellite view to the survey.
- * If the satellite view has changed since the last time this happened,
- * upload the new view to the image store.
- */
-function satelliteImageMutationCallback(mutationList, _) {
-  const target = document.getElementById("sat_data");
-  const uploadURL = document
-    .getElementById("upload_url")
-    .getAttribute("data-url");
-
-  for (const mutation of mutationList) {
-    uploadSatelliteImage(target, uploadURL, mutation.oldValue);
-  }
-}
-
-/**
- * Check if all the survey inputs are empty.
- * Used to decide if we want to screenshot the satellite.
- */
 function allInputsEmpty() {
   let allEmpty = true;
   document.querySelectorAll("input").forEach((input) => {
-    if ((input.type === "radio" || input.type === "checkbox") && input.checked)
-      return (allEmpty = false);
-    if (
-      (input.type === "number" || input.type === "text") &&
-      input.value !== ""
-    )
-      return (allEmpty = false);
+    if ((input.type === "radio" || input.type === "checkbox") && input.checked) return (allEmpty = false);
+    if ((input.type === "number" || input.type === "text") && input.value !== "") return (allEmpty = false);
   });
   return allEmpty;
 }
 
 /**
- * Setup the satellite image observer to upload new satellite views to backend
- */
-function setUpSatelliteImageObserver() {
-  const targetNode = document.getElementById("sat_data");
-  const observer = new MutationObserver(satelliteImageMutationCallback);
-  observer.observe(targetNode, { attributes: true, attributeOldValue: true });
-}
-
-/**
  * Set up an event listener to take a screenshot of the satellite view
- * and save it in a hidden element on the page.
- * A mutation observer on the storage element will handle uploading it.
+ * and save it in localstorage when the tab is hidden.
  */
-function satelliteTabScreenshotOnHide() {
-  // The hide.bs.tab event fires when the tab is to be hidden
-  document
-    .getElementById("nav-satellite-tab")
-    .addEventListener("hide.bs.tab", async () => {
-      const dataUrl = await screenshot("satellite");
-      document.getElementById("sat_data").setAttribute("data-url", dataUrl);
-    });
-}
+function screenshotSatelliteOnTabHide() {
+  // The tab:hide event fires when a tab is to be hidden
+  document.getElementById("nav-satellite-tab").addEventListener("tab:hide", async () => {
+    // If satellite already uploaded, do not take a screenshot
+    if (satUploaded) return;
 
-/**
- * Used to detect when the form is first starting to be filled
- * and trigger a satellite screenshot upload at that point.
- * This is to avoid uploading useless satellite screenshots when
- * a user is not actively filling the survey but changes tabs.
- */
-function setUpInitialSurveyMutationChecker() {
-  const form = document.getElementById("building-submission-form");
-  const observer = new MutationObserver(async (mutationList, observer) => {
-    for (const mutation of mutationList) {
-      if (mutation.target.nodeName === "INPUT") {
-        if (!allInputsEmpty()) {
-          console.debug(
-            "Detected form input mutation, with some inputs filled. Triggering upload."
-          );
-          const target = document.getElementById("sat_data");
-          const uploadURL = document
-            .getElementById("upload_url")
-            .getAttribute("data-url");
-          uploadSatelliteImage(target, uploadURL, "dummy old value");
-          // Only execute this observer the first time an input is changed
-          observer.disconnect();
-          // don't process any other accompanying mutations
-          // e.g. on radio + text/number inputs
-          return;
-        }
-      }
-    }
+    console.debug("Hiding satellite tab, and no previous uploaded, storing screenshot in localstorage");
+    const satImageData = await screenshotSatellite();
+    localStorage.setItem("sat_data", JSON.stringify(satImageData));
   });
-  observer.observe(form, { subtree: true, attributes: true });
 }
 
 /**
  * We have to set heights dynamically bc the streetview get loaded at runtime.
  * Setting height = 100% did not work.
- * Otherwise, it will have a height of 0. We don't set an absolute height from the 
+ * Otherwise, it will have a height of 0. We don't set an absolute height from the
  * start to accomodate any screen height.
  */
 function setStreetviewAndMapContainerHeight() {
@@ -603,9 +586,7 @@ document.addEventListener("DOMContentLoaded", function () {
   setUpToasts();
   setUpDragBar();
   setUpButtons();
-  satelliteTabScreenshotOnHide();
-  setUpSatelliteImageObserver();
-  setUpInitialSurveyMutationChecker();
+  screenshotSatelliteOnTabHide();
   setUpModals();
   setUpChangeSurveySelect();
   setUpColumnConfig();

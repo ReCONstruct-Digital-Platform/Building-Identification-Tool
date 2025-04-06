@@ -13,7 +13,6 @@ from config.settings import B2_ENDPOINT
 PROD_KEY_ID = ""
 PROD_APP_KEY = ""
 
-b2 = b2_upload.get_b2_resource(B2_ENDPOINT, PROD_KEY_ID, PROD_APP_KEY)
 prod_client = b2_upload.get_b2_client(B2_ENDPOINT, PROD_KEY_ID, PROD_APP_KEY)
 
 

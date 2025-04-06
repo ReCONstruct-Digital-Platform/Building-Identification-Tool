@@ -220,6 +220,9 @@ function setUpTabGroups(tabGroupId, activeClasses = [], inactiveClasses = []) {
 
     // Add an event listener to each tab
     tablink.addEventListener("click", (e) => {
+      // Dispatch an event announcing the current tab is being hidden
+      const currentlyActiveTab = document.querySelector(`#${tabGroupId} [aria-selected="true"]`);
+      currentlyActiveTab.dispatchEvent(new Event("tab:hide"));
       const clickedTab = e.target;
 
       // Set the clicked tab to visible

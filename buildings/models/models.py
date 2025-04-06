@@ -13,6 +13,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from allauth.account.adapter import DefaultAccountAdapter
 
+from buildings.models.newmodels import Building
 from buildings.models.utils import STRING_QUERIES_TO_FILTER, SQL_RANDOM_UNVOTED_ID_WITH_EXCLUDE, SQL_RANDOM_UNVOTED_ID, \
     SQL_RANDOM_LEAST_VOTED_ID_WITH_EXCLUDE, SQL_RANDOM_LEAST_VOTED_ID, SQL_RANDOM_ID_WITH_EXCLUDE, SQL_RANDOM_ID
 from buildings.utils.constants import CUBF_TO_NAME_MAP
@@ -491,11 +492,12 @@ class UploadImageJob(models.Model):
         ERROR = "error", _("Error")
 
     """Async job for uploading screenshots to storage"""
-    eval_unit = models.ForeignKey(EvalUnit, on_delete=models.CASCADE)
+    building = models.ForeignKey(Building, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     date_added = models.DateTimeField("date added", default=timezone.now)
     status = models.TextField(choices=Status.choices, default=Status.PENDING)
-    job_data = models.JSONField()
+    job_data = models.JSONField(default=dict)
+    job_metadata = models.JSONField(default=dict)
 
     def __str__(self):
         return f"Job {self.id}: {self.status}"

@@ -10,16 +10,19 @@ from PIL import Image
 from time import sleep
 from pprint import pprint
 from functools import reduce
+from datetime import datetime
 from w3lib.url import parse_data_uri
 from uuid_extensions import uuid7str
 from buildings.utils import b2_upload
 from django.core.management.base import BaseCommand
-from buildings.models.models import EvalUnit, EvalUnitSatelliteImage, EvalUnitStreetViewImage, UploadImageJob, User
+from buildings.models.models import UploadImageJob
+from buildings.models.newmodels import Building
+from config.settings import B2_BUCKET_IMAGES
 
 log = logging.getLogger(__name__)
 
 # Modify or add new image sizes here
-IMAGE_SIZES = [('orig', None), ('l', 1200), ('m', 700), ('s', 300)]
+IMAGE_SIZES = [("l", None), ("m", 750), ("s", 325)]
 
 # Each job can have multiple MB image data
 MAX_JOBS_LOADED = 10
@@ -30,71 +33,112 @@ def get_pending_jobs():
 
 def process_job(job: UploadImageJob):
 
-    # Metadata associated with the images
-    # Upload date is already available from B2
-    extra_args = {
-        'Metadata': {
-            'user': job.user.username,
-            'eval_unit': job.eval_unit.id,  # add a reverse link to eval unit
-        }
+    b2_client = b2_upload.get_client()
+
+    building: Building = job.building
+    user = job.user
+    job_data = job.job_data
+    job_metadata = job.job_metadata
+
+    image_type = job_data["image_type"]
+    image = job_data["image"]
+    uuid = job_data["uuid"]
+
+    dataset = building.dataset
+
+    upload_metadata = {
+        "user": user.username,
+        "user_id": user.id,
+        "building_id": building.id,
+        "building_slug": building.slug,
+        "upload_date": datetime.now().isoformat(),
+        **job_metadata,
     }
 
-    # create 2 UUIDs to be shared by images of the same type
-    # We consider streetview and satellite images separately bc
-    # there will usually be more streetview images than satellite
-    # due to there being multiple interesting angles of a building facade
-    UUIDs = {
-        'streetview': uuid7str(),
-        'satellite': uuid7str()
-    }
+    # Metadat must be all string
+    # Gets done automatically when using the bucket resource, but not when using the client
+    for k, v in upload_metadata.items():
+        upload_metadata[k] = str(v)
+
     in_mem_file = None
 
     try:
-        for image_type in job.job_data.keys():
+        lat = job_metadata["lat"]
+        lng = job_metadata["lng"]
 
-            if image_type not in ['streetview', 'satellite']:
-                print(f'Unknown image type {image_type}! Skipping.')
-                continue
-            
-            data_uri = job.job_data[image_type]
-            data = parse_data_uri(data_uri)
-            image = Image.open(io.BytesIO(data.data))
-            # Convert the image to RGB to save as JPG
-            image = image.convert('RGB')
+        if image_type == "sv":
 
-            uuid = UUIDs[image_type]
-            log.debug(f'Screenshot {uuid}: Original {image_type} image size: {image.size}')
+            pano_date = job_metadata["pano_date"]
+            sv_pano = job_metadata["sv_pano"]
+            sv_heading = job_metadata["sv_heading"]
+            sv_pitch = job_metadata["sv_pitch"]
+            sv_zoom = job_metadata["sv_zoom"]
+            filename = f"sv_{uuid}_{lat}_{lng}_{pano_date}_{sv_pano}_{sv_heading}_{sv_pitch}_{sv_zoom}.jpg"
 
-            # We'll do an all or nothing save here. 
-            # If an exception occurs during saving any of the sizes
-            # we won't save the link in the DB. On the other hand, if 
-            # we have a link in the DB, we know that all sizes exist.
-            # This could result in stranded images in B2 if only some uploads fail.
-            for image_size, image_length in IMAGE_SIZES:
+        elif image_type == "sat":
+            zoom = job_metadata["zoom"]
+            tilt = job_metadata["tilt"]
+            map_type = job_metadata["map_type"]
+            filename = f"sat_{uuid}_{lat}_{lng}_{zoom}_{tilt}_{map_type}.jpg"
 
-                if image_size != 'orig':
-                    # Resize the image, maintaining the aspect ratio
-                    image.thumbnail((image_length, image_length))
+        else:
+            raise Exception(
+                f"Unknown image type {image_type}: {job_data} {job_metadata}"
+            )
 
-                # Create an in memory file to temporarily store the image
-                in_mem_file = io.BytesIO()
-                image.save(in_mem_file, format='jpeg')
-                in_mem_file.seek(0)
+        data = parse_data_uri(image)
+        image: Image = Image.open(io.BytesIO(data.data))
+        # Convert the image to RGB to save as JPG
+        image = image.convert("RGB")
 
-                log.debug(f'Screenshot {uuid}: uploading {image_type} format {image_size} of size {image.size}')
-                # Try to upload the image
-                b2_upload.upload_image(
-                    in_mem_file,
-                    f"screenshots/{image_type}/{image_size}/{uuid}.jpg",
-                    extra_args
+        log.debug(f"Screenshot {building.slug} image size: {image.size}")
+
+        # We'll do an all or nothing save here.
+        # If an exception occurs during saving any of the sizes
+        # we won't save the link in the DB. On the other hand, if
+        # we have a link in the DB, we know that all sizes exist.
+        # This could result in stranded images in B2 if only some uploads fail.
+        for image_size, image_width in IMAGE_SIZES:
+
+            if image_size != "l":
+                # Resize the image, maintaining the aspect ratio
+                image.thumbnail((image_width, image_width))
+
+            # Create an in memory file to temporarily store the image
+            in_mem_file = io.BytesIO()
+            image.save(in_mem_file, format="jpeg")
+            in_mem_file.seek(0)
+
+            # TODO: Add tenant handling here
+            key = f"reconstruct/{dataset.slug}/{building.slug}/{image_size}/{filename}"
+
+            # Try to upload the image
+            b2_client.upload_fileobj(
+                Fileobj=in_mem_file,
+                Bucket=B2_BUCKET_IMAGES,
+                Key=key,
+                ExtraArgs={"Metadata": upload_metadata},
+            )
+            log.info(f"Uploaded {key}")
+
+            # If the building does not have a thumbnail yet, copy a small file to the thumbnail dir
+            if not building.has_thumbnail and image_size == "s":
+                # TODO: Add tenant handling here
+                dest_key = f"reconstruct/{dataset.slug}/{building.slug}/thumbnail.jpg"
+                # Copy operation source needs bucket name prepended to the key
+                source_key = f"{B2_BUCKET_IMAGES}/{key}"
+
+                # Copy the first file to thumbnail dir
+                b2_client.copy_object(
+                    Bucket=B2_BUCKET_IMAGES,
+                    CopySource=source_key,
+                    Key=dest_key,
                 )
+                building.has_thumbnail = True
+                building.save()
+                log.info(f"Thumbnail created: {dest_key}")
 
-            # Only need to save the UUID in DB once, since diff sizes share it
-            if image_type == 'streetview':
-                EvalUnitStreetViewImage(eval_unit=job.eval_unit, uuid=uuid, user=job.user).save()
-            elif image_type == 'satellite':
-                EvalUnitSatelliteImage(eval_unit=job.eval_unit, uuid=uuid, user=job.user).save()
-            log.info(f'Screenshot {uuid}: successfully uploaded!')
+        log.info(f"Screenshots for {building.slug} uploaded successfully")
 
         # Can't delete the job here - I get
         # ValueError: UploadImageJob object can't be deleted because its id attribute is set to None.
@@ -127,7 +171,7 @@ class Command(BaseCommand):
                             help='Delete all jobs with status == DONE')
 
     def handle(self, *args, **options):
-        
+
         sleep_time = 1
         num_checks = 0
 
@@ -138,7 +182,6 @@ class Command(BaseCommand):
             jobs.delete()
             exit(1)
 
-
         while True:
             log.info(f"Checking for pending jobs every {sleep_time}s (it {num_checks})")
 
@@ -147,7 +190,12 @@ class Command(BaseCommand):
 
                 # Process all jobs, deleting successful ones
                 for job in jobs:
-                    process_job(job)
+                    try:
+                        process_job(job)
+                    except:
+                        log.error(f"Error processing job {job.id}")
+                        traceback.print_exc()
+                        continue
 
                 # If pending job found, reset the retry policy to checks every 1s
                 sleep_time = 1
