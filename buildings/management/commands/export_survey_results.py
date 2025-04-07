@@ -6,7 +6,7 @@ from pathlib import Path
 from itertools import chain
 from buildings.utils.b2 import get_client
 
-from buildings.models.models import EvalUnitSatelliteImage, EvalUnitStreetViewImage
+from buildings.models.models import BuildingImage
 
 from django.core.management.base import BaseCommand
 
@@ -29,7 +29,7 @@ class Command(BaseCommand):
 
         output_dir: Path = options['output_dir']
         output_dir.mkdir(exist_ok=True, parents=True)
-        
+
         # Create all directories for images
         if options['download_images']: 
             sv_images_dir = output_dir / 'sv'
@@ -38,29 +38,32 @@ class Command(BaseCommand):
                 Path(sv_images_dir / sz).mkdir(exist_ok=True, parents=True)
                 Path(sat_images_dir / sz).mkdir(exist_ok=True, parents=True)
 
-
         sv_dataset = {}
         sat_dataset = {}
 
         # Create a generator with all images
-        all_images = chain(EvalUnitStreetViewImage.objects.iterator(), EvalUnitSatelliteImage.objects.iterator())
-        
+        all_images = chain(
+            BuildingImage.objects.iterator(),
+        )
+
         for img in all_images:
 
-            img_type = 'streetview' if isinstance(img, EvalUnitStreetViewImage) else 'satellite'
+            img_type = "streetview" if isinstance(img, BuildingImage) else "satellite"
 
             eval_unit = img.eval_unit
             survey_votes = eval_unit.vote_set.filter(surveyv1__isnull = False)
 
             if (len(survey_votes) > 1):
                 raise Exception(f'Eval unit {eval_unit.id} has more than 1 survey answer. Need to find a way to reduce the multiple survey answers to a single one!')
-            
+
             if len(survey_votes) == 0:
                 log.warning(f'No vote associated with img {img.uuid} on unit {img.eval_unit}')
                 continue
-            
+
             if options['download_images']:
-                img_dir = sv_images_dir if isinstance(img, EvalUnitStreetViewImage) else sat_images_dir
+                img_dir = (
+                    sv_images_dir if isinstance(img, BuildingImage) else sat_images_dir
+                )
 
                 for sz in ['s', 'm', 'l']:
                     file_name = f'{img_dir}/{sz}/{img.uuid}.jpg'
@@ -75,7 +78,7 @@ class Command(BaseCommand):
                         log.error(traceback.format_exc())
                         log.error(f'Could not download {key}')
                         continue
-            
+
             survey = survey_votes.first().surveyv1
 
             img_data = {
@@ -94,7 +97,6 @@ class Command(BaseCommand):
                 sv_dataset[img.uuid] = img_data
             else:
                 sat_dataset[img.uuid] = img_data
-
 
         with open(output_dir / 'sv.json', 'w', encoding='utf-8') as sv_out:
             json.dump(sv_dataset, sv_out, ensure_ascii=False, indent=2)

@@ -415,26 +415,6 @@ class NoBuildingFlag(models.Model):
         return f"No building at {self.vote.eval_unit.address}"
 
 
-class EvalUnitStreetViewImage(models.Model):
-    eval_unit = models.ForeignKey(EvalUnit, on_delete=models.CASCADE)
-    uuid = models.TextField(null=False)
-    date_added = models.DateTimeField("date added", default=timezone.now)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
-
-
-class EvalUnitSatelliteImage(models.Model):
-    eval_unit = models.ForeignKey(EvalUnit, on_delete=models.CASCADE)
-    uuid = models.TextField(null=False)
-    date_added = models.DateTimeField("date added", default=timezone.now)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
-
-
 class HLMBuilding(models.Model):
     """
     Model representing an HLM building.
@@ -500,4 +480,13 @@ class UploadImageJob(models.Model):
     job_metadata = models.JSONField(default=dict)
 
     def __str__(self):
-        return f"Job {self.id}: {self.status}"
+        return f"Job {self.id} for {self.building.slug} ({self.status})"
+
+
+class BuildingImage(models.Model):
+    building = models.ForeignKey(Building, on_delete=models.CASCADE)
+    bucket = models.TextField(null=False)
+    key = models.TextField(null=False)
+    type = models.TextField(null=False)
+    date_added = models.DateTimeField("date added", default=timezone.now)
+    metadata = models.JSONField(default=dict)

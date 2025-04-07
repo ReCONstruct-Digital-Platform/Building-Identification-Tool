@@ -423,6 +423,16 @@ def do_survey_redirect(_, survey_slug):
     )
 
 
+def test_images(request, building_slug):
+    building = get_object_or_404(Building, slug=building_slug)
+
+    context = {"building": building}
+
+    template_name = "buildings/test_images.html"
+
+    return render(request, template_name, context)
+
+
 @login_required(login_url="account_login")
 def do_survey(request, survey_slug, building_slug):
 

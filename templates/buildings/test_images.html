@@ -1,0 +1,51 @@
+{% extends "buildings/base.html" %}
+{% load static %}
+{% load i18n %}
+{% load allauth %}
+
+{% block css_imports %}
+
+{% endblock %}
+
+
+{% block content %}
+<div class="flex flex-col justify-center pb-4 px-4 mb-4 h-full">
+
+  <div class="flex flex-col w-[720px]">
+    
+    <div id="image-carousel" class="relative flex flex-row h-[400px] bg-red-300 justify-center">
+      <nav id="slider-nav" class="absolute top-1/2 left-0 right-0 flex justify-between items-center px-4">
+        <button id="slider-prev" 
+          class="absolute top-1/2 left-1
+            text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-100 
+            focus:bg-opacity-100 focus:ring-2 focus:ring-white hidden" aria-label="Previous image">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left-icon lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <button id="slider-next" 
+          class="absolute top-1/2 right-1
+          text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-100 focus:bg-opacity-100 focus:ring-2 focus:ring-white" aria-label="Next image">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right-icon lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </nav>
+      {% for url in building.get_all_medium_image_urls %}
+        <img id="img-{{ forloop.counter0 }}" src="{{ url }}" loading="lazy" width="720" height="400" class="w-[720px] h-[400px] object-cover {% if forloop.counter0 != 0 %}hidden{% endif %}" {% if forloop.counter0 == 0 %}aria-selected="true"{% else %}aria-selected="false"{% endif %}/>
+      {% endfor %}
+    </div>
+
+    <div id="img-preview-slider" class="flex flex-row overflow-x-scroll snap-x snap-mandatory" >
+      {% for url in building.get_all_small_image_urls %}
+      <button id="preview-{{ forloop.counter0 }}" class="snap-start w-[180px] h-[120px] bg-gray-200 overflow-hidden flex-shrink-0 {% if forloop.counter0 == 0 %} border-4 border-white {% endif %}" 
+        aria-controls="img-{{ forloop.counter0 }}" data-index="{{ forloop.counter0 }}"
+        {% if forloop.counter0 == 0 %}aria-selected="true"{% else %}aria-selected="false"{% endif %}>
+        <img src="{{ url }}" loading="lazy" width="180" height="120" class="w-[180px] h-[120px] object-cover"/>
+      </button>
+      {% endfor %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script defer src="{% static 'scripts/test_images.js' %}"></script>
+{% endblock %}

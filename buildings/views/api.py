@@ -32,7 +32,7 @@ from dotenv import dotenv_values
 from w3lib.url import parse_data_uri
 from uuid_extensions import uuid7str
 
-from config.settings import LOCAL_IMAGE_DIR
+from config.settings import LOCAL_IMAGE_DIR, DEBUG_UPLOAD_IMAGES_TO_B2
 
 log = logging.getLogger(__name__)
 
@@ -86,35 +86,35 @@ def upload_imgs(request, building_id):
         raise Exception(f"No valid image type in request {data}")
 
     # Debug mode job saves the pictures on disk
-    if settings.DEBUG:
+    if settings.DEBUG and DEBUG_UPLOAD_IMAGES_TO_B2:
 
-        #     image = parse_data_uri(job_data["image"])
-        #     image = Image.open(io.BytesIO(image.data))
+        image = parse_data_uri(job_data["image"])
+        image = Image.open(io.BytesIO(image.data))
 
-        #     path = Path(LOCAL_IMAGE_DIR)
-        #     path.mkdir(exist_ok=True, parents=True)
+        path = Path(LOCAL_IMAGE_DIR)
+        path.mkdir(exist_ok=True, parents=True)
 
-        #     image_type = job_data["image_type"]
-        #     lat = job_metadata["lat"]
-        #     lng = job_metadata["lng"]
+        image_type = job_data["image_type"]
+        lat = job_metadata["lat"]
+        lng = job_metadata["lng"]
 
-        #     if image_type == "sv":
-        #         pano_date = job_metadata["pano_date"]
-        #         sv_pano = job_metadata["sv_pano"]
-        #         sv_heading = job_metadata["sv_heading"]
-        #         sv_pitch = job_metadata["sv_pitch"]
-        #         sv_zoom = job_metadata["sv_zoom"]
-        #         filename = f"sv_{uuid}_{lat}_{lng}_{pano_date}_{sv_pano}_{sv_heading}_{sv_pitch}_{sv_zoom}.jpg"
-        #     else:
-        #         zoom = job_metadata["zoom"]
-        #         tilt = job_metadata["tilt"]
-        #         map_type = job_metadata["map_type"]
-        #         filename = f"sat_{uuid}_{lat}_{lng}_{zoom}_{tilt}_{map_type}.jpg"
+        if image_type == "sv":
+            pano_date = job_metadata["pano_date"]
+            sv_pano = job_metadata["sv_pano"]
+            sv_heading = job_metadata["sv_heading"]
+            sv_pitch = job_metadata["sv_pitch"]
+            sv_zoom = job_metadata["sv_zoom"]
+            filename = f"sv_{uuid}_{lat}_{lng}_{pano_date}_{sv_pano}_{sv_heading}_{sv_pitch}_{sv_zoom}.jpg"
+        else:
+            zoom = job_metadata["zoom"]
+            tilt = job_metadata["tilt"]
+            map_type = job_metadata["map_type"]
+            filename = f"sat_{uuid}_{lat}_{lng}_{zoom}_{tilt}_{map_type}.jpg"
 
-        #     image.save(f"{path}/{filename}", format="jpeg")
+        image.save(f"{path}/{filename}", format="jpeg")
 
-        #     return JsonResponse({"status": "ok", "filename": filename})
-        # else:
+        return JsonResponse({"status": "ok", "filename": filename})
+    else:
         job = UploadImageJob(
             building=building,
             user=request.user,

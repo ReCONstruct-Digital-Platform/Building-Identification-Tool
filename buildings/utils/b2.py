@@ -20,11 +20,14 @@ def get_b2_resource(endpoint, key_id, application_key):
 
 
 def get_b2_client(endpoint, keyID, applicationKey):
-        b2_client = boto3.client(service_name='s3',
-                                 endpoint_url=endpoint,                # Backblaze endpoint
-                                 aws_access_key_id=keyID,              # Backblaze keyID
-                                 aws_secret_access_key=applicationKey) # Backblaze applicationKey
-        return b2_client
+    b2_client = boto3.client(
+        service_name="s3",
+        endpoint_url=endpoint,
+        aws_access_key_id=keyID,
+        aws_secret_access_key=applicationKey,
+        config=Config(signature_version="s3v4"),
+    )
+    return b2_client
 
 def get_client():
     return get_b2_client(B2_ENDPOINT, B2_KEYID_RW, B2_APPKEY_RW)
@@ -54,6 +57,64 @@ def download_file(b2, bucket, directory, local_name, key_name):
         b2.Bucket(bucket).download_file(key_name, file_path)
     except ClientError as ce:
         print('error', ce)
+
+
+def get_building_image_presigned_urls_for_size(building, size="s"):
+    """List images for a given building and size.
+
+    :param building: The building object.
+    :param size: The size of the image (e.g., 's', 'm', 'l').
+    :return: List of image keys.
+    """
+    prefix = f"reconstruct/{building.dataset.slug}/{building.slug}/{size}"
+    b2_client = get_client()
+    # TODO: Optimize this - we should store references to the images in the database
+    # and not list the bucket every time. This will also allow us to ensure an image is present for all sizes
+    response = b2_client.list_objects_v2(Bucket=B2_BUCKET_IMAGES, Prefix=prefix)
+
+    if "Contents" in response:
+        return [
+            _create_presigned_url(B2_BUCKET_IMAGES, obj["Key"])
+            for obj in response["Contents"]
+        ]
+
+    return []
+
+
+def _create_presigned_url(bucket_name, object_name, expiration=3600):
+    """Generate a presigned URL to share an S3 object
+
+    :param bucket_name: string
+    :param object_name: string
+    :param expiration: Time in seconds for the presigned URL to remain valid
+    :return: Presigned URL as string. If error, returns None.
+    """
+
+    # Generate a presigned URL for the S3 object
+    b2_client = get_client()
+    try:
+        response = b2_client.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": bucket_name, "Key": object_name},
+            ExpiresIn=expiration,
+        )
+    except ClientError as e:
+        logging.error(e)
+        return None
+
+    # The response contains the presigned URL
+    return response
+
+
+def get_thumbnail_url(building):
+    """Generate a presigned URL for the thumbnail image of a building.
+
+    :param building: The building object.
+    :return: Presigned URL as string. If error, returns None.
+    """
+    # Get the thumbnail key from the building object
+    thumbnail_key = f"reconstruct/{building.dataset.slug}/{building.slug}/thumbnail.jpg"
+    return _create_presigned_url(B2_BUCKET_IMAGES, thumbnail_key)
 
 
 if __name__=='__main__':

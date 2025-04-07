@@ -31,6 +31,7 @@ urlpatterns = [
     ),
     path("", views.index, name="index"),
     path("profile", views.profile, name="profile"),
+    path("test_images/<str:building_slug>", views.test_images, name="test_images"),
     path("datasets", views.datasets, name="datasets"),
     path("datasets/<str:dataset_slug>", views.dataset, name="dataset"),
     path("results/", views.survey_results_no_slug, name="results"),

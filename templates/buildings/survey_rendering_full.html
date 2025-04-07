@@ -378,10 +378,6 @@
 {% block page_scripts %}
 {% load static %}
 
-<script>
-
-</script>
-
 <!-- A way to pass data from backend to scripts -->
 {{ building_coords | json_script:"building_coords" }}
 {{ latest_view_data_value | json_script:"latest_view_data_value" }}

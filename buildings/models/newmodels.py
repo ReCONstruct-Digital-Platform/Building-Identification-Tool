@@ -7,6 +7,10 @@ from autoslug import AutoSlugField
 from django.db.models.expressions import RawSQL
 from django.utils.translation import gettext_lazy as _
 
+from buildings.utils.b2 import (
+    get_building_image_presigned_urls_for_size,
+    get_thumbnail_url,
+)
 from buildings.utils.query_utils import DatasetQParser, SurveyQParser
 
 
@@ -191,7 +195,15 @@ class Building(models.Model):
         return self.response_set.filter(survey=survey)
 
     def get_thumbnail_url(self):
-        return f"https://f005.backblazeb2.com/file/bit-prod/reconstruct/{self.dataset.slug}/thumbnails/{self.slug}/thumbnail.jpg"
+        return get_thumbnail_url(self)
+
+    def get_all_small_image_urls(self):
+        urls = get_building_image_presigned_urls_for_size(self, "s")
+        return urls
+
+    def get_all_medium_image_urls(self):
+        urls = get_building_image_presigned_urls_for_size(self, "m")
+        return urls
 
     def __str__(self):
         return f"Building {self.id}: {self.address}, {self.muni}, {self.postal_code}"
