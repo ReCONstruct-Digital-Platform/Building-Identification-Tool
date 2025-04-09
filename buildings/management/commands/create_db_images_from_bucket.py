@@ -5,11 +5,9 @@ import io
 import logging
 import traceback
 
-import botocore
 import django
 from tqdm import tqdm
-from buildings.models.models import BuildingImage
-from buildings.models.newmodels import Building, Dataset
+from buildings.models.newmodels import Building, BuildingImage
 from buildings.utils import b2
 from django.core.management.base import BaseCommand
 from pathlib import Path
