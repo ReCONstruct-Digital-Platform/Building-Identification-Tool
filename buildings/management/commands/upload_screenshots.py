@@ -9,14 +9,12 @@ import traceback
 from PIL import Image
 from time import sleep
 from pprint import pprint
-from functools import reduce
 from datetime import datetime
 from w3lib.url import parse_data_uri
-from uuid_extensions import uuid7str
 from buildings.utils import b2
 from django.core.management.base import BaseCommand
-from buildings.models.models import BuildingImage, UploadImageJob
-from buildings.models.newmodels import Building
+from buildings.models.models import UploadImageJob
+from buildings.models.newmodels import Building, BuildingImage
 from config.settings import B2_BUCKET_IMAGES
 
 log = logging.getLogger(__name__)
