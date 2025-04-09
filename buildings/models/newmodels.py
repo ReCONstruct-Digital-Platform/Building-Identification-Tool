@@ -8,8 +8,7 @@ from django.db.models.expressions import RawSQL
 from django.utils.translation import gettext_lazy as _
 
 from buildings.utils.b2 import (
-    get_building_image_presigned_urls_for_size,
-    get_thumbnail_url,
+    create_presigned_url,
 )
 from buildings.utils.query_utils import DatasetQParser, SurveyQParser
 
@@ -197,15 +196,26 @@ class Building(models.Model):
         return self.response_set.filter(survey=survey)
 
     def get_thumbnail_url(self):
-        return get_thumbnail_url(self)
+        # Constant thumbnail key for all buildings
+        thumbnail_key = f"reconstruct/{self.dataset.slug}/{self.slug}/thumbnail.jpg"
+        return create_presigned_url(thumbnail_key)
 
     def get_all_small_image_urls(self):
-        urls = get_building_image_presigned_urls_for_size(self, "s")
-        return urls
+        return self.get_images_presigned_urls("s")
 
     def get_all_medium_image_urls(self):
-        urls = get_building_image_presigned_urls_for_size(self, "m")
-        return urls
+        return self.get_images_presigned_urls("m")
+
+    def get_all_large_image_urls(self):
+        return self.get_images_presigned_urls("l")
+
+    def get_images_presigned_urls(self, size="s"):
+        # TODO add tenant
+        prefix = f"reconstruct/{self.dataset.slug}/{self.slug}/{size}"
+
+        all_images = BuildingImage.objects.filter(building=self)
+
+        return [create_presigned_url(f"{prefix}/{img.filename}") for img in all_images]
 
     def __str__(self):
         return f"Building {self.id}: {self.address}, {self.muni}, {self.postal_code}"
@@ -666,3 +676,24 @@ class ProblemFlag(models.Model):
 
     def __str__(self):
         return f"Problem with building {self.building}"
+
+
+class BuildingImage(models.Model):
+    """
+    Using the current environment's bucket, you can retrieve the different sizes
+    for the iamge by using the appropriate path
+    "<tenant>/<dataset_slug>/<building_slug>/<size>/<filename>
+    """
+
+    class Meta:
+        db_table = "building_images"
+        unique_together = (
+            "building",
+            "filename",
+        )
+
+    building = models.ForeignKey(Building, on_delete=models.CASCADE)
+    filename = models.TextField(null=False)
+    type = models.TextField(null=False)
+    date_added = models.DateTimeField("date added", default=timezone.now)
+    metadata = models.JSONField(default=dict)

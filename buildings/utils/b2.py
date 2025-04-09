@@ -73,15 +73,12 @@ def get_building_image_presigned_urls_for_size(building, size="s"):
     response = b2_client.list_objects_v2(Bucket=B2_BUCKET_IMAGES, Prefix=prefix)
 
     if "Contents" in response:
-        return [
-            _create_presigned_url(B2_BUCKET_IMAGES, obj["Key"])
-            for obj in response["Contents"]
-        ]
+        return [create_presigned_url(obj["Key"]) for obj in response["Contents"]]
 
     return []
 
 
-def _create_presigned_url(bucket_name, object_name, expiration=3600):
+def create_presigned_url(key, expiration=3600):
     """Generate a presigned URL to share an S3 object
 
     :param bucket_name: string
@@ -96,8 +93,8 @@ def _create_presigned_url(bucket_name, object_name, expiration=3600):
         response = b2_client.generate_presigned_url(
             "get_object",
             Params={
-                "Bucket": bucket_name,
-                "Key": object_name,
+                "Bucket": B2_BUCKET_IMAGES,
+                "Key": key,
                 "ResponseContentType": "image/jpeg",
             },
             ExpiresIn=expiration,
@@ -118,7 +115,7 @@ def get_thumbnail_url(building):
     """
     # Get the thumbnail key from the building object
     thumbnail_key = f"reconstruct/{building.dataset.slug}/{building.slug}/thumbnail.jpg"
-    return _create_presigned_url(B2_BUCKET_IMAGES, thumbnail_key)
+    return create_presigned_url(B2_BUCKET_IMAGES, thumbnail_key)
 
 
 if __name__=='__main__':
