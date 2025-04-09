@@ -121,6 +121,8 @@ class Building(models.Model):
     """
 
     # Can be changed without creating a new migration
+    # TODO: Adding the dataset name guarantees no conflicts for two datasets with same building
+    # which could become interesting with multiple users but leads to potential long names
     def slugify(instance):
         fields = [
             instance.dataset.name,
@@ -171,7 +173,7 @@ class Building(models.Model):
     attrs = models.JSONField(null=True, blank=True)
 
     # User-friendly URL slug
-    slug = AutoSlugField(populate_from=slugify)
+    slug = AutoSlugField(populate_from=slugify, max_length=200)
 
     has_thumbnail = models.BooleanField(default=False)
 

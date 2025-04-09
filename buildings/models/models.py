@@ -484,9 +484,21 @@ class UploadImageJob(models.Model):
 
 
 class BuildingImage(models.Model):
+    """
+    Using the current environment's bucket, you can retrieve the different sizes
+    for the iamge by using the appropriate path
+    "<tenant>/<dataset_slug>/<building_slug>/<size>/<filename>
+    """
+
+    class Meta:
+        db_table = "building_images"
+        unique_together = (
+            "building",
+            "filename",
+        )
+
     building = models.ForeignKey(Building, on_delete=models.CASCADE)
-    bucket = models.TextField(null=False)
-    key = models.TextField(null=False)
+    filename = models.TextField(null=False)
     type = models.TextField(null=False)
     date_added = models.DateTimeField("date added", default=timezone.now)
     metadata = models.JSONField(default=dict)

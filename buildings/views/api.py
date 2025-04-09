@@ -86,7 +86,7 @@ def upload_imgs(request, building_id):
         raise Exception(f"No valid image type in request {data}")
 
     # Debug mode job saves the pictures on disk
-    if settings.DEBUG and DEBUG_UPLOAD_IMAGES_TO_B2:
+    if settings.DEBUG and not DEBUG_UPLOAD_IMAGES_TO_B2:
 
         image = parse_data_uri(job_data["image"])
         image = Image.open(io.BytesIO(image.data))

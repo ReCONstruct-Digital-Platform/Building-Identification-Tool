@@ -95,7 +95,11 @@ def _create_presigned_url(bucket_name, object_name, expiration=3600):
     try:
         response = b2_client.generate_presigned_url(
             "get_object",
-            Params={"Bucket": bucket_name, "Key": object_name},
+            Params={
+                "Bucket": bucket_name,
+                "Key": object_name,
+                "ResponseContentType": "image/jpeg",
+            },
             ExpiresIn=expiration,
         )
     except ClientError as e:

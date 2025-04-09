@@ -15,7 +15,7 @@ from w3lib.url import parse_data_uri
 from uuid_extensions import uuid7str
 from buildings.utils import b2
 from django.core.management.base import BaseCommand
-from buildings.models.models import UploadImageJob
+from buildings.models.models import BuildingImage, UploadImageJob
 from buildings.models.newmodels import Building
 from config.settings import B2_BUCKET_IMAGES
 
@@ -117,7 +117,7 @@ def process_job(job: UploadImageJob):
                 Fileobj=in_mem_file,
                 Bucket=B2_BUCKET_IMAGES,
                 Key=key,
-                ExtraArgs={"Metadata": upload_metadata},
+                ExtraArgs={"ContentType": "image/jpeg", "Metadata": upload_metadata},
             )
             log.info(f"Uploaded {key}")
 
@@ -140,8 +140,17 @@ def process_job(job: UploadImageJob):
 
         log.info(f"Screenshots for {building.slug} uploaded successfully")
 
-        # Can't delete the job here - I get
-        # ValueError: UploadImageJob object can't be deleted because its id attribute is set to None.
+        # TODO Create DB image links for the uploaded image
+        # At this point, we know that all sizes were uploaded successfully, hence we only need
+        # to save the file name and metadata, and can retrieve any size using the correct path.
+        db_image = BuildingImage(
+            building=building,
+            filename=filename,
+            type=image_type,
+            metadata=job_metadata,
+        )
+        db_image.save()
+
         job.status = UploadImageJob.Status.DONE
         # Delete the (large) image data from successful jobs
         job.job_data = {}
