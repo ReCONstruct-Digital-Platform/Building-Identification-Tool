@@ -24,14 +24,11 @@ app_name = "buildings"
 urlpatterns = [
     path("test_react_1", views.test_react_1, name="test_react_1"),
     path("test_react_2", views.test_react_2, name="test_react_2"),
-    path(
-        "test_infobox/<str:survey_slug>/<str:building_slug>",
-        views.test_infobox,
-        name="test_infobox",
-    ),
     path("", views.index, name="index"),
     path("profile", views.profile, name="profile"),
-    path("test_images/<str:building_slug>", views.test_images, name="test_images"),
+    path(
+        "building/<str:building_slug>", views.building_details, name="building_details"
+    ),
     path("datasets", views.datasets, name="datasets"),
     path("datasets/<str:dataset_slug>", views.dataset, name="dataset"),
     path("results/", views.survey_results_no_slug, name="results"),

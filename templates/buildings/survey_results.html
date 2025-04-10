@@ -347,27 +347,21 @@
                 <div class="ps-2 text-xl"> - {{ bldg.muni }}, {{ bldg.admin_area_level_1 }}</div>
                 <div class="ps-2 text-lg"> ({{ bldg.lat }}, {{bldg.lng}})</div>
               </div>
-              <div>
-                <div class=" justify-between gap-2">
+
+            </div>
+
+            <div class="flex flex-row w-full gap-3 items-center">
+              <div class="flex flex-col items-center">
+                <img class="rounded-md w-[420px] h-[270px] object-none" src="{{ bldg.get_thumbnail_url }}" 
+                onerror="this.src='{% static 'images/no_image_found.png' %}';">
+                <div class="w-full flex justify-between gap-2">
+                  <a href="{% url 'buildings:building_details' building_slug=bldg.slug %}"
+                  class="text-sm text-gray-500 hover:text-teal-600">View Details</a>
                   <a href="{% url 'buildings:do_survey' survey_slug=current_survey.slug building_slug=bldg.slug %}"
                     class="text-sm text-gray-600 hover:text-teal-600">
                     Open in Survey View
                   </a>
-                  <!-- <span class="text-gray-400">|</span>
-                  <a href=""
-                    class="text-sm text-gray-500 hover:text-teal-600">Edit building</a> -->
                 </div>
-              </div>
-            </div>
-
-            <div class="flex flex-row w-full gap-3 items-center">
-              <div>
-                <object class="rounded-md w-[320px]" data="{{ bldg.get_thumbnail_url }}" tabindex="-1"
-                  type="image/jpeg">
-                  <div class="flex rounded-md h-[205px] w-[320px] bg-gray-100 justify-center items-center">
-                    No image found
-                  </div>
-                </object>
               </div>
               <div id="building-attrs-{{ forloop.counter }}"
                 class="attrs-box  w-full grid grid-cols-3 xl:grid-cols-5 rounded-lg p-2 overflow-hidden">

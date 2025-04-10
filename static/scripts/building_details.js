@@ -63,7 +63,8 @@ function setUpCarousel() {
       clickedTarget.setAttribute("aria-selected", "true");
 
       slider.scroll({
-        left: clickedPreviewIndex * previewWidth - previewWidth,
+        // Scroll one less to be able to see images to the left
+        left: (clickedPreviewIndex - 1) * previewWidth,
         behavior: "smooth",
       });
 

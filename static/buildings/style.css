@@ -560,11 +560,11 @@ tr:hover .delete-row-icon {
         #815f8a 20%,
         #a279d1 25%,
         #815f8a 30%);
-    background-image: var(--stripes), var(--rainbow);
+    background-image: var(--stripes), var(--rainbow2);
   background-size: 100%, 100%;
   background-position: 50% 50%, 100% 50%;
 
-  filter: blur(130px) invert(100%) saturate(120%);
+  filter: blur(150px) invert(100%) saturate(90%);
 
   -webkit-mask-image: radial-gradient(ellipse 100% 100% at 75% 10%, black 10%, transparent 70%);
   mask-image: radial-gradient(ellipse 100% 100% at 75% 10%, black 10%, transparent 70%);
@@ -578,10 +578,10 @@ tr:hover .delete-row-icon {
   inset: 0;
   background-image: var(--stripes), var(--rainbow2);
   background-size: 200%, 100%;
-  animation: jumbo 240s linear infinite;
   background-attachment: fixed;
   mix-blend-mode: exclusion;
 }
+
 
 /* Style the tab content */
 .tabcontent {

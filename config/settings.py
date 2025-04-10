@@ -24,6 +24,9 @@ env = environ.Env(
     STATIC_URL=(str, "static/"),
     STATIC_ROOT=(str, ""),
     WEBHOOK_SECRET=(str, "secret"),
+    GOOGLE_MAPS_API_KEY=(str, ""),
+    GOOGLE_SIGNING_SECRET=(str, ""),
+    MAPBOX_TOKEN=(str, ""),
     B2_KEYID_RW=(str, ""),
     B2_APPKEY_RW=(str, ""),
     B2_ENDPOINT=(str, ""),
@@ -341,6 +344,7 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
 ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS = False
 ACCOUNT_UNIQUE_EMAIL = True
+# ACCOUNT_AUTHENTICATION_METHOD = "email"
 
 # When enabled (True), users are limited to having exactly one email address that
 # they can change by adding a temporary second email address that, when verified,

@@ -272,144 +272,6 @@ def survey_results(request, survey_slug):
 
 
 @login_required(login_url="account_login")
-def test_infobox(request, survey_slug, building_slug):
-
-    building = get_object_or_404(Building, slug=building_slug)
-    survey = get_object_or_404(Survey, slug=survey_slug)
-    if survey.status != Survey.Status.ACTIVE:
-        raise Http404(f"Survey {survey.name} is not currently accepting responses")
-    surveys = Survey.objects.filter(status=Survey.Status.ACTIVE)
-
-    # Verify the building is in the survey's target population or 404
-    if not survey.is_building_in_target_pop(building):
-        # TODO: Have a nice 404 page template
-        raise Http404(
-            f"Building {building.address} was not found in survey {survey.name}!"
-        )
-
-    next_building = survey.get_next_building_to_survey()
-    next_building_url = reverse(
-        "buildings:do_survey", args=[survey_slug, next_building.slug]
-    )
-
-    prev_response = None
-    previous_problem_flag = None
-
-    if request.method == "POST":
-
-        logging.debug(f"POST: {request.POST}")
-
-        if "problem_flag" in request.POST:
-            flag = ProblemFlag(building=building, created_by=request.user)
-            flag.save()
-
-            return redirect(
-                "buildings:do_survey",
-                survey_slug=survey_slug,
-                building_slug=next_building.slug,
-            )
-
-        # Save the last orientation/zoom for the building for later visits
-        if "latest_view_data" in request.POST:
-            data = request.POST.getlist("latest_view_data")[0]
-            if len(data) > 0:
-                data = json.loads(data)
-                latest_view_data = LatestViewData(
-                    building=building,
-                    created_by=request.user,
-                    sv_pano=data["sv_pano"],
-                    sv_heading=data["sv_heading"],
-                    sv_pitch=data["sv_pitch"],
-                    sv_zoom=data["sv_zoom"],
-                    marker_lat=data["marker_lat"],
-                    marker_lng=data["marker_lng"],
-                )
-                latest_view_data.save()
-
-        # Else, we're submitting a survey response
-        form = DynamicSurveyForm(survey, request.POST)
-
-        if form.is_valid():
-            # Delete any previous problem flag at this location
-            previous_problem_flag = ProblemFlag.objects.filter(
-                building=building, created_by=request.user
-            ).first()
-            if previous_problem_flag:
-                previous_problem_flag.delete()
-
-            # Create a Response
-            Response.objects.update_or_create(
-                defaults={"data": form.cleaned_data},
-                building=building,
-                survey=survey,
-                created_by=request.user,
-            )
-
-            return redirect(
-                "buildings:do_survey",
-                survey_slug=survey_slug,
-                building_slug=next_building.slug,
-            )
-        else:
-            logging.error("form invalid - shouldn't happen!")
-            logging.error(form.errors)
-            # We'll return the form with errors below, although this shouldn't happen
-
-    else:
-        # GET request
-        previous_problem_flag = ProblemFlag.objects.filter(
-            building=building, created_by=request.user
-        ).first()
-
-        if not previous_problem_flag:
-            prev_response = Response.objects.filter(
-                created_by=request.user, survey=survey, building=building
-            ).first()
-
-        form = DynamicSurveyForm(survey, prev_response.data if prev_response else None)
-
-    # Columns config
-    default_bldg_cols = survey.dataset.get_fields_to_display()
-    # All the values for JS retrieval
-    bldg_cols_and_values = {
-        d["id"]: building.get_field(d["id"]) or "" for d in default_bldg_cols
-    }
-    # Get the saved user column config or the default if not set for the survey
-    user_config, _ = UserConfigs.objects.get_or_create(pk=request.user.id)
-    saved_col_config = user_config.get_survey_page_building_columns(survey)
-    user_bldg_cols = (
-        saved_col_config
-        if saved_col_config or saved_col_config == []
-        else default_bldg_cols
-    )
-    user_bldg_cols = default_bldg_cols
-
-    update_settings_url = reverse("buildings:update_user_survey_column_settings")
-
-    context = {
-        "survey": survey,
-        "building": building,
-        "key": settings.GOOGLE_MAPS_API_KEY,
-        "building_coords": {
-            "lat": building.lat,
-            "lng": building.lng,
-        },
-        "geojson": None,
-        "latest_view_data_value": None,
-        "next_building_url": next_building_url,
-        "form": form,
-        "previous_problem_flag": previous_problem_flag,
-        "default_bldg_cols": default_bldg_cols,
-        "user_bldg_cols": user_bldg_cols,
-        "bldg_cols_and_values": bldg_cols_and_values,
-        "update_settings_url": update_settings_url,
-        "all_surveys": surveys,
-    }
-
-    return render(request, "buildings/test_infobox.html", context)
-
-
-@login_required(login_url="account_login")
 def do_survey_redirect(_, survey_slug):
     survey = get_object_or_404(Survey, slug=survey_slug)
     if survey.status != Survey.Status.ACTIVE:
@@ -423,12 +285,12 @@ def do_survey_redirect(_, survey_slug):
     )
 
 
-def test_images(request, building_slug):
+def building_details(request, building_slug):
     building = get_object_or_404(Building, slug=building_slug)
 
     context = {"building": building}
 
-    template_name = "buildings/test_images.html"
+    template_name = "buildings/building_details.html"
 
     return render(request, template_name, context)
 

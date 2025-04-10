@@ -139,7 +139,6 @@ class Building(models.Model):
     # optional external ID field
     ext_id = models.TextField(null=True, blank=True)
 
-    # 23 character unique ID
     lat = models.FloatField(null=True)
     lng = models.FloatField(null=True)
     point = models.PointField(null=True, spatial_index=True)
