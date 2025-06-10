@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgis/postgis:12-3.5-alpine
+    volumes:
+      # - ./docker/postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init-scripts:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_USER=bitdbuser
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=bitdb
+    ports:
+      - "5435:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bitdbuser -d bitdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      target: dev
+    env_file:
+      - .env-docker
+    environment:
+      - DEBUG=True
+      - POSTGRES_NAME=bitdb
+      - POSTGRES_USER=bitdbuser
+      - POSTGRES_PW=password
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - IS_DOCKER_CONTAINER=True
+    tty: true
+    stdin_open: true
+    # healthcheck:
+    #   test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000')"]
+    #   interval: 30s
+    #   timeout: 5s
+    #   retries: 3
+    depends_on:
+      db:
+        condition: service_healthy
+    # For debugging purposes - allows you to attach VSCode debugger
+    # Uncomment this when you want to debug with VSCode
+    ports:
+      - "8000:8000"
+      - "5678:5678"
+    command: python -m debugpy --listen 0.0.0.0:5678 manage.py runserver 0.0.0.0:8000

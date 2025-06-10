@@ -11,7 +11,9 @@ CACHE/
 **/__pycache__/
 *db.sqlite*
 
-**/.env
+**/.env*
+.env*
+!.env.dist
 
 **/__notes/*
 node_modules/

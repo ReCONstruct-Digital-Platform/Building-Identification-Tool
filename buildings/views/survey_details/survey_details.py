@@ -132,17 +132,13 @@ def get_json_schema_with_default_options(field_type, data):
             {"pos": 0, "val": True, "label": {"en": "True"}},
             {"pos": 1, "val": False, "label": {"en": "False"}},
         ]
-        defaults = (
+
+        # New code: append third option if boolean_or_null
+        if field_type == "boolean_or_null":
             defaults.append({"pos": 2, "val": None, "label": {"en": "Other"}})
-            if field_type == "boolean_or_null"
-            else defaults
-        )
+
         return (
-            {
-                "pos": pos,
-                "type": "boolean",
-                "widget": "radio",
-            },
+            {"pos": pos, "type": "boolean", "widget": "radio"},
             defaults,
         )
 
