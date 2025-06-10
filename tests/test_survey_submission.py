@@ -75,7 +75,7 @@ class SurveySubmissionTest(ChromeSeleniumTestsBase):
 
     @classmethod
     def setUpClass(cls):
-        super().setUpClass(headless=False)
+        super().setUpClass(headless=True)
 
     def setUp(self):
         # Create a test user

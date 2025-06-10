@@ -36,7 +36,7 @@ class CommonSeleniumTestsBase(StaticLiveServerTestCase):
 class ChromeSeleniumTestsBase(CommonSeleniumTestsBase):
 
     @classmethod
-    def setUpClass(cls, headless=False):
+    def setUpClass(cls, headless=True):
         super().setUpClass()
 
         chrome_opts = chrome.options.Options()
