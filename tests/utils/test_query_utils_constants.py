@@ -36,6 +36,113 @@ dataset_query_1 = {
     }
 }
 
+dataset_simple_schema = [
+    {
+        "id": "ext_id",
+        "type": "string",
+        "field": "ext_id",
+        "input": "text",
+        "label": {"en": "External ID"},
+        "optgroup": "core",
+    },
+    {
+        "id": "address",
+        "type": "string",
+        "field": "address",
+        "input": "text",
+        "label": {"en": "Address"},
+        "optgroup": "core",
+    },
+    {
+        "id": "street_name",
+        "type": "string",
+        "field": "street_name",
+        "input": "text",
+        "label": {"en": "Street Name"},
+        "optgroup": "core",
+    },
+    {
+        "id": "street_num",
+        "type": "string",
+        "field": "street_num",
+        "input": "text",
+        "label": {"en": "Street Number"},
+        "optgroup": "core",
+    },
+    {
+        "id": "muni",
+        "type": "string",
+        "field": "muni",
+        "input": "text",
+        "label": {"en": "Municipality"},
+        "optgroup": "core",
+    },
+    {
+        "id": "submuni",
+        "type": "string",
+        "field": "submuni",
+        "input": "text",
+        "label": {"en": "Submunicipality"},
+        "optgroup": "core",
+    },
+    {
+        "id": "postal_code",
+        "type": "string",
+        "field": "postal_code",
+        "input": "text",
+        "label": {"en": "Postal Code"},
+        "optgroup": "core",
+    },
+    {
+        "id": "const_year",
+        "type": "date",
+        "field": "const_year",
+        "label": {"en": "Construction Year"},
+        "plugin": "datepicker",
+        "optgroup": "core",
+        "plugin_config": {
+            "format": "yyyy",
+            "todayBtn": "linked",
+            "autoclose": True,
+            "minViewMode": "years",
+            "todayHighlight": True,
+        },
+    },
+    {
+        "id": "num_floors",
+        "type": "integer",
+        "field": "num_floors",
+        "input": "number",
+        "label": {"en": "Num. Floors"},
+        "optgroup": "core",
+    },
+    {
+        "id": "floor_area",
+        "type": "double",
+        "field": "floor_area",
+        "input": "number",
+        "label": {"en": "Floor area"},
+        "optgroup": "core",
+        "validation": {"min": 0, "step": 0.01},
+    },
+    {
+        "id": "attrs__attr1",
+        "type": "string",
+        "field": "attrs__attr1",
+        "input": "text",
+        "label": {"en": "Attribute 1"},
+        "optgroup": "attributes",
+    },
+    {
+        "id": "attrs__attr2",
+        "type": "string",
+        "field": "attrs__attr2",
+        "input": "text",
+        "label": {"en": "Attribute 2"},
+        "optgroup": "attributes",
+    },
+]
+
 
 dataset_schema = [
     {
@@ -441,7 +548,7 @@ survey_schema = {
     "roof_geometry": {
         "type": "text",
         "label": {"en": "Roof Geometry"},
-        "widget": "multi_checkbox_required",
+        "widget": "multi_checkbox",
         "options": [
             {"val": "flat", "label": {"en": "Flat"}, "pos": 0},
             {"val": "curved", "label": {"en": "Curved"}, "pos": 1},
@@ -489,7 +596,7 @@ survey_schema = {
     "exterior_cladding": {
         "type": "text",
         "label": {"en": "Exterior Cladding"},
-        "widget": "multi_checkbox_required_specify",
+        "widget": "multi_checkbox",
         "options": [
             {"val": "wood", "label": {"en": "Wood"}, "pos": 0},
             {"val": "metal", "label": {"en": "Metal"}, "pos": 1},
@@ -508,16 +615,12 @@ survey_schema = {
                 "pos": 7,
             },
             {"val": "unsure", "label": {"en": "Unsure"}, "pos": 8},
-            {"val": "other", "label": {"en": "Other (Specify)"}, "pos": 9},
+            {"val": "other", "label": {"en": "Other"}, "pos": 9},
         ],
         "question_text": {
             "en": "Select all widgets of exterior cladding does the building appear to have."
         },
-        "widget_config": {
-            "attrs": {"class": "survey-3col"},
-            "specify_input_type": "text",
-            "specify_option_value": "other",
-        },
+        "widget_config": {"attrs": {"class": "survey-3col"}},
         "pos": 8,
     },
     "has_simple_volume": {

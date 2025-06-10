@@ -311,11 +311,6 @@ def do_survey(request, survey_slug, building_slug):
             f"Building {building.address} was not found in survey {survey.name}!"
         )
 
-    next_building = survey.get_next_building_to_survey()
-    next_building_url = reverse(
-        "buildings:do_survey", args=[survey_slug, next_building.slug]
-    )
-
     prev_response = None
     previous_problem_flag = None
 
@@ -368,7 +363,7 @@ def do_survey(request, survey_slug, building_slug):
                 survey=survey,
                 created_by=request.user,
             )
-
+            next_building = survey.get_next_building_to_survey()
             return redirect(
                 "buildings:do_survey",
                 survey_slug=survey_slug,
@@ -408,6 +403,13 @@ def do_survey(request, survey_slug, building_slug):
     )
 
     update_settings_url = reverse("buildings:update_user_survey_column_settings")
+
+    # Get the next building to survey after submitting the form (if any)
+    # So the response counts get updated
+    next_building = survey.get_next_building_to_survey()
+    next_building_url = reverse(
+        "buildings:do_survey", args=[survey_slug, next_building.slug]
+    )
 
     context = {
         "survey": survey,
