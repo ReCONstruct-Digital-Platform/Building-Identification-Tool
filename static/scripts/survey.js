@@ -292,7 +292,8 @@ function setUpButtons() {
       }
       // Set the latest view data in the form
       document.getElementById("latest_view_data").value = JSON.stringify(getLatestViewData());
-      // form.submit();
+      console.debug("Submitting form with latest view data", document.getElementById("latest_view_data").value);
+      form.submit();
     }
   });
 }

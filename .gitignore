@@ -18,3 +18,5 @@ node_modules/
 webpack-stats.json
 
 buildings/management/commands/copy_images_to_other_stages.py
+
+mount/
