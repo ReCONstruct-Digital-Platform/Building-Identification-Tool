@@ -1,3 +1,4 @@
+from enum import Enum
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.db.models import JSONField, Count
@@ -506,8 +507,8 @@ class Survey(models.Model):
         )
         return round(num_surveyed / num_candidates * 100, 2)
 
-    def last_3_responses(self):
-        return Response.objects.filter(survey=self).order_by("-date_added")[:3]
+    def last_n_responses(self, n: int):
+        return Response.objects.filter(survey=self).order_by("-date_added")[:n]
 
     def map_to_qb_field(
         self, schema_field: dict, field_id: str, survey_name: str
@@ -617,7 +618,13 @@ class Survey(models.Model):
 class SurveyPopulation(models.Model):
     """
     Target population for a survey. Locked-in at survey creation time.
-    Previsouly, we ran the expensive query on all responses at runtime.
+    Previously, we ran the expensive query on all responses at runtime.
+
+    TODO: NOT USED YET - will optimize latency of getting the target population,
+    at cost of storage, by storing the results of the query in this table.
+
+    A decision point is whether to make these immutable at survey creation time,
+    or update the target population based on new upsteam survey results.
     """
 
     class Meta:
@@ -696,3 +703,26 @@ class BuildingImage(models.Model):
     type = models.TextField(null=False)
     date_added = models.DateTimeField("date added", default=timezone.now)
     metadata = models.JSONField(default=dict)
+
+
+class QuestionType(Enum):
+    NUMBER = ("number", "Number")
+    TEXT = ("text", "Text")
+    BOOLEAN = ("true_false", "True/False")
+    BOOLEAN_OR_NULL = ("true_false_other", "True/False/Other")
+    RADIO = ("single_choice", "Single-Choice")
+    RADIO_W_SPECIFY = ("single_choice_specify", "Single-Choice with Specify")
+    MULTIPLE_CHOICE = ("multiple_choice", "Multiple-Choice")
+    MULTIPLE_CHOICE_SPECIFY = (
+        "multiple_choice_specify",
+        "Multiple-Choice with Specify",
+    )
+
+    def __new__(cls, id, label):
+        entry = object.__new__(cls)
+        entry.id = entry._value_ = id  # set the value, and the extra attribute
+        entry.label = label
+        return entry
+
+    def __repr__(self):
+        return f"<{type(self).__name__}.{self.name}: ({self.id!r}, {self.label!r})>"
