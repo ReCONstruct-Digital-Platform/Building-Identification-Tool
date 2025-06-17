@@ -163,7 +163,7 @@ class Building(models.Model):
     admin_area_level_1 = models.TextField(null=True, blank=True)
     postal_code = models.TextField(null=True, blank=True)
 
-    # # construction year
+    # TODO: maybe these should be attributes
     const_year = models.SmallIntegerField(null=True, blank=True)
     num_floors = models.IntegerField(null=True, blank=True)
     floor_area = models.FloatField(null=True, blank=True)
