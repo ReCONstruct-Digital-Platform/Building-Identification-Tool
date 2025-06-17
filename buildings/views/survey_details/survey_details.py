@@ -174,19 +174,26 @@ def survey_details(request, survey_slug):
     sorted_fields = sorted(survey.schema.values(), key=lambda x: x["pos"])
     for field_num, field_schema in enumerate(sorted_fields):
 
-        field_type = field_schema.get("type")
+        try:
+            field_type = field_schema.get("type")
 
-        disable_forms = survey.status == "ACTIVE"
+            disable_forms = survey.status == "ACTIVE"
 
-        field_form = get_bound_field_form_from_schema(
-            field_num + 1, field_schema, disabled=disable_forms
-        )
-        # need to render the field itself, and the field form
-        # if survey is active, deactivate all inputs - survey is read only
+            field_form = get_bound_field_form_from_schema(
+                field_num + 1, field_schema, disabled=disable_forms
+            )
+            # need to render the field itself, and the field form
+            # if survey is active, deactivate all inputs - survey is read only
 
-        tmp_survey_for_render = Survey(schema={"field": field_schema})
-        field_preview = DynamicSurveyForm(tmp_survey_for_render, request.POST)
-        existing_fields_to_render.append((field_type, field_form, field_preview))
+            tmp_survey_for_render = Survey(schema={"field": field_schema})
+            field_preview = DynamicSurveyForm(tmp_survey_for_render, request.POST)
+            existing_fields_to_render.append((field_type, field_form, field_preview))
+
+        except Exception as e:
+            log.error(
+                f"Error rendering field {field_num + 1} with schema {field_schema}: {e}"
+            )
+            continue
 
     context = {
         "survey": survey,
