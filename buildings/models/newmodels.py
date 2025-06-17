@@ -704,3 +704,24 @@ class BuildingImage(models.Model):
     date_added = models.DateTimeField("date added", default=timezone.now)
     metadata = models.JSONField(default=dict)
 
+
+class DatasetOnboardingJob(models.Model):
+    """
+    Job to onboard a dataset.
+    Contains the name of the job, the user who created it, and the date it was created.
+    """
+
+    class Meta:
+        db_table = "dataset_onboarding_jobs"
+
+    name = models.TextField()
+    description = models.TextField(null=True, blank=True)
+    csv_file_location = models.TextField(
+        null=True, blank=True, help_text="Location of the uploaded CSV file"
+    )
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    date_added = models.DateTimeField("date added", default=timezone.now)
