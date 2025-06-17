@@ -704,25 +704,3 @@ class BuildingImage(models.Model):
     date_added = models.DateTimeField("date added", default=timezone.now)
     metadata = models.JSONField(default=dict)
 
-
-class QuestionType(Enum):
-    NUMBER = ("number", "Number")
-    TEXT = ("text", "Text")
-    BOOLEAN = ("true_false", "True/False")
-    BOOLEAN_OR_NULL = ("true_false_other", "True/False/Other")
-    RADIO = ("single_choice", "Single-Choice")
-    RADIO_W_SPECIFY = ("single_choice_specify", "Single-Choice with Specify")
-    MULTIPLE_CHOICE = ("multiple_choice", "Multiple-Choice")
-    MULTIPLE_CHOICE_SPECIFY = (
-        "multiple_choice_specify",
-        "Multiple-Choice with Specify",
-    )
-
-    def __new__(cls, id, label):
-        entry = object.__new__(cls)
-        entry.id = entry._value_ = id  # set the value, and the extra attribute
-        entry.label = label
-        return entry
-
-    def __repr__(self):
-        return f"<{type(self).__name__}.{self.name}: ({self.id!r}, {self.label!r})>"

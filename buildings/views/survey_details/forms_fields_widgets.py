@@ -83,7 +83,7 @@ class BaseNewFieldForm(forms.Form):
 
     def __init__(self, field_num, *args, **kwargs):
         self.is_disabled = kwargs.pop("disabled", True)
-        super().__init__(*args, **kwargs)
+        super(BaseNewFieldForm, self).__init__(*args, **kwargs)
 
         for field in self.fields.values():
             if "class" not in field.widget.attrs:
@@ -157,11 +157,12 @@ class OptionsFieldForm(BaseNewFieldForm):
     TW_OPTIONS_CLASS = """rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 disabled:border-gray-200 disabled:bg-gray-50 disabled:text-gray-500 disabled:shadow-none"""
 
     def __init__(self, field_num, *args, **kwargs):
-        super().__init__(field_num, *args, **kwargs)
+        super(OptionsFieldForm, self).__init__(field_num, *args, **kwargs)
 
         for field in self.fields.values():
             field.widget.can_add_options = self.can_add_options
 
+    _errors = None
     has_options = True
     can_add_options = False
 

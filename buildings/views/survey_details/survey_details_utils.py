@@ -16,6 +16,42 @@ from .forms_fields_widgets import (
     TextFieldForm,
 )
 
+from enum import Enum
+
+
+class QuestionType(Enum):
+    NUMBER = ("number", "Number", NumberFieldForm)
+    TEXT = ("text", "Text", TextFieldForm)
+    TRUE_FALSE = ("true_false", "True/False", OptionsFieldForm)
+    TRUE_FALSE_OTHER = ("true_false_other", "True/False/Other", OptionsFieldForm)
+    SINGLE_CHOICE = ("single_choice", "Single-Choice", OptionsFieldFormForRadioInputs)
+    SINGLE_CHOICE_SPECIFY = (
+        "single_choice_specify",
+        "Single-Choice with Specify",
+        RadioFieldWithSpecifyForm,
+    )
+    MULTIPLE_CHOICE = (
+        "multiple_choice",
+        "Multiple-Choice",
+        OptionsFieldFormForCheckboxes,
+    )
+    MULTIPLE_CHOICE_SPECIFY = (
+        "multiple_choice_specify",
+        "Multiple-Choice with Specify",
+        CheckboxFieldWithSpecifyForm,
+    )
+
+    def __new__(cls, id, label, form_class):
+        entry = object.__new__(cls)
+        entry.id = entry._value_ = id  # set the value, and the extra attribute
+        entry.label = label
+        entry.form_class = form_class
+        return entry
+
+    def __repr__(self):
+        return f"<{type(self).__name__}.{self.name}: ({self.id!r}, {self.label!r})>"
+
+
 def transform_survey_options_to_field_form(field_schema):
     field_type, survey_options = field_schema.get("widget"), field_schema.get("options")
     if field_type in [
@@ -29,7 +65,7 @@ def transform_survey_options_to_field_form(field_schema):
 
 
 def transform_options_to_survey_schema(field_type, options):
-    if field_type == "boolean":
+    if field_type in ["boolean", "boolean_or_null"]:
         schema_options = []
         for i, opt in enumerate(options):
 
