@@ -163,7 +163,7 @@ class Building(models.Model):
     admin_area_level_1 = models.TextField(null=True, blank=True)
     postal_code = models.TextField(null=True, blank=True)
 
-    # # construction year
+    # TODO: maybe these should be attributes
     const_year = models.SmallIntegerField(null=True, blank=True)
     num_floors = models.IntegerField(null=True, blank=True)
     floor_area = models.FloatField(null=True, blank=True)
@@ -704,3 +704,30 @@ class BuildingImage(models.Model):
     date_added = models.DateTimeField("date added", default=timezone.now)
     metadata = models.JSONField(default=dict)
 
+
+class DatasetOnboardingJob(models.Model):
+    """
+    Job to onboard a dataset.
+    Contains the name of the job, the user who created it, and the date it was created.
+    """
+
+    class Meta:
+        db_table = "dataset_onboarding_jobs"
+
+    name = models.TextField()
+    description = models.TextField(null=True, blank=True)
+    csv_file_location = models.TextField(
+        null=True, blank=True, help_text="Location of the uploaded CSV file"
+    )
+
+    # Schema for dynamic attributes (unmapped columns)
+    attrs_schema = models.JSONField(null=True, blank=True, default=dict)
+
+    # Column mapping for CSV processing
+    column_mapping = models.JSONField(null=True, blank=True, default=dict)
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    date_added = models.DateTimeField("date added", default=timezone.now)

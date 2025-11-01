@@ -103,19 +103,19 @@
 
   </div>
 
-  {% endblock %}
+{% endblock %}
 
-  {% block page_scripts %}
-  <div id="js-variables">
-    {{ qb_dataset_filters | json_script:"qb_dataset_filters" }}
-    {{ qb_surveys_filters | json_script:"qb_surveys_filters" }}
-    {{ user_bldg_cols | json_script:"user_bldg_cols" }}
-    {{ default_bldg_cols | json_script:"default_bldg_cols" }}
-    {{ user_survey_cols | json_script:"user_survey_cols" }}
-    {{ default_survey_cols | json_script:"default_survey_cols" }}
-  </div>
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
-  <script src="{% static 'scripts/query-builder.standalone.js' %}"></script>
-  <script defer src="{% static 'scripts/new_survey.js' %}"></script>
-  {% endblock %}
+{% block page_scripts %}
+<div id="js-variables">
+  {{ qb_dataset_filters | json_script:"qb_dataset_filters" }}
+  {{ qb_surveys_filters | json_script:"qb_surveys_filters" }}
+  {{ user_bldg_cols | json_script:"user_bldg_cols" }}
+  {{ default_bldg_cols | json_script:"default_bldg_cols" }}
+  {{ user_survey_cols | json_script:"user_survey_cols" }}
+  {{ default_survey_cols | json_script:"default_survey_cols" }}
+</div>
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
+<script src="{% static 'scripts/query-builder.standalone.js' %}"></script>
+<script defer src="{% static 'scripts/new_survey.js' %}"></script>
+{% endblock %}

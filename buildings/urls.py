@@ -17,6 +17,7 @@ Including another URLconf
 from django.urls import path
 from buildings.views import views, api
 from buildings.views.survey_details import survey_details
+from buildings.views.new_dataset import new_dataset
 
 # This sets the application namespace
 app_name = "buildings"
@@ -31,6 +32,7 @@ urlpatterns = [
     ),
     path("datasets", views.datasets, name="datasets"),
     path("datasets/<str:dataset_slug>", views.dataset, name="dataset"),
+    path("new_dataset", new_dataset.new_dataset, name="new_dataset"),
     path("results/", views.survey_results_no_slug, name="results"),
     path(
         "results/survey/<str:survey_slug>", views.survey_results, name="survey_results"
