@@ -78,7 +78,7 @@ def get_building_image_presigned_urls_for_size(building, size="s"):
     return []
 
 
-def create_presigned_url(key, expiration=3600):
+def create_presigned_url(key, expiration=3600, content_type="image/jpeg"):
     """Generate a presigned URL to share an S3 object
 
     :param bucket_name: string
@@ -95,7 +95,7 @@ def create_presigned_url(key, expiration=3600):
             Params={
                 "Bucket": B2_BUCKET_IMAGES,
                 "Key": key,
-                "ResponseContentType": "image/jpeg",
+                "ResponseContentType": content_type,
             },
             ExpiresIn=expiration,
         )

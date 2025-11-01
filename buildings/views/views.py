@@ -99,9 +99,23 @@ def index(request):
 
 @login_required(login_url="account_login")
 def datasets(request):
-
-    datasets = Dataset.objects.all()
-    context = {"datasets": datasets}
+    """
+    View to display a list of all datasets for the current user.
+    This provides a dedicated page for viewing and managing datasets.
+    """
+    # Get all datasets
+    datasets = Dataset.objects.all().order_by("-id")
+    
+    # Count buildings in each dataset
+    for dataset in datasets:
+        dataset.building_count = Building.objects.filter(dataset=dataset).count()
+        dataset.geocoded_count = Building.objects.filter(dataset=dataset, geocoding_error__isnull=True).count()
+    
+    context = {
+        "datasets": datasets,
+        "title": "My Datasets"
+    }
+    
     return render(request, "buildings/datasets.html", context)
 
 

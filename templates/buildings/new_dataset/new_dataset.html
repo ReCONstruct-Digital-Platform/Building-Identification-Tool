@@ -1,227 +1,257 @@
-{% extends "buildings/base.html" %}
-{% load static %}
-{% load i18n %}
-{% load allauth %}
-{% block css_imports %} 
-{% endblock %} 
-
+{% extends "buildings/base.html" %} {% load static %} {% load i18n %} {% load allauth %} {% block css_imports %} {% endblock %} 
 {% block content %}
 
 <div class="flex justify-center pb-4 px-4 mb-4 h-full my-6">
-  <div class="flex flex-col w-[80%] h-full">
 
-    <form id="new-dataset-form" method="POST" enctype="multipart/form-data" class="bg-white rounded-lg shadow-sm p-6"
-    action="{% url 'buildings:new_dataset' %}">
-    {% csrf_token %}
-        
-        <div id="csv-config" class="w-1/2 my-6 space-y-4">
+
+  <div class="flex flex-col w-[80%] h-full">
+      <form
+      id="new-dataset-form"
+      method="POST"
+      enctype="multipart/form-data"
+      class="bg-white rounded-lg shadow-sm p-6"
+      action="{% url 'buildings:new_dataset' %}"
+      >
+        <div class="text-4xl mb-3">
+            New Dataset
+        </div>
+      {% csrf_token %}
+
+      <div id="csv-config" class="w-1/2 my-6 space-y-4 text-gray-700 mb-2">
+
+        <div class="">
+            <label class="">Name*</label>
+           {{ form.name }}
+        </div>
+        <div class="mb-3">
+           <label class="">Description (optional)</label>
+           {{ form.description}}
+        </div>
         <div>
-            <label class="block text-gray-700 mb-2">Upload CSV File</label>
-            <div>
+          <label class="block text-gray-700 mb-2">Upload CSV File</label>
+          <div>
             <p>
-                <span class="text-sm text-gray-500">Upload a CSV file containing addresses of properties to analyze.</span>
-                <br />
-                <span class="text-sm text-gray-500"
-                >The first row should be the column headers and contain at least the address, the province and the postal code
-                of the properties.</span
-                >
+              <span class="text-sm text-gray-500">
+                Upload a CSV file containing addresses of properties to analyze.
+            </span>
+              <br />
+              <span class="text-sm text-gray-500">
+                The first row should be column headers and contain the address, the province and the postal code of the
+                properties.
+              </span>
             </p>
-            </div>
-            <p id="csv_file_errors" class="mt-2 text-sm text-red-600">{{ form.csv_file.errors }}</p>
-            {{ form.csv_file }}
-            <div id="csv-stats" class="mt-2 text-sm text-gray-600 hidden">
+          </div>
+          <p id="csv_file_errors" class="mt-2 text-sm text-red-600">{{ form.csv_file.errors }}</p>
+          {{ form.csv_file }}
+          <div id="csv-stats" class="mt-2 text-sm text-gray-600 hidden">
             <span id="csv-row-count"></span> rows detected in CSV file.
-            </div>
+          </div>
         </div>
         <div id="column-selection" class="hidden space-y-4">
-            <div>
-                <p id="address_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
+          <div>
+            <label class="block text-gray-700 mb-2">Select External ID Column</label>
+            <span class="text-sm text-gray-500">
+                An ID that uniquely identifies each property in your dataset (e.g., a property ID from your internal system).
+              </span>
+            {{ form.external_id }}
+          </div>
+
+          <div>
+            <p id="address_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
             <label class="block text-gray-700 mb-2">Select Address Column</label>
+            <span class="text-sm text-gray-500">
+                This should be the full address of the property (e.g., "123 Main St, City, Province, Postal Code"). It will be used for geocoding if latitude/longitude are not provided.
+              </span>
             {{ form.address_column }}
-            </div>
-            <div>
-                <p id="state_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
+          </div>
+          <div>
+            <p id="state_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
             <label class="block text-gray-700 mb-2">Select Province Column</label>
             <select
-                name="state_column"
-                id="id_state_column"
-                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+              name="state_column"
+              id="id_state_column"
+              class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
             >
-                <option value="">-- Select Province Column --</option>
+              <option value="">-- Select Province Column --</option>
             </select>
-            </div>
-            <div>
-                <p id="zip_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
+          </div>
+          <div>
+            <p id="zip_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
             <label class="block text-gray-700 mb-2">Select Postal Code Column</label>
             <select
-                name="zip_column"
-                id="id_zip_column"
-                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+              name="zip_column"
+              id="id_zip_column"
+              class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
             >
-                <option value="">-- Select Postal Code Column --</option>
+              <option value="">-- Select Postal Code Column --</option>
             </select>
+          </div>
+          <div class="mt-4">
+            <label class="block text-gray-700 mb-2">Does your CSV contain latitude/longitude coordinates?</label>
+            <div class="flex items-center space-x-4">
+              <div class="flex items-center">
+                <input
+                  type="radio"
+                  id="has_coords_yes"
+                  name="has_coordinates"
+                  value="True"
+                  class="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                />
+                <label for="has_coords_yes" class="ml-2 block text-sm text-gray-700">Yes</label>
+              </div>
+              <div class="flex items-center">
+                <input
+                  type="radio"
+                  id="has_coords_no"
+                  name="has_coordinates"
+                  value="False"
+                  class="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                  checked
+                />
+                <label for="has_coords_no" class="ml-2 block text-sm text-gray-700">No</label>
+              </div>
             </div>
-            <div class="mt-4">
-                <label class="block text-gray-700 mb-2">Does your CSV contain latitude/longitude coordinates?</label>
-                <div class="flex items-center space-x-4">
-                    <div class="flex items-center">
-                        <input type="radio" id="has_coords_yes" name="has_coordinates" value="yes" class="h-4 w-4 text-blue-600 focus:ring-blue-500">
-                        <label for="has_coords_yes" class="ml-2 block text-sm text-gray-700">Yes</label>
-                    </div>
-                    <div class="flex items-center">
-                        <input type="radio" id="has_coords_no" name="has_coordinates" value="no" class="h-4 w-4 text-blue-600 focus:ring-blue-500" checked>
-                        <label for="has_coords_no" class="ml-2 block text-sm text-gray-700">No</label>
-                    </div>
-                </div>
+          </div>
+          
+          <div id="coordinates_selection" class="hidden space-y-4">
+            <div>
+              <p id="lat_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
+              <label class="block text-gray-700 mb-2">Select Latitude Column</label>
+              <select
+                name="lat_column"
+                id="id_lat_column"
+                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+              >
+                <option value="">-- Select Latitude Column --</option>
+              </select>
             </div>
-            <div id="coordinates_selection" class="hidden space-y-4">
-                <div>
-                    <p id="lat_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
-                    <label class="block text-gray-700 mb-2">Select Latitude Column</label>
-                    <select
-                        name="lat_column"
-                        id="id_lat_column"
-                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                    >
-                        <option value="">-- Select Latitude Column --</option>
-                    </select>
-                </div>
-                <div>
-                    <p id="lng_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
-                    <label class="block text-gray-700 mb-2">Select Longitude Column</label>
-                    <select
-                        name="lng_column"
-                        id="id_lng_column"
-                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                    >
-                        <option value="">-- Select Longitude Column --</option>
-                    </select>
-                </div>
+            <div>
+              <p id="lng_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
+              <label class="block text-gray-700 mb-2">Select Longitude Column</label>
+              <select
+                name="lng_column"
+                id="id_lng_column"
+                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+              >
+                <option value="">-- Select Longitude Column --</option>
+              </select>
             </div>
-            
-            <div class="mt-4">
-                <label class="block text-gray-700 mb-2">Does your CSV contain additional building details?</label>
-                <div class="flex items-center space-x-4">
-                    <div class="flex items-center">
-                        <input type="radio" id="has_building_details_yes" name="has_building_details" value="yes" class="h-4 w-4 text-blue-600 focus:ring-blue-500">
-                        <label for="has_building_details_yes" class="ml-2 block text-sm text-gray-700">Yes</label>
-                    </div>
-                    <div class="flex items-center">
-                        <input type="radio" id="has_building_details_no" name="has_building_details" value="no" class="h-4 w-4 text-blue-600 focus:ring-blue-500" checked>
-                        <label for="has_building_details_no" class="ml-2 block text-sm text-gray-700">No</label>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="building_details_selection" class="hidden space-y-4">
-                <h3 class="text-lg font-medium text-gray-900 mt-4">Address Components</h3>
-                <div>
-                    <p id="street_name_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
-                    <label class="block text-gray-700 mb-2">Select Street Name Column (optional)</label>
-                    <select
-                        name="street_name_column"
-                        id="id_street_name_column"
-                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                    >
-                        <option value="">-- Select Street Name Column --</option>
-                    </select>
-                </div>
-                <div>
-                    <p id="street_num_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
-                    <label class="block text-gray-700 mb-2">Select Street Number Column (optional)</label>
-                    <select
-                        name="street_num_column"
-                        id="id_street_num_column"
-                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                    >
-                        <option value="">-- Select Street Number Column --</option>
-                    </select>
-                </div>
-                
-                <h3 class="text-lg font-medium text-gray-900 mt-4">Location Details</h3>
-                <div>
-                    <p id="muni_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
-                    <label class="block text-gray-700 mb-2">Select Municipality Column (optional)</label>
-                    <select
-                        name="muni_column"
-                        id="id_muni_column"
-                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                    >
-                        <option value="">-- Select Municipality Column --</option>
-                    </select>
-                </div>
-                <div>
-                    <p id="submuni_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
-                    <label class="block text-gray-700 mb-2">Select Sub-Municipality Column (optional)</label>
-                    <select
-                        name="submuni_column"
-                        id="id_submuni_column"
-                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                    >
-                        <option value="">-- Select Sub-Municipality Column --</option>
-                    </select>
-                </div>
-                
-                <h3 class="text-lg font-medium text-gray-900 mt-4">Building Characteristics</h3>
-                <div>
-                    <p id="const_year_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
-                    <label class="block text-gray-700 mb-2">Select Construction Year Column (optional)</label>
-                    <select
-                        name="const_year_column"
-                        id="id_const_year_column"
-                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                    >
-                        <option value="">-- Select Construction Year Column --</option>
-                    </select>
-                </div>
-                <div>
-                    <p id="num_floors_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
-                    <label class="block text-gray-700 mb-2">Select Number of Floors Column (optional)</label>
-                    <select
-                        name="num_floors_column"
-                        id="id_num_floors_column"
-                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                    >
-                        <option value="">-- Select Number of Floors Column --</option>
-                    </select>
-                </div>
-                <div>
-                    <p id="floor_area_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
-                    <label class="block text-gray-700 mb-2">Select Floor Area Column (optional)</label>
-                    <select
-                        name="floor_area_column"
-                        id="id_floor_area_column"
-                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                    >
-                        <option value="">-- Select Floor Area Column --</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div id="unmapped_columns_section" class="hidden space-y-4 mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mt-4">Unmapped Columns</h3>
-                <p class="text-sm text-gray-500">
-                    The following columns from your CSV were not mapped to any specific fields.
-                    Please specify the data type for each column to help define the schema.
-                </p>
-                <div id="unmapped_columns_list" class="space-y-4">
-                    <!-- Unmapped columns will be dynamically added here -->
-                </div>
-            </div>
-        </div>
-        </div>
+          </div>
 
-        <div class="flex justify-end gap-4">
-          <a href="{% url 'buildings:index' %}"
-            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-            Cancel
-          </a>
 
-          <button type="submit"
-            class="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-blue-900 focus-visible:outline-blue-900 border border-transparent rounded-md disabled:opacity-50 disabled:cursor-not-allowed">
-            Upload Dataset
-          </button>
+          <div id="building_details_selection" class="space-y-4">
+            <h3 class="text-lg font-medium text-gray-900 mt-4">Address Components</h3>
+            <div>
+              <p id="street_name_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
+              <label class="block text-gray-700 mb-2">Select Street Name Column (optional)</label>
+              <select
+                name="street_name_column"
+                id="id_street_name_column"
+                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+              >
+                <option value="">-- Select Street Name Column --</option>
+              </select>
+            </div>
+            <div>
+              <p id="street_num_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
+              <label class="block text-gray-700 mb-2">Select Street Number Column (optional)</label>
+              <select
+                name="street_num_column"
+                id="id_street_num_column"
+                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+              >
+                <option value="">-- Select Street Number Column --</option>
+              </select>
+            </div>
+
+            <h3 class="text-lg font-medium text-gray-900 mt-4">Location Details</h3>
+            <div>
+              <p id="muni_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
+              <label class="block text-gray-700 mb-2">Select Municipality Column (optional)</label>
+              <select
+                name="muni_column"
+                id="id_muni_column"
+                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+              >
+                <option value="">-- Select Municipality Column --</option>
+              </select>
+            </div>
+            <div>
+              <p id="submuni_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
+              <label class="block text-gray-700 mb-2">Select Sub-Municipality Column (optional)</label>
+              <select
+                name="submuni_column"
+                id="id_submuni_column"
+                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+              >
+                <option value="">-- Select Sub-Municipality Column --</option>
+              </select>
+            </div>
+
+            <h3 class="text-lg font-medium text-gray-900 mt-4">Building Characteristics</h3>
+            <div>
+              <p id="const_year_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
+              <label class="block text-gray-700 mb-2">Select Construction Year Column (optional)</label>
+              <select
+                name="const_year_column"
+                id="id_const_year_column"
+                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+              >
+                <option value="">-- Select Construction Year Column --</option>
+              </select>
+            </div>
+            <div>
+              <p id="num_floors_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
+              <label class="block text-gray-700 mb-2">Select Number of Floors Column (optional)</label>
+              <select
+                name="num_floors_column"
+                id="id_num_floors_column"
+                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+              >
+                <option value="">-- Select Number of Floors Column --</option>
+              </select>
+            </div>
+            <div>
+              <p id="floor_area_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
+              <label class="block text-gray-700 mb-2">Select Floor Area Column (optional)</label>
+              <select
+                name="floor_area_column"
+                id="id_floor_area_column"
+                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+              >
+                <option value="">-- Select Floor Area Column --</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="unmapped_columns_section" class="hidden space-y-4 mt-6">
+            <h3 class="text-lg font-medium text-gray-900 mt-4">Unmapped Columns</h3>
+            <p class="text-sm text-gray-500">
+              The following columns from your CSV were not mapped to any specific fields. Please specify the data type
+              for each column to help define the schema.
+            </p>
+            <div id="unmapped_columns_list" class="space-y-4">
+              <!-- Unmapped columns will be dynamically added here -->
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div class="flex justify-end gap-4">
+        <a
+          href="{% url 'buildings:index' %}"
+          class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+        >
+          Cancel
+        </a>
+
+        <button
+          type="submit"
+          class="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-blue-900 focus-visible:outline-blue-900 border border-transparent rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Upload Dataset
+        </button>
+      </div>
     </form>
   </div>
 

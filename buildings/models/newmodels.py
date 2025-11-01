@@ -1,4 +1,3 @@
-from enum import Enum
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.db.models import JSONField, Count
@@ -8,6 +7,7 @@ from autoslug import AutoSlugField
 from django.db.models.expressions import RawSQL
 from django.utils.translation import gettext_lazy as _
 
+from buildings.models.constants import DATASET_BASE_SCHEMA
 from buildings.utils.b2 import (
     create_presigned_url,
 )
@@ -29,6 +29,8 @@ class Dataset(models.Model):
     # Contains the schema of both the static and dynamic fields of
     # the associated models. Static fields that are not present are null.
     schema = JSONField()
+
+    BASE_SCHEMA = DATASET_BASE_SCHEMA
 
     def get_schema(self, prefix=None):
         if prefix:
@@ -64,6 +66,7 @@ class Dataset(models.Model):
                 "num_floors",
                 "floor_area",
                 "postal_code",
+                "geocoding_error",
             ]
             or "attrs" in a["id"]
         ]
@@ -168,6 +171,10 @@ class Building(models.Model):
     num_floors = models.IntegerField(null=True, blank=True)
     floor_area = models.FloatField(null=True, blank=True)
 
+    # Field to store geocoding errors
+    geocoding_error = models.TextField(null=True, blank=True)
+    has_streetview = models.BooleanField(null=True)
+
     # JSONB field to hold an object of dynamic attributes
     attrs = models.JSONField(null=True, blank=True)
 
@@ -218,7 +225,12 @@ class Building(models.Model):
         return [create_presigned_url(f"{prefix}/{img.filename}") for img in all_images]
 
     def __str__(self):
-        return f"Building {self.id}: {self.address}, {self.muni}, {self.postal_code}"
+        base_str = (
+            f"Building {self.id}: {self.address}, {self.muni}, {self.postal_code}"
+        )
+        if self.geocoding_error:
+            return f"{base_str} [Error: {self.geocoding_error}]"
+        return base_str
 
 
 class Survey(models.Model):
@@ -714,6 +726,12 @@ class DatasetOnboardingJob(models.Model):
     class Meta:
         db_table = "dataset_onboarding_jobs"
 
+    class Status(models.TextChoices):
+        PENDING = "PENDING", _("Pending")
+        PROCESSING = "PROCESSING", _("Processing")
+        COMPLETED = "COMPLETED", _("Completed")
+        FAILED = "FAILED", _("Failed")
+
     name = models.TextField()
     description = models.TextField(null=True, blank=True)
     csv_file_location = models.TextField(
@@ -726,8 +744,27 @@ class DatasetOnboardingJob(models.Model):
     # Column mapping for CSV processing
     column_mapping = models.JSONField(null=True, blank=True, default=dict)
 
+    has_coordinates = models.BooleanField(default=False)
+
+    # Status of the job
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
+
+    # Reference to the created dataset (once processing is complete)
+    dataset = models.ForeignKey(
+        Dataset,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="onboarding_job",
+    )
+
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
     date_added = models.DateTimeField("date added", default=timezone.now)
+    date_modified = models.DateTimeField("date modified", default=timezone.now)

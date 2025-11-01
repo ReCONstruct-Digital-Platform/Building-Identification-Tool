@@ -33,6 +33,14 @@ urlpatterns = [
     path("datasets", views.datasets, name="datasets"),
     path("datasets/<str:dataset_slug>", views.dataset, name="dataset"),
     path("new_dataset", new_dataset.new_dataset, name="new_dataset"),
+    path(
+        "dataset_upload_success/<int:job_id>/",
+        new_dataset.dataset_upload_success,
+        name="dataset_upload_success",
+    ),
+    path(
+        "dataset/<str:dataset_slug>/", new_dataset.dataset_detail, name="dataset_detail"
+    ),
     path("results/", views.survey_results_no_slug, name="results"),
     path(
         "results/survey/<str:survey_slug>", views.survey_results, name="survey_results"

@@ -1,0 +1,59 @@
+{% extends "buildings/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<div class="flex justify-center pb-4 px-4 mb-4 h-full my-6">
+  <div class="flex flex-col w-[80%] h-full">
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="text-center">
+        <h2 class="mt-3 text-lg font-medium text-gray-900">Dataset Upload Successful</h2>
+        <p class="mt-2 text-sm text-gray-500">
+          Your dataset "{{ job.name }}" has been uploaded successfully and is now being processed.
+        </p>
+        <p class="mt-2 text-sm text-gray-500">
+          The system will geocode the addresses if needed and create building records. This process may take some time depending on the size of your dataset.
+        </p>
+        <p class="mt-2 text-sm text-gray-500">
+          Once processing is complete, you can view your dataset details and buildings.
+        </p>
+        <div class="mt-6">
+          <div class="bg-gray-100 p-4 rounded-md">
+            <h3 class="text-sm font-medium text-gray-900">Job Details</h3>
+            <dl class="mt-2 text-sm text-gray-500">
+              <div class="flex justify-between py-1">
+                <dt>Job ID:</dt>
+                <dd>{{ job.id }}</dd>
+              </div>
+              <div class="flex justify-between py-1">
+                <dt>Status:</dt>
+                <dd>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    {{ job.status }}
+                  </span>
+                </dd>
+              </div>
+              <div class="flex justify-between py-1">
+                <dt>Date Submitted:</dt>
+                <dd>{{ job.date_added }}</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+        <div class="mt-6 flex flex-row gap-4 justify-center">
+          <a href="{% url 'buildings:dataset_detail' job.dataset.slug %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+              <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" />
+            </svg>
+            View Dataset Details
+          </a>
+          <a href="{% url 'buildings:index' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Return to Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
