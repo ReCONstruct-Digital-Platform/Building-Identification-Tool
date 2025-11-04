@@ -240,7 +240,7 @@ def get_bound_field_form_from_schema(
     Takes a field schema and returns a bound field form.
     Used to display existing fields in the survey edit view.
     """
-    field_type = field_schema.get("type")
+    field_type = field_schema.get("widget")
     field_form_opts = {
         "field_label": field_schema.get("label").get("en"),
         "question_text": field_schema.get("question_text").get("en"),
