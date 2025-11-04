@@ -31,7 +31,6 @@ urlpatterns = [
         "building/<str:building_slug>", views.building_details, name="building_details"
     ),
     path("datasets", views.datasets, name="datasets"),
-    path("datasets/<str:dataset_slug>", views.dataset, name="dataset"),
     path("new_dataset", new_dataset.new_dataset, name="new_dataset"),
     path(
         "dataset_upload_success/<int:job_id>/",

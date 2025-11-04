@@ -3,7 +3,6 @@
 
 <div class="flex justify-center pb-4 px-4 mb-4 h-full my-6">
 
-
   <div class="flex flex-col w-[80%] h-full">
       <form
       id="new-dataset-form"
@@ -87,7 +86,10 @@
             </select>
           </div>
           <div class="mt-4">
-            <label class="block text-gray-700 mb-2">Does your CSV contain latitude/longitude coordinates?</label>
+            <label class="block text-gray-700 mb-2">Does your CSV contain latitude/longitude coordinates?</label>            
+              <span class="text-sm text-gray-500">
+                If your dataset already contains latitude and longitude coordinates for each property, select "Yes" below to map the appropriate columns. Otherwise, select "No" to do geocoding of the records using the full address.
+              </span>
             <div class="flex items-center space-x-4">
               <div class="flex items-center">
                 <input
@@ -95,7 +97,7 @@
                   id="has_coords_yes"
                   name="has_coordinates"
                   value="True"
-                  class="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 px-2"
                 />
                 <label for="has_coords_yes" class="ml-2 block text-sm text-gray-700">Yes</label>
               </div>
@@ -203,6 +205,9 @@
             <div>
               <p id="num_floors_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
               <label class="block text-gray-700 mb-2">Select Number of Floors Column (optional)</label>
+              <span class="text-sm text-gray-500">
+                Total number of floors in the building. Value must be an integer.
+                </span>
               <select
                 name="num_floors_column"
                 id="id_num_floors_column"
@@ -214,6 +219,9 @@
             <div>
               <p id="floor_area_column_errors" class="mt-2 text-sm text-red-600 hidden"></p>
               <label class="block text-gray-700 mb-2">Select Floor Area Column (optional)</label>
+              <span class="text-sm text-gray-500">
+                Total floor area of the building. Value must be a decimal number.
+                </span>
               <select
                 name="floor_area_column"
                 id="id_floor_area_column"

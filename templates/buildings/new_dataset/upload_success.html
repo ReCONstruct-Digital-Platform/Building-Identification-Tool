@@ -5,8 +5,8 @@
 {% block content %}
 <div class="flex justify-center pb-4 px-4 mb-4 h-full my-6">
   <div class="flex flex-col w-[80%] h-full">
-    <div class="bg-white rounded-lg shadow-sm p-6">
-      <div class="text-center">
+    <div class="bg-white rounded-lg shadow-sm p-6 w-[50%] mx-auto">
+      <div class="">
         <h2 class="mt-3 text-lg font-medium text-gray-900">Dataset Upload Successful</h2>
         <p class="mt-2 text-sm text-gray-500">
           Your dataset "{{ job.name }}" has been uploaded successfully and is now being processed.
@@ -19,12 +19,7 @@
         </p>
         <div class="mt-6">
           <div class="bg-gray-100 p-4 rounded-md">
-            <h3 class="text-sm font-medium text-gray-900">Job Details</h3>
             <dl class="mt-2 text-sm text-gray-500">
-              <div class="flex justify-between py-1">
-                <dt>Job ID:</dt>
-                <dd>{{ job.id }}</dd>
-              </div>
               <div class="flex justify-between py-1">
                 <dt>Status:</dt>
                 <dd>

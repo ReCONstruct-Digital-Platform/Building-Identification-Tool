@@ -8,10 +8,13 @@ const CSV_FILE_TYPE = "text/csv";
 
 // Data types for unmapped columns
 const COLUMN_DATA_TYPES = [
-  { value: "string", label: "String" },
-  { value: "number", label: "Number" },
-  { value: "boolean", label: "Boolean" },
+  { value: "string", label: "Text" },
+  { value: "integer", label: "Whole Number" },
+  { value: "double", label: "Decimal Number" },
+  { value: "boolean", label: "True/False" },
   { value: "date", label: "Date" },
+  // TODO: Enums / Categoricals
+  // Percentage
 ];
 
 // Form validation state

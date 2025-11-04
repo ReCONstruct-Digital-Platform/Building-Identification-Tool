@@ -103,6 +103,7 @@ COMPRESS_ENABLED = not DEBUG
 
 TAILWIND_APP_NAME = "theme"
 NPM_BIN_PATH = env("NPM_BIN_PATH")
+print("NPM_BIN_PATH:", NPM_BIN_PATH)
 
 # See https://docs.djangoproject.com/en/4.2/topics/logging/#configuring-logging
 LOGGING = {

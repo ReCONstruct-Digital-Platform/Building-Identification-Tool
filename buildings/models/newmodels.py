@@ -138,7 +138,7 @@ class Building(models.Model):
 
     class Meta:
         db_table = "buildings"
-        unique_together = ("ext_id", "lat", "lng", "address", "muni")
+        unique_together = ("ext_id", "lat", "lng", "address", "muni", "dataset")
 
     # optional external ID field
     ext_id = models.TextField(null=True, blank=True)

@@ -1,6 +1,5 @@
 from django import forms
 from buildings.models.newmodels import DatasetOnboardingJob
-from buildings.models.newsurveys import MyJSONField
 from buildings.forms import TW_INPUT_CLASSES
 from buildings.widgets.newwidgets import TW_RADIO_CLASS
 
@@ -9,8 +8,9 @@ UPLOAD_FILE_CLASSES = """block w-full rounded-md py-1.5 text-gray-900 shadow-sm 
 
 # Data types for unmapped columns
 COLUMN_DATA_TYPES = [
-    ("string", "String"),
-    ("number", "Number"),
+    ("string", "Text"),
+    ("double", "Decimal Number"),
+    ("integer", "Integer"),
     ("boolean", "Boolean"),
     ("date", "Date"),
 ]

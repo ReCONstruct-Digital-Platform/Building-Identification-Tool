@@ -8,7 +8,7 @@ from config.settings import DEBUG
 
 TW_INPUT_CLASSES = """block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6"""
 
-TW_INPUT_CHECKBOX_CLASSES = """block rounded-sm border-0 text-teal-600 accent-teal-600 focus:accent-teal-700 shadow-sm ring-1 focus:ring-2 focus:ring-teal-600 sm:text-sm sm:leading-6"""
+TW_INPUT_CHECKBOX_CLASSES = """block px-2 rounded-sm border-0 text-teal-600 accent-teal-600 focus:accent-teal-700 shadow-sm ring-1 focus:ring-2 focus:ring-teal-600 sm:text-sm sm:leading-6"""
 
 KNOWLEDGE_LEVEL_CHOICES = (
     ("none", _("None")),

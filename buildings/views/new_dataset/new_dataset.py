@@ -72,15 +72,26 @@ def new_dataset(request):
                 log.info(
                     f"Uploaded {filename} to B2 bucket {settings.B2_BUCKET_IMAGES}"
                 )
-                job.csv_file_path = filename
+                job.csv_file_location = filename
 
             # Store column mapping information in a JSON format that can be used
             # for processing the CSV later
             column_mapping = {
                 "address": form.cleaned_data.get("address_column"),
-                "admin_area_level_1": form.cleaned_data.get("state_column"),  # Province
+                "ext_id": form.cleaned_data.get("external_id"),
+                "admin_area_level_1": form.cleaned_data.get("state_column"),
                 "postal_code": form.cleaned_data.get("zip_column"),
+                "street_name": form.cleaned_data.get("street_name_column"),
+                "street_num": form.cleaned_data.get("street_num_column"),
+                "muni": form.cleaned_data.get("muni_column"),
+                "submuni": form.cleaned_data.get("submuni_column"),
+                "const_year": form.cleaned_data.get("const_year_column"),
+                "num_floors": form.cleaned_data.get("num_floors_column"),
+                "floor_area": form.cleaned_data.get("floor_area_column"),
             }
+
+            # Remove any mappings that are None or empty
+            column_mapping = {k: v for k, v in column_mapping.items() if v}
 
             # Add coordinate mappings if provided
             if form.cleaned_data.get("has_coordinates") == "True":
@@ -88,20 +99,6 @@ def new_dataset(request):
                     {
                         "lat": form.cleaned_data.get("lat_column"),
                         "lng": form.cleaned_data.get("lng_column"),
-                    }
-                )
-
-            # Add building detail mappings if provided
-            if form.cleaned_data.get("has_building_details") == "True":
-                column_mapping.update(
-                    {
-                        "street_name": form.cleaned_data.get("street_name_column"),
-                        "street_num": form.cleaned_data.get("street_num_column"),
-                        "muni": form.cleaned_data.get("muni_column"),
-                        "submuni": form.cleaned_data.get("submuni_column"),
-                        "const_year": form.cleaned_data.get("const_year_column"),
-                        "num_floors": form.cleaned_data.get("num_floors_column"),
-                        "floor_area": form.cleaned_data.get("floor_area_column"),
                     }
                 )
 

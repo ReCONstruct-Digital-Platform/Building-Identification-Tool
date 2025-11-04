@@ -26,28 +26,40 @@
         </div>
       </div>
 
-      {% comment %} If job still going display status {% endcomment %}
-
-      {% if upload_job and upload_job.status != 'Completed' %}
+      {% if upload_job and upload_job.status != 'COMPLETED' %}
 
       <dl class="mt-2 text-sm text-gray-500">
         <div class="flex justify-between py-1">
           <dt>Job ID:</dt>
-          <dd>{{ job.id }}</dd>
+          <dd>{{ upload_job.id }}</dd>
         </div>
         <div class="flex justify-between py-1">
           <dt>Status:</dt>
           <dd>
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-              {{ job.status }}
+              {{ upload_job.status }}
             </span>
           </dd>
         </div>
         <div class="flex justify-between py-1">
           <dt>Date Submitted:</dt>
-          <dd>{{ job.date_added }}</dd>
+          <dd>{{ upload_job.date_added }}</dd>
         </div>
       </dl>
+
+      {% if upload_job.status == 'PENDING' %}
+      <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div class="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <h3 class="text-lg font-medium text-blue-800">Dataset Processing Pending</h3>
+        </div>
+        <p class="mt-2 text-blue-700">
+          Your dataset is currently in the processing queue. Please check back later to view the dataset details and buildings.
+        </p>
+      </div>
+      {% endif %}
 
       {% else %}
 
@@ -73,364 +85,34 @@
       
 
       <div>
-        <div class="text-2xl mb-4">Surveys on this Dataset</div>
-        <div class="grid grid-cols-3 gap-2 py-2"> 
-          
+        <div class="flex justify-between items-center mb-4">
+          <div class="text-2xl">Surveys on this Dataset</div>
+          <a href="{% url 'buildings:new_survey' %}?source_dataset={{ dataset.slug }}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            Create survey on dataset
+          </a>
+        </div>
+        
+        {% if surveys %}
+        <div class="grid grid-cols-3 gap-2 py-2">
           {% for survey in surveys %}
-          
           {% url 'buildings:survey' survey.slug as survey_url %}
           {% card title=survey.name body=survey.description href=survey_url %}
-          
           {% endfor %}
         </div>
-      </div>
-
-
-      <form>
-        {% csrf_token %}
-
-        <!-- Geocoding Filter -->
-        <section class="my-4">
-          <div class="text-xl">Filter by Geocoding Status</div>
-          <div class="flex gap-3 items-center mt-2">
-            <select id="geocoding-filter" class="block font-light text-sm ps-2 rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600">
-              <option value="" {% if not geocoding_filter %}selected{% endif %}>All Buildings</option>
-              <option value="success" {% if geocoding_filter == 'success' %}selected{% endif %}>Successfully Geocoded</option>
-              <option value="failed" {% if geocoding_filter == 'failed' %}selected{% endif %}>Failed Geocoding</option>
-            </select>
-          </div>
-        </section>
-
-        <section>
-          <div class="text-2xl">Fields to display</div>
-          <button id="show-col-config" data-target-modal="column_config_modal"
-            class="modal-open-button bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-600 
-          block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-            Choose columns
-          </button>
-        </section>
-
-        <section id="order-by-config" class="my-4">
-          <div class="text-xl">
-            Order by
-          </div>
-          <div class="flex gap-3 items-center">
-            <select id="order-by-field"
-              class='block font-light text-sm ps-2 mt-1 rounded-md border-0 py-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600'>
-              <optgroup label="Building Attributes">
-                {% for col in bldg_orderby_cols %}
-                <option id="{{ col.id }}" value="{{ col.id }}" class="appearance-none" {% if col.id == orderby_field %}
-                  selected {% endif %}>{{ col.label }}</option>
-                {% endfor %}
-              </optgroup>
-            </select>
-
-            <div>
-              <div>
-                <label>
-                  <input type="radio" id="order-by-asc" name="order-by-dir" value="asc"
-                    class="me-2 text-base border-0 text-teal-600 accent-teal-600 focus:accent-teal-700 shadow-sm ring-1 focus:ring-2 focus:ring-teal-600"
-                    {% if orderby_dir == 'asc' %} checked {% endif %}/>
-                  Ascending
-                </label>
-              </div>
-              <div>
-                <label>
-                  <input type="radio" id="order-by-desc" name="order-by-dir" value="desc"
-                    class="me-2 text-base border-0 text-teal-600 accent-teal-600 focus:accent-teal-700 shadow-sm ring-1 focus:ring-2 focus:ring-teal-600" 
-                    {% if orderby_dir == 'desc' %} checked {% endif %}
-                    />
-                  Descending
-                </label>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="flex flex-row justify-between">
-          <button id="submitQueryButton" hx-get="{% url 'buildings:dataset_detail' dataset.slug %}"
-            hx-target="#results-container" hx-swap="outerHTML" hx-vals='js:{...getCurrentQuery()}' hx-replace-url="true"
-            hx-indicator="#submit-query-inner"
-            class="flex items-center gap-2 bg-teal-600 hover:bg-teal-500 focus-visible:outline-teal-600 
-          justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-            <div id="submit-query-inner">
-              <div class="display-when-not-loading">
-                {% trans "Refresh Results" %}
-              </div>
-              <div class="display-when-loading gap-2 items-center">
-                {% trans "Refreshing..." %}
-                <svg aria-hidden="true" class="w-4 h-4 animate-spin fill-white" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
-                </svg>
-              </div>
-            </div>
-          </button>
-          <button id="download"
-          class="bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-600 
-        block justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-        <div class="flex flex-row items-center gap-2">
-            <svg id="download-button-loading-icon" aria-hidden="true" class="hidden w-4 h-4 animate-spin fill-white" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
-            </svg>
-            <svg id="download-button-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1 lucide lucide-download">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>
-            </svg>
-          <div>
-            {% trans "Download" %}
-          </div>
+        {% else %}
+        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center">
+          <p class="text-gray-600">No surveys have been created for this dataset yet.</p>
+          <p class="text-gray-600 mt-2">Click the button above to create a survey on this dataset.</p>
         </div>
-        </button>
-        </section>
-      </form>
+        {% endif %}
+      </div>
    
       {% endif %}
       
     </div>
-
-    {% block page-and-paging-controls %}
-
-    {% #modal id="column_config" %}
-    <div class="flex-grow rounded-2xl px-10 pt-4">
-      <h1 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Building Attributes</h1>
-      <div class="flex justify-between">
-        <button class="reset-button py-2 underline">Reset defaults</button>
-        <button class="select-all-button py-2 underline">Unselect all</button>
-      </div>
-      <ul id="draggable-list" class="space-y-2">
-        {% for col in user_bldg_cols %}
-        <li class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm cursor-grab"
-          draggable="true">
-          <label class="text-gray-700">
-            <input type="checkbox" id="{{ col.id }}"
-              class="mr-4 h-5 w-5 text-teal-500 focus:ring-2 focus:ring-teal-300" checked>{{ col.label }}
-          </label>
-          <div class="mr-4 text-gray-400 cursor-grab">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-              class="lucide lucide-grip-vertical">
-              <circle cx="9" cy="12" r="1" />
-              <circle cx="9" cy="5" r="1" />
-              <circle cx="9" cy="19" r="1" />
-              <circle cx="15" cy="12" r="1" />
-              <circle cx="15" cy="5" r="1" />
-              <circle cx="15" cy="19" r="1" />
-            </svg>
-          </div>
-        </li>
-        {% endfor %}
-        {% with default_bldg_cols|sub_lists:user_bldg_cols as remaining_cols %}
-        {% for col in remaining_cols %}
-        <li class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm cursor-grab"
-          draggable="true">
-          <label class="text-gray-700">
-            <input type="checkbox" id="{{ col.id }}"
-              class="mr-4 h-5 w-5 text-teal-500 focus:ring-2 focus:ring-teal-300">{{ col.label }}
-          </label>
-          <div class="mr-4 text-gray-400 cursor-grab">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-              class="lucide lucide-grip-vertical">
-              <circle cx="9" cy="12" r="1" />
-              <circle cx="9" cy="5" r="1" />
-              <circle cx="9" cy="19" r="1" />
-              <circle cx="15" cy="12" r="1" />
-              <circle cx="15" cy="5" r="1" />
-              <circle cx="15" cy="19" r="1" />
-            </svg>
-          </div>
-        </li>
-        {% endfor %}
-        {% endwith %}
-      </ul>
-    </div>
-    {% /modal %}
-
-    <div id="results-container" class="mb-4 flex flex-col">
-      {% if page.paginator.num_pages > 1 %}
-      <div class="w-full flex items-center justify-center">
-        <div class="flex items-center gap-8">
-          <button {% if page.has_previous %} hx-target="#results-container" hx-swap="outerHTML schow:top"
-            hx-get="{% url 'buildings:dataset_detail' dataset.slug %}?page={{ page.previous_page_number }}"
-            hx-vals='js:{...getCurrentQuery()}' hx-replace-url="true" {% else %} disabled {% endif %} 
-            hx-indicator=".spinner-nav-prev"
-            class="rounded-md border border-slate-300 p-2.5 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800 focus:text-white focus:bg-slate-800 focus:border-slate-800 active:border-slate-800 active:text-white active:bg-slate-800 
-          disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" type="button">
-            <div class="spinner-nav-prev">
-              <span class="display-when-not-loading">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-                  <path fill-rule="evenodd"
-                  d="M11.03 3.97a.75.75 0 0 1 0 1.06l-6.22 6.22H21a.75.75 0 0 1 0 1.5H4.81l6.22 6.22a.75.75 0 1 1-1.06 1.06l-7.5-7.5a.75.75 0 0 1 0-1.06l7.5-7.5a.75.75 0 0 1 1.06 0Z"
-                  clip-rule="evenodd" />
-                </svg>
-              </span>
-              <span class="display-when-loading">
-                <svg aria-hidden="true" class="w-4 h-4 animate-spin fill-white" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
-                </svg>
-              </span>
-            </div>
-          </button>
-
-          <p class="text-slate-600">
-            Page <strong class="text-slate-800"> {{ page.number }} </strong> of&nbsp;<strong class="text-slate-800">
-              {{ page.paginator.num_pages }}
-            </strong>
-          </p>
-          
-          <button {% if page.has_next %} hx-target="#results-container" hx-swap="outerHTML show:top"
-            hx-get="{% url 'buildings:dataset_detail' dataset.slug %}?page={{ page.next_page_number }}"
-            hx-vals='js:{...getCurrentQuery()}' hx-replace-url="true" {% else %} disabled {% endif %}
-            class="rounded-md border border-slate-300 p-2.5 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800 focus:text-white focus:bg-slate-800 focus:border-slate-800 active:border-slate-800 active:text-white active:bg-slate-800 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
-            hx-indicator=".spinner-nav-next" type="button">
-            <div class="spinner-nav-next spinner">
-              <span class="display-when-not-loading">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-                  <path fill-rule="evenodd"
-                  d="M12.97 3.97a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06l6.22-6.22H3a.75.75 0 0 1 0-1.5h16.19l-6.22-6.22a.75.75 0 0 1 0-1.06Z"
-                  clip-rule="evenodd" />
-                </svg>
-              </span>
-              <span class="display-when-loading">
-                <svg aria-hidden="true" class="w-4 h-4 animate-spin fill-white" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
-                </svg>
-              </span>
-            </div>
-          </button>
-        </div>
-      </div>
-      {% endif %}
-
-      <div class="px-3">
-        <p>Showing {{ page.start_index }}-{{ page.end_index }} of {{ page.paginator.count }}</p>
-      </div>
-
-      <div class="flex flex-col gap-3">
-
-        {% for bldg in page %}
-        <div class="bg-white bg-opacity-65 rounded-xl p-4 text-base gap-3 shadow-md border border-gray-200">
-          <div class="flex flex-col items-top gap-2">
-            <div class="w-full flex flex-row items-end justify-between gap-2">
-              <div class="flex flex-row items-end">
-                <div class="text-xl font-semibold text-gray-900 self-end">{{ bldg.address }}</div>
-                <div class="ps-2 text-xl"> - {{ bldg.muni }}, {{ bldg.admin_area_level_1 }}</div>
-                <div class="ps-2 text-lg"> ({{ bldg.lat }}, {{bldg.lng}})</div>
-              </div>
-              
-              {% if bldg.geocoding_error %}
-              <div class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">
-                Geocoding Error
-              </div>
-              {% endif %}
-            </div>
-
-            <div class="flex flex-row w-full gap-3 items-center">
-              <div class="flex flex-col items-center">
-                <img class="rounded-md w-[420px] h-[270px] object-none" src="{{ bldg.get_thumbnail_url }}" 
-                onerror="this.src='{% static 'images/no_image_found.png' %}';">
-                <div class="w-full flex justify-between gap-2">
-                  <a href="{% url 'buildings:building_details' building_slug=bldg.slug %}"
-                  class="text-sm text-gray-500 hover:text-teal-600">View Details</a>
-                </div>
-              </div>
-              <div id="building-attrs-{{ forloop.counter }}"
-                class="attrs-box w-full grid grid-cols-3 xl:grid-cols-5 rounded-lg p-2 overflow-hidden">
-                <div class="col-span-1">
-                  <div class="text-xl font-semibold px-2 underline underline-offset-4 pb-2 pt-1">Building Attributes
-                  </div>
-                </div>
-                {% for field in user_bldg_cols %}
-                <div class="px-2">
-                  <p class="font-semibold">{{ field.label }}</p>
-                  <p>{{ bldg|get_bldg_field:field.id }}</p>
-                </div>
-                {% endfor %}
-              </div>
-            </div>
-            
-            {% if bldg.geocoding_error %}
-            <div class="mt-2 p-3 bg-red-50 rounded-md">
-              <p class="font-semibold text-red-800">Geocoding Error:</p>
-              <p class="text-red-700">{{ bldg.geocoding_error }}</p>
-            </div>
-            {% endif %}
-            
-          </div>
-        </div>
-
-        {% endfor %}
-
-        {% if page.paginator.count == 0 %}
-        <div class="flex flex-grow flex-col w-full items-center justify-center py-6">
-          <p class="text-lg">
-            No buildings found
-          </p>
-        </div>
-        {% elif page.paginator.num_pages > 1 %}
-        <div class="w-full flex items-center justify-center">
-
-          <div class="flex items-center gap-8">
-
-            <button {% if page.has_previous %} hx-target="#results-container" hx-swap="outerHTML schow:top"
-              hx-get="{% url 'buildings:dataset_detail' dataset.slug %}?page={{ page.previous_page_number }}"
-              hx-vals='js:{...getCurrentQuery()}' hx-replace-url="true" {% else %} disabled {% endif %} 
-              hx-indicator=".spinner-nav-prev"
-              class="rounded-md border border-slate-300 p-2.5 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800 focus:text-white focus:bg-slate-800 focus:border-slate-800 active:border-slate-800 active:text-white active:bg-slate-800 
-          disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" type="button">
-              <div class="spinner-nav-prev">
-                <span class="display-when-not-loading">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-                    <path fill-rule="evenodd"
-                    d="M11.03 3.97a.75.75 0 0 1 0 1.06l-6.22 6.22H21a.75.75 0 0 1 0 1.5H4.81l6.22 6.22a.75.75 0 1 1-1.06 1.06l-7.5-7.5a.75.75 0 0 1 0-1.06l7.5-7.5a.75.75 0 0 1 1.06 0Z"
-                    clip-rule="evenodd" />
-                  </svg>
-                </span>
-                <span class="display-when-loading">
-                  <svg aria-hidden="true" class="w-4 h-4 animate-spin fill-white" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
-                  </svg>
-                </span>
-              </div>
-            </button>
-
-            <p class="text-slate-600">
-              Page <strong class="text-slate-800"> {{ page.number }} </strong> of&nbsp;<strong class="text-slate-800">
-                {{ page.paginator.num_pages }}
-              </strong>
-            </p>
-
-            <button {% if page.has_next %} hx-target="#results-container" hx-swap="outerHTML show:top"
-              hx-get="{% url 'buildings:dataset_detail' dataset.slug %}?page={{ page.next_page_number }}"
-              hx-vals='js:{...getCurrentQuery()}' hx-replace-url="true" {% else %} disabled {% endif %}
-              hx-indicator=".spinner"
-              class="rounded-md border border-slate-300 p-2.5 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800 focus:text-white focus:bg-slate-800 focus:border-slate-800 active:border-slate-800 active:text-white active:bg-slate-800 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
-              type="button">
-              <div class="spinner-nav-next spinner">
-                <span class="display-when-not-loading">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-                    <path fill-rule="evenodd"
-                    d="M12.97 3.97a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06l6.22-6.22H3a.75.75 0 0 1 0-1.5h16.19l-6.22-6.22a.75.75 0 0 1 0-1.06Z"
-                    clip-rule="evenodd" />
-                  </svg>
-                </span>
-                <span class="display-when-loading">
-                  <svg aria-hidden="true" class="w-4 h-4 animate-spin fill-white" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
-                  </svg>
-                </span>
-              </div>
-            </button>
-          </div>
-        </div>
-        {% endif %}
-      </div>
-
-    </div>
-
-    {% endblock %}
-
-    <input type="hidden" id="gen_excel_url" data-url="{% url 'buildings:gen_excel' %}" />
   </div>
 
   {% endblock %}
