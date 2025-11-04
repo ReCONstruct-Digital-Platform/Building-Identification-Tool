@@ -1,11 +1,11 @@
 import io
 import json
-from datetime import datetime
 from openpyxl import Workbook
 from openpyxl.worksheet.table import Table, TableStyleInfo
+import polars as pl
 
 from django.conf import settings
-from django.db.models import F
+from django.db.models import F, Q
 from django.http import HttpResponse, JsonResponse
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_POST
@@ -18,7 +18,6 @@ from buildings.models.newmodels import (
     UserConfigs,
 )
 from buildings.models.models import (
-    EvalUnit,
     UploadImageJob,
 )
 import logging
@@ -324,4 +323,81 @@ def gen_excel(request):
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
     response.write(binary_data)
+    return response
+
+
+@login_required(login_url="account_login")
+def download_errored_buildings(request, dataset_slug):
+    """
+    Generate a CSV file containing all buildings with geocoding errors or no streetview.
+    Uses polars for efficient CSV generation.
+    """
+    from buildings.models.newmodels import Dataset, Building
+
+    # Get the dataset
+    dataset = get_object_or_404(Dataset, slug=dataset_slug)
+
+    # Get all buildings with errors (geocoding error or no streetview)
+    errored_buildings = Building.objects.filter(
+        Q(dataset=dataset)
+        & (Q(geocoding_error__isnull=False) | Q(has_streetview=False))
+    )
+
+    if not errored_buildings.exists():
+        # Return an empty CSV if no errored buildings
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = (
+            f'attachment; filename="{dataset.name}_errored_buildings.csv"'
+        )
+        response.write("No errored buildings found in this dataset.")
+        return response
+
+    # Convert to list of dictionaries for polars
+    buildings_data = []
+    for building in errored_buildings:
+        # Start with basic fields
+        building_dict = {
+            "id": building.id,
+            "ext_id": building.ext_id,
+            "address": building.address,
+            "street_name": building.street_name,
+            "street_num": building.street_num,
+            "muni": building.muni,
+            "submuni": building.submuni,
+            "admin_area_level_1": building.admin_area_level_1,
+            "postal_code": building.postal_code,
+            "lat": building.lat,
+            "lng": building.lng,
+            "const_year": building.const_year,
+            "num_floors": building.num_floors,
+            "floor_area": building.floor_area,
+            "geocoding_error": building.geocoding_error,
+            "has_streetview": building.has_streetview,
+        }
+
+        # Add dynamic attributes if any
+        if building.attrs:
+            for key, value in building.attrs.items():
+                building_dict[f"attrs__{key}"] = value
+
+        buildings_data.append(building_dict)
+
+    # Create polars DataFrame
+    df = pl.DataFrame(buildings_data)
+
+    # Write to CSV with UTF-8-BOM encoding for Excel compatibility
+    buffer = io.BytesIO()
+    # Add UTF-8 BOM at the beginning of the file
+    buffer.write(b"\xef\xbb\xbf")
+    df.write_csv(buffer)
+    buffer.seek(0)
+
+    # Create HTTP response with CSV
+    response = HttpResponse(
+        buffer.getvalue(), content_type="text/csv; charset=utf-8-sig"
+    )
+    response["Content-Disposition"] = (
+        f'attachment; filename="{dataset.name}_errored_buildings.csv"'
+    )
+
     return response

@@ -54,6 +54,21 @@ def index(request):
     template = "buildings/index.html"
 
     datasets = Dataset.objects.all().order_by("id")
+    
+    # Add survey-ready building counts to each dataset
+    for dataset in datasets:
+        dataset.building_count = Building.objects.filter(dataset=dataset).count()
+        dataset.survey_ready_count = Building.objects.filter(
+            dataset=dataset,
+            geocoding_error__isnull=True,
+            has_streetview=True
+        ).count()
+        # Calculate percentage if there are buildings
+        if dataset.building_count > 0:
+            dataset.survey_ready_percent = round((dataset.survey_ready_count / dataset.building_count) * 100)
+        else:
+            dataset.survey_ready_percent = 0
+    
     surveys = Survey.objects.filter(~Q(status=Survey.Status.ARCHIVED)).order_by(
         "-date_modified"
     )[0:6]

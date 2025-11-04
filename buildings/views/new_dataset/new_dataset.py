@@ -1,36 +1,19 @@
 import copy
-from datetime import datetime, time
-import json
 import logging
 from uuid import uuid4
+from datetime import datetime
 
 from django.conf import settings
-from django.db.models import F, Count, Q
-from django.http import HttpResponse
-from django.utils import timezone
-from django.core.paginator import Paginator
-from django.core.files.storage import default_storage
-from render_block import render_block_to_string
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from django.utils.translation import gettext_lazy as _
 from buildings.models.newmodels import Survey, DatasetOnboardingJob, Dataset, Building
-from buildings.models.newsurveys import DynamicSurveyForm
 from buildings.utils import b2
 from buildings.views.new_dataset.forms import DatasetOnboardingForm
-from buildings.utils.utility import get_b64_encoded_json
 
 
 log = logging.getLogger(__name__)
-
-
-# Status constants for DatasetOnboardingJob
-class JobStatus:
-    PENDING = "PENDING"
-    PROCESSING = "PROCESSING"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
 
 
 @login_required(login_url="account_login")
@@ -46,7 +29,7 @@ def new_dataset(request):
             # Create a new dataset onboarding job
             job = form.save(commit=False)
             job.created_by = request.user
-            job.status = JobStatus.PENDING
+            job.status = DatasetOnboardingJob.Status.PENDING
 
             b2_client = b2.get_client()
 
@@ -170,11 +153,10 @@ def get_input_type_for_data_type(data_type):
     """
     mapping = {
         "string": "text",
-        "number": "number",
+        "integer": "integer",
+        "double": "double",
         "boolean": "radio",
-        "date": "text",  # Could be improved with a date picker
-        "array": "text",
-        "object": "text",
+        "date": "text",
     }
     return mapping.get(data_type, "text")
 
@@ -201,75 +183,39 @@ def dataset_detail(request, dataset_slug):
     upload_job = DatasetOnboardingJob.objects.filter(dataset=dataset).first()
     surveys = Survey.objects.filter(dataset=dataset)
 
-    # Pagination parameters
-    num_results_per_page = 10
-    pagenum = request.GET.get("page") or 1
-    orderby_field = request.GET.get("field") or "address"
-    orderby_dir = request.GET.get("dir") or "asc"
-    geocoding_filter = request.GET.get("geocoding_filter")
+    # Generate CSV download URL if available
+    csv_download_url = None
+    if upload_job and upload_job.csv_file_location:
+        from buildings.utils.b2 import create_presigned_url
 
-    # Get column configurations
-    p_bldg_cols = get_b64_encoded_json(request.GET.get("user_bldg_cols", ""))
+        csv_download_url = create_presigned_url(
+            upload_job.csv_file_location, content_type="text/csv"
+        )
 
     # Get buildings from the dataset
-    buildings = Building.objects.filter(dataset=dataset)
-
-    # Apply geocoding filter if specified
-    if geocoding_filter:
-        if geocoding_filter == "success":
-            buildings = buildings.filter(geocoding_error__isnull=True)
-        elif geocoding_filter == "failed":
-            buildings = buildings.filter(geocoding_error__isnull=False)
+    buildings = Building.objects.filter(
+        dataset=dataset, geocoding_error__isnull=True, has_streetview=True
+    )
 
     # Calculate summary statistics
     total_buildings = buildings.count()
-    geocoded_buildings = buildings.filter(geocoding_error__isnull=True).count()
-    failed_geocoding = buildings.filter(geocoding_error__isnull=False).count()
-
-    # Set up ordering
-    order_by = getattr(F(orderby_field), orderby_dir)(nulls_last=True)
-    buildings = buildings.order_by(order_by, "id")
-
-    # Paginate the buildings
-    page = Paginator(buildings, per_page=num_results_per_page).get_page(pagenum)
-
-    # Column configuration
-    default_bldg_cols = dataset.get_fields_to_display()
-
-    if p_bldg_cols or p_bldg_cols == []:
-        user_bldg_cols = p_bldg_cols
-    else:
-        user_bldg_cols = default_bldg_cols
-
-    # Fields for ordering
-    bldg_orderby_cols = dataset.get_orderby_fields()
+    failed_geocoding = Building.objects.filter(
+        dataset=dataset, geocoding_error__isnull=False
+    ).count()
+    failed_streetview = Building.objects.filter(
+        dataset=dataset, has_streetview=False
+    ).count()
 
     context = {
         "dataset": dataset,
         "upload_job": upload_job,
         "surveys": surveys,
-        "page": page,
-        "bldg_orderby_cols": bldg_orderby_cols,
-        "orderby_field": orderby_field,
-        "orderby_dir": orderby_dir,
-        "user_bldg_cols": user_bldg_cols,
-        "default_bldg_cols": default_bldg_cols,
-        "geocoding_filter": geocoding_filter,
         "total_buildings": total_buildings,
-        "geocoded_buildings": geocoded_buildings,
         "failed_geocoding": failed_geocoding,
+        "failed_streetview": failed_streetview,
+        "csv_download_url": csv_download_url,
     }
 
     template_name = "buildings/new_dataset/dataset_detail.html"
-
-    # Handle HTMX requests for pagination
-    if request.htmx:
-        rendered_block = render_block_to_string(
-            template_name,
-            "page-and-paging-controls",
-            context=context,
-            request=request,
-        )
-        return HttpResponse(content=rendered_block)
 
     return render(request, template_name, context)

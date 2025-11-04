@@ -75,4 +75,5 @@ urlpatterns = [
         name="update_user_survey_column_settings",
     ),
     path("upload_imgs/<str:building_id>", api.upload_imgs, name="upload_imgs"),
+    path("download_errored_buildings/<str:dataset_slug>", api.download_errored_buildings, name="download_errored_buildings"),
 ]
